@@ -59,7 +59,7 @@ zombiectl doctor
 | Check | Verifies |
 |---|---|
 | `server_reachable` | `GET /healthz` against the configured API URL returns `{ "status": "ok" }` within 5s. |
-| `workspace_selected` | The local config has a `current_workspace_id` (set by `zombiectl workspace add` or `workspace use`). |
+| `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `zombiectl login` from your signup-provisioned default workspace; can also be set or replaced by `zombiectl workspace add` / `workspace use`. |
 | `workspace_binding_valid` | The auth token can read the selected workspace's zombies — i.e. it is bound to the right tenant. |
 
 Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight.

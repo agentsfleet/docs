@@ -7,6 +7,31 @@ description: "Stay up to date with usezombie product updates, new features, and 
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
+<Update label="May 7, 2026" tags={["CLI", "Schema", "Cleanup"]}>
+  ## `zombiectl login` selects the signup-provisioned default workspace
+
+  First-time customers no longer have to run `zombiectl workspace add` after `zombiectl login`. Signup already provisions a default workspace in the same SQL transaction that creates the tenant + user + membership + starter credit; the dashboard has long discovered it via `GET /v1/tenants/me/workspaces`. The CLI now does the same: after credentials persist, `login` fetches that endpoint, normalises the response, and writes the first workspace into local state as `current_workspace_id`.
+
+  Net effect: `npm install -g @usezombie/zombiectl && zombiectl login` is enough to reach `zombiectl doctor` green. Previous flow forced a duplicate `workspace add` that put the customer in the same tenant but on a second workspace, masking the canonical default.
+
+  Hydration is failure-tolerant. If the workspace list endpoint is unreachable, login still exits 0 and credentials are persisted; `workspace add` stays as the documented manual recovery path. Empty `items[]` is a noop — never overwrites local state with a phantom.
+
+  ## Schema teardown — `repo_url`, `default_branch`, two whole tables, and a phantom column
+
+  Audit of `schema/*.sql` against production Zig surfaced legacy structure that nothing read or wrote. Removed in-place per the pre-v2.0 teardown convention:
+
+  - **`workspace_integrations` table** (`schema/012`) — zero references in production code, zero references in tests. Pure ghost from a flow that never shipped.
+  - **`workspace_entitlements` table** (`schema/004`) — zero production callers; only ceremonial test fixtures INSERTed and never read. Plan-tier scoring config that the credit-pool billing model superseded.
+  - **`core.workspaces` legacy columns** — `repo_url`, `default_branch`, `paused`, `paused_reason`, `version`, `monthly_token_budget`, `updated_at`. All artifacts from the era when workspace creation was 1:1 with a GitHub repo. Production INSERTs in `lifecycle.zig` and `signup_bootstrap.zig` had already stopped writing them; only test fixtures kept them alive.
+  - **`integration_grants.scopes` column** — defaulted to `ARRAY['*']` and never read by anyone.
+
+  Doc cross-effect: `docs/architecture/billing_and_byok.md` and the architecture/scenarios READMEs now say `$5 / 500¢` for the starter grant — matching `STARTER_GRANT_CENTS` in `src/state/tenant_billing.zig`. The previous `$10 / 1000¢` was a doc-vs-implementation drift introduced two milestones ago; today's executable truth is $5.
+
+  ## Test coverage
+
+  Four new unit tests in `login.unit.test.js` (happy path, empty items, pre-existing `current_workspace_id` preserved, hydration-failure tolerated) plus three new integration cases (fresh-state selects default, fresh-state → `doctor` green end-to-end, missing `/v1/tenants/me/workspaces` route does not regress login). The `cli-analytics.unit.test.js` test fixture also got a small refinement so its poll counter is unaffected by the new hydration GET. `bun test` 361/361, schema-rebuild integration suite green.
+</Update>
+
 <Update label="May 7, 2026" tags={["CLI", "Bug fixes"]}>
   ## `zombiectl` customer-default hardening — first-install just works
 
