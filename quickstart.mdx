@@ -37,15 +37,17 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  This opens a Clerk OAuth flow in your browser. New accounts come with a `$5` starter credit pool — never expires, covers both hosted execution and inference against the platform-managed default model.
+  Opens a Clerk OAuth flow in your browser. New accounts come with a `$5` starter credit pool — never expires, covers both hosted execution and inference against the platform-managed default model.
+
+  Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
 </Step>
 
-<Step title="Create a workspace">
+<Step title="(Optional) Create a named workspace">
   ```bash
   zombiectl workspace add platform-ops
   ```
 
-  Workspaces are the boundary for credentials, access control, and webhook namespaces — every zombie lives in exactly one. The command creates a new workspace under your tenant, returns its `workspace_id`, and sets it active for subsequent commands. You can switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
+  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every zombie lives in exactly one. Switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
 </Step>
 
 <Step title="Install and run the install skill">

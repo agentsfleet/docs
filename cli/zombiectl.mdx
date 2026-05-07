@@ -30,6 +30,8 @@ Authenticate via Clerk OIDC device flow. Opens your default browser to complete 
 zombiectl login
 ```
 
+After the token persists, `login` also fetches `GET /v1/tenants/me/workspaces` and writes the first workspace into local state as `current_workspace_id`. Signup auto-provisions a default workspace, so a fresh `npm i -g @usezombie/zombiectl && zombiectl login` is enough to reach `zombiectl doctor` green — `workspace add` is only needed if you want a second or custom-named workspace, or if the workspace fetch failed (login still exits 0 in that case).
+
 Use `--no-open` to print the auth URL instead of opening a browser automatically. Use `--timeout-sec` and `--poll-ms` to tune the session poll.
 
 ### `zombiectl logout`
