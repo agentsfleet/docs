@@ -10,7 +10,7 @@ description: "Stay up to date with usezombie product updates, new features, and 
 <Update label="May 7, 2026" tags={["CLI", "Schema", "Cleanup"]}>
   ## `zombiectl login` selects the signup-provisioned default workspace
 
-  First-time customers no longer have to run `zombiectl workspace add` after `zombiectl login`. Signup already provisions a default workspace in the same SQL transaction that creates the tenant + user + membership + starter credit; the dashboard has long discovered it via `GET /v1/tenants/me/workspaces`. The CLI now does the same: after credentials persist, `login` fetches that endpoint, normalises the response, and writes the first workspace into local state as `current_workspace_id`.
+  First-time customers no longer have to run `zombiectl workspace add` after `zombiectl login`. Signup already provisions a default workspace in the same SQL transaction that creates the tenant + user + membership + starter credit; Mission Control has long discovered it via `GET /v1/tenants/me/workspaces`. The CLI now does the same: after credentials persist, `login` fetches that endpoint, normalises the response, and writes the first workspace into local state as `current_workspace_id`.
 
   Net effect: `npm install -g @usezombie/zombiectl && zombiectl login` is enough to reach `zombiectl doctor` green. Previous flow forced a duplicate `workspace add` that put the customer in the same tenant but on a second workspace, masking the canonical default.
 
