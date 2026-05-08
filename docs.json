@@ -3,9 +3,26 @@
   "theme": "mint",
   "name": "usezombie",
   "colors": {
-    "primary": "#d96b2b",
-    "light": "#e78a3c",
-    "dark": "#c45a1f"
+    "primary": "#14b8a6",
+    "light": "#5eead4",
+    "dark": "#2dd4bf"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Commit Mono",
+      "source": "/fonts/CommitMono-Medium.woff2",
+      "format": "woff2",
+      "weight": 500
+    },
+    "body": {
+      "family": "Instrument Sans",
+      "source": "/fonts/InstrumentSans-Regular.woff2",
+      "format": "woff2",
+      "weight": 400
+    }
+  },
+  "styling": {
+    "codeblocks": "dark"
   },
   "favicon": "/favicon.svg",
   "navigation": {

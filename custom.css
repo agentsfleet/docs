@@ -1,0 +1,202 @@
+/*
+ * usezombie Mintlify overrides — Operational Restraint.
+ *
+ * Layered after Mintlify's base theme. Replaces the heritage orange
+ * primary chrome with design-system tokens, swaps the default code
+ * block syntax theme for a calm Vesper-style palette, and anchors
+ * typography on Commit Mono (headings) + Instrument Sans (body).
+ *
+ * The wake-pulse animation on the brand-mark logo is baked into the
+ * SVGs themselves (see /logo/dark.svg and /logo/light.svg) — not
+ * here — so it survives Mintlify's logo render path without needing
+ * a custom React component. This file owns everything else.
+ *
+ * `--pulse` appears EXACTLY ONCE on the docs site: the brand-mark
+ * logo in the top nav. Any other use is a violation.
+ */
+
+@import url("./tokens.css");
+
+/* Self-hosted brand faces. Latin + Latin Extended subset only — full
+ * character set ships ~300KB; the subsetted woff2 below stays under
+ * 80KB per file and meets the docs perf budget. */
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Body + headings. Mintlify's default body class is `body` plus a
+ * Tailwind-emitted `font-sans`; bumping specificity with `:where()`
+ * keeps us layered correctly without piling !important on every rule.
+ * Falls back through system-ui so a slow-3G first paint still reads. */
+:where(html, body) {
+  font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  font-size: var(--uz-fs-body);
+  line-height: 1.55;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: "Commit Mono", "JetBrains Mono", ui-monospace, "Cascadia Code",
+    monospace;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* Long-form prose measure. Mintlify's content column is roughly
+ * 720-768px today; clamping with the design-system `--uz-measure`
+ * holds line length around 68ch on wide monitors. */
+.prose,
+article.prose,
+main article {
+  max-width: var(--uz-measure);
+}
+
+/* Inline code: Commit Mono on a low surface, no border, small radius. */
+:where(code):not(pre code) {
+  font-family: "Commit Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--uz-fs-mono);
+  background: var(--uz-surface-1);
+  color: var(--uz-text);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--uz-r-sm);
+  border: 0;
+}
+
+/* Code blocks (Mintlify ships Shiki-derived markup). Override the
+ * default purple-keyword / green-string / blue-function palette with
+ * a Vesper-style calm theme anchored on usezombie tokens. Numbers
+ * are the only place evidence-amber appears outside cited-evidence
+ * callouts — see DESIGN_SYSTEM.md §Color. */
+pre code {
+  font-family: "Commit Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--uz-fs-mono);
+  line-height: 1.6;
+}
+
+pre,
+:where(pre[class*="language-"]) {
+  background: var(--uz-surface-deep);
+  border: 1px solid var(--uz-border);
+  border-radius: var(--uz-r-md);
+}
+
+/* Shiki / Prism token classes — keywords and structure on text,
+ * strings on info, comments on subtle, numbers on evidence. The
+ * `.token.*` selectors cover Prism markup; the `[style*="--shiki"]`
+ * variant catches Shiki's inline-style-driven renderer. */
+.token.keyword,
+.token.tag,
+.token.selector,
+.token.operator,
+.token.entity,
+.token.boolean,
+.token.atrule,
+.token.attr-name {
+  color: var(--uz-text);
+}
+.token.string,
+.token.attr-value,
+.token.char,
+.token.regex,
+.token.url,
+.token.symbol {
+  color: var(--uz-info);
+}
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata,
+.token.deleted {
+  color: var(--uz-text-subtle);
+  font-style: italic;
+}
+.token.number,
+.token.constant,
+.token.builtin,
+.token.hexcode {
+  color: var(--uz-evidence);
+}
+.token.function,
+.token.class-name,
+.token.property,
+.token.variable {
+  color: var(--uz-text);
+}
+.token.punctuation {
+  color: var(--uz-text-muted);
+}
+
+/* Tables: tabular numerals on numeric-looking cells. Cheap heuristic —
+ * apply to every td in API-reference tables; the design-system
+ * preview uses font-variant-numeric: tabular-nums on data tables.
+ * Visual cost on prose tables is zero. */
+table td,
+table th {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Search-box focus ring: the calm pulse glow, no animation. */
+:focus-visible {
+  outline: 2px solid var(--uz-pulse);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--uz-pulse-glow);
+  border-radius: var(--uz-r-sm);
+}
+
+/* Cover-page dot grid. Inner pages stay clean — opt-in via the
+ * `cover-grid` className on the index.mdx hero wrapper. */
+.cover-grid {
+  background-image:
+    radial-gradient(circle, var(--uz-border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  opacity: 1;
+}
+.cover-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* Reduced motion: kill every transition and animation site-wide,
+ * with one caveat — the brand-mark logo's wake-pulse SVG already
+ * carries its own prefers-reduced-motion fallback (a static glow),
+ * so we don't need to special-case it here. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -8,8 +8,35 @@
   Commit Mono with broad fallback to JetBrains Mono / ui-monospace
   so the wordmark stays legible even when the brand woff2 hasn't
   loaded.
+
+  The pulse disc carries the only animation on the docs site —
+  the wake-pulse signature (2.4s ease-in-out infinite). Embedded
+  via SVG SMIL so Mintlify's logo render path picks it up without
+  needing a custom React component. prefers-reduced-motion is
+  honoured via the inline <style> block below — when reduced, the
+  glow ring becomes a static halo instead of pulsing.
 -->
 <svg width="200" height="32" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes uz-wake-pulse {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      50%  { transform: scale(1.6); opacity: 0;    }
+      100% { transform: scale(1);   opacity: 0;    }
+    }
+    .uz-pulse-ring {
+      transform-origin: 10px 16px;
+      transform-box: fill-box;
+      animation: uz-wake-pulse 2.4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .uz-pulse-ring {
+        animation: none;
+        opacity: 0.35;
+        transform: scale(1.35);
+      }
+    }
+  </style>
+  <circle class="uz-pulse-ring" cx="10" cy="16" r="6" fill="#5EEAD4" opacity="0.5" />
   <circle cx="10" cy="16" r="6" fill="#5EEAD4" />
   <text x="26" y="22"
     font-family="'Commit Mono','JetBrains Mono','SF Mono',ui-monospace,monospace"
