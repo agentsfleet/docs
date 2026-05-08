@@ -10,7 +10,7 @@ description: "Stay up to date with usezombie product updates, new features, and 
 <Update label="May 8, 2026" tags={["Breaking", "CLI", "Observability"]}>
   ## Telemetry now off by default; consistent error shape across every command
 
-  Two changes that affect every `zombiectl` invocation. (1) Telemetry is now off by default — fresh installs send zero events to our analytics until you explicitly opt in. (2) Every command renders errors through one shared boundary, so the format is consistent whether you're hitting `zombiectl login`, `zombiectl install`, or `zombiectl steer` — and the friendly message you see is paired with the original server code, so support requests don't lose information.
+  Two changes that affect every `zombiectl` invocation. (1) Telemetry is now off by default — fresh installs send zero events to our analytics until you explicitly opt in. (2) Every command renders errors through one shared boundary, so the format is consistent whether you're hitting `zombiectl login`, `zombiectl doctor`, or `zombiectl steer` — and the friendly message you see is paired with the original server code, so support requests don't lose information.
 
   ## Upgrading
 
@@ -22,7 +22,7 @@ description: "Stay up to date with usezombie product updates, new features, and 
 
   ## What's new
 
-  - **Stable error code + friendly message.** Errors now render as `error: UZ-AUTH-003 Token expired — run \`zombiectl login\` to refresh.` Server code stays in stderr (so support tickets keep their grep handle); the message is plain English. JSON mode (`--json`) gets the same shape: `{"error": {"code": "UZ-AUTH-003", "message": "…", "status": 401, "request_id": "…"}}`.
+  - **Stable error code + friendly message.** Errors now render as ``error: UZ-AUTH-003 Token expired — run `zombiectl login` to refresh.`` Server code stays in stderr (so support tickets keep their grep handle); the message is plain English. JSON mode (`--json`) gets the same shape: `{"error": {"code": "UZ-AUTH-003", "message": "…", "status": 401, "request_id": "…"}}`.
   - **One renderer, one source of truth.** Every command — login, doctor, workspace, agent, grant, tenant, billing, every zombie subcommand — now shares the same error/exit-code path. The format won't drift per command.
 
   ## CLI
