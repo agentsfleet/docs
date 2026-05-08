@@ -140,17 +140,15 @@ table th {
  * everything. */
 .cover-grid {
   position: relative;
-  background-image:
-    radial-gradient(circle, var(--uz-border) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: 0 0;
-  opacity: 1;
 }
 .cover-grid::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: inherit;
+  background-image:
+    radial-gradient(circle, var(--uz-border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
   opacity: 0.08;
   pointer-events: none;
 }
