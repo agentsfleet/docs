@@ -157,11 +157,12 @@ table th {
   font-variant-numeric: tabular-nums;
 }
 
-/* Search-box focus ring: the calm pulse glow, no animation. */
+/* Focus ring — the calm pulse glow, no animation. Matches the
+ * design-system spec: `box-shadow: 0 0 0 3px var(--pulse-glow)`. */
 :focus-visible {
   outline: 2px solid var(--uz-pulse);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--uz-pulse-glow);
+  box-shadow: 0 0 0 3px var(--uz-pulse-glow);
   border-radius: var(--uz-r-sm);
 }
 

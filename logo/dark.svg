@@ -31,7 +31,7 @@
     @media (prefers-reduced-motion: reduce) {
       .uz-pulse-ring {
         animation: none;
-        opacity: 0.35;
+        opacity: 0.2;
         transform: scale(1.35);
       }
     }
