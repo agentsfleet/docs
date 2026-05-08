@@ -49,20 +49,30 @@
 /* Body + headings. Mintlify's default body class is `body` plus a
  * Tailwind-emitted `font-sans`; bumping specificity with `:where()`
  * keeps us layered correctly without piling !important on every rule.
- * Falls back through system-ui so a slow-3G first paint still reads. */
-:where(html, body) {
+ * Falls back through system-ui so a slow-3G first paint still reads.
+ *
+ * font-size lives on `body` only — touching `html` would redefine
+ * the rem unit (16px → 15px ≈ 6% shrink) and silently rescale every
+ * Mintlify rule expressed in rem. Body keeps inheritance to children
+ * without compounding into the rem base. */
+:where(body) {
   font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI",
     sans-serif;
   font-size: var(--uz-fs-body);
   line-height: 1.55;
 }
 
+/* Heading family + weight is uniform; tracking is per-level per
+ * DESIGN_SYSTEM.md §Type scale (display-xl tightest, heading flat). */
 :where(h1, h2, h3, h4, h5, h6) {
   font-family: "Commit Mono", "JetBrains Mono", ui-monospace, "Cascadia Code",
     monospace;
   font-weight: 500;
-  letter-spacing: -0.015em;
 }
+:where(h1) { letter-spacing: -0.025em; }
+:where(h2) { letter-spacing: -0.02em;  }
+:where(h3) { letter-spacing: -0.015em; }
+:where(h4, h5, h6) { letter-spacing: 0; }
 
 /* Long-form prose measure. Mintlify's content column is roughly
  * 720-768px today; clamping with the design-system `--uz-measure`
@@ -84,11 +94,12 @@ main article {
   border: 0;
 }
 
-/* Code blocks (Mintlify ships Shiki-derived markup). Override the
- * default purple-keyword / green-string / blue-function palette with
- * a Vesper-style calm theme anchored on usezombie tokens. Numbers
- * are the only place evidence-amber appears outside cited-evidence
- * callouts — see DESIGN_SYSTEM.md §Color. */
+/* Code blocks. Mintlify renders syntax via Shiki, which emits inline
+ * `style="--shiki-…"` attributes rather than Prism `.token.keyword`
+ * classes — overriding token classes is dead CSS against Shiki output.
+ * The actual syntax palette is selected by `styling.codeblocks: "dark"`
+ * in docs.json (Mintlify's built-in dark theme). This block owns only
+ * the chrome around the code (font, surface, border, radius). */
 pre code {
   font-family: "Commit Mono", "JetBrains Mono", ui-monospace, monospace;
   font-size: var(--uz-fs-mono);
@@ -100,52 +111,6 @@ pre,
   background: var(--uz-surface-deep);
   border: 1px solid var(--uz-border);
   border-radius: var(--uz-r-md);
-}
-
-/* Shiki / Prism token classes — keywords and structure on text,
- * strings on info, comments on subtle, numbers on evidence. The
- * `.token.*` selectors cover Prism markup; the `[style*="--shiki"]`
- * variant catches Shiki's inline-style-driven renderer. */
-.token.keyword,
-.token.tag,
-.token.selector,
-.token.operator,
-.token.entity,
-.token.boolean,
-.token.atrule,
-.token.attr-name {
-  color: var(--uz-text);
-}
-.token.string,
-.token.attr-value,
-.token.char,
-.token.regex,
-.token.url,
-.token.symbol {
-  color: var(--uz-info);
-}
-.token.comment,
-.token.prolog,
-.token.doctype,
-.token.cdata,
-.token.deleted {
-  color: var(--uz-text-subtle);
-  font-style: italic;
-}
-.token.number,
-.token.constant,
-.token.builtin,
-.token.hexcode {
-  color: var(--uz-evidence);
-}
-.token.function,
-.token.class-name,
-.token.property,
-.token.variable {
-  color: var(--uz-text);
-}
-.token.punctuation {
-  color: var(--uz-text-muted);
 }
 
 /* Tables: tabular numerals on numeric-looking cells. Cheap heuristic —
