@@ -7,6 +7,24 @@ description: "Stay up to date with usezombie product updates, new features, and 
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
+<Update label="May 8, 2026" tags={["What's new", "CLI"]}>
+  ## `zombiectl` reads as part of the brand
+
+  The CLI now renders against the same design system as `usezombie.com` and `app.usezombie.com`. Same restraint, same accent — the bioluminescent cyan-mint pulse — applied where it actually means something. Status glyphs (`●` live, `○` parked, `◉` warn, `✕` failed) stay consistent across every command. Engineers running `zombiectl list` next to Mission Control see one product, not two.
+
+  ## What's new
+
+  - **One palette, end-to-end.** Pulse cyan, evidence amber, success green, warn amber, error red, plus muted and subtle greys — all 256-color codes mirroring the web tokens. `zombiectl --version` is now a single line: a pulse-cyan dot, the binary name, the version. No more zombie face emoji. No more box-drawing border.
+  - **Currency, not paint.** Pulse cyan appears only on three things: the live-status glyph, the `--version` brand mark, and help section headings (`USAGE:` / `COMMANDS:` / `ENVIRONMENT VARIABLES:`). Section dividers and table column headers use bold default text — chrome, never currency.
+  - **Quiet machines stay quiet.** `NO_COLOR=1`, piped output (`zombiectl list | cat`), and `--json` mode all emit zero ANSI escape sequences. Logs ingested by other tools no longer carry rendering bytes.
+  - **Old terminals still work.** Terminals advertising fewer than 256 colors fall back to a 16-color palette automatically. One stderr notice on first call, then silent. `TERM=dumb` and non-TTY pipes degrade to plain ASCII.
+  - **Help fits.** Every line of `zombiectl --help` is ≤80 columns wide. Long descriptions wrap; help no longer assumes a wide terminal.
+
+  ## CLI
+
+  No new commands. No flag changes. The decorative `🎉 <name> is live.` line on `zombiectl install` is now a structured `✓ <name> is live.` rendered through the design-system glyph helpers; in `NO_COLOR` mode that becomes plain `✓ <name> is live.`. Every other command emits the same data it did before — through one centralized rendering package, not scattered ANSI escapes.
+</Update>
+
 <Update label="May 8, 2026" tags={["Breaking", "CLI", "Observability"]}>
   ## Telemetry now off by default; consistent error shape across every command
 
