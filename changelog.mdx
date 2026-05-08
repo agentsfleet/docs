@@ -7,6 +7,29 @@ description: "Stay up to date with usezombie product updates, new features, and 
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
+<Update label="May 8, 2026" tags={["Breaking", "CLI", "Observability"]}>
+  ## Telemetry now off by default; consistent error shape across every command
+
+  Two changes that affect every `zombiectl` invocation. (1) Telemetry is now off by default — fresh installs send zero events to our analytics until you explicitly opt in. (2) Every command renders errors through one shared boundary, so the format is consistent whether you're hitting `zombiectl login`, `zombiectl install`, or `zombiectl steer` — and the friendly message you see is paired with the original server code, so support requests don't lose information.
+
+  ## Upgrading
+
+  - **`ZOMBIE_POSTHOG_ENABLED` is gone.** The opt-in env var is now `DISABLE_TELEMETRY`, with inverted semantics:
+    - Default (env unset, or `DISABLE_TELEMETRY=1|true|on|yes`): telemetry is **off**, no events leave your machine.
+    - Opt-in: `DISABLE_TELEMETRY=0` (or `false`/`off`/`no`).
+    - Migration: if you were exporting `ZOMBIE_POSTHOG_ENABLED=false` to suppress events, you can drop it — that's now the default. If you were leaving it unset and want to keep sending events, export `DISABLE_TELEMETRY=0`.
+  - **CLI and server upgrade independently.** This release only touches `zombiectl` — server is untouched. Upgrading the CLI without the server (or vice versa) is safe.
+
+  ## What's new
+
+  - **Stable error code + friendly message.** Errors now render as `error: UZ-AUTH-003 Token expired — run \`zombiectl login\` to refresh.` Server code stays in stderr (so support tickets keep their grep handle); the message is plain English. JSON mode (`--json`) gets the same shape: `{"error": {"code": "UZ-AUTH-003", "message": "…", "status": 401, "request_id": "…"}}`.
+  - **One renderer, one source of truth.** Every command — login, doctor, workspace, agent, grant, tenant, billing, every zombie subcommand — now shares the same error/exit-code path. The format won't drift per command.
+
+  ## CLI
+
+  - **Per-HTTP-request observability.** When telemetry is opted in, each HTTP request emits a span with status, duration, attempt count, and retry reason — useful for diagnosing flaky paths. When telemetry is off (the new default), nothing is emitted.
+</Update>
+
 <Update label="May 7, 2026" tags={["CLI", "Schema", "Cleanup"]}>
   ## `zombiectl login` selects the signup-provisioned default workspace
 
