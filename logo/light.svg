@@ -1,9 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  usezombie wordmark — light-mode variant.
+
+  Shown when GitHub / Mintlify renders the README on a light canvas
+  (warm parchment per docs/DESIGN_SYSTEM.md). Wordmark text uses the
+  light-mode --text token (#1A1D1E). The pulse disc uses the
+  light-mode pulse value (#14B8A6) — slightly desaturated cyan-mint
+  so it sits on a parchment background without screaming.
+-->
 <svg width="200" height="32" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(2, 2)">
-    <path d="M24.5 7.5 A12.5 12.5 0 1 1 10.5 6.2" stroke="#c45a1f" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-    <path d="M24.5 7.5 L21.2 4.2" stroke="#c45a1f" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M24.5 7.5 L20.8 10.2" stroke="#c45a1f" stroke-width="2.4" stroke-linecap="round"/>
-    <circle cx="10.5" cy="6.2" r="2.4" fill="#b85220"/>
-  </g>
-  <text x="40" y="22" font-family="'SF Mono','Fira Code','Cascadia Code',monospace" font-size="16" font-weight="500" letter-spacing="-0.3" fill="#1a1a18">usezombie</text>
+  <circle cx="10" cy="16" r="6" fill="#14B8A6" />
+  <text x="26" y="22"
+    font-family="'Commit Mono','JetBrains Mono','SF Mono',ui-monospace,monospace"
+    font-size="16"
+    font-weight="500"
+    letter-spacing="-0.3"
+    fill="#1A1D1E">usezombie</text>
 </svg>

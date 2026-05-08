@@ -1,17 +1,19 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="logo/light.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="logo/dark.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="logo/dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="logo/light.svg" />
   <img src="logo/dark.svg" width="200" alt="usezombie" />
 </picture>
 
-**Heroku for agents, but the agent never sees your keys.**
+**Your deploy failed. The agent already knows why.**
 
-**Run your agents 24/7. Walled, watched, killable.**
+A long-lived runtime that owns one operational outcome end to end.
+Wakes on your events. Runs against a durable, replayable log.
+Posts evidenced answers — never chats.
 
-[![Docs](https://img.shields.io/badge/usezombie-Docs-blue?style=for-the-badge)](https://docs.usezombie.com)
-[![Try Free](https://img.shields.io/badge/usezombie-Try_Free-brightgreen?style=for-the-badge)](https://usezombie.com)
+[![Docs](https://img.shields.io/badge/usezombie-Docs-5EEAD4?style=for-the-badge)](https://docs.usezombie.com)
+[![Try Free](https://img.shields.io/badge/usezombie-Install-5EEAD4?style=for-the-badge)](https://usezombie.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 </div>
