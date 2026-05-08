@@ -3,8 +3,8 @@
   usezombie wordmark — dark-mode variant.
 
   Shown when GitHub / Mintlify renders the README on a dark canvas.
-  Wordmark text uses the dark-mode --text token (#E6EAEC); the pulse
-  disc carries the brand --pulse currency (#5EEAD4). Mono face is
+  Wordmark text uses the dark-mode `text` token (#E6EAEC); the pulse
+  disc carries the brand `pulse` currency (#5EEAD4). Mono face is
   Commit Mono with broad fallback to JetBrains Mono / ui-monospace
   so the wordmark stays legible even when the brand woff2 hasn't
   loaded.

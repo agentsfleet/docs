@@ -4,7 +4,7 @@
 
   Shown when GitHub / Mintlify renders the README on a light canvas
   (warm parchment per docs/DESIGN_SYSTEM.md). Wordmark text uses the
-  light-mode --text token (#1A1D1E). The pulse disc uses the
+  light-mode `text` token (#1A1D1E). The pulse disc uses the
   light-mode pulse value (#14B8A6) — slightly desaturated cyan-mint
   so it sits on a parchment background without screaming.
 -->
