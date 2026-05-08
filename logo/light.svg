@@ -18,10 +18,10 @@
     @keyframes uz-wake-pulse {
       0%   { transform: scale(1);   opacity: 0.55; }
       50%  { transform: scale(1.6); opacity: 0;    }
-      100% { transform: scale(1);   opacity: 0;    }
+      100% { transform: scale(1);   opacity: 0.55; }
     }
     .uz-pulse-ring {
-      transform-origin: 10px 16px;
+      transform-origin: center;
       transform-box: fill-box;
       animation: uz-wake-pulse 2.4s ease-in-out infinite;
     }

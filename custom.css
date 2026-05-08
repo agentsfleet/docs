@@ -17,9 +17,12 @@
 
 @import url("./tokens.css");
 
-/* Self-hosted brand faces. Latin + Latin Extended subset only — full
- * character set ships ~300KB; the subsetted woff2 below stays under
- * 80KB per file and meets the docs perf budget. */
+/* Self-hosted brand faces. Latin subset only — full character set
+ * ships ~300KB; subsetted weights stay under 80KB and meet the docs
+ * perf budget. Single source of truth — Mintlify's docs.json `fonts`
+ * config is intentionally empty so we don't double-fetch. Instrument
+ * Sans is the variable wght-axis file (30KB), serving every weight
+ * from one download. */
 @font-face {
   font-family: "Commit Mono";
   src: url("/fonts/CommitMono-Regular.woff2") format("woff2");
@@ -36,15 +39,9 @@
 }
 @font-face {
   font-family: "Instrument Sans";
-  src: url("/fonts/InstrumentSans-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Instrument Sans";
-  src: url("/fonts/InstrumentSans-Medium.woff2") format("woff2");
-  font-weight: 500;
+  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2-variations"),
+       url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
 }
@@ -169,8 +166,14 @@ table th {
 }
 
 /* Cover-page dot grid. Inner pages stay clean — opt-in via the
- * `cover-grid` className on the index.mdx hero wrapper. */
+ * `cover-grid` className on the index.mdx hero wrapper. The
+ * pseudo-element handles the 8% opacity tint and needs `.cover-grid`
+ * itself to be a positioned ancestor; without `position: relative`
+ * here, `position: absolute` on `::before` would escape to the
+ * nearest positioned ancestor (often the page root) and tint
+ * everything. */
 .cover-grid {
+  position: relative;
   background-image:
     radial-gradient(circle, var(--uz-border) 1px, transparent 1px);
   background-size: 24px 24px;

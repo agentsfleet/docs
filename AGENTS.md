@@ -52,10 +52,17 @@ Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These re
 {/* SYNC SOURCE: ~/Projects/usezombie/ui/packages/design-system/src/tokens.css
      When touching colors in this repo (docs.json, logos, custom CSS), always
      verify values against the canonical design-system tokens first.
-     Run: grep -E "^  --z-(orange|bg|text|green|cyan|red|amber)" ~/Projects/usezombie/ui/packages/design-system/src/tokens.css */}
+     Run: grep -E "^  --(pulse|bg|surface|text|success|warn|error|info|evidence)" ~/Projects/usezombie/ui/packages/design-system/src/tokens.css
 
-Primary brand color: `#d96b2b` (`--z-orange`). Use this for emphasis and CTAs.
-Primary bright/hover: `#e78a3c` (`--z-orange-bright`).
-Background dark: `#05080d` (`--z-bg-0`). Surface: `#0f1520` (`--z-surface-0`).
-Text primary: `#e8f2ff` (`--z-text-primary`). Text muted: `#8b97a8` (`--z-text-muted`).
-Status colors: green `#39ff85` (`--z-green`, done), cyan `#5ed4ec` (`--z-cyan`, running), red `#ff4d6a` (`--z-red`, failed), amber `#c99232` (`--z-amber`, queued).
+     Heritage `--z-orange` palette retired in M64 (Operational Restraint
+     rollout). Anything still referencing `#d96b2b` / `--z-orange` is stale. */}
+
+The accent is currency, never decoration: cyan-mint pulse appears only on live signals (running zombies, focus rings, primary CTAs, the brand-mark). Everything else is muted/subtle/info/warn/error/evidence.
+
+Primary brand accent (the wake-pulse): `#5eead4` (`--pulse`, dark mode), `#14b8a6` (`--pulse`, light mode).
+Pulse glow ring: `rgba(94, 234, 212, 0.35)` (`--pulse-glow`).
+Background dark: `#0a0d0e` (`--bg`). Surface: `#11161a` (`--surface-1`).
+Background light: `#f8f6f1` (`--bg`, parchment-warm). Surface: `#f1eee6` (`--surface-1`).
+Text primary: `#e6eaec` (`--text`, dark) / `#1a1d1e` (`--text`, light). Text muted: `#8b9398` / `#5a625f`.
+Status colors: success `#34d399` (`--success`), warn `#f59e0b` (`--warn`), error `#f87171` (`--error`), info `#60a5fa` (`--info`), evidence `#fbbf24` (`--evidence`, cited evidence callouts only).
+Typography: Commit Mono (`--ff-mono`) for headings + code; Instrument Sans Variable (`--ff-sans`) for body.
