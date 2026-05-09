@@ -7,8 +7,24 @@
     "light": "#5eead4",
     "dark": "#2dd4bf"
   },
+  "fonts": {
+    "heading": {
+      "family": "Commit Mono",
+      "source": "/fonts/CommitMono-Medium.woff2",
+      "format": "woff2",
+      "weight": 500
+    },
+    "body": {
+      "family": "Instrument Sans",
+      "source": "/fonts/InstrumentSans-Variable.woff2",
+      "format": "woff2",
+      "weight": 400
+    }
+  },
   "styling": {
-    "codeblocks": "dark"
+    "codeblocks": {
+      "theme": "vesper"
+    }
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -252,7 +268,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Mission Control",
+      "label": "Install",
       "href": "https://app.usezombie.com"
     }
   },
