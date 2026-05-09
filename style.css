@@ -50,3 +50,18 @@ a[href="https://app.usezombie.com"] *,
 [data-mintlify-primary-button] {
   color: #0a0d0e;
 }
+
+/*
+ * Dark-mode page background — match marketing (usezombie.com).
+ *
+ * Mintlify ships --background-dark = "11 14 15" (#0B0E0F). Marketing's
+ * <body> is #0A0D0E (rgb(10, 13, 14)) — a one-bit-per-channel shift.
+ * Imperceptible in isolation, but pinning the docs to the same literal
+ * keeps the two surfaces from drifting apart if marketing's token moves.
+ *
+ * Source-of-truth is ui/packages/design-system/src/tokens.css
+ * (--surface-base in dark mode). Mirrored here per file header rules.
+ */
+.dark {
+  --background-dark: 10 13 14;
+}
