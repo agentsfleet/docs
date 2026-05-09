@@ -18,7 +18,7 @@
       "family": "Instrument Sans",
       "source": "/fonts/InstrumentSans-Variable.woff2",
       "format": "woff2",
-      "weight": "400 700"
+      "weight": 400
     }
   },
   "styling": {
