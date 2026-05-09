@@ -7,6 +7,48 @@ description: "Stay up to date with usezombie product updates, new features, and 
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
+<Update label="May 9, 2026" tags={["Breaking", "What's new", "API", "UI"]}>
+  ## Single-rate pricing — $0.001 per event, $0.10 per stage; tier ladder retired
+
+  Pricing collapses to one number per surface. Every tenant pays $0.001 when an event wakes a zombie and $0.10 each time the runtime executes a stage, drawn from a credit pool that starts with a $5 grant on signup. Bring your own model key and your provider bills you directly for inference — usezombie marks up zero on tokens. The Hobby/Scale tier story is gone from the marketing site, the API, and the dashboard.
+
+  ## Upgrading
+
+  - **`GET /v1/tenants/me/billing` response shape changed.** The `plan_tier` and `plan_sku` fields are removed. Clients reading either field will need to drop those reads. The remaining fields (`balance_cents`, `updated_at`, `is_exhausted`, `exhausted_at`) are unchanged. Server and client must upgrade together.
+  - **Error code `UZ-WORKSPACE-003` now returns `Credit pool exhausted`.** The previous message ("Workspace free limit reached. Upgrade your plan.") referred to a tier model that no longer exists. Clients matching on the message string need updating; clients matching on the code do not.
+  - **`/pricing` route retired.** Pricing now lives as an inline section at `/#pricing`. Existing `/pricing` bookmarks 404; topbar and footer links already point at the anchor.
+  - **PostHog funnels keyed on `pricing_hobby_start_free` or `pricing_scale_upgrade` events will go dark.** Both events are removed. Pricing-page signup intent now lives as the `source = pricing_install` property on the existing `signup_completed` event. Dashboard owners: rebuild any pricing-page funnel against `signup_completed` filtered by `source = pricing_install`.
+
+  ## What's new
+
+  - **One number, one billing flow.** The pricing section on `usezombie.com/#pricing` shows a horizontal flow diagram: a billed event cell ($0.001) followed by N stage cells ($0.10 each), with a separately-billed LLM stratum underneath proving BYOK inference is not on your usezombie invoice. The math is in the same card: 100 events × 3 stages each = $30.10.
+  - **Operational extras provision per workspace, not per tier.** Multi-workspace, approval gating, workspace-scoped credentials, higher concurrency, longer per-stage windows, and priority support turn on as you scale — never gated by an upgrade SKU.
+  - **Marketing site collapses to a single page.** Pricing, features, and the FAQ all live on the home page; the topbar still routes to `/agents` and external `/docs`. Cleaner story: usezombie sells one runtime, not a feature matrix.
+  - **Marketing typography moves to design-system primitives.** `<DisplayXL>`, `<DisplayLG>`, and `<SectionLabel>` now back every hero, section heading, and eyebrow on `usezombie.com`. The fluid sizes and tracking match the Operational Restraint type scale.
+
+  ## API reference
+
+  `GET /v1/tenants/me/billing` — response shape:
+
+  ```json
+  {
+    "balance_cents": 471,
+    "updated_at": 1778330263985,
+    "is_exhausted": false,
+    "exhausted_at": null
+  }
+  ```
+
+  `GET /v1/tenants/me/billing/charges` — unchanged; still returns the credit-pool charge stream with `charge_type` ∈ `receive` (charged $0.001 per event) and `stage` (charged $0.10 per stage).
+
+  Error code `UZ-WORKSPACE-003` — now returns:
+
+  ```
+  Credit pool exhausted
+  Tenant credit pool exhausted. Top up your balance to resume execution.
+  ```
+</Update>
+
 <Update label="May 9, 2026" tags={["What's new", "UI"]}>
   ## Operational Restraint — one design system across every surface
 
