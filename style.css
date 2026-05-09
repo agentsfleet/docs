@@ -1,0 +1,52 @@
+/*
+ * usezombie Mintlify overrides — Operational Restraint.
+ *
+ * Mintlify's docs.json owns the bulk of the theming (colors, fonts,
+ * code-block syntax theme). This file owns only the bits the schema
+ * can't express. Filename is `style.css` per Mintlify's documented
+ * convention for cloud-build custom CSS pickup.
+ *
+ * Source-of-truth tokens live in
+ * ~/Projects/usezombie/ui/packages/design-system/src/tokens.css.
+ * Hex literals here are mirrored from there — change upstream first,
+ * land here in the same release window.
+ */
+
+/*
+ * Variable-axis @font-face for Instrument Sans body.
+ *
+ * Mintlify's docs.json `fonts.body.weight` is schema-typed as a single
+ * number, so its build-time @font-face registers only weight 400 —
+ * `<strong>` and `font-weight: 700` would fall back to system. The
+ * woff2 we ship is the wght-axis variable file (covers 400–700), so
+ * we re-register the same family here with the full range. Browsers
+ * resolve font-face entries by font-weight match; the bold range
+ * picks our declaration when the requested weight is > 400.
+ */
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2-variations"),
+       url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Primary navbar button — "Install" CTA.
+ *
+ * The fill comes from `colors.primary` in docs.json (#14B8A6 cyan-mint,
+ * `--pulse` light-mode value). Mintlify auto-computes the foreground
+ * by contrast and lands on white, but the design system's --on-pulse
+ * token is THEME-FIXED dark (#0A0D0E) in both modes — that's the
+ * canonical foreground for content layered on the pulse surface
+ * (per ui/packages/design-system/src/tokens.css). Force it.
+ *
+ * Selector targets the navbar primary button by its href; this is
+ * stable against Mintlify's class-name churn between minor releases.
+ */
+a[href="https://app.usezombie.com"],
+a[href="https://app.usezombie.com"] *,
+[data-mintlify-primary-button] {
+  color: #0a0d0e;
+}
