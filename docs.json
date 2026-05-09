@@ -3,9 +3,12 @@
   "theme": "mint",
   "name": "usezombie",
   "colors": {
-    "primary": "#d96b2b",
-    "light": "#e78a3c",
-    "dark": "#c45a1f"
+    "primary": "#14b8a6",
+    "light": "#5eead4",
+    "dark": "#2dd4bf"
+  },
+  "styling": {
+    "codeblocks": "dark"
   },
   "favicon": "/favicon.svg",
   "navigation": {

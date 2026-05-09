@@ -1,0 +1,84 @@
+/*
+ * usezombie design tokens — docs.usezombie.com transcription.
+ *
+ * Mirrors ui/packages/design-system/src/tokens.css from the usezombie
+ * repo. Mintlify can't import from a workspace package, so the token
+ * values are duplicated here verbatim. Keep them in sync — any change
+ * upstream lands here in the same release window. Source of truth:
+ * docs/DESIGN_SYSTEM.md in the usezombie repo.
+ *
+ * Operational Restraint: dark is the brand's primary surface; light
+ * mirrors via [data-theme="light"] for full parity. The bioluminescent
+ * --pulse accent is currency, used EXACTLY ONCE on the docs site —
+ * the brand-mark in the top nav. Every other accent uses muted /
+ * subtle / info / warn / error / evidence.
+ */
+
+:root {
+  /* Surfaces (dark — brand primary). */
+  --uz-surface-deep: #06090a;
+  --uz-bg: #0a0d0e;
+  --uz-surface-1: #11161a;
+  --uz-surface-2: #181e22;
+  --uz-surface-3: #1f262c;
+
+  /* Borders. */
+  --uz-border: #23292e;
+  --uz-border-strong: #2e373e;
+
+  /* Text. */
+  --uz-text: #e6eaec;
+  --uz-text-muted: #8b9398;
+  --uz-text-subtle: #5c6469;
+
+  /* The pulse — currency, never decoration. */
+  --uz-pulse: #5eead4;
+  --uz-pulse-dim: #2dd4bf;
+  --uz-pulse-glow: rgba(94, 234, 212, 0.35);
+  --uz-on-pulse: #0a0d0e;
+
+  /* Status (sparingly). */
+  --uz-success: #34d399;
+  --uz-warn: #f59e0b;
+  --uz-error: #f87171;
+  --uz-info: #60a5fa;
+  --uz-evidence: #fbbf24;
+
+  /* Radii. */
+  --uz-r-sm: 2px;
+  --uz-r-md: 4px;
+  --uz-r-lg: 6px;
+
+  /* Type scale. */
+  --uz-fs-display-xl: 4rem;
+  --uz-fs-display-lg: 2.5rem;
+  --uz-fs-display-md: 1.75rem;
+  --uz-fs-heading: 1.125rem;
+  --uz-fs-body-lg: 1.125rem;
+  --uz-fs-body: 0.9375rem;
+  --uz-fs-body-sm: 0.8125rem;
+  --uz-fs-mono: 0.8125rem;
+
+  /* Layout — single-column docs measure. */
+  --uz-measure: 720px;
+}
+
+/* Light mode. Polite afterthought, not the brand's first impression.
+ * Mintlify toggles its own theme; we mirror tokens on the same trigger
+ * via the html[data-theme] / .light selectors that Mintlify emits. */
+html.light,
+[data-theme="light"] {
+  --uz-surface-deep: #efece5;
+  --uz-bg: #f8f6f1;
+  --uz-surface-1: #f1eee6;
+  --uz-surface-2: #e9e5da;
+  --uz-surface-3: #dfdacb;
+  --uz-border: #d4cdb9;
+  --uz-border-strong: #b7ae96;
+  --uz-text: #1a1d1e;
+  --uz-text-muted: #5a625f;
+  --uz-text-subtle: #8a918a;
+  --uz-pulse: #14b8a6;
+  --uz-pulse-dim: #0d9488;
+  --uz-pulse-glow: rgba(20, 184, 166, 0.3);
+}

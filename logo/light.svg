@@ -7,8 +7,33 @@
   light-mode `text` token (#1A1D1E). The pulse disc uses the
   light-mode pulse value (#14B8A6) — slightly desaturated cyan-mint
   so it sits on a parchment background without screaming.
+
+  Pulse disc animates with the brand wake-pulse signature
+  (2.4s ease-in-out infinite). prefers-reduced-motion swaps the
+  pulsing ring for a static halo so the metaphor survives without
+  violating the user's preference.
 -->
 <svg width="200" height="32" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes uz-wake-pulse {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      50%  { transform: scale(1.6); opacity: 0;    }
+      100% { transform: scale(1);   opacity: 0.55; }
+    }
+    .uz-pulse-ring {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: uz-wake-pulse 2.4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .uz-pulse-ring {
+        animation: none;
+        opacity: 0.2;
+        transform: scale(1.35);
+      }
+    }
+  </style>
+  <circle class="uz-pulse-ring" cx="10" cy="16" r="6" fill="#14B8A6" opacity="0.5" />
   <circle cx="10" cy="16" r="6" fill="#14B8A6" />
   <text x="26" y="22"
     font-family="'Commit Mono','JetBrains Mono','SF Mono',ui-monospace,monospace"

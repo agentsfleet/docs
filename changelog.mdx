@@ -7,6 +7,24 @@ description: "Stay up to date with usezombie product updates, new features, and 
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
+<Update label="May 9, 2026" tags={["What's new", "UI"]}>
+  ## Operational Restraint — one design system across every surface
+
+  The dashboard, the marketing site, this docs site, and `zombiectl` now share one visual language. We call it Operational Restraint: dark-first chrome, Commit Mono headings on Instrument Sans body, and a single bioluminescent accent — the cyan-mint **wake-pulse** — used as currency, never decoration. If something pulses, it's alive. If it doesn't, it isn't.
+
+  ## What's new
+
+  - **One token system, one typeface pair, every surface.** The same surface, border, text, and accent values render `app.usezombie.com`, `usezombie.com`, `docs.usezombie.com`, and the CLI palette. Switch between any two and the visual handoff is seamless — same parchment-warm light mode, same dark-first dark mode, same letter-spacing, same line-height.
+  - **The wake-pulse is currency.** Cyan-mint appears only on live signals: a running zombie's status dot, a primary call-to-action, a focus ring, the brand-mark in the navigation. Nothing else pulses. No aurora gradients, no decorative glows.
+  - **Light mode is first-class.** Every surface mirrors dark to light at full WCAG AA contrast — body text 7:1, inline code 4.5:1, focus rings visible against either background. Engineers reading docs at noon and dashboards at midnight both get a system tuned for them.
+  - **Reduced motion is honoured.** `prefers-reduced-motion: reduce` swaps the wake-pulse for a static halo across every surface. The metaphor (it wakes) survives without violating the user's preference.
+  - **The docs site reads in the same voice.** This page — the one you're on — was the last surface to land. Heritage orange chrome is gone; Commit Mono headings, Instrument Sans body, calm code-block syntax, single-column 68-character measure for long-form prose.
+
+  ## What's next
+
+  More verification details — accessibility scores, performance budgets, and the dashboard's live-state instrumentation — will follow in a future entry as that work lands.
+</Update>
+
 <Update label="May 8, 2026" tags={["What's new", "CLI"]}>
   ## `zombiectl` reads as part of the brand
 
