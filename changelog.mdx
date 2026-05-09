@@ -17,7 +17,7 @@ description: "Stay up to date with usezombie product updates, new features, and 
   - **`GET /v1/tenants/me/billing` response shape changed.** The `plan_tier` and `plan_sku` fields are removed. Clients reading either field will need to drop those reads. The remaining fields (`balance_cents`, `updated_at`, `is_exhausted`, `exhausted_at`) are unchanged. Server and client must upgrade together.
   - **Error code `UZ-WORKSPACE-003` now returns `Credit pool exhausted`.** The previous message ("Workspace free limit reached. Upgrade your plan.") referred to a tier model that no longer exists. Clients matching on the message string need updating; clients matching on the code do not.
   - **`/pricing` route retired.** Pricing now lives as an inline section at `/#pricing`. Existing `/pricing` bookmarks 404; topbar and footer links already point at the anchor.
-  - **PostHog funnels keyed on `pricing_hobby_start_free` or `pricing_scale_upgrade` event sources will go dark.** A single new source `pricing_install` replaces both. Dashboard owners: rebuild any pricing-page funnel against `signup_completed` with `source = pricing_install`.
+  - **PostHog funnels keyed on `pricing_hobby_start_free` or `pricing_scale_upgrade` events will go dark.** Both events are removed. Pricing-page signup intent now lives as the `source = pricing_install` property on the existing `signup_completed` event. Dashboard owners: rebuild any pricing-page funnel against `signup_completed` filtered by `source = pricing_install`.
 
   ## What's new
 
