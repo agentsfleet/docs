@@ -50,3 +50,22 @@ a[href="https://app.usezombie.com"] *,
 [data-mintlify-primary-button] {
   color: #0a0d0e;
 }
+
+/*
+ * Dark-mode page background — mirror the design-system source of truth.
+ *
+ * Upstream token is --z-bg-0 = #05080D in
+ * ui/packages/design-system/src/tokens.css, bridged to --background in
+ * theme.css and consumed by both the marketing site and the app. Mintlify
+ * ships --background-dark = "11 14 15" (#0B0E0F); we override to match
+ * the upstream token so all three surfaces (marketing, app, docs) sit on
+ * the same base color.
+ *
+ * Selector covers both <html class="dark"> (today's Mintlify) and any
+ * descendant scoping in case Mintlify moves the toggle class downward.
+ */
+:root.dark,
+html.dark,
+.dark {
+  --background-dark: 5 8 13;
+}
