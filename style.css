@@ -27,7 +27,6 @@
  */
 a[href="https://app.usezombie.com"],
 a[href="https://app.usezombie.com"] *,
-[data-mintlify-primary-button],
-nav button[type="button"] {
+[data-mintlify-primary-button] {
   color: #0a0d0e;
 }
