@@ -8,27 +8,27 @@ description: "Stay up to date with usezombie product updates, new features, and 
 </Tip>
 
 <Update label="May 9, 2026" tags={["Breaking", "What's new", "API", "UI"]}>
-  ## Single-rate pricing — $0.001 per event, $0.10 per stage; tier ladder retired
+  ## Single-rate pricing — $0.01 per event, $0.10 per stage; tier ladder retired
 
-  Pricing collapses to one number per surface. Every tenant pays $0.001 when an event wakes a zombie and $0.10 each time the runtime executes a stage, drawn from a credit pool that starts with a $5 grant on signup. Bring your own model key and your provider bills you directly for inference — usezombie marks up zero on tokens. The Hobby/Scale tier story is gone from the marketing site, the API, and the dashboard.
+  One number per surface: $0.01 per event receipt, $0.10 per stage, drawn from a $5 starter credit on signup. You pick the model and pay your provider directly — zero markup on tokens. Hobby/Scale tiers are gone from the site, API, and dashboard.
 
   ## Upgrading
 
-  - **`GET /v1/tenants/me/billing` response shape changed.** The `plan_tier` and `plan_sku` fields are removed. Clients reading either field will need to drop those reads. The remaining fields (`balance_cents`, `updated_at`, `is_exhausted`, `exhausted_at`) are unchanged. Server and client must upgrade together.
-  - **Error code `UZ-WORKSPACE-003` now returns `Credit pool exhausted`.** The previous message ("Workspace free limit reached. Upgrade your plan.") referred to a tier model that no longer exists. Clients matching on the message string need updating; clients matching on the code do not.
-  - **`/pricing` route retired.** Pricing now lives as an inline section at `/#pricing`. Existing `/pricing` bookmarks 404; topbar and footer links already point at the anchor.
-  - **PostHog funnels keyed on `pricing_hobby_start_free` or `pricing_scale_upgrade` events will go dark.** Both events are removed. Pricing-page signup intent now lives as the `source = pricing_install` property on the existing `signup_completed` event. Dashboard owners: rebuild any pricing-page funnel against `signup_completed` filtered by `source = pricing_install`.
+  - **`GET /v1/tenants/me/billing`** — `plan_tier` and `plan_sku` removed. Other fields unchanged. Upgrade server + client together.
+  - **`UZ-WORKSPACE-003`** — message now `Credit pool exhausted` (was tier-flavoured). Code unchanged; only string-matchers need to update.
+  - **`/pricing`** route 404s — content lives at `/#pricing`. Topbar and footer already updated.
+  - **PostHog `pricing_hobby_start_free` / `pricing_scale_upgrade` events removed.** Pricing-page intent now `signup_completed` with `source = pricing_install`. Rebuild affected funnels.
 
   ## What's new
 
-  - **One number, one billing flow.** The pricing section on `usezombie.com/#pricing` shows a horizontal flow diagram: a billed event cell ($0.01) followed by N stage cells ($0.10 each), with a separately-billed LLM stratum underneath proving your model-provider inference is not on your usezombie invoice. The math is in the same card: 100 events × 3 stages each = $31.00.
-  - **Operational extras provision per workspace, not per tier.** Multi-workspace, approval gating, workspace-scoped credentials, higher concurrency, longer per-stage windows, and priority support turn on as you scale — never gated by an upgrade SKU.
-  - **Marketing site collapses to a single page.** Pricing, features, and the FAQ all live on the home page; the topbar still routes to `/agents` and external `/docs`. Cleaner story: usezombie sells one runtime, not a feature matrix.
-  - **Marketing typography moves to design-system primitives.** `<DisplayXL>`, `<DisplayLG>`, and `<SectionLabel>` now back every hero, section heading, and eyebrow on `usezombie.com`. The fluid sizes and tracking match the Operational Restraint type scale.
+  - **One billing flow on `usezombie.com/#pricing`** — horizontal diagram: event cell ($0.01) → N stage cells ($0.10) → separate LLM stratum proving your model bill is not ours. Worked example: 100 events × 3 stages = $31.00.
+  - **Operational extras turn on per workspace, never as a paywall** — multi-workspace, approval gating, workspace credentials, higher concurrency, longer windows, priority support.
+  - **Marketing site is now a single page** — pricing, features, FAQ all on `/`. Only `/agents` and external `/docs` route away.
+  - **Marketing headings use design-system primitives** — `<DisplayXL>`, `<DisplayLG>`, `<SectionLabel>` back every hero, section, and eyebrow.
 
   ## API reference
 
-  `GET /v1/tenants/me/billing` — response shape:
+  `GET /v1/tenants/me/billing`:
 
   ```json
   {
@@ -39,9 +39,9 @@ description: "Stay up to date with usezombie product updates, new features, and 
   }
   ```
 
-  `GET /v1/tenants/me/billing/charges` — unchanged; still returns the credit-pool charge stream with `charge_type` ∈ `receive` (charged $0.001 per event) and `stage` (charged $0.10 per stage).
+  `GET /v1/tenants/me/billing/charges` — unchanged. `charge_type` ∈ `receive` ($0.01) and `stage` ($0.10).
 
-  Error code `UZ-WORKSPACE-003` — now returns:
+  `UZ-WORKSPACE-003`:
 
   ```
   Credit pool exhausted
@@ -52,60 +52,61 @@ description: "Stay up to date with usezombie product updates, new features, and 
 <Update label="May 9, 2026" tags={["What's new", "UI"]}>
   ## Operational Restraint — one design system across every surface
 
-  The dashboard, the marketing site, this docs site, and `zombiectl` now share one visual language. We call it Operational Restraint: dark-first chrome, Commit Mono headings on Instrument Sans body, and a single bioluminescent accent — the cyan-mint **wake-pulse** — used as currency, never decoration. If something pulses, it's alive. If it doesn't, it isn't.
+  Dashboard, marketing site, docs, and `zombiectl` now share one visual language: dark-first chrome, Commit Mono headings on Instrument Sans body, and a single cyan-mint **wake-pulse** used as currency. If something pulses, it's alive.
 
   ## What's new
 
-  - **One token system, one typeface pair, every surface.** The same surface, border, text, and accent values render `app.usezombie.com`, `usezombie.com`, `docs.usezombie.com`, and the CLI palette. Switch between any two and the visual handoff is seamless — same parchment-warm light mode, same dark-first dark mode, same letter-spacing, same line-height.
-  - **The wake-pulse is currency.** Cyan-mint appears only on live signals: a running zombie's status dot, a primary call-to-action, a focus ring, the brand-mark in the navigation. Nothing else pulses. No aurora gradients, no decorative glows.
-  - **Light mode is first-class.** Every surface mirrors dark to light at full WCAG AA contrast — body text 7:1, inline code 4.5:1, focus rings visible against either background. Engineers reading docs at noon and dashboards at midnight both get a system tuned for them.
-  - **Reduced motion is honoured.** `prefers-reduced-motion: reduce` swaps the wake-pulse for a static halo across every surface. The metaphor (it wakes) survives without violating the user's preference.
-  - **The docs site reads in the same voice.** This page — the one you're on — was the last surface to land. Heritage orange chrome is gone; Commit Mono headings, Instrument Sans body, calm code-block syntax, single-column 68-character measure for long-form prose.
+  - **One token set across `app.usezombie.com`, `usezombie.com`, `docs.usezombie.com`, and the CLI** — same surface, border, text, accent values. Visual handoff between surfaces is seamless.
+  - **Pulse cyan is currency, never decoration** — only live signals: status dots, primary CTAs, focus rings, the brand mark. No decorative gradients or glows.
+  - **Light mode is first-class** — full WCAG AA contrast (body 7:1, inline code 4.5:1, visible focus rings either way).
+  - **`prefers-reduced-motion` honoured** — wake-pulse swaps to a static halo. Metaphor survives.
+  - **Docs site landed last** — Commit Mono headings, Instrument Sans body, 68-char measure. Heritage orange is gone.
 
   ## What's next
 
-  More verification details — accessibility scores, performance budgets, and the dashboard's live-state instrumentation — will follow in a future entry as that work lands.
+  Accessibility scores, performance budgets, and dashboard live-state instrumentation will land in a future entry.
 </Update>
 
 <Update label="May 8, 2026" tags={["What's new", "CLI"]}>
   ## `zombiectl` reads as part of the brand
 
-  The CLI now renders against the same design system as `usezombie.com` and `app.usezombie.com`. Same restraint, same accent — the bioluminescent cyan-mint pulse — applied where it actually means something. Status glyphs (`●` live, `○` parked, `◉` warn, `✕` failed) stay consistent across every command. Engineers running `zombiectl list` next to Mission Control see one product, not two.
+  CLI now renders against the same design system as the web surfaces. Same cyan-mint pulse, same status glyphs (`●` live, `○` parked, `◉` warn, `✕` failed) across every command.
 
   ## What's new
 
-  - **One palette, end-to-end.** Pulse cyan, evidence amber, success green, warn amber, error red, plus muted and subtle greys — all 256-color codes mirroring the web tokens. `zombiectl --version` is now a single line: a pulse-cyan dot, the binary name, the version. No more zombie face emoji. No more box-drawing border.
-  - **Currency, not paint.** Pulse cyan appears only on three things: the live-status glyph, the `--version` brand mark, and help section headings (`USAGE:` / `COMMANDS:` / `ENVIRONMENT VARIABLES:`). Section dividers and table column headers use bold default text — chrome, never currency.
-  - **Quiet machines stay quiet.** `NO_COLOR=1`, piped output (`zombiectl list | cat`), and `--json` mode all emit zero ANSI escape sequences. Logs ingested by other tools no longer carry rendering bytes.
-  - **Old terminals still work.** Terminals advertising fewer than 256 colors fall back to a 16-color palette automatically. One stderr notice on first call, then silent. `TERM=dumb` and non-TTY pipes degrade to plain ASCII.
-  - **Help fits.** Every line of `zombiectl --help` is ≤80 columns wide. Long descriptions wrap; help no longer assumes a wide terminal.
+  - **One palette end-to-end** — pulse cyan, evidence amber, success green, warn amber, error red, muted/subtle greys. 256-color, mirrors the web tokens.
+  - **`zombiectl --version`** — single line: pulse dot, binary name, version. No more zombie emoji or box border.
+  - **Pulse cyan is currency** — only on the live-status glyph, the `--version` mark, and help section headings. Dividers and table headers use bold default text.
+  - **Quiet machines stay quiet** — `NO_COLOR=1`, piped output, and `--json` emit zero ANSI escapes.
+  - **Old terminals fall back** — &lt;256-color terminals get a 16-color palette automatically (one stderr notice, then silent). `TERM=dumb` and non-TTY pipes go plain ASCII.
+  - **`zombiectl --help` fits 80 cols.**
 
   ## CLI
 
-  No new commands. No flag changes. The decorative `🎉 <name> is live.` line on `zombiectl install` is now a structured `✓ <name> is live.` rendered through the design-system glyph helpers; in `NO_COLOR` mode that becomes plain `✓ <name> is live.`. Every other command emits the same data it did before — through one centralized rendering package, not scattered ANSI escapes.
+  No new commands or flags. `zombiectl install` swaps `🎉 <name> is live.` for `✓ <name> is live.` via the shared glyph helpers (plain `✓` under `NO_COLOR`).
 </Update>
 
 <Update label="May 8, 2026" tags={["Breaking", "CLI", "Observability"]}>
-  ## Telemetry now off by default; consistent error shape across every command
+  ## Telemetry off by default; consistent error shape
 
-  Two changes that affect every `zombiectl` invocation. (1) Telemetry is now off by default — fresh installs send zero events to our analytics until you explicitly opt in. (2) Every command renders errors through one shared boundary, so the format is consistent whether you're hitting `zombiectl login`, `zombiectl doctor`, or `zombiectl steer` — and the friendly message you see is paired with the original server code, so support requests don't lose information.
+  Fresh installs send zero analytics events until you opt in. Every command also renders errors through one shared boundary now — same format and code/message pairing across `login`, `doctor`, `steer`, and the rest.
 
   ## Upgrading
 
-  - **`ZOMBIE_POSTHOG_ENABLED` is gone.** The opt-in env var is now `DISABLE_TELEMETRY`, with inverted semantics:
-    - Default (env unset, or `DISABLE_TELEMETRY=1|true|on|yes`): telemetry is **off**, no events leave your machine.
-    - Opt-in: `DISABLE_TELEMETRY=0` (or `false`/`off`/`no`).
-    - Migration: if you were exporting `ZOMBIE_POSTHOG_ENABLED=false` to suppress events, you can drop it — that's now the default. If you were leaving it unset and want to keep sending events, export `DISABLE_TELEMETRY=0`.
-  - **CLI and server upgrade independently.** This release only touches `zombiectl` — server is untouched. Upgrading the CLI without the server (or vice versa) is safe.
+  - **`ZOMBIE_POSTHOG_ENABLED` removed** — replaced by `DISABLE_TELEMETRY` with inverted default:
+    - Unset / `DISABLE_TELEMETRY=1|true|on|yes` → telemetry **off**.
+    - `DISABLE_TELEMETRY=0|false|off|no` → opt-in.
+    - Migration: `ZOMBIE_POSTHOG_ENABLED=false` users can drop the var. To keep sending events, set `DISABLE_TELEMETRY=0`.
+  - **CLI-only release** — server untouched; upgrade either side independently.
 
   ## What's new
 
-  - **Stable error code + friendly message.** Errors now render as ``error: UZ-AUTH-003 Token expired — run `zombiectl login` to refresh.`` Server code stays in stderr (so support tickets keep their grep handle); the message is plain English. JSON mode (`--json`) gets the same shape: `{"error": {"code": "UZ-AUTH-003", "message": "…", "status": 401, "request_id": "…"}}`.
-  - **One renderer, one source of truth.** Every command — login, doctor, workspace, agent, grant, tenant, billing, every zombie subcommand — now shares the same error/exit-code path. The format won't drift per command.
+  - **Stable error code + friendly message** — ``error: UZ-AUTH-003 Token expired — run `zombiectl login` to refresh.`` JSON mode mirrors: `{"error": {"code": "UZ-AUTH-003", "message": "…", "status": 401, "request_id": "…"}}`.
+  - **One renderer for every command** — login, doctor, workspace, agent, grant, tenant, billing, every zombie subcommand share one error/exit-code path. No per-command drift.
 
   ## CLI
 
-  - **Per-HTTP-request observability.** When telemetry is opted in, each HTTP request emits a span with status, duration, attempt count, and retry reason — useful for diagnosing flaky paths. When telemetry is off (the new default), nothing is emitted.
+  - **Per-HTTP-request observability** — when opted in, each request emits a span (status, duration, attempts, retry reason). When off (the default), silent.
 </Update>
 
 <Update label="May 7, 2026" tags={["CLI", "Schema", "Cleanup"]}>
