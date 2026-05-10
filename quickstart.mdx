@@ -3,6 +3,8 @@ title: Quickstart
 description: "Install zombiectl, run /usezombie-install-platform-ops, see a real diagnosis in Slack."
 ---
 
+import { STARTER_CREDIT } from "/snippets/rates.mdx";
+
 This walks through installing the flagship `platform-ops` zombie on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
 
 <Steps>
@@ -37,7 +39,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  Opens a Clerk OAuth flow in your browser. New accounts come with a `$5` starter credit pool — never expires, covers both hosted execution and inference against the platform-managed default model.
+  Opens a Clerk OAuth flow in your browser. New accounts come with a {STARTER_CREDIT} starter credit pool — never expires, covers hosted execution (event receipts + stages). You bring your provider and model — pay them directly. usezombie marks up zero on inference.
 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
 </Step>

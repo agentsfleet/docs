@@ -1,10 +1,12 @@
 ---
 title: usezombie
-description: "Durable, BYOK, markdown-defined agent runtime — for operators who own their outcomes."
+description: "Always-on agent runtime that wakes on your events, gathers evidence against your infra, and posts evidenced diagnoses to Slack. Markdown-defined."
 ---
 
+import { STARTER_CREDIT } from "/snippets/rates.mdx";
+
 <Warning>
-  🧟 **v2 — Early Access · do not run in production.** This release is for design partners and internal testing only. APIs, agent behaviour, schemas, and CLI flags will change without warning. Please don't point real workloads at `api.usezombie.com` yet — we will tell you when it's ready. Self-host arrives in v3.
+  🧟 **Stealth-mode testing.** usezombie is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating a zombie or to join as a design partner? Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
 </Warning>
 
 ## A long-lived runtime for one operational outcome
@@ -19,8 +21,8 @@ usezombie is a durable runtime that captures the senior engineer's playbook in m
   <Card title="Open source" icon="github">
     The runtime that holds your credentials and runs against your infrastructure is code you can read. Apache-2.0.
   </Card>
-  <Card title="BYOK (Bring Your Own Key)" icon="key">
-    Attach your own model provider's API key — Anthropic, OpenAI, Fireworks (Kimi K2), Together, Groq, Moonshot. Zero markup on inference. You pay your provider directly.
+  <Card title="You bring your provider and model" icon="key">
+    Pick the provider — Anthropic, OpenAI, Fireworks (Kimi K2), Together, Groq, Moonshot — attach the key, and pay them directly. Zero markup on inference.
   </Card>
   <Card title="Markdown-defined" icon="file-lines">
     Behaviour lives in `SKILL.md` + `TRIGGER.md`. Iterate on prose, not redeploys. No YAML allowlists, no DAG editors.
@@ -51,7 +53,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Risky actions block until a human clicks Approve in the dashboard or Slack. The wait survives worker restarts.
   </Card>
   <Card title="Spend ceiling" icon="gauge-high">
-    Per-day and per-month dollar caps. `$5` starter credit that never expires. Inference cost is yours, paid to your provider directly.
+    Per-day and per-month dollar caps. {STARTER_CREDIT} starter credit that never expires. Inference cost is yours, paid to your provider directly.
   </Card>
   <Card title="Kill switch" icon="power-off">
     `zombiectl kill` stops the stage cleanly; nothing on the activity stream is lost. Resume via `zombiectl steer`.
@@ -77,7 +79,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Every `zombiectl` command, with examples.
   </Card>
   <Card title="Architecture" icon="diagram-project" href="https://github.com/usezombie/usezombie/tree/main/docs/architecture">
-    The canonical technical reference — capabilities, data flow, billing + BYOK, path to bastion, post-ship reflection.
+    The canonical technical reference — capabilities, data flow, billing + model providers, path to bastion, post-ship reflection.
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/usezombie/usezombie">
     Source, issues, design partners welcome.
