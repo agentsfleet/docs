@@ -3,14 +3,16 @@ title: "Changelog"
 description: "Stay up to date with the latest usezombie product updates, new features, platform improvements, and bug fixes."
 ---
 
+import { STARTER_CREDIT, EVENT_RATE, STAGE_RATE } from "/snippets/rates.mdx";
+
 <Tip>
   usezombie is in **Early Access Preview** and pre-production. APIs and agent behavior may change between releases without long deprecation windows.
 </Tip>
 
 <Update label="May 9, 2026" tags={["Breaking", "What's new", "API", "UI"]}>
-  ## Single-rate pricing — $0.01 per event, $0.10 per stage; tier ladder retired
+  ## Single-rate pricing — tier ladder retired
 
-  One number per surface: $0.01 per event receipt, $0.10 per stage, drawn from a $5 starter credit on signup. You pick the model and pay your provider directly — zero markup on tokens. Hobby/Scale tiers are gone from the site, API, and dashboard.
+  One number per surface: {EVENT_RATE} per event receipt, {STAGE_RATE} per stage, drawn from a {STARTER_CREDIT} starter credit on signup. You pick the model and pay your provider directly — zero markup on tokens. Hobby/Scale tiers are gone from the site, API, and dashboard.
 
   ## Upgrading
 
@@ -21,7 +23,7 @@ description: "Stay up to date with the latest usezombie product updates, new fea
 
   ## What's new
 
-  - **One billing flow on `usezombie.com/#pricing`** — horizontal diagram: event cell ($0.01) → N stage cells ($0.10) → separate LLM stratum proving your model bill is not ours. Worked example: 100 events × 3 stages = $31.00.
+  - **One billing flow on `usezombie.com/#pricing`** — horizontal diagram: event cell ({EVENT_RATE}) → N stage cells ({STAGE_RATE}) → separate LLM stratum proving your model bill is not ours. Worked example: 100 events × 3 stages = $31.00.
   - **Operational extras turn on per workspace, never as a paywall** — multi-workspace, approval gating, workspace credentials, higher concurrency, longer windows, priority support.
   - **Marketing site is now a single page** — pricing, features, FAQ all on `/`. Only `/agents` and external `/docs` route away.
   - **Marketing headings use design-system primitives** — `<DisplayXL>`, `<DisplayLG>`, `<SectionLabel>` back every hero, section, and eyebrow.
@@ -39,7 +41,7 @@ description: "Stay up to date with the latest usezombie product updates, new fea
   }
   ```
 
-  `GET /v1/tenants/me/billing/charges` — unchanged. `charge_type` ∈ `receive` ($0.01) and `stage` ($0.10).
+  `GET /v1/tenants/me/billing/charges` — unchanged. `charge_type` ∈ `receive` ({EVENT_RATE}) and `stage` ({STAGE_RATE}).
 
   `UZ-WORKSPACE-003`:
 
@@ -125,7 +127,7 @@ description: "Stay up to date with the latest usezombie product updates, new fea
   - **`core.workspaces` columns** — `repo_url`, `default_branch`, `paused*`, `version`, `monthly_token_budget`, `updated_at`. From the 1:1 workspace-to-repo era; production INSERTs had already stopped writing them.
   - **`integration_grants.scopes`** — defaulted to `ARRAY['*']`, never read.
 
-  Doc cross-effect: `billing_and_byok.md` corrected to `$5 / 500¢` starter (was `$10 / 1000¢` — doc-vs-implementation drift).
+  Doc cross-effect: `billing_and_byok.md` corrected to {STARTER_CREDIT} / 500¢ starter (was `$10 / 1000¢` — doc-vs-implementation drift).
 
   ## Tests
 
@@ -216,7 +218,7 @@ description: "Stay up to date with the latest usezombie product updates, new fea
 </Update>
 
 <Update label="May 4, 2026" tags={["Breaking", "API", "Pricing", "Marketing"]}>
-  ## M51 follow-up — route teardown, $5 starter, marketing honesty
+  ## M51 follow-up — route teardown, starter-credit cut, marketing honesty
 
   ## Breaking — API removals
 
@@ -226,7 +228,7 @@ description: "Stay up to date with the latest usezombie product updates, new fea
 
   ## Pricing
 
-  - **Starter credit halved to $5** (was $10). `STARTER_GRANT_CENTS` in `src/state/tenant_billing.zig` is the only constant that changed.
+  - **Starter credit halved to {STARTER_CREDIT}** (was $10). `STARTER_GRANT_CENTS` in `src/state/tenant_billing.zig` is the only constant that changed.
   - **Marketing copy names the two debit points** wherever pricing is described — hosted execution drains on event receipt and per-stage execution.
 
   ## Marketing
