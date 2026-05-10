@@ -55,7 +55,7 @@ Every stage debits the same tenant balance regardless of which workspace the zom
 New tenants start with **{STARTER_CREDIT}** seeded at signup — never expires.
 
 - **Hosted execution is metered.** usezombie debits credits on event receipt and per-stage execution. That's what the credit pool pays for.
-- **You bring your own model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly. usezombie marks up zero on inference. The executor resolves your credential at the tool bridge.
+- **You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly. usezombie marks up zero on inference. The executor resolves your credential at the tool bridge.
 - **Debits happen on completed work only.** A stage that fails before producing output does not debit.
 
 See [Billing and cost control](/billing/plans).
