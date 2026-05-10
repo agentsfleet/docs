@@ -1,10 +1,10 @@
 ---
 title: usezombie
-description: "Durable, BYOK, markdown-defined agent runtime — for operators who own their outcomes."
+description: "Always-on agent runtime that wakes on your events, gathers evidence against your infra, and posts evidenced diagnoses to Slack. Markdown-defined."
 ---
 
 <Warning>
-  🧟 **v2 — Early Access · do not run in production.** This release is for design partners and internal testing only. APIs, agent behaviour, schemas, and CLI flags will change without warning. Please don't point real workloads at `api.usezombie.com` yet — we will tell you when it's ready. Self-host arrives in v3.
+  🧟 **Early Access Preview.** APIs, CLI, and behavior may change before GA. Self-host arrives in v3.
 </Warning>
 
 ## A long-lived runtime for one operational outcome
@@ -19,8 +19,8 @@ usezombie is a durable runtime that captures the senior engineer's playbook in m
   <Card title="Open source" icon="github">
     The runtime that holds your credentials and runs against your infrastructure is code you can read. Apache-2.0.
   </Card>
-  <Card title="BYOK (Bring Your Own Key)" icon="key">
-    Attach your own model provider's API key — Anthropic, OpenAI, Fireworks (Kimi K2), Together, Groq, Moonshot. Zero markup on inference. You pay your provider directly.
+  <Card title="Bring your own model" icon="key">
+    Pick the model — Anthropic, OpenAI, Fireworks (Kimi K2), Together, Groq, Moonshot — attach the key, and pay your provider directly. Zero markup on inference.
   </Card>
   <Card title="Markdown-defined" icon="file-lines">
     Behaviour lives in `SKILL.md` + `TRIGGER.md`. Iterate on prose, not redeploys. No YAML allowlists, no DAG editors.
@@ -77,7 +77,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Every `zombiectl` command, with examples.
   </Card>
   <Card title="Architecture" icon="diagram-project" href="https://github.com/usezombie/usezombie/tree/main/docs/architecture">
-    The canonical technical reference — capabilities, data flow, billing + BYOK, path to bastion, post-ship reflection.
+    The canonical technical reference — capabilities, data flow, billing + model providers, path to bastion, post-ship reflection.
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/usezombie/usezombie">
     Source, issues, design partners welcome.

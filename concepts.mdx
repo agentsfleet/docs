@@ -29,7 +29,7 @@ usezombie has four primary objects. Everything else is infrastructure.
 ### How they relate
 
 ```
-Tenant  (wallet: $5.00, BYOK: anthropic)
+Tenant  (wallet: $5.00, model: anthropic)
 │
 ├── Workspace: "platform-ops"
 │   │
@@ -48,12 +48,12 @@ Tenant  (wallet: $5.00, BYOK: anthropic)
 
 Every stage debits the same tenant balance regardless of which workspace the zombie lives in. This is the **single-wallet, multi-workspace** model — no per-workspace credit pools, no workspace-scoped top-ups.
 
-## Credits and BYOK
+## Credits and your model provider
 
 New tenants start with **$5** seeded at signup — never expires.
 
 - **Hosted execution is metered.** usezombie debits credits on event receipt and per-stage execution. That's what the credit pool pays for.
-- **Inference is BYOK.** You attach your own model key (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot). usezombie marks up zero. The executor resolves your credential at the tool bridge and your provider bills you directly.
+- **You bring your own model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly. usezombie marks up zero on inference. The executor resolves your credential at the tool bridge.
 - **Debits happen on completed work only.** A stage that fails before producing output does not debit.
 
 See [Billing and cost control](/billing/plans).
@@ -108,6 +108,6 @@ A trigger lands on the event stream. A stage opens. The agent calls tools allow-
   </Accordion>
 
   <Accordion title="Budget">
-    Dollar ceilings on hosted execution (the platform compute that runs your zombie — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new stages from opening. Inference cost is BYOK — your provider's own caps apply there.
+    Dollar ceilings on hosted execution (the platform compute that runs your zombie — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new stages from opening. Inference is on your model provider's bill, not on your usezombie invoice — your provider's own caps apply there.
   </Accordion>
 </AccordionGroup>
