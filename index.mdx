@@ -3,8 +3,10 @@ title: usezombie
 description: "Always-on agent runtime that wakes on your events, gathers evidence against your infra, and posts evidenced diagnoses to Slack. Markdown-defined."
 ---
 
+import { STARTER_CREDIT } from "/snippets/rates.mdx";
+
 <Warning>
-  🧟 **Early Access Preview.** APIs, CLI, and behavior may change before GA. Self-host arrives in v3.
+  🧟 **Early Access Preview.** Still iterating — things stabilize after the pre-2.0 release next week (announced on [X](https://x.com/indykish)). Want to be a design partner? Email [nkishore@megam.io](mailto:nkishore@megam.io) or [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
 </Warning>
 
 ## A long-lived runtime for one operational outcome
@@ -51,7 +53,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Risky actions block until a human clicks Approve in the dashboard or Slack. The wait survives worker restarts.
   </Card>
   <Card title="Spend ceiling" icon="gauge-high">
-    Per-day and per-month dollar caps. `$5` starter credit that never expires. Inference cost is yours, paid to your provider directly.
+    Per-day and per-month dollar caps. {STARTER_CREDIT} starter credit that never expires. Inference cost is yours, paid to your provider directly.
   </Card>
   <Card title="Kill switch" icon="power-off">
     `zombiectl kill` stops the stage cleanly; nothing on the activity stream is lost. Resume via `zombiectl steer`.

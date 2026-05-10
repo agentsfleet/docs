@@ -1,0 +1,14 @@
+{/*
+  Single source of truth for usezombie pricing strings on the docs site.
+
+  Mirrors the canonical Zig + TS rate constants:
+    - src/state/tenant_billing.zig         (EVENT_PLATFORM_CENTS, STAGE_CENTS, STARTER_CREDIT_CENTS)
+    - ui/packages/website/src/lib/rates.ts (RATES_CENTS / RATES_DISPLAY)
+
+  When those change, update the values here in lockstep. Bumping a rate
+  requires a paired docs PR — there is no automated cross-repo guard yet.
+*/}
+
+export const STARTER_CREDIT = "$5";
+export const EVENT_RATE = "$0.01";
+export const STAGE_RATE = "$0.10";

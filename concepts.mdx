@@ -3,6 +3,8 @@ title: "Key concepts"
 description: "The four nouns, the tool bridge, and how a stage works."
 ---
 
+import { STARTER_CREDIT } from "/snippets/rates.mdx";
+
 <Tip>
   This page introduces the operator-facing model. For the canonical technical reference — system topology, data flow, billing internals, security boundary, post-ship reflection — read [`docs/architecture/`](https://github.com/usezombie/usezombie/tree/main/docs/architecture) on GitHub.
 </Tip>
@@ -13,7 +15,7 @@ usezombie has four primary objects. Everything else is infrastructure.
 
 <CardGroup cols={2}>
   <Card title="Tenant" icon="building">
-    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries the **credit balance** ($5 starter grant, never expires) and your default Stripe customer.
+    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries the **credit balance** ({STARTER_CREDIT} starter credit, never expires) and your default Stripe customer.
   </Card>
   <Card title="Workspace" icon="folder-tree">
     A container for zombies and credentials. One tenant can have many workspaces (team, project, environment). Credits are **not** fragmented per workspace — every workspace debits the same tenant wallet.
@@ -50,7 +52,7 @@ Every stage debits the same tenant balance regardless of which workspace the zom
 
 ## Credits and your model provider
 
-New tenants start with **$5** seeded at signup — never expires.
+New tenants start with **{STARTER_CREDIT}** seeded at signup — never expires.
 
 - **Hosted execution is metered.** usezombie debits credits on event receipt and per-stage execution. That's what the credit pool pays for.
 - **You bring your own model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly. usezombie marks up zero on inference. The executor resolves your credential at the tool bridge.
