@@ -18,6 +18,20 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 11, 2026" tags={["Internal", "Testing", "CI"]}>
+  ## Authenticated dashboard e2e ungated, runs on every dev + prod deploy
+
+  The Playwright authenticated suite covers the eight dashboard lifecycles M64_005 deferred behind `test.fixme` — every signed-in flow that touched a client-side `useClientToken().getToken()` call. Closing the gap means every `KillSwitch`, `ZombieConfig`, and provider-settings mutation now goes through a Next.js Server Action that mints the api-template JWT server-side. CI runs the suite against `api-dev` after every push to `main` and against `api.usezombie.com` after every production app deploy.
+
+  - **`useClientToken` retired** — every dashboard mutation that previously called `useClientToken().getToken()` (six routes, eleven call sites) now invokes a per-route `app/(dashboard)/<route>/actions.ts` Server Action. Shared wrapper at `lib/actions/with-token.ts` exposes `withToken<T>` returning the discriminated `ActionResult<T>` (`{ ok: true, data }` or `{ ok: false, error, status? }`). Token A → Token B handoff stays server-side; the browser never sees the api-template JWT.
+  - **Three `test.fixme` blocks gone** — `lifecycle.spec.ts`, `kill.spec.ts`, `signup.spec.ts` exercise the stop / kill / signup flows end-to-end. Lifecycle and kill assert on the dashboard listing's `data-state` after the Server Action completes (no more `waitForResponse(... PATCH)` since the PATCH is server-internal). Signup drives Clerk DEV's verification screen with the documented testing One-Time Password (OTP) `424242`.
+  - **Five new specs land** — `multi-zombie` pins the 5-simultaneous pulse cap (six active zombies → exactly five `data-live="true"` + one static glow + header `"6 live · capped at 5"`). `multi-workspace` switches workspaces via the header dropdown and asserts the cookie-write Server Action keeps the URL on `/zombies`. `settings-billing` asserts the `tabular-nums` balance headline + the disabled `Purchase Credits` trigger. `events` and `logs-detail` assert SSR + WakePulse render on `/events` and `/zombies/[id]` respectively (the EventDetail dialog is still unbuilt — tracked in spec Discovery).
+  - **`<RadioGroup>` + `<RadioGroupItem>` ship in `@usezombie/design-system`** — Radix-backed wrapper with the shared focus-ring + token map. `ModeRadio.tsx` and `ProviderSelector.tsx` consume it; the last raw `<input type="radio">` in `ui/packages/app/**` is gone.
+  - **`zombiectl` coverage threshold + new validation tests** — `bunfig.toml` enforces `coverageThreshold = { line = 0.95, function = 0.95 }`. New `test/workspace-helpers.unit.test.js` covers the previously-uncovered `VALIDATION_ERROR` branches in `commandWorkspace` for `use` and `delete` (the existing tests handed in alphanumeric input that passes `isValidId` and routed through `UNKNOWN_WORKSPACE` instead). Suite-wide coverage lifts to 95.76% function / 95.64% line.
+  - **`auth-e2e-dev` job in `.github/workflows/deploy-dev.yml`** — runs after `verify-dev` against `https://usezombie-app.vercel.app`, pulls `CLERK_SECRET_KEY` + `CLERK_WEBHOOK_SECRET` from `op://VAULT_DEV/clerk-dev/*`, gates the `notify` step, uploads `playwright-auth-report/` as `auth-e2e-dev-<sha>` artifact.
+  - **`auth-e2e-prod` job in `.github/workflows/smoke-post-deploy.yml`** — fires on Vercel `deployment_status: success` for the `usezombie-app` PROD environment. Same Playwright suite, `op://VAULT_PROD/clerk-prod/*` for credentials, `https://api.usezombie.com` for the API base.
+</Update>
+
 <Update label="May 11, 2026" tags={["Breaking", "API", "UI", "Internal"]}>
   ## Nanos billing unit, posture-dispatched stage rates, BYOK term retired
 
