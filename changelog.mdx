@@ -26,7 +26,7 @@ export const STAGE_RATE_M65 = "$0.10";
   ## Upgrading
 
   - **Billing column rename — `tenant_billing.balance_cents` → `tenant_billing.balance_nanos`** (`BIGINT NOT NULL CHECK (balance_nanos >= 0)`). Same row, same UPDATE shape, new unit. SDK + dashboard already read the new column.
-  - **`PUT /v1/tenants/me/provider`** — `mode: "byok"` now returns `400`. Pass `mode: "self_managed"` instead. There is no compat shim, no 410, no legacy alias — this is a clean break under pre-v2.0 RULE NLG.
+  - **`PUT /v1/tenants/me/provider`** — `mode: "byok"` now returns `400`. Pass `mode: "self_managed"` instead. There is no compat shim, no 410, no legacy alias — clean break, pre-v2.0.
   - **`zombiectl tenant provider set`** — flag value `--mode byok` removed. Use `--mode self_managed`.
   - **Schema reseed required for local dev** — `make down && make up`. There is no migration; the column rename is forward-only.
   - **Internal constants renamed** — `STARTER_CREDIT_CENTS` → `STARTER_CREDIT_NANOS`, `STAGE_CENTS` split into `STAGE_PLATFORM_NANOS` + `STAGE_SELF_MANAGED_NANOS`, `EVENT_PLATFORM_CENTS` collapsed into `EVENT_NANOS = 0`. The names are identical across Zig + website TS + app TS + zombiectl JS (cross-tier parity rule).
@@ -62,7 +62,7 @@ export const STAGE_RATE_M65 = "$0.10";
 
   ## Tests
 
-  Website vitest 129/129 · app vitest 357/357 · zombiectl bun test 567/567 · Zig 29/29 · integration 1508/0. New paired pin tests on each tier locking the rate constants and the `SUPPORT_EMAIL` literal; pin tests carry the inline `// pin test: literal is the contract` carve-out so RULE UFS treats them as canonical sites rather than duplicated literals.
+  Website vitest 129/129 · app vitest 357/357 · zombiectl bun test 567/567 · Zig 29/29 · integration 1508/0. New paired pin tests on each tier locking the rate constants and the `SUPPORT_EMAIL` literal.
 </Update>
 
 <Update label="May 9, 2026" tags={["Breaking", "What's new", "API", "UI"]}>
