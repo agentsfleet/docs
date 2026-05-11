@@ -3,16 +3,72 @@ title: "Changelog"
 description: "Stay up to date with the latest usezombie product updates, new features, platform improvements, and bug fixes."
 ---
 
-import { STARTER_CREDIT, EVENT_RATE, STAGE_RATE } from "/snippets/rates.mdx";
+import { STARTER_CREDIT, EVENT_RATE, STAGE_PLATFORM, STAGE_SELF_MANAGED } from "/snippets/rates.mdx";
+
+{/*
+  Historical pricing constants from before the M66 nanos+gradient rebill.
+  Embedded inline so May 9 + earlier entries preserve the rates that
+  shipped at that time. `EVENT_RATE` and `STAGE_PLATFORM` / `STAGE_SELF_MANAGED`
+  imported above resolve to the current values.
+*/}
+export const EVENT_RATE_M65 = "$0.01";
+export const STAGE_RATE_M65 = "$0.10";
 
 <Tip>
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 11, 2026" tags={["Breaking", "API", "UI", "Internal"]}>
+  ## Nanos billing unit, posture-dispatched stage rates, BYOK term retired
+
+  Pricing splits into a two-rate gradient: {STAGE_PLATFORM} per stage on platform default, {STAGE_SELF_MANAGED} per stage when you bring your own provider key — self-managed is 10× cheaper to scale. Event receipts are free in both postures. The starter grant stays at {STARTER_CREDIT}, now denominated in nanos (`1 USD = 1_000_000_000 nanos`) so sub-cent rates have nine decimal places of precision. "BYOK" is retired everywhere in user-facing surfaces; the canonical term is **self-managed provider key**.
+
+  ## Upgrading
+
+  - **Billing column rename — `tenant_billing.balance_cents` → `tenant_billing.balance_nanos`** (`BIGINT NOT NULL CHECK (balance_nanos >= 0)`). Same row, same UPDATE shape, new unit. SDK + dashboard already read the new column.
+  - **`PUT /v1/tenants/me/provider`** — `mode: "byok"` now returns `400`. Pass `mode: "self_managed"` instead. There is no compat shim, no 410, no legacy alias — this is a clean break under pre-v2.0 RULE NLG.
+  - **`zombiectl tenant provider set`** — flag value `--mode byok` removed. Use `--mode self_managed`.
+  - **Schema reseed required for local dev** — `make down && make up`. There is no migration; the column rename is forward-only.
+  - **Internal constants renamed** — `STARTER_CREDIT_CENTS` → `STARTER_CREDIT_NANOS`, `STAGE_CENTS` split into `STAGE_PLATFORM_NANOS` + `STAGE_SELF_MANAGED_NANOS`, `EVENT_PLATFORM_CENTS` collapsed into `EVENT_NANOS = 0`. The names are identical across Zig + website TS + app TS + zombiectl JS (cross-tier parity rule).
+
+  ## What's new
+
+  - **Single canonical contact email** — `usezombie@agentmail.to` resolves through a `SUPPORT_EMAIL` constant per repo (Zig, website TS, app TS, CLI JS) + this Mintlify snippet at `/snippets/contact.mdx`. `hello@usezombie.com` / `support@usezombie.com` literals are gone from active source and copy.
+  - **Per-model token rates now in nanos** — `model-caps.json` ships `input_nanos_per_mtok` / `output_nanos_per_mtok` (was `_cents_per_mtok`). Same response shape otherwise.
+  - **`docs/architecture/billing_and_provider_keys.md` rewrote shape-first** — the architecture doc names the rate constants by identifier and points at three authoritative sources (`tenant_billing.zig`, `snippets/rates.mdx`, the `model-caps.json` endpoint) instead of pinning specific dollar amounts. Future rate ratchets no longer require a doc rewrite.
+
+  ## API reference
+
+  `GET /v1/tenants/me/billing`:
+
+  ```json
+  {
+    "balance_nanos": 4710000000,
+    "updated_at": 1778330263985,
+    "is_exhausted": false,
+    "exhausted_at": null
+  }
+  ```
+
+  `GET /v1/tenants/me/billing/charges` — `charge_type` ∈ `receive` ({EVENT_RATE}) and `stage` ({STAGE_PLATFORM} platform / {STAGE_SELF_MANAGED} self-managed). Row amounts now in `credit_deducted_nanos` (was `credit_deducted_cents`).
+
+  `PUT /v1/tenants/me/provider`:
+
+  ```json
+  { "mode": "self_managed", "credential_ref": "account-fireworks-key", "model": "accounts/fireworks/models/kimi-k2.6" }
+  ```
+
+  Sending `mode: "byok"` returns `400 mode_not_recognized` with the generic "mode must be one of: platform, self_managed" message — no special-case retired-mode branch.
+
+  ## Tests
+
+  Website vitest 129/129 · app vitest 357/357 · zombiectl bun test 567/567 · Zig 29/29 · integration 1508/0. New paired pin tests on each tier locking the rate constants and the `SUPPORT_EMAIL` literal; pin tests carry the inline `// pin test: literal is the contract` carve-out so RULE UFS treats them as canonical sites rather than duplicated literals.
+</Update>
+
 <Update label="May 9, 2026" tags={["Breaking", "What's new", "API", "UI"]}>
   ## Single-rate pricing — tier ladder retired
 
-  One number per surface: {EVENT_RATE} per event receipt, {STAGE_RATE} per stage, drawn from a {STARTER_CREDIT} starter credit on signup. You pick the model and pay your provider directly — zero markup on tokens. Hobby/Scale tiers are gone from the site, API, and dashboard.
+  One number per surface: {EVENT_RATE_M65} per event receipt, {STAGE_RATE_M65} per stage, drawn from a {STARTER_CREDIT} starter credit on signup. You pick the model and pay your provider directly — zero markup on tokens. Hobby/Scale tiers are gone from the site, API, and dashboard.
 
   ## Upgrading
 
@@ -23,7 +79,7 @@ import { STARTER_CREDIT, EVENT_RATE, STAGE_RATE } from "/snippets/rates.mdx";
 
   ## What's new
 
-  - **One billing flow on `usezombie.com/#pricing`** — horizontal diagram: event cell ({EVENT_RATE}) → N stage cells ({STAGE_RATE}) → separate LLM stratum proving your model bill is not ours.
+  - **One billing flow on `usezombie.com/#pricing`** — horizontal diagram: event cell ({EVENT_RATE_M65}) → N stage cells ({STAGE_RATE_M65}) → separate LLM stratum proving your model bill is not ours.
   - **Operational extras turn on per workspace, never as a paywall** — multi-workspace, approval gating, workspace credentials, higher concurrency, longer windows, priority support.
   - **Marketing site is now a single page** — pricing, features, FAQ all on `/`. Only `/agents` and external `/docs` route away.
   - **Marketing headings use design-system primitives** — `<DisplayXL>`, `<DisplayLG>`, `<SectionLabel>` back every hero, section, and eyebrow.
@@ -41,7 +97,7 @@ import { STARTER_CREDIT, EVENT_RATE, STAGE_RATE } from "/snippets/rates.mdx";
   }
   ```
 
-  `GET /v1/tenants/me/billing/charges` — unchanged. `charge_type` ∈ `receive` ({EVENT_RATE}) and `stage` ({STAGE_RATE}).
+  `GET /v1/tenants/me/billing/charges` — unchanged. `charge_type` ∈ `receive` ({EVENT_RATE_M65}) and `stage` ({STAGE_RATE_M65}).
 
   `UZ-WORKSPACE-003`:
 
@@ -127,7 +183,7 @@ import { STARTER_CREDIT, EVENT_RATE, STAGE_RATE } from "/snippets/rates.mdx";
   - **`core.workspaces` columns** — `repo_url`, `default_branch`, `paused*`, `version`, `monthly_token_budget`, `updated_at`. From the 1:1 workspace-to-repo era; production INSERTs had already stopped writing them.
   - **`integration_grants.scopes`** — defaulted to `ARRAY['*']`, never read.
 
-  Doc cross-effect: `billing_and_byok.md` corrected to {STARTER_CREDIT} / 500¢ starter (was `$10 / 1000¢` — doc-vs-implementation drift).
+  Doc cross-effect: `billing_and_provider_keys.md` (then named `billing_and_byok.md`) corrected to {STARTER_CREDIT} / 500¢ starter (was `$10 / 1000¢` — doc-vs-implementation drift).
 
   ## Tests
 
