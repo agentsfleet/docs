@@ -1,14 +1,21 @@
 {/*
   Single source of truth for usezombie pricing strings on the docs site.
 
-  Mirrors the canonical Zig + TS rate constants:
-    - src/state/tenant_billing.zig         (EVENT_PLATFORM_CENTS, STAGE_CENTS, STARTER_CREDIT_CENTS)
-    - ui/packages/website/src/lib/rates.ts (RATES_CENTS / RATES_DISPLAY)
+  Mirrors the canonical Zig + TS + JS rate constants identifier-for-identifier
+  (cross-tier parity rule):
+    - src/state/tenant_billing.zig          — STARTER_CREDIT_NANOS, EVENT_NANOS,
+                                              STAGE_PLATFORM_NANOS, STAGE_SELF_MANAGED_NANOS
+    - ui/packages/website/src/lib/rates.ts  — same names, bigint nanos values
+    - ui/packages/app/lib/types.ts          — same names, JS Number nanos values
+    - zombiectl/src/constants/billing.js    — same names, JS Number nanos values
 
-  When those change, update the values here in lockstep. Bumping a rate
-  requires a paired docs PR — there is no automated cross-repo guard yet.
+  The keys below are the display strings keyed by role name. Bumping a rate
+  requires a paired PR across the lead repo's rate constants AND this
+  snippet — there is no automated cross-repo guard yet; pin tests on each
+  side fail until the snippet is updated.
 */}
 
 export const STARTER_CREDIT = "$5";
-export const EVENT_RATE = "$0.01";
-export const STAGE_RATE = "$0.10";
+export const EVENT_RATE = "free";
+export const STAGE_PLATFORM = "$0.001";
+export const STAGE_SELF_MANAGED = "$0.0001";
