@@ -2,6 +2,9 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "usezombie",
+  "appearance": {
+    "default": "dark"
+  },
   "colors": {
     "primary": "#14b8a6",
     "light": "#5eead4",
