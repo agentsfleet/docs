@@ -18,6 +18,21 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 12, 2026" tags={["CLI", "Testing"]}>
+  ## `zombiectl` runs end-to-end against the live API on every deploy
+
+  Every backend deploy now exercises `zombiectl` against `api-dev.usezombie.com`, and every release re-runs the same suite against `api.usezombie.com` (plus a daily run at 13:00 UTC). Parse, auth-guard, install, lifecycle, read sweep, and `zombiectl login` are all hit on real infrastructure — CLI regressions in the network path fail in CI before they reach you.
+
+  ## CLI
+
+  - **uuidv7 validation on every positional id.** `zombiectl kill|stop|resume|delete|logs <id>`, `workspace use|delete <id>`, `agent delete <id>`, and `grant delete <id>` reject malformed ids before the network call with `invalid <name>: expected uuidv7 format (e.g. 0192a3b4-c5d6-7e8f-9012-345678901234)`.
+  - **`zombiectl agent add|list|delete` default to the current workspace** when `--workspace <id>` is omitted — matches the zombie commands.
+  - **`SIGINT` (Ctrl-C) during `zombiectl login` exits 130 cleanly** without leaving a partial `credentials.json` behind. Re-run `zombiectl login` from a fresh slate.
+  - **`-v` short alias for `--version`**.
+  - **`zombiectl help` is a first-class command** — used to fall through to the "did you mean?" suggester. Behaves identically to bare `zombiectl` / `-h` / `--help`.
+  - **`credentials.json` lands at mode `0600`** after a successful login. Verify with `ls -l ~/.config/zombiectl/credentials.json`.
+</Update>
+
 <Update label="May 12, 2026" tags={["UI", "Bug fixes", "Testing"]}>
   ## Dashboard error voice, sign-in card lifted, install/save races fixed
 
