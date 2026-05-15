@@ -49,7 +49,7 @@ The choice is persisted to `~/.config/zombiectl/workspaces.json` (`current_works
 Errors out if the id isn't in your local list — run `zombiectl workspace list` first to see what's available.
 
 <Tip>
-  Mission Control at [app.usezombie.com](https://app.usezombie.com) has its own workspace switcher backed by a cookie. The CLI config and the Mission Control cookie are independent — switching one does **not** affect the other. Useful when you want the CLI pointed at staging while the browser watches production.
+  The dashboard at [app.usezombie.com](https://app.usezombie.com) has its own workspace switcher backed by a cookie. The CLI config and the dashboard cookie are independent — switching one does **not** affect the other. Useful when you want the CLI pointed at staging while the browser watches production.
 </Tip>
 
 ## Show the active workspace
@@ -60,7 +60,7 @@ zombiectl workspace show
 
 Prints the active workspace's `workspace_id`, `name`, `created_at`, and active marker. Pass `--workspace-id <id>` to inspect a specific workspace without changing the active one. Add `--json` for scripting.
 
-This mirrors the Mission Control **Settings** page.
+This mirrors the dashboard **Settings** page.
 
 ## Delete a workspace
 

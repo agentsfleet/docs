@@ -18,6 +18,26 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 12, 2026" tags={["UI", "Bug fixes", "Testing"]}>
+  ## Dashboard error voice, sign-in card lifted, install/save races fixed
+
+  Every "Failed to X" fallback in the dashboard is replaced with operator-first language keyed on backend error codes. The sign-in card no longer disappears into the page background. Two install/save races that left you on the wrong URL after a `router.push` are fixed.
+
+  ## What's new
+
+  - **`presentError({errorCode, message, action})` is the single entry point for dashboard error rendering.** Curated `UZ-XXX-NNN` codes map to a title + body the operator can act on — `UZ-AUTH-401` reads "Your session expired. Sign in again to keep going." instead of "Not authenticated"; `UZ-ZMB-001` reads "We couldn't find that zombie. It may have already been deleted — refresh the list." instead of "Internal Server Error". Eight codes ship today and the helper grows organically as the dashboard surfaces new ones. Useless server `"Failed to …"` messages are detected and replaced rather than concatenated.
+  - **Sign-in card lifted from `--surface-1` to `--surface-2`** on the auth route, with `--border-strong` on the edge. At `--surface-1` the luminance delta against the page background was 3 units — close to invisible. The card now reads as a card.
+
+  ## Bug fixes
+
+  - **`/zombies/new` install** — `InstallZombieForm.tsx` no longer issues `router.refresh()` after `router.push(/zombies/{id})`. The `force-dynamic` detail route re-resolves on commit; the manual refresh was racing the URL commit and intermittently leaving you on `/zombies/new` with a stale form state. Same fix applied to `ZombieConfig.tsx` for the save-then-navigate path on the detail page.
+  - **`tooltip` test flake** — restoring vitest's default `exclude` patterns stops the runner from following the `@usezombie/design-system` workspace symlink and executing its tests without their `test-setup.ts`. The "`Invalid Chai property: toBeInTheDocument`" intermittent on `bun run test` is gone.
+
+  ## CLI
+
+  No `zombiectl` shape changes.
+</Update>
+
 <Update label="May 11, 2026" tags={["Internal", "Testing", "CI"]}>
   ## Authenticated dashboard e2e ungated, runs on every dev + prod deploy
 
@@ -411,7 +431,7 @@ export const STAGE_RATE_M65 = "$0.10";
 <Update label="Apr 30, 2026" tags={["Breaking", "API", "CLI"]}>
   ## REST cleanup — `/complete` + `/kill` move to PATCH; config hot-reload lands
 
-  Two verb-suffix endpoints retire to PATCH on the resource. Zombie config edits now hot-reload mid-loop: edit in Mission Control or via `PATCH config_json` and the worker swaps tools, network policy, and context budget on the next event boundary. Old config freed in the same step.
+  Two verb-suffix endpoints retire to PATCH on the resource. Zombie config edits now hot-reload mid-loop: edit in the dashboard or via `PATCH config_json` and the worker swaps tools, network policy, and context budget on the next event boundary. Old config freed in the same step.
 
   ## Upgrading
 
@@ -470,7 +490,7 @@ export const STAGE_RATE_M65 = "$0.10";
 </Update>
 
 <Update label="Apr 29, 2026" tags={["What's new", "API", "UI"]}>
-  ## Approval inbox — pending gates surface in Mission Control
+  ## Approval inbox — pending gates surface in the dashboard
 
   Approvals used to flow only through Slack DMs. Now every pending gate surfaces in a workspace-wide `/approvals` list and on each zombie's detail page, with proposed action, blast-radius, evidence, and a timeout countdown rendered next to Approve and Deny buttons. Slack callbacks and dashboard clicks share one resolve core — whichever lands first wins, the other channel's stale button no-ops with the original outcome and resolver attribution.
 
@@ -604,7 +624,7 @@ export const STAGE_RATE_M65 = "$0.10";
 </Update>
 
 <Update label="Apr 22, 2026" tags={["What's new", "Breaking", "UI", "API", "CLI"]}>
-  ## Mission Control — full lifecycle in the browser
+  ## Dashboard — full lifecycle in the browser
 
   `app.usezombie.com` reaches its first "I can run my day from here" shape: overview tiles + recent activity, zombies list with cursor pagination + search, install form, per-zombie detail page (webhook URL, config, one-click kill). Workspace switcher in the header. Credit-exhaustion banner driven by `is_exhausted` / `exhausted_at` on `GET /v1/tenants/me/billing`.
 
@@ -633,9 +653,9 @@ export const STAGE_RATE_M65 = "$0.10";
   ## CLI
 
   - `zombiectl --help` surfaces full lifecycle: `install | up | status | kill | logs | credential`.
-  - `zombiectl list [--workspace-id] [--cursor] [--limit] [--json]` — mirrors Mission Control's zombies list (≤100 limit clamp).
+  - `zombiectl list [--workspace-id] [--cursor] [--limit] [--json]` — mirrors the dashboard's zombies list (≤100 limit clamp).
   - `zombiectl workspace show` — mirrors `/settings` (workspace id, name, active status).
-  - **Active workspace is persistent** — `zombiectl workspace use <id>` writes `~/.config/zombiectl/workspaces.json`; subsequent commands default to it. Independent of Mission Control's cookie.
+  - **Active workspace is persistent** — `zombiectl workspace use <id>` writes `~/.config/zombiectl/workspaces.json`; subsequent commands default to it. Independent of the dashboard's cookie.
   - `zombiectl kill` unchanged (full delete, not current-run kill).
 </Update>
 

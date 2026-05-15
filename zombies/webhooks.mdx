@@ -114,7 +114,7 @@ Delivery is **at-least-once** — your provider may retry on transient failure, 
 
 ## Approval gate webhooks
 
-Some zombie actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a zombie pause mid-stage, emit an approval request, and wait for a human to click approve or deny in Mission Control.
+Some zombie actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a zombie pause mid-stage, emit an approval request, and wait for a human to click approve or deny in the dashboard.
 
 For programmatic decisions (e.g. an internal tool calling back into usezombie), POST the decision to:
 
