@@ -146,7 +146,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-GRANT-001` | 403 | No integration grant for service | This zombie has no approved grant for the target service. Request one with `POST /v1/zombies/{id}/integration-requests`. |
-| `UZ-GRANT-002` | 403 | Integration grant pending approval | A grant request for this service is pending human approval. Approve in Slack, Discord, or the Mission Control dashboard. |
+| `UZ-GRANT-002` | 403 | Integration grant pending approval | A grant request for this service is pending human approval. Approve in Slack, Discord, or the dashboard. |
 | `UZ-GRANT-003` | 403 | Integration grant denied | The grant for this service was denied or revoked by the workspace owner. Re-request via the host agent. |
 
 ## Gate

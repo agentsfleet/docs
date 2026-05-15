@@ -25,7 +25,7 @@
 - Use "PR" not "pull request" (except on first mention per page)
 - Use `zombiectl` in code formatting when referring to CLI commands
 - Use `zombied` in code formatting when referring to server processes
-- Use "Mission Control" for the web dashboard (app.usezombie.com)
+- Use "Dashboard" (capitalized in headings, lowercase "dashboard" in body prose) for the web app at `app.usezombie.com`. The earlier aspirational name for this surface is retired — do not reintroduce it.
 
 Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These refer to a v1 product surface that has been removed. Do not introduce them into new pages.
 

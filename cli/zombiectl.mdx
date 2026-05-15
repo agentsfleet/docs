@@ -216,11 +216,11 @@ Set the active workspace persistently. Writes `current_workspace_id` to `~/.conf
 zombiectl workspace use ws_abc123
 ```
 
-Errors out if the id isn't in the local list (run `zombiectl workspace list` first). Mission Control's own `active_workspace_id` cookie and the CLI config are independent — switching one does not affect the other. See [Workspaces overview](/workspaces/overview).
+Errors out if the id isn't in the local list (run `zombiectl workspace list` first). The dashboard's own `active_workspace_id` cookie and the CLI config are independent — switching one does not affect the other. See [Workspaces overview](/workspaces/overview).
 
 ### `zombiectl workspace show`
 
-Show the active workspace (or a specific one via `--workspace-id`) — mirrors the Mission Control **Settings** page.
+Show the active workspace (or a specific one via `--workspace-id`) — mirrors the dashboard **Settings** page.
 
 ```bash
 zombiectl workspace show
