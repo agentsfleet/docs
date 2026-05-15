@@ -25,7 +25,7 @@ export const STAGE_RATE_M65 = "$0.10";
 
   ## What's new
 
-  - **`presentError({errorCode, message, action})` is the single entry point for dashboard error rendering.** Curated `UZ-XXX-NNN` codes map to a title + body the operator can act on — `UZ-AUTH-401` reads "Your session expired. Sign in again to keep going." instead of "Not authenticated"; `UZ-ZMB-001` reads "We couldn't find that zombie. It may have already been deleted — refresh the list." instead of "Internal Server Error". Eight codes ship today and the helper grows organically as the dashboard surfaces new ones. Useless server `"Failed to …"` messages are detected and replaced rather than concatenated.
+  - **`presentError({errorCode, message, action})` is the single entry point for dashboard error rendering.** Curated `UZ-XXX-NNN` codes (registry: [`api-reference/error-codes`](/api-reference/error-codes)) map to a title + body the operator can act on — `UZ-AUTH-006` reads "Your session expired. Sign in again to keep going." instead of "Not authenticated"; `UZ-ZMB-009` reads "We couldn't find that zombie. It may have already been deleted — refresh the list." instead of "Internal Server Error". Eight codes ship today and the helper grows organically as the dashboard surfaces new ones. Useless server `"Failed to …"` messages are detected and replaced rather than concatenated.
   - **Sign-in card lifted from `--surface-1` to `--surface-2`** on the auth route, with `--border-strong` on the edge. At `--surface-1` the luminance delta against the page background was 3 units — close to invisible. The card now reads as a card.
 
   ## Bug fixes
