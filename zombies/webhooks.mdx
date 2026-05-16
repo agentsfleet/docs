@@ -12,7 +12,7 @@ https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}
 External systems POST to this URL. The platform verifies the signature and delivers the event to the zombie. No tunneling, no ngrok, no custom servers on your side. `zombiectl install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
-  **Most users don't wire webhooks by hand.** The `platform-ops` install skill prints the URL + secret and walks you through pasting them into your GitHub repo. Use [Quickstart](/quickstart) for that. The reference below is for custom webhooks — your own provider, an internal service, etc.
+  **Most users don't wire webhooks by hand.** The `platform-ops` install skill registers each declared webhook automatically via your existing `gh` CLI — no paste-into-GitHub step. Use [Quickstart](/quickstart) for the full guided flow. The reference below is for custom webhooks — your own provider, an internal service, etc.
 </Tip>
 
 ## Declaring a webhook trigger
