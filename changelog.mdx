@@ -18,6 +18,20 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 17, 2026" tags={["Performance", "Observability"]}>
+  ## Redis request path: concurrent by default, configurable, observable
+
+  Every short-lived Redis command (XADD, PUBLISH, XACK from HTTP handlers and per-step worker publishes) now flows through a connection pool instead of serializing behind a single client-wide mutex. Concurrent requests from worker threads and HTTP handlers each grab their own pooled connection, complete their round-trip without contending, and release. The prior ~40 ops/sec-per-connection ceiling that didn't scale with CPU cores is gone.
+
+  ## What's new
+
+  - **`REDIS_POOL_MAX_IDLE`** (default `8`) — concurrent in-flight short-lived commands per process. Operators raise it for sustained high-concurrency workloads; the request-path completes in single-digit ms even over Upstash TLS, so `> 16` is unusual.
+  - **`REDIS_POOL_EAGER_MIN`** (default `2`) — connections pre-warmed at boot. Covers cold-boot latency (Upstash TLS handshake is tens of ms per dial); raise if boot is followed by an immediate burst of short-lived commands.
+  - **`REDIS_REQUEST_TIMEOUT_MS`** (default `5000`) — request-path read timeout. A frozen Upstash proxy can no longer pin a worker thread indefinitely. Don't raise above 5000 — Upstash regional p99 is single-digit-ms; >5s is failure, not slowness.
+  - **Long-lived blocking consumers stay on dedicated connections.** The watcher's `XREADGROUP` on `zombie:control`, per-zombie workers' `XREADGROUP` on `zombie:{id}:events`, and SSE subscribers each hold one connection for their lifetime — they don't compete with the request-path pool, so a customer with 100 dashboard tabs open can't exhaust the pool.
+  - **Prometheus metrics for pool state.** New `/metrics` lines for `active`, `idle`, `dials_total`, `overflow_dials_total`, `poisoned_connections_total`, `reconnects_total`, `forced_closes_total`, `acquire_timeouts_total` — operator visibility into connection churn, dial pressure under bursts, and transport-layer flakiness.
+</Update>
+
 <Update label="May 12, 2026" tags={["CLI", "Testing"]}>
   ## `zombiectl` runs end-to-end against the live API on every deploy
 
