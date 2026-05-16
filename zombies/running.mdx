@@ -26,13 +26,13 @@ zombiectl install --from ~/.config/usezombie/samples/platform-ops
 ```
 
 ```
-✓ platform-ops-zombie installed.
-  zombie_id:      zmb_2041
-  webhook_url:    https://api.usezombie.com/v1/webhooks/zmb_2041
-  webhook_secret: (printed once — paste into your GitHub repo webhook config)
+✓ platform-ops-zombie is live.
+  Zombie ID: zmb_2041
+  Webhook URLs (register on the upstream provider):
+    github: https://api.usezombie.com/v1/webhooks/zmb_2041/github
 ```
 
-The webhook secret is shown **once**. Lost it? Rotate the workspace credential — see [Quickstart → Wire the GitHub webhook](/quickstart#wire-the-github-webhook) for the rotation procedure.
+One URL is printed per declared `webhook` trigger, keyed by `trigger.source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
 
 Re-running `zombiectl install --from <same-path>` against a workspace that already has the same zombie is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
