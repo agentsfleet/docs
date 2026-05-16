@@ -45,9 +45,9 @@ Every inbound webhook is authenticated before the agent is woken. The platform s
 
 ### Natively normalized providers
 
-Three sources have built-in defaults — set `trigger.source` to one of them and the platform fills in the signature header and prefix automatically. You only supply `secret_ref`:
+Three sources have built-in defaults — set `triggers[].source` to one of them and the platform fills in the signature header and prefix automatically. You only supply `secret_ref`:
 
-| `trigger.source` | Sig header (auto) | Prefix (auto) | Timestamp header (auto) |
+| `triggers[].source` | Sig header (auto) | Prefix (auto) | Timestamp header (auto) |
 |---|---|---|---|
 | `slack` | `x-slack-signature` | `v0=` | `x-slack-request-timestamp` (replay-protected) |
 | `github` | `x-hub-signature-256` | `sha256=` | — |
@@ -82,7 +82,7 @@ The parser rejects an unknown `source` that supplies only `secret_ref` with no `
 `secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/zombies/credentials).
 
 <Note>
-  **Dedicated routes for some providers.** GitHub events have a tailored payload-normalizer route at `POST /v1/webhooks/{zombie_id}/github`. Clerk-shaped (Svix) webhooks land at `POST /v1/webhooks/svix/{zombie_id}` for Svix's multi-signature rotation scheme. Both still use `secret_ref` from the workspace vault. Use these only if you need the specific normalization — the default `POST /v1/webhooks/{zombie_id}` plus generic HMAC works for everyone else.
+  **Dedicated routes for some providers.** GitHub events have a tailored payload-normalizer route at `POST /v1/webhooks/{zombie_id}/github`. Clerk-shaped (Svix) webhooks land at `POST /v1/webhooks/svix/{zombie_id}` for Svix's multi-signature rotation scheme. Both still use `secret_ref` from the workspace vault. Use these only if you need the specific normalization — the source-addressed `POST /v1/webhooks/{zombie_id}/{source}` route plus generic HMAC works for everyone else.
 </Note>
 
 ## Sending an event

@@ -32,7 +32,7 @@ zombiectl install --from ~/.config/usezombie/samples/platform-ops
     github: https://api.usezombie.com/v1/webhooks/zmb_2041/github
 ```
 
-One URL is printed per declared `webhook` trigger, keyed by `trigger.source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
+One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
 
 Re-running `zombiectl install --from <same-path>` against a workspace that already has the same zombie is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
