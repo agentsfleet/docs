@@ -45,8 +45,8 @@ export const STAGE_RATE_M65 = "$0.10";
     ```
 
     Entries are unique on `(type, source)`; at most one `cron` entry per zombie.
-  - **Install response shape — `webhook_url` → `webhook_urls`.** `POST /v1/workspaces/{workspace_id}/zombies` 201 returns `webhook_urls: { <source>: <url> }` keyed by `trigger.source`. The old `webhook_url` scalar field is gone. The CLI's `--json` install output emits the same map; the human-readable output prints one URL per declared webhook trigger.
-  - **Webhook URLs are source-suffixed.** External systems POST to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` — the `{source}` segment matches `trigger.source` in `TRIGGER.md`. Update any hand-maintained upstream hooks.
+  - **Install response shape — `webhook_url` → `webhook_urls`.** `POST /v1/workspaces/{workspace_id}/zombies` 201 returns `webhook_urls: { <source>: <url> }` keyed by `triggers[].source`. The old `webhook_url` scalar field is gone. The CLI's `--json` install output emits the same map; the human-readable output prints one URL per declared webhook trigger.
+  - **Webhook URLs are source-suffixed.** External systems POST to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` — the `{source}` segment matches `triggers[].source` in `TRIGGER.md`. Update any hand-maintained upstream hooks.
   - **`Mission Control` → `Dashboard`.** Every "Mission Control" string in the website, app, and CLI output is now "Dashboard". Bookmarks unaffected; only display copy changed.
 
   ## What's new
