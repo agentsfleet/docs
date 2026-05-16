@@ -25,7 +25,7 @@ export const STAGE_RATE_M65 = "$0.10";
 
   ## What's new
 
-  - **`REDIS_POOL_MAX_IDLE`** (default `8`) — concurrent in-flight short-lived commands per process. Operators raise it for sustained high-concurrency workloads; the request-path completes in single-digit ms even over Upstash TLS, so `> 16` is unusual.
+  - **`REDIS_POOL_MAX_IDLE`** (default `8`) — maximum connections held in the idle pool per process. Operators raise it for sustained high-concurrency workloads to reduce overflow dials; the request-path completes in single-digit ms even over Upstash TLS, so `> 16` is unusual.
   - **`REDIS_POOL_EAGER_MIN`** (default `2`) — connections pre-warmed at boot. Covers cold-boot latency (Upstash TLS handshake is tens of ms per dial); raise if boot is followed by an immediate burst of short-lived commands.
   - **`REDIS_REQUEST_TIMEOUT_MS`** (default `5000`) — request-path read timeout. A frozen Upstash proxy can no longer pin a worker thread indefinitely. Don't raise above 5000 — Upstash regional p99 is single-digit-ms; >5s is failure, not slowness.
   - **Long-lived blocking consumers stay on dedicated connections.** The watcher's `XREADGROUP` on `zombie:control`, per-zombie workers' `XREADGROUP` on `zombie:{id}:events`, and SSE subscribers each hold one connection for their lifetime — they don't compete with the request-path pool, so a customer with 100 dashboard tabs open can't exhaust the pool.
