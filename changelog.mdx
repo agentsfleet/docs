@@ -30,6 +30,21 @@ export const STAGE_RATE_M65 = "$0.10";
   - **`zombies/overview.mdx` lifecycle** — mermaid expanded from three states to five (`install` → `Alive` ↔ `Stopped`, `Alive` → `Killed` → `Deleted`) so `stop` / `resume` show up in the diagram users find first.
 </Update>
 
+<Update label="May 17, 2026" tags={["Server", "Performance"]}>
+  ## Redis pool — lifts the single-mutex throughput cap
+
+  Previously, every server-side Redis command serialised through a single mutex, hard-capping per-process throughput at roughly 40 ops/sec/connection regardless of how many producers were issuing writes. The mutex is gone; concurrent producers now each take their own pooled connection. Long-lived blocking consumers — the per-zombie worker stream reader, the watcher's control-stream reader, the dashboard's activity subscriber — hold dedicated connections outside the pool by design (pooling those would exhaust the pool at the 9th zombie).
+
+  - **Pool sizing knobs (env vars)** — `REDIS_POOL_MAX_IDLE` (default 8) caps the idle pool size; `REDIS_POOL_EAGER_MIN` (default 2) preconnects on boot so the first burst doesn't pay dial latency.
+  - **Request-path timeout** — `REDIS_REQUEST_TIMEOUT_MS` (default 5000 ms). A command that doesn't return within the budget surfaces as a transport timeout and closes the connection; the next acquire dials fresh.
+  - **Boot-time validation** — a misparsed `REDIS_REQUEST_TIMEOUT_MS` value fails the process boot with error code `UZ-STARTUP-ENV-CHECK` instead of silently falling back to a default.
+  - **Server error replies surface in logs** — `READONLY`, `BUSYGROUP`, `WRONGTYPE` (and other Redis-side error frames) now emit a `redis_command_err_reply` warn line carrying the server's text before being mapped to the internal command error. Underlying cause is visible in operator logs, not flattened into a generic operation failure.
+  - **8 new Prometheus pool series** under the `zombie_redis_pool_*` namespace — `dials_total`, `overflow_dials_total`, `poisoned_connections_total`, `reconnects_total`, `forced_closes_total`, `acquire_timeouts_total`, `idle`, `acquire_wait_ns_p99`. The last two are stubs today: `acquire_timeouts_total` reports 0 (no acquire-timeout path yet — `Pool.acquire` never blocks), and `acquire_wait_ns_p99` reports 0 (the per-acquire wait histogram wires in alongside the timeout-aware acquire). Both stay in the series list so dashboards don't break when the wiring lands.
+  - **Pub/sub subscriber consolidation** — one subscriber type with a configurable read-timeout; production passes none (block indefinitely), test harnesses pass a budget.
+
+  Operator note — env knobs take effect at process start; rotate the server to pick up changes.
+</Update>
+
 <Update label="May 17, 2026" tags={["What's new", "API", "CLI", "UI", "Integrations"]}>
   ## Trigger DX overhaul — `gh`-driven webhook registration, free-trial pricing, dashboard chat
 
