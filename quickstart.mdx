@@ -53,14 +53,29 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
 </Step>
 
 <Step title="Install and run the install skill">
-  The `usezombie-install-platform-ops` skill is served as a single host-neutral SKILL.md from `https://usezombie.sh/skills.md`. Drop it into your host agent's skills folder:
+  Two ways to drop the `usezombie-install-platform-ops` skill into your host's skills folder. Pick one.
 
-  ```bash
-  # Claude Code — adjust the destination for Amp / Codex CLI / OpenCode (their per-host skills paths differ)
-  mkdir -p ~/.claude/skills/usezombie-install-platform-ops
-  curl -fsSL https://usezombie.sh/skills.md \
-    -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
-  ```
+  <Tabs>
+    <Tab title="npx (recommended)">
+      One-liner. The `skills` package symlinks `/usezombie-*` into every supported host's skill directory it can detect:
+
+      ```bash
+      npx skills add usezombie/usezombie
+      ```
+
+      Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
+    </Tab>
+    <Tab title="curl (fallback)">
+      Useful when your environment has no node toolchain, or when you want to inspect the file first:
+
+      ```bash
+      # Claude Code — adjust the destination for Amp / Codex CLI / OpenCode (their per-host skills paths differ)
+      mkdir -p ~/.claude/skills/usezombie-install-platform-ops
+      curl -fsSL https://usezombie.sh/skills.md \
+        -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
+      ```
+    </Tab>
+  </Tabs>
 
   Then, in your host agent, invoke:
 

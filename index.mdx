@@ -1,6 +1,6 @@
 ---
-title: "An always-on agent runtime"
-description: "Long-lived daemons wake on your events, gather evidence against your infra, and post evidenced diagnoses to Slack. Markdown-defined."
+title: "Operational outcomes don't fall into limbo"
+description: "A deploy fails at 2am. Your senior engineer is asleep. usezombie owns the outcome — wakes on your events, gathers evidence against your infra, posts an evidenced diagnosis to Slack."
 ---
 
 import { STARTER_CREDIT } from "/snippets/rates.mdx";
@@ -9,11 +9,11 @@ import { STARTER_CREDIT } from "/snippets/rates.mdx";
   **Stealth-mode testing.** usezombie is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating a zombie or to join as a design partner? Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
 </Warning>
 
-## A long-lived runtime for one operational outcome
+## The 2am problem
 
-You have a deploy that fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope.
+A deploy fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope. The next morning, half the context is gone — no one remembers what was already tried, the evidence is scattered across CI, logs, dashboards, and chat, and the audit trail is whatever someone thought to paste into a thread.
 
-usezombie is a durable runtime that captures the senior engineer's playbook in markdown — `SKILL.md` plus `TRIGGER.md`, no workflow DAG — and runs it against your infrastructure when the trigger fires. The flagship `platform-ops` zombie wakes on a GitHub Actions deploy failure, gathers evidence from your hosting provider, your data-plane, and the failed workflow, and posts an evidenced diagnosis to Slack. The same zombie is reachable via `zombiectl steer` for a manual investigation.
+usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers evidence, reasons over it, and posts an evidenced diagnosis to your Slack channel. The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same zombie is reachable via `zombiectl steer` for a manual investigation.
 
 ## Three pillars
 
@@ -32,7 +32,7 @@ usezombie is a durable runtime that captures the senior engineer's playbook in m
 ## Get started
 
 <Card title="Install platform-ops in ten minutes" icon="rocket" href="/quickstart" horizontal>
-  `npm install -g @usezombie/zombiectl`, then `/usezombie-install-platform-ops` inside Claude Code, Amp, Codex CLI, or OpenCode.
+  `npm install -g @usezombie/zombiectl`, then `npx skills add usezombie/usezombie`, then `/usezombie-install-platform-ops` inside Claude Code, Amp, Codex CLI, or OpenCode.
 </Card>
 
 ## How a stage works
@@ -56,7 +56,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Per-day and per-month dollar caps. {STARTER_CREDIT} starter credit that never expires. Inference cost is yours, paid to your provider directly.
   </Card>
   <Card title="Kill switch" icon="power-off">
-    `zombiectl kill` stops the stage cleanly; nothing on the activity stream is lost. Resume via `zombiectl steer`.
+    `zombiectl stop` pauses the zombie cleanly; resume with `zombiectl resume`. `zombiectl kill` is terminal — re-install to bring it back.
   </Card>
 </Columns>
 
@@ -70,7 +70,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     The `SKILL.md` + `TRIGGER.md` reference for writing your own.
   </Card>
   <Card title="Concepts" icon="book" href="/concepts">
-    Tenants, workspaces, zombies, skills — the four nouns.
+    Tenants, workspaces, zombies, tools — the four nouns.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Three knobs, defaults that work, when to override.

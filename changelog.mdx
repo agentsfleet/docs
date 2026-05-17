@@ -18,20 +18,31 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 17, 2026" tags={["Docs"]}>
+  ## Docs sweep — `npx skills add` install path, full `doctor` table, tenant-provider commands
+
+  Cold-start install no longer routes through `mkdir` + `curl`. The host-agent skill ships via `npx skills add usezombie/usezombie` (one-liner — symlinks `/usezombie-*` into your host's skill directory); the curl path stays as a fallback for environments without a node toolchain. The reconciliation pass also fixes a handful of doc claims that had drifted past what `zombiectl` actually returns and adds the `tenant provider` subcommands that were already shipped but undocumented.
+
+  - **`npx skills add usezombie/usezombie`** — primary install path on `index.mdx`, `quickstart.mdx`, `cli/install.mdx`, `zombies/install.mdx`. Pass `--host=<claude|amp|codex|opencode>` to pin a specific host. `https://usezombie.sh/skills.md` remains as the curl fallback.
+  - **`zombiectl doctor` table now lists five checks** (was three) — `auth_token_present` and `tenant_provider` were already returned by the CLI but missing from `cli/install.mdx`. The `tenant_provider` row carries `{ mode, model, context_cap_tokens, free_trial }` so the launch trial window surfaces in the same place users check before installing.
+  - **`zombiectl tenant provider show / set / reset`** — added to `cli/zombiectl.mdx`. Flips the tenant between platform-managed inference (default) and a self-managed provider credential from the workspace vault. Architecture canon for the flow lives in `docs/architecture/user_flow.md` §8.7 and `billing_and_provider_keys.md`; the CLI page now points readers there instead of recreating the narrative.
+  - **`concepts.mdx`** — "Skill" card replaced with a "Tool" card that names the binding distinction (`TRIGGER.md` is sandbox-enforced; `SKILL.md` is advisory prose). Trigger accordion's webhook URL updated to `/v1/webhooks/{zombie_id}/{source}` to match what M43 / M68 shipped.
+  - **`zombies/overview.mdx` lifecycle** — mermaid expanded from three states to five (`install` → `Alive` ↔ `Stopped`, `Alive` → `Killed` → `Deleted`) so `stop` / `resume` show up in the diagram users find first.
+</Update>
+
 <Update label="May 17, 2026" tags={["Server", "Performance"]}>
   ## Redis pool — lifts the single-mutex throughput cap
 
-  `redis_client.zig` previously held one `std.Thread.Mutex` across every command's full write+read round-trip, hard-capping throughput at ~40 ops/sec/connection regardless of how many producer threads issued XADDs. The mutex is gone. Concurrent producers acquire their own pooled connection from `Pool` (default `max_idle=8`, `eager_min=2`); long-lived blocking consumers — the watcher's `XREADGROUP zombie:control`, per-zombie worker `XREADGROUP zombie:{id}:events`, SSE `SUBSCRIBE zombie:{id}:activity` — hold dedicated connections outside the pool by design. Pooling those would exhaust the pool at the 9th zombie.
+  Previously, every server-side Redis command serialised through a single mutex, hard-capping per-process throughput at roughly 40 ops/sec/connection regardless of how many producers were issuing writes. The mutex is gone; concurrent producers now each take their own pooled connection. Long-lived blocking consumers — the per-zombie worker stream reader, the watcher's control-stream reader, the dashboard's activity subscriber — hold dedicated connections outside the pool by design (pooling those would exhaust the pool at the 9th zombie).
 
-  - **`Pool` API in `src/queue/redis_pool.zig`** — `acquire`/`release(ok)` with a health flag, `SinglyLinkedList` of idle connections, env knobs `REDIS_POOL_MAX_IDLE` (8) and `REDIS_POOL_EAGER_MIN` (2). `release(false)` marks the connection poisoned; the pool drops it and dials a fresh one on the next acquire.
-  - **Per-connection state machine** — `active` → `poisoned` → `closing` → `closed` with audited transitions; misuse fires `std.debug.assert` in debug builds. `Role` enum (`pooled` / `blocking_consumer` / `subscriber`) is the correctness boundary between request-path and long-lived consumers.
-  - **Typed error surface in `redis_errors.zig`** — `RedisError` set + `isResumable()` predicate over an exhaustive switch. Adding a new error variant is a compile error until classified.
-  - **Request-path read timeout** — `REDIS_REQUEST_TIMEOUT_MS` (default 5000ms) installs `SO_RCVTIMEO`; timeouts surface as `error.RedisRequestTimeout` (non-resumable, connection closed). A misparsed env value fails the boot with `UZ-STARTUP-ENV-CHECK`.
-  - **Operator-visible server error replies** — `READONLY` / `BUSYGROUP` / `WRONGTYPE` reply bodies log a `redis_command_err_reply` warn line carrying the server text before being mapped to `error.RedisCommandError`. Underlying cause is visible in logs, not flattened into `ERR_INTERNAL_OPERATION_FAILED`.
-  - **Pool metrics on `/metrics`** — 8 new Prometheus series: `zombie_redis_pool_dials_total`, `zombie_redis_pool_overflow_dials_total`, `zombie_redis_pool_poisoned_connections_total`, `zombie_redis_pool_reconnects_total`, `zombie_redis_pool_forced_closes_total`, `zombie_redis_pool_acquire_timeouts_total`, `zombie_redis_pool_idle`, `zombie_redis_pool_acquire_wait_ns_p99`.
-  - **Subscriber unification** — `redis_pubsub.zig` deleted; one `Subscriber` accepts `InitOptions { read_timeout_ms: ?u32 = null }`. Production passes null (block forever); test harnesses pass a budget.
+  - **Pool sizing knobs (env vars)** — `REDIS_POOL_MAX_IDLE` (default 8) caps the idle pool size; `REDIS_POOL_EAGER_MIN` (default 2) preconnects on boot so the first burst doesn't pay dial latency.
+  - **Request-path timeout** — `REDIS_REQUEST_TIMEOUT_MS` (default 5000 ms). A command that doesn't return within the budget surfaces as a transport timeout and closes the connection; the next acquire dials fresh.
+  - **Boot-time validation** — a misparsed `REDIS_REQUEST_TIMEOUT_MS` value fails the process boot with error code `UZ-STARTUP-ENV-CHECK` instead of silently falling back to a default.
+  - **Server error replies surface in logs** — `READONLY`, `BUSYGROUP`, `WRONGTYPE` (and other Redis-side error frames) now emit a `redis_command_err_reply` warn line carrying the server's text before being mapped to the internal command error. Underlying cause is visible in operator logs, not flattened into a generic operation failure.
+  - **8 new Prometheus pool series** under the `zombie_redis_pool_*` namespace — `dials_total`, `overflow_dials_total`, `poisoned_connections_total`, `reconnects_total`, `forced_closes_total`, `acquire_timeouts_total`, `idle`, `acquire_wait_ns_p99`. The last two are stubs today: `acquire_timeouts_total` reports 0 (no acquire-timeout path yet — `Pool.acquire` never blocks), and `acquire_wait_ns_p99` reports 0 (the per-acquire wait histogram wires in alongside the timeout-aware acquire). Both stay in the series list so dashboards don't break when the wiring lands.
+  - **Pub/sub subscriber consolidation** — one subscriber type with a configurable read-timeout; production passes none (block indefinitely), test harnesses pass a budget.
 
-  Operator note — env knobs (`REDIS_POOL_MAX_IDLE`, `REDIS_POOL_EAGER_MIN`, `REDIS_REQUEST_TIMEOUT_MS`) take effect at process start; rotate `zombied` to pick up changes.
+  Operator note — env knobs take effect at process start; rotate the server to pick up changes.
 </Update>
 
 <Update label="May 17, 2026" tags={["What's new", "API", "CLI", "UI", "Integrations"]}>
