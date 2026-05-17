@@ -18,6 +18,22 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 17, 2026" tags={["Server", "Performance"]}>
+  ## M69_004 Redis pool — lifts the single-mutex throughput cap
+
+  `redis_client.zig` previously held one `std.Thread.Mutex` across every command's full write+read round-trip, hard-capping throughput at ~40 ops/sec/connection regardless of how many producer threads issued XADDs. The mutex is gone. Concurrent producers acquire their own pooled connection from `Pool` (default `max_idle=8`, `eager_min=2`); long-lived blocking consumers — the watcher's `XREADGROUP zombie:control`, per-zombie worker `XREADGROUP zombie:{id}:events`, SSE `SUBSCRIBE zombie:{id}:activity` — hold dedicated connections outside the pool by design. Pooling those would exhaust the pool at the 9th zombie.
+
+  - **`Pool` API in `src/queue/redis_pool.zig`** — `acquire`/`release(ok)` with a health flag, `SinglyLinkedList` of idle connections, env knobs `REDIS_POOL_MAX_IDLE` (8) and `REDIS_POOL_EAGER_MIN` (2). `release(false)` marks the connection poisoned; the pool drops it and dials a fresh one on the next acquire.
+  - **Per-connection state machine** — `active` → `poisoned` → `closing` → `closed` with audited transitions; misuse fires `std.debug.assert` in debug builds. `Role` enum (`pooled` / `blocking_consumer` / `subscriber`) is the correctness boundary between request-path and long-lived consumers.
+  - **Typed error surface in `redis_errors.zig`** — `RedisError` set + `isResumable()` predicate over an exhaustive switch. Adding a new error variant is a compile error until classified.
+  - **Request-path read timeout** — `REDIS_REQUEST_TIMEOUT_MS` (default 5000ms) installs `SO_RCVTIMEO`; timeouts surface as `error.RedisRequestTimeout` (non-resumable, connection closed). A misparsed env value fails the boot with `UZ-STARTUP-ENV-CHECK`.
+  - **Operator-visible server error replies** — `READONLY` / `BUSYGROUP` / `WRONGTYPE` reply bodies log a `redis_command_err_reply` warn line carrying the server text before being mapped to `error.RedisCommandError`. Underlying cause is visible in logs, not flattened into `ERR_INTERNAL_OPERATION_FAILED`.
+  - **Pool metrics on `/metrics`** — 8 new Prometheus series: `zombie_redis_pool_dials_total`, `overflow_dials_total`, `poisoned_connections_total`, `reconnects_total`, `forced_closes_total`, `acquire_timeouts_total`, `idle`, `acquire_wait_ns_p99`.
+  - **Subscriber unification** — `redis_pubsub.zig` deleted; one `Subscriber` accepts `InitOptions { read_timeout_ms: ?u32 = null }`. Production passes null (block forever); test harnesses pass a budget.
+
+  Operator note — env knobs (`REDIS_POOL_MAX_IDLE`, `REDIS_POOL_EAGER_MIN`, `REDIS_REQUEST_TIMEOUT_MS`) take effect at process start; rotate `zombied` to pick up changes.
+</Update>
+
 <Update label="May 17, 2026" tags={["What's new", "API", "CLI", "UI", "Integrations"]}>
   ## Trigger DX overhaul — `gh`-driven webhook registration, free-trial pricing, dashboard chat
 
