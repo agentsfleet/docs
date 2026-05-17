@@ -11,20 +11,25 @@ Everything in this section of the docs is about working with zombies: how to ins
 
 ## Lifecycle
 
-A zombie moves through three observable states.
+A zombie moves through five observable states.
 
 ```mermaid
 flowchart LR
     Install[zombiectl install --from path] --> Alive[Alive<br/>webhook live]
     Alive -->|event arrives| Processing[Processing<br/>agent reasoning]
     Processing -->|stage exits| Alive
-    Alive -->|zombiectl kill zmb_id| Killed[Killed<br/>stopped]
-    Killed -->|zombiectl install --from path| Alive
+    Alive -->|zombiectl stop| Stopped[Stopped<br/>paused]
+    Stopped -->|zombiectl resume| Alive
+    Alive -->|zombiectl kill| Killed[Killed<br/>terminal]
+    Stopped -->|zombiectl kill| Killed
+    Killed -->|zombiectl delete| Deleted([deleted — hard-removed])
 ```
 
 1. **Alive.** `zombiectl install --from <path>` reads the local `SKILL.md` + `TRIGGER.md`, validates the schema, uploads to your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step.
 2. **Processing.** When a signed event arrives (webhook, cron, or steer), the platform opens a **stage**: the agent reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay any time with `zombiectl logs <zombie_id>` (or `events --actor 'webhook:*'` for filtered history).
-3. **Killed.** `zombiectl kill <zombie_id>` stops the in-flight stage and marks the zombie as killed. State is checkpointed; nothing on the event stream is lost. Re-install with the same name to bring it back.
+3. **Stopped.** `zombiectl stop <zombie_id>` halts the running session — new events stop dispatching, the in-flight stage finishes cleanly. Reversible with `zombiectl resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
+4. **Killed.** `zombiectl kill <zombie_id>` marks the zombie terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-install with the same `SKILL.md` produces a **new** `zombie_id`.
+5. **Deleted.** `zombiectl delete <zombie_id>` hard-removes the zombie. The row, its `zombie_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/zombiectl#observability); replays after delete reference the prior `zombie_id` as a historical record only. You must `kill` the zombie before `delete` will accept it.
 
 You can inspect state at any time:
 
@@ -40,7 +45,7 @@ Every zombie belongs to exactly one **workspace**. The workspace is the boundary
 
 - **Credentials** — the vault that zombies read from when they invoke skills. See [Credentials](/zombies/credentials).
 - **Access control** — teammates invited to a workspace can see, start, and kill its zombies; they cannot see zombies in other workspaces.
-- **Webhook namespace** — every zombie in a workspace gets its own unique URL under `https://api.usezombie.com/v1/webhooks/{zombie_id}`.
+- **Webhook namespace** — every zombie in a workspace gets one unique URL per declared trigger under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
 
 Billing is **not** workspace-scoped. Every stage — no matter which workspace it lives in — debits the same tenant wallet. See [Key concepts](/concepts#credits) for the single-wallet model.
 

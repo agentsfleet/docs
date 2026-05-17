@@ -18,6 +18,18 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 17, 2026" tags={["Docs"]}>
+  ## Docs sweep — `npx skills add` install path, full `doctor` table, tenant-provider commands
+
+  Cold-start install no longer routes through `mkdir` + `curl`. The host-agent skill ships via `npx skills add usezombie/usezombie` (one-liner — symlinks `/usezombie-*` into your host's skill directory); the curl path stays as a fallback for environments without a node toolchain. The reconciliation pass also fixes a handful of doc claims that had drifted past what `zombiectl` actually returns and adds the `tenant provider` subcommands that were already shipped but undocumented.
+
+  - **`npx skills add usezombie/usezombie`** — primary install path on `index.mdx`, `quickstart.mdx`, `cli/install.mdx`, `zombies/install.mdx`. Pass `--host=<claude|amp|codex|opencode>` to pin a specific host. `https://usezombie.sh/skills.md` remains as the curl fallback.
+  - **`zombiectl doctor` table now lists five checks** (was three) — `auth_token_present` and `tenant_provider` were already returned by the CLI but missing from `cli/install.mdx`. The `tenant_provider` row carries `{ mode, model, context_cap_tokens, free_trial }` so the launch trial window surfaces in the same place users check before installing.
+  - **`zombiectl tenant provider show / set / reset`** — added to `cli/zombiectl.mdx`. Flips the tenant between platform-managed inference (default) and a self-managed provider credential from the workspace vault. Architecture canon for the flow lives in `docs/architecture/user_flow.md` §8.7 and `billing_and_provider_keys.md`; the CLI page now points readers there instead of recreating the narrative.
+  - **`concepts.mdx`** — "Skill" card replaced with a "Tool" card that names the binding distinction (`TRIGGER.md` is sandbox-enforced; `SKILL.md` is advisory prose). Trigger accordion's webhook URL updated to `/v1/webhooks/{zombie_id}/{source}` to match what M43 / M68 shipped.
+  - **`zombies/overview.mdx` lifecycle** — mermaid expanded from three states to five (`install` → `Alive` ↔ `Stopped`, `Alive` → `Killed` → `Deleted`) so `stop` / `resume` show up in the diagram users find first.
+</Update>
+
 <Update label="May 17, 2026" tags={["What's new", "API", "CLI", "UI", "Integrations"]}>
   ## Trigger DX overhaul — `gh`-driven webhook registration, free-trial pricing, dashboard chat
 
