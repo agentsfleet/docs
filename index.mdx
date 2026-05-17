@@ -56,7 +56,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     Per-day and per-month dollar caps. {STARTER_CREDIT} starter credit that never expires. Inference cost is yours, paid to your provider directly.
   </Card>
   <Card title="Kill switch" icon="power-off">
-    `zombiectl kill` stops the stage cleanly; nothing on the activity stream is lost. Resume via `zombiectl steer`.
+    `zombiectl stop` pauses the zombie cleanly; resume with `zombiectl resume`. `zombiectl kill` is terminal — re-install to bring it back.
   </Card>
 </Columns>
 
@@ -70,7 +70,7 @@ A zombie does its work in **stages** — one stage is one end-to-end execution o
     The `SKILL.md` + `TRIGGER.md` reference for writing your own.
   </Card>
   <Card title="Concepts" icon="book" href="/concepts">
-    Tenants, workspaces, zombies, skills — the four nouns.
+    Tenants, workspaces, zombies, tools — the four nouns.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Three knobs, defaults that work, when to override.
