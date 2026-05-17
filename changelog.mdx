@@ -19,7 +19,7 @@ export const STAGE_RATE_M65 = "$0.10";
 </Tip>
 
 <Update label="May 17, 2026" tags={["Server", "Performance"]}>
-  ## M69_004 Redis pool — lifts the single-mutex throughput cap
+  ## Redis pool — lifts the single-mutex throughput cap
 
   `redis_client.zig` previously held one `std.Thread.Mutex` across every command's full write+read round-trip, hard-capping throughput at ~40 ops/sec/connection regardless of how many producer threads issued XADDs. The mutex is gone. Concurrent producers acquire their own pooled connection from `Pool` (default `max_idle=8`, `eager_min=2`); long-lived blocking consumers — the watcher's `XREADGROUP zombie:control`, per-zombie worker `XREADGROUP zombie:{id}:events`, SSE `SUBSCRIBE zombie:{id}:activity` — hold dedicated connections outside the pool by design. Pooling those would exhaust the pool at the 9th zombie.
 
