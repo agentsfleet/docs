@@ -22,7 +22,31 @@ Re-running against the same workspace is safe — running it twice has the same 
 
 ## Two ways to invoke
 
-Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode):
+Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Set up the skill once per machine using either install path:
+
+<Tabs>
+  <Tab title="npx (recommended)">
+    One-liner. Symlinks `/usezombie-*` into every supported host's skill directory the package can detect:
+
+    ```bash
+    npx skills add usezombie/usezombie
+    ```
+
+    Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
+  </Tab>
+  <Tab title="curl (fallback)">
+    Useful when your environment has no node toolchain, or when you want to inspect the file before installing:
+
+    ```bash
+    # Claude Code — adjust path for Amp / Codex CLI / OpenCode
+    mkdir -p ~/.claude/skills/usezombie-install-platform-ops
+    curl -fsSL https://usezombie.sh/skills.md \
+      -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
+    ```
+  </Tab>
+</Tabs>
+
+Then invoke the slash command in your host agent:
 
 ```
 /usezombie-install-platform-ops
@@ -30,7 +54,9 @@ Most users don't run `zombiectl install --from` directly. They drive the install
 
 The slash command asks three gating questions (Slack channel, production branch glob, optional cron schedule), registers the webhook via your existing `gh` CLI, and prints a per-trigger registration summary at the end. See [Quickstart](/quickstart) for the full walkthrough.
 
-Power users and scripted setups call `zombiectl install --from <path>` directly.
+Power users and scripted setups call `zombiectl install --from <path>` directly — the same flow as the slash command, minus the gating questions and the auto-registration.
+
+For the self-managed provider posture, see [`zombiectl tenant provider`](/cli/zombiectl#tenant-provider).
 
 ## Exit codes
 
