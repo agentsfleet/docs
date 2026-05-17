@@ -13,7 +13,7 @@ Wakes on your events. Runs against a durable, replayable log.
 Posts evidenced answers — never chats.
 
 [![Docs](https://img.shields.io/badge/usezombie-Docs-5EEAD4?style=for-the-badge)](https://docs.usezombie.com)
-[![Try Free](https://img.shields.io/badge/usezombie-Install-5EEAD4?style=for-the-badge)](https://usezombie.com)
+[![Get early access](https://img.shields.io/badge/usezombie-Get_early_access-5EEAD4?style=for-the-badge)](https://usezombie.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 </div>

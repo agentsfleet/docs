@@ -270,7 +270,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Install",
+      "label": "Get early access",
       "href": "https://app.usezombie.com"
     }
   },
