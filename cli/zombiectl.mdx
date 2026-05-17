@@ -331,6 +331,45 @@ For per-zombie spend breakdowns, use `zombiectl logs <zombie_id> --json` and agg
 
 ---
 
+## Tenant provider
+
+By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the stage charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. The flat self-managed stage fee replaces the per-token component, and you pay your provider directly.
+
+### `zombiectl tenant provider show`
+
+Print the active posture, model, context-cap, and (for self-managed) the credential name. `--json` for the structured shape.
+
+```bash
+zombiectl tenant provider show
+zombiectl tenant provider show --json
+```
+
+### `zombiectl tenant provider set`
+
+Activate a self-managed credential for the tenant. The credential must already exist in the workspace vault (`zombiectl credential add <name>`). The command validates the credential structure, resolves the model's context cap from the model-caps endpoint, and pins both into the tenant's provider row.
+
+```bash
+# 1. Store the provider credential
+zombiectl credential add account-fireworks --data='{"provider":"fireworks","api_key":"fw_…","model":"accounts/fireworks/models/kimi-k2.6"}'
+
+# 2. Activate it for the tenant
+zombiectl tenant provider set --credential account-fireworks
+```
+
+In-flight events finish under the snapshot they were claimed under; the next event's debits use the new posture.
+
+### `zombiectl tenant provider reset`
+
+Drop the explicit `tenant_providers` row and fall back to the platform-managed synth-default.
+
+```bash
+zombiectl tenant provider reset
+```
+
+For the install-time vs trigger-time resolution flow, the frontmatter overlay sentinels, and the provider routing details, see [`docs/architecture/user_flow.md` §8.7](https://github.com/usezombie/usezombie/blob/main/docs/architecture/user_flow.md#§8.7-model-and-context-cap-origin-platform-vs-self-managed) and [`docs/architecture/billing_and_provider_keys.md`](https://github.com/usezombie/usezombie/blob/main/docs/architecture/billing_and_provider_keys.md). The architecture is the canonical reference; this page is the command surface.
+
+---
+
 ## Diagnostics
 
 ### `zombiectl doctor`
