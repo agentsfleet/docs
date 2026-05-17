@@ -82,7 +82,7 @@ The parser rejects an unknown `source` that supplies only `secret_ref` with no `
 `secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/zombies/credentials).
 
 <Note>
-  **Dedicated routes for some providers.** GitHub events have a tailored payload-normalizer route at `POST /v1/webhooks/{zombie_id}/github`. Clerk-shaped (Svix) webhooks land at `POST /v1/webhooks/svix/{zombie_id}` for Svix's multi-signature rotation scheme. Both still use `secret_ref` from the workspace vault. Use these only if you need the specific normalization — the source-addressed `POST /v1/webhooks/{zombie_id}/{source}` route plus generic HMAC works for everyone else.
+  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{zombie_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the agent sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{zombie_id}`, to accommodate Svix's multi-signature rotation scheme.
 </Note>
 
 ## Sending an event
@@ -152,3 +152,5 @@ https://api.usezombie.com/v1/webhooks/{zombie_id}/{url_secret}
 ```
 
 The `url_secret` is matched in constant time. Reserved segments (`approval`, `grant-approval`, `svix`) cannot be used as secret values. Prefer HMAC where the upstream supports it — the URL-embedded form is a fallback.
+
+**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/zmb_2041/github` routes to the `github` source when the zombie declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same zombie — the source wins and the secret will never match.
