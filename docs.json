@@ -220,7 +220,6 @@
           {
             "group": "Webhooks",
             "pages": [
-              "POST /v1/webhooks/clerk",
               "POST /v1/webhooks/svix/{zombie_id}",
               "POST /v1/webhooks/{zombie_id}",
               "POST /v1/webhooks/{zombie_id}/approval",
