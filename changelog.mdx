@@ -18,6 +18,77 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 17, 2026" tags={["What's new", "API", "CLI", "UI", "Integrations"]}>
+  ## Trigger DX overhaul — `gh`-driven webhook registration, free-trial pricing, dashboard chat
+
+  Installing the `platform-ops` zombie no longer ends with a paste-into-GitHub step. The host-agent install skill (`/usezombie-install-platform-ops`) registers each declared webhook via your own `gh` CLI, HMAC-self-verifies the registration, and reports the result inline. Through end of July 2026, every customer-visible rate string reads "Try for free" — the stage-execution rate is set to zero nanos, and the website's pricing component renders the historical rate with a strike-through plus a "Free until July 2026" banner. The dashboard's `/zombies/{zombie_id}` page replaces the bespoke "Live activity" panel with a chat surface, so you can steer a zombie from the same screen that shows its events.
+
+  ## Upgrading
+
+  - **`TRIGGER.md` `trigger:` → `triggers:` (array).** A zombie declares 1–8 trigger entries under `triggers:`. The singular `trigger:` shape is rejected at install with `ERR_ZOMBIE_INVALID_CONFIG: use "triggers:" (array)` — no compat shim, no rewrite-on-load. Convert every `TRIGGER.md` you maintain:
+
+    ```yaml
+    # before
+    x-usezombie:
+      trigger:
+        type: webhook
+        source: github
+    ```
+
+    ```yaml
+    # after
+    x-usezombie:
+      triggers:
+        - type: webhook
+          source: github
+          events: [workflow_run]   # optional whitelist, 1–16 entries
+    ```
+
+    Entries are unique on `(type, source)`; at most one `cron` entry per zombie.
+  - **Install response shape — `webhook_url` → `webhook_urls`.** `POST /v1/workspaces/{workspace_id}/zombies` 201 returns `webhook_urls: { <source>: <url> }` keyed by `triggers[].source`. The old `webhook_url` scalar field is gone. The CLI's `--json` install output emits the same map; the human-readable output prints one URL per declared webhook trigger.
+  - **Webhook URLs are source-suffixed.** External systems POST to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` — the `{source}` segment matches `triggers[].source` in `TRIGGER.md`. Update any hand-maintained upstream hooks.
+  - **`Mission Control` → `Dashboard`.** Every "Mission Control" string in the website, app, and CLI output is now "Dashboard". Bookmarks unaffected; only display copy changed.
+
+  ## What's new
+
+  - **`zombiectl auth status`** — inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_API_TOKEN` env vs none), decodes JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), and probes `GET /v1/tenants/me/billing` to verify the token is still accepted. Exit `0` on valid or unreachable (transient API issues don't poison local state); exit `1` on `UZ-AUTH-001` / `UZ-AUTH-002` / `TOKEN_EXPIRED`.
+  - **Trigger panel goes multi-card.** Each declared trigger renders its own card on the dashboard's zombie-detail page — a guided card with the upstream registration command for known providers (GitHub, Linear, Jira, Grafana, Slack, AgentMail, Clerk), a copy-URL card for unknown sources, a schedule + next-fire card for `cron`, and a catch-all for `api`.
+  - **Dashboard chat surface.** The `/zombies/{zombie_id}` page mounts an `@assistant-ui/react` thread in place of the prior `LiveEventsPanel`. Webhook / cron / continuation events render as system chips; the agent's reasoning streams as assistant bubbles; the composer at the bottom turns user input into a steer (`POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` — existing endpoint).
+  - **Install skill is platform-neutral.** `/usezombie-install-platform-ops` runs in any host with an `AskUserQuestion`-equivalent — Claude Code, Amp, Codex CLI, OpenCode all drive the same skill body. The skill loops `gh api repos/<owner>/<repo>/hooks` per declared webhook trigger and substitutes the workspace `github` credential's `webhook_secret` into each registration. Re-running on a repo with an existing hook at the same URL is idempotent (matched on `config.url`, advanced).
+
+  ## API reference
+
+  `POST /v1/workspaces/{workspace_id}/zombies` (201):
+
+  ```json
+  {
+    "zombie_id": "zmb_2041",
+    "name": "platform-ops-zombie",
+    "webhook_urls": {
+      "github": "https://api.usezombie.com/v1/webhooks/zmb_2041/github"
+    }
+  }
+  ```
+
+  `GET /v1/workspaces/{workspace_id}/zombies` list rows gain a `triggers` projection:
+
+  ```json
+  {
+    "zombie_id": "zmb_2041",
+    "triggers": [
+      { "type": "webhook", "source": "github", "events": ["workflow_run"] }
+    ]
+  }
+  ```
+
+  `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/events` accepts a new `actor_prefix` query parameter (e.g. `actor_prefix=webhook:`) for server-side filtering by event source. No client-side fallback.
+
+  ## CLI
+
+  - **`zombiectl install --from <path>` prints a per-trigger URL block.** Output switches from a single `webhook_url:` line to `Webhook URLs (register on the upstream provider):` followed by one `<source>: <url>` line per declared webhook trigger. The `--json` shape returns `webhook_urls` as a `{ <source>: <url> }` map.
+  - **`zombiectl auth status`** — new subcommand documented above.
+</Update>
+
 <Update label="May 17, 2026" tags={["Performance", "Observability"]}>
   ## Redis request path: concurrent by default, configurable, observable
 

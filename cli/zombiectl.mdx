@@ -7,7 +7,7 @@ description: "Complete zombiectl command reference."
 
 | Group | Commands |
 |-------|----------|
-| Authentication | `login`, `logout` |
+| Authentication | `login`, `logout`, `auth status` |
 | Zombies (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
@@ -41,6 +41,22 @@ Clear the local session token.
 ```bash
 zombiectl logout
 ```
+
+### `zombiectl auth status`
+
+Inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_API_TOKEN` env vs none), decodes the JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), and probes `GET /v1/tenants/me/billing` to check the token is still accepted by the server.
+
+```bash
+zombiectl auth status
+zombiectl auth status --json
+```
+
+Exit codes:
+
+- `0` — token valid, or server unreachable (transient API issues don't poison local state).
+- `1` — no credentials configured, or the server rejected the token (`UZ-AUTH-001` / `UZ-AUTH-002` / `TOKEN_EXPIRED`). Re-run `zombiectl login`.
+
+The probe result is one of `valid` (200 from the billing endpoint), `unauthorized` (server rejected), or `unreachable` (network / 5xx). `unreachable` is informational — the local token is unchanged.
 
 ---
 

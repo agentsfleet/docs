@@ -47,6 +47,18 @@ Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These re
 - Do not document internal agent pipeline internals (NullClaw config details, executor RPC protocol) — keep operator docs at the operational level
 - Do not reference specific cloud provider pricing or account details
 
+## When closing out a feature PR in the lead repo (companion docs flow)
+
+A landing PR in any lead repo (`usezombie`, `zombiectl`, the website, the app) almost always drifts the docs site. Before the lead-repo PR flips ready-for-review:
+
+1. **Review the lead PR's changed files.** Every public-surface change is a candidate doc edit — HTTP request/response shape, CLI subcommand or flag, frontmatter schema, error code, env var, default value, response field, pricing / billing copy, dashboard flow.
+2. **Identify the `.mdx` pages that drift.** Grep this docs repo for the old field name, old YAML shape, old subcommand, old copy. Common candidates: `quickstart.mdx`, `cli/*.mdx`, `zombies/*.mdx` (especially `authoring.mdx`, `webhooks.mdx`, `install.mdx`, `running.mdx`), `api-reference/*.mdx`, `billing/*.mdx`, `snippets/rates.mdx`, `concepts/*.mdx`.
+3. **Update the relevant pages.** Fix examples, tables, and prose. Preserve load-bearing detail (`UZ-XXX-NNN` error codes, endpoint paths, env var names, schema column names, money amounts). Don't rewrite past entries; only touch pages that no longer describe what shipped.
+4. **Add a `changelog.mdx` `<Update>` block** at the top, after the leading `<Tip>`. Section order is fixed: Upgrading → What's new → API reference → Bug fixes → CLI. Voice rules: lead with the change, no marketing words, no milestone IDs / spec filenames / `RULE XXX` references. Date label `MMM DD, YYYY`, no semver prefix. Two entries on the same date get distinct titles (no disambiguator suffix needed) or a merged block.
+5. **All four steps land on a dedicated docs-repo branch** — `chore/m{N}-{slug}-changelog` off `main`. Do not commit docs changes on the lead-repo feature branch (it's a separate repository) and do not commit on `main` directly. Open the docs PR alongside the lead PR so reviewers can cross-link the two.
+
+The rule applies to every milestone PR, not just trigger/CLI ones — schema migrations, new endpoints, deprecations, billing changes, dashboard rewrites all drift docs.
+
 ## Design system colors
 
 {/* SYNC SOURCE: ~/Projects/usezombie/ui/packages/design-system/src/tokens.css
