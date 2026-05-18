@@ -18,6 +18,34 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 18, 2026" tags={["Breaking", "CLI"]}>
+  ## `zombiectl` telemetry — supabase-aligned env vars, on by default, agent attribution
+
+  `zombiectl` now follows the same telemetry contract as the Supabase CLI: anonymous usage data is on by default, three env-var knobs control opt-out and host overrides, and every event carries the detected AI agent (Claude Code, Cursor, Cline, etc.) when one is wrapping the invocation. The opt-out names are public, documented in `--help`, and respect the industry-standard `DO_NOT_TRACK` signal. Agent attribution helps prioritise CLI ergonomics for the hosts where most usezombie traffic actually originates.
+
+  ## Upgrading
+
+  The opt-out env vars renamed and the default flipped. If you previously set `DISABLE_TELEMETRY=0` to opt in, you can remove that line — telemetry is on by default now. To stay opted out, switch to one of the new names:
+
+  - `DISABLE_TELEMETRY` → **`ZOMBIE_TELEMETRY_DISABLED`** (set to `1` to opt out; any other value is treated as unset)
+  - `ZOMBIE_POSTHOG_KEY` → **`ZOMBIE_TELEMETRY_POSTHOG_KEY`**
+  - `ZOMBIE_POSTHOG_HOST` → **`ZOMBIE_TELEMETRY_POSTHOG_HOST`**
+  - `DO_NOT_TRACK=1` is honored unchanged (industry-standard signal)
+  - `ZOMBIE_TELEMETRY_DEBUG=1` for local span debug output (unchanged)
+
+  CLI binary upgrade is sufficient; no server-side change.
+
+  ## What's new
+
+  - **On by default.** Fresh installs bootstrap `~/.config/zombiectl/telemetry.json` with `consent: "granted"` on the first invocation. No interactive prompt — the contract is the `--help` env-var section + the [Configuration → Telemetry](/cli/configuration#telemetry) docs page.
+  - **AI agent attribution.** Every event now carries an `ai_tool` property when an agent is wrapping the CLI (Claude Code, Cursor, Cline, Aider, Continue, Windsurf, Copilot, Replit, etc.). Detected via `@vercel/detect-agent`. Unknown non-interactive contexts fall back to `unknown_non_interactive`; CI contexts to `ci`.
+  - **Two opt-out signals, one persisted state.** `ZOMBIE_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1` both force consent to `denied` regardless of the persisted file. Either works; pick the one your team's tooling already standardises on.
+
+  ## CLI
+
+  - **`zombiectl --help`** now advertises all five telemetry env vars under "Environment variables" so the opt-out path is discoverable without leaving the terminal.
+</Update>
+
 <Update label="May 17, 2026" tags={["Docs"]}>
   ## Docs sweep — `npx skills add` install path, full `doctor` table, tenant-provider commands
 

@@ -27,7 +27,35 @@ A value at a higher level always wins. Use `ZOMBIE_TOKEN` in CI so no interactiv
 | `ZOMBIE_API_URL` | API base URL | `https://api.usezombie.com` |
 | `ZOMBIE_TOKEN` | Auth token (for CI and scripts; user-bound, from `zombiectl login`) | *(from `zombiectl login`)* |
 | `ZOMBIE_API_KEY` | Service auth (machine-bound, from `zombiectl agent add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
+| `ZOMBIE_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/zombiectl` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
+| `ZOMBIE_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
+| `DO_NOT_TRACK` | Set to `1` to opt out via the industry-standard signal ([consoledonottrack.com](https://consoledonottrack.com/)). | unset |
+| `ZOMBIE_TELEMETRY_POSTHOG_KEY` | Override the bundled PostHog project key (advanced; for self-hosted PostHog routing). | bundled `phc_*` key |
+| `ZOMBIE_TELEMETRY_POSTHOG_HOST` | Override the PostHog ingest host. | `https://us.i.posthog.com` |
+| `ZOMBIE_TELEMETRY_DEBUG` | Set to `1` to print span summaries to stderr for local development. | unset |
+
+## Telemetry
+
+`zombiectl` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `~/.config/zombiectl/telemetry.json`; no source paths, file contents, prompts, or credentials are ever sent.
+
+Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
+
+```bash
+# One command
+ZOMBIE_TELEMETRY_DISABLED=1 zombiectl status
+
+# Whole shell session
+export ZOMBIE_TELEMETRY_DISABLED=1
+
+# Industry-standard signal (same effect, honored by many CLIs)
+export DO_NOT_TRACK=1
+
+# Persistent — edit ~/.config/zombiectl/telemetry.json:
+#   { "consent": "denied", ... }
+```
+
+Either env variable forces consent to `denied` regardless of the persisted value. `DO_NOT_TRACK` is the recommended signal if you opt out of multiple CLIs at once.
 
 ## CI usage
 
