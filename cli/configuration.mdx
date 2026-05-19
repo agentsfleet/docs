@@ -37,7 +37,7 @@ A value at a higher level always wins. Use `ZOMBIE_TOKEN` in CI so no interactiv
 
 ## Telemetry
 
-`zombiectl` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `~/.config/zombiectl/telemetry.json`; no source paths, file contents, prompts, or credentials are ever sent.
+`zombiectl` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$ZOMBIE_STATE_DIR/telemetry.json` (default `~/.config/zombiectl/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
 
 Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
 
@@ -51,7 +51,8 @@ export ZOMBIE_TELEMETRY_DISABLED=1
 # Industry-standard signal (same effect, honored by many CLIs)
 export DO_NOT_TRACK=1
 
-# Persistent — edit ~/.config/zombiectl/telemetry.json:
+# Persistent — edit $ZOMBIE_STATE_DIR/telemetry.json:
+# (defaults to ~/.config/zombiectl/telemetry.json)
 #   { "consent": "denied", ... }
 ```
 
