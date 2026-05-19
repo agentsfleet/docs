@@ -18,12 +18,59 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
-<Update label="May 19, 2026" tags={["Internal", "Security", "UI"]}>
+<Update label="May 19, 2026" tags={["Internal", "Security"]}>
   ## Dashboard tightens its token-handling posture
 
-  Authenticated reads from the dashboard no longer carry the api-template bearer in browser memory. Every request from a client component routes through a same-origin proxy that mints the JWT server-side on each hop; the browser bundle never sees the raw value. The token type also moves to an opaque wrapper that masks itself in console logs, JSON serialization, and React Server Component prop boundaries — accidental leaks via `console.log(token)` or error-tracker capture print `<redacted>` instead of the raw bearer.
+  Authenticated reads from the dashboard no longer carry the API bearer token in browser memory. Every request from a client component routes through a same-origin proxy that mints the JWT server-side on each hop; the browser bundle never sees the raw value. The token type also moves to an opaque wrapper that masks itself in console logs, JSON serialization, and React Server Component prop boundaries — accidental leaks via `console.log(token)` or error-tracker capture print `<redacted>` instead of the raw bearer.
 
   No user-facing behavior change. The retry layer's per-attempt timeout also stops leaking pending `setTimeout` handles when the request wins the race.
+</Update>
+
+<Update label="May 18, 2026" tags={["Breaking", "CLI"]}>
+  ## `zombiectl` telemetry — Supabase-aligned env vars, on by default, agent attribution
+
+  `zombiectl` now follows the same telemetry contract as the Supabase CLI: anonymous usage data is on by default, three env-var knobs control opt-out and host overrides, and every event carries the detected AI agent (Claude Code, Cursor, Cline, etc.) when one is wrapping the invocation. The opt-out names are public, documented in `--help`, and respect the industry-standard `DO_NOT_TRACK` signal. Agent attribution helps prioritise CLI ergonomics for the hosts where most usezombie traffic actually originates.
+
+  ## Upgrading
+
+  The opt-out env vars renamed and the default flipped. If you previously set `DISABLE_TELEMETRY=0` to opt in, you can remove that line — telemetry is on by default now. To stay opted out, switch to one of the new names:
+
+  - `DISABLE_TELEMETRY` → **`ZOMBIE_TELEMETRY_DISABLED`** (set to `1` to opt out; any other value is treated as unset)
+  - `ZOMBIE_POSTHOG_KEY` → **`ZOMBIE_TELEMETRY_POSTHOG_KEY`**
+  - `ZOMBIE_POSTHOG_HOST` → **`ZOMBIE_TELEMETRY_POSTHOG_HOST`**
+  - `DO_NOT_TRACK=1` is honored unchanged (industry-standard signal)
+  - `ZOMBIE_TELEMETRY_DEBUG=1` for local span debug output (unchanged)
+
+  CLI binary upgrade is sufficient; no server-side change.
+
+  ## What's new
+
+  - **On by default.** Fresh installs bootstrap `$ZOMBIE_STATE_DIR/telemetry.json` (default `~/.config/zombiectl/telemetry.json`) with `consent: "granted"` on the first invocation. No interactive prompt — the contract is the `--help` env-var section + the [Configuration → Telemetry](/cli/configuration#telemetry) docs page.
+  - **AI agent attribution.** Every event now carries an `ai_tool` property when an agent is wrapping the CLI (Claude Code, Cursor, Cline, Aider, Continue, Windsurf, Copilot, Replit, etc.). Detected via `@vercel/detect-agent`. Unknown non-interactive contexts fall back to `unknown_non_interactive`; CI contexts to `ci`.
+  - **Two opt-out signals, one persisted state.** `ZOMBIE_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1` both force consent to `denied` regardless of the persisted file. Either works; pick the one your team's tooling already standardises on.
+
+  ## CLI
+
+  - **`zombiectl --help`** now advertises all five telemetry env vars under "Environment variables" so the opt-out path is discoverable without leaving the terminal.
+  - **`ZOMBIE_STATE_DIR`** is now documented as the override for local CLI state, including credentials, telemetry consent, and session files. Default remains `~/.config/zombiectl`.
+</Update>
+
+<Update label="May 18, 2026" tags={["UI", "Website"]}>
+  ## Trigger panel multi-card + website OnboardingFlow + Hero CTA
+
+  The dashboard's zombie-detail page now renders one card per declared trigger — a guided registration card with rendered `gh api` / `linear webhook create` / `jira webhook add` snippets for known providers (GitHub, Linear, Jira, Grafana, Slack, AgentMail), a copy-URL fallback for unknown sources, and a `CronCard` showing the schedule + next-fire computed client-side from the host's IANA timezone. The website Home page replaces the `FeatureFlow` evidence section with a 4-step `OnboardingFlow` pictorial (install → add skill → wire webhook → steer), and the Hero primary CTA becomes a terminal-style `$ npm install -g …` button that copies the install command, surfaces an inline `<output aria-live>` toast, and smooth-scrolls to the `#onboarding-flow` anchor (honoring `prefers-reduced-motion`).
+
+  - **`TriggerPanel.tsx` switches from Tabs to Radix Accordion.** One `AccordionItem` per `zombie.triggers[]` entry; the first trigger with no recorded delivery auto-expands on mount (set-up state takes precedence). Inner router dispatches `webhook` to `GuidedTriggerCard` (known provider) or `CopyUrlFallback` (unknown), `cron` to `CronCard`, `api` to `CopyUrlFallback` with the legacy bare webhook URL.
+  - **`provider-guidance.ts` ships six provider entries** — `github`, `linear`, `jira`, `grafana`, `slack`, `agentmail`. Each exposes a 3-arg `command(vars, webhookUrl, events)` template so per-provider snippets vary by `trigger.events`, a `webUiDeepLink(vars)` for the "Open `<provider>`" affordance, and a `variables` list driving the variable-input form. Snapshot-tested per provider.
+  - **`webhookUrlFor(zombieId, source?)`** — dashboard helper reconstructs the server's `webhook_urls: { <source>: <url> }` projection client-side. Called with a source, returns the per-trigger URL; called without, returns the legacy bare ingress at `/v1/webhooks/{zombie_id}`.
+  - **`OnboardingFlow.tsx` replaces `FeatureFlow.tsx`.** Four numbered cards with arrow connectors on `lg:` breakpoint; mobile stacks vertically. Each card carries a real shell snippet, not a screenshot. Anchored at `id="onboarding-flow"` for Hero's smooth-scroll target.
+  - **`Hero.tsx` primary CTA is now a `<button>`** — copies `npm install -g @usezombie/zombiectl && npx skills add usezombie/usezombie` to `navigator.clipboard`, shows the toast for 2 s, scrolls to `#onboarding-flow`. Clipboard-blocked path surfaces a "Clipboard blocked — select the command above and copy manually" toast. `<output aria-live="polite">` element used in place of a design-system Toast primitive (there isn't one yet).
+  - **`cron-parser@^5.5.0`** added to `ui/packages/app` for the `CronCard` next-fire computation. Landing-js bundle stays at **132.6 kB gz** under the 140 kB `.size-limit.json` ceiling (7.4 kB headroom).
+  - **Coverage gate** — app package thresholds (statements 95 / branches 90 / functions 95 / lines 95) all green with three new targeted tests covering the `setCopiedKey` reset updater both branches, the `Intl` timezone fallback to `"UTC"`, and the cron / api auto-expand `TriggerBody` paths.
+  - **Timer-leak fixes** — `GuidedTriggerCard` copy-reset, `CopyUrlFallback` copy-reset, and the existing `Hero` toast all now store their `setTimeout` handle in a `useRef` and clear it in a `useEffect` destructor on unmount; unmount-cleanup tests added at each call site.
+  - **Landing-page promo pill** — small mono pill between the LIVE eyebrow and the headline links to `/pricing` and surfaces the "Free until July 31, 2026" free-trial posture that already lived on the pricing component but was invisible above the fold. Click emits `trackNavigationClicked({ source: "hero_promo_pill", target: "pricing" })`.
+
+  Operator note — `TRIGGER.md` is still the source of truth; the dashboard cards are read-only. Edit the markdown and reinstall to change triggers.
 </Update>
 
 <Update label="May 17, 2026" tags={["Docs"]}>
