@@ -19,7 +19,7 @@ export const STAGE_RATE_M65 = "$0.10";
 </Tip>
 
 <Update label="May 18, 2026" tags={["Breaking", "CLI"]}>
-  ## `zombiectl` telemetry — supabase-aligned env vars, on by default, agent attribution
+  ## `zombiectl` telemetry — Supabase-aligned env vars, on by default, agent attribution
 
   `zombiectl` now follows the same telemetry contract as the Supabase CLI: anonymous usage data is on by default, three env-var knobs control opt-out and host overrides, and every event carries the detected AI agent (Claude Code, Cursor, Cline, etc.) when one is wrapping the invocation. The opt-out names are public, documented in `--help`, and respect the industry-standard `DO_NOT_TRACK` signal. Agent attribution helps prioritise CLI ergonomics for the hosts where most usezombie traffic actually originates.
 
@@ -44,6 +44,7 @@ export const STAGE_RATE_M65 = "$0.10";
   ## CLI
 
   - **`zombiectl --help`** now advertises all five telemetry env vars under "Environment variables" so the opt-out path is discoverable without leaving the terminal.
+  - **`ZOMBIE_STATE_DIR`** is now documented as the override for local CLI state, including credentials, telemetry consent, and session files. Default remains `~/.config/zombiectl`.
 </Update>
 
 <Update label="May 17, 2026" tags={["Docs"]}>
