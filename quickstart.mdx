@@ -39,9 +39,11 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  Opens a Clerk OAuth flow in your browser. New accounts come with a {STARTER_CREDIT} starter credit pool — never expires, covers hosted execution (event receipts + stages). You bring your provider and model — pay them directly. usezombie marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. New accounts come with a {STARTER_CREDIT} starter credit pool — never expires, covers hosted execution (event receipts + stages). You bring your provider and model — pay them directly. usezombie marks up zero on inference.
 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
+
+  <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
 </Step>
 
 <Step title="(Optional) Create a named workspace">
