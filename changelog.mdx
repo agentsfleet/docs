@@ -18,6 +18,14 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 19, 2026" tags={["Internal", "Security"]}>
+  ## Dashboard tightens its token-handling posture
+
+  Authenticated reads from the dashboard no longer carry the API bearer token in browser memory. Every request from a client component routes through a same-origin proxy that mints the JWT server-side on each hop; the browser bundle never sees the raw value. The token type also moves to an opaque wrapper that masks itself in console logs, JSON serialization, and React Server Component prop boundaries — accidental leaks via `console.log(token)` or error-tracker capture print `<redacted>` instead of the raw bearer.
+
+  No user-facing behavior change. The retry layer's per-attempt timeout also stops leaking pending `setTimeout` handles when the request wins the race.
+</Update>
+
 <Update label="May 18, 2026" tags={["Breaking", "CLI"]}>
   ## `zombiectl` telemetry — Supabase-aligned env vars, on by default, agent attribution
 
