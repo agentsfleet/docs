@@ -18,6 +18,24 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 18, 2026" tags={["UI", "Website"]}>
+  ## Trigger panel multi-card + website OnboardingFlow + Hero CTA
+
+  The dashboard's zombie-detail page now renders one card per declared trigger — a guided registration card with rendered `gh api` / `linear webhook create` / `jira webhook add` snippets for known providers (GitHub, Linear, Jira, Grafana, Slack, AgentMail), a copy-URL fallback for unknown sources, and a `CronCard` showing the schedule + next-fire computed client-side from the host's IANA timezone. The website Home page replaces the `FeatureFlow` evidence section with a 4-step `OnboardingFlow` pictorial (install → add skill → wire webhook → steer), and the Hero primary CTA becomes a terminal-style `$ npm install -g …` button that copies the install command, surfaces an inline `<output aria-live>` toast, and smooth-scrolls to the `#onboarding-flow` anchor (honoring `prefers-reduced-motion`).
+
+  - **`TriggerPanel.tsx` switches from Tabs to Radix Accordion.** One `AccordionItem` per `zombie.triggers[]` entry; the first trigger with no recorded delivery auto-expands on mount (set-up state takes precedence). Inner router dispatches `webhook` to `GuidedTriggerCard` (known provider) or `CopyUrlFallback` (unknown), `cron` to `CronCard`, `api` to `CopyUrlFallback` with the legacy bare webhook URL.
+  - **`provider-guidance.ts` ships six provider entries** — `github`, `linear`, `jira`, `grafana`, `slack`, `agentmail`. Each exposes a 3-arg `command(vars, webhookUrl, events)` template so per-provider snippets vary by `trigger.events`, a `webUiDeepLink(vars)` for the "Open `<provider>`" affordance, and a `variables` list driving the variable-input form. Snapshot-tested per provider.
+  - **`webhookUrlFor(zombieId, source?)`** — dashboard helper reconstructs the server's `webhook_urls: { <source>: <url> }` projection client-side. Called with a source, returns the per-trigger URL; called without, returns the legacy bare ingress at `/v1/webhooks/{zombie_id}`.
+  - **`OnboardingFlow.tsx` replaces `FeatureFlow.tsx`.** Four numbered cards with arrow connectors on `lg:` breakpoint; mobile stacks vertically. Each card carries a real shell snippet, not a screenshot. Anchored at `id="onboarding-flow"` for Hero's smooth-scroll target.
+  - **`Hero.tsx` primary CTA is now a `<button>`** — copies `npm install -g @usezombie/zombiectl && npx skills add usezombie/usezombie` to `navigator.clipboard`, shows the toast for 2 s, scrolls to `#onboarding-flow`. Clipboard-blocked path surfaces a "Clipboard blocked — select the command above and copy manually" toast. `<output aria-live="polite">` element used in place of a design-system Toast primitive (there isn't one yet).
+  - **`cron-parser@^5.5.0`** added to `ui/packages/app` for the `CronCard` next-fire computation. Landing-js bundle stays at **132.6 kB gz** under the 140 kB `.size-limit.json` ceiling (7.4 kB headroom).
+  - **Coverage gate** — app package thresholds (statements 95 / branches 90 / functions 95 / lines 95) all green with three new targeted tests covering the `setCopiedKey` reset updater both branches, the `Intl` timezone fallback to `"UTC"`, and the cron / api auto-expand `TriggerBody` paths.
+  - **Timer-leak fixes** — `GuidedTriggerCard` copy-reset, `CopyUrlFallback` copy-reset, and the existing `Hero` toast all now store their `setTimeout` handle in a `useRef` and clear it in a `useEffect` destructor on unmount; unmount-cleanup tests added at each call site.
+  - **Landing-page promo pill** — small mono pill between the LIVE eyebrow and the headline links to `/pricing` and surfaces the "Free until July 31, 2026" free-trial posture that already lived on the pricing component but was invisible above the fold. Click emits `trackNavigationClicked({ source: "hero_promo_pill", target: "pricing" })`.
+
+  Operator note — `TRIGGER.md` is still the source of truth; the dashboard cards are read-only. Edit the markdown and reinstall to change triggers.
+</Update>
+
 <Update label="May 17, 2026" tags={["Docs"]}>
   ## Docs sweep — `npx skills add` install path, full `doctor` table, tenant-provider commands
 
