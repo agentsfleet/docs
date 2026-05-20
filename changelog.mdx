@@ -19,20 +19,20 @@ export const STAGE_RATE_M65 = "$0.10";
 </Tip>
 
 <Update label="May 20, 2026" tags={["What's new", "Bug fixes", "UI"]}>
-  ## Create a workspace inline, a readable sign-in, and one loading affordance
+  ## Create a workspace inline, plus a readable sign-in and one loading mark
 
-  A route-by-route pass over the dashboard cleared a set of rough edges from sign-in onward: you can now spin up a workspace without leaving the switcher, the sign-in fields are legible at rest, every loading state uses the same wake-pulse mark, and a development-only preview page no longer ships to production.
+  The workspace switcher can now create a workspace without leaving the dashboard, and a sign-in-onward pass fixed the sign-in input contrast, the install-toast fade, and a stray development route.
 
   ## What's new
 
-  - **Create a workspace from the switcher.** The workspace dropdown gains a **New workspace** item that opens a dialog, calls `POST /v1/workspaces`, and switches you onto the new workspace on success — a blank name lets the server generate one. The switcher now also renders when you have zero workspaces, which is exactly when you need to create one.
-  - **One loading affordance.** Loaders that used a generic spinning icon now use the brand wake-pulse — a label beside the dot for page-level waits, the dot alone inside buttons.
+  - **Inline workspace creation** — a `New workspace` item in the switcher opens a dialog, calls `POST /v1/workspaces`, and switches you onto the new workspace on success; a blank name lets the server generate one. The switcher now renders even when you have zero workspaces.
+  - **One loading mark** — loaders that used a generic spinning icon now use the brand wake-pulse: a label beside the dot for page-level waits, the dot alone inside buttons.
 
   ## Bug fixes
 
-  - **Sign-in inputs were invisible until focused.** The Clerk sign-in and sign-up fields rendered the same color as the card behind them, so the box only appeared on focus. Fields now sit on an inset surface with a stronger border and read as click targets at rest.
-  - **The install toast snapped to empty instead of fading.** The Hero install confirmation cleared its text the same frame it began to fade, so the 240 ms fade ran on a blank line. The message — and a warning toast's color — now hold through the fade window.
-  - **A development-only preview page shipped to production.** The `/ds-button-rsc` component-preview route is removed from the build.
+  - **Sign-in input contrast** — the Clerk sign-in and sign-up fields rendered the same color as the card behind them, so the box only showed on focus; they now sit on an inset surface with a stronger border.
+  - **Install-toast fade** — the Hero install confirmation cleared its text the same frame it began to fade, so the 240 ms fade ran on a blank line; the message and a warning toast's color now hold through the window.
+  - **Stray development route** — the `/ds-button-rsc` component-preview page is removed from the build.
 </Update>
 
 <Update label="May 19, 2026" tags={["Internal", "Security"]}>
