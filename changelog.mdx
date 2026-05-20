@@ -18,6 +18,23 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 20, 2026" tags={["Dashboard", "Bug fixes", "UI"]}>
+  ## Create a workspace inline, plus a readable sign-in and one loading mark
+
+  The workspace switcher can now create a workspace without leaving the dashboard, and a sign-in-onward pass fixed the sign-in input contrast, the install-toast fade, and a stray development route.
+
+  ## What's new
+
+  - **Inline workspace creation** — a `New workspace` item in the switcher opens a dialog, calls `POST /v1/workspaces`, and switches you onto the new workspace on success; a blank name lets the server generate one. The switcher now renders even when you have zero workspaces.
+  - **One loading mark** — loaders that used a generic spinning icon now use the brand wake-pulse: a label beside the dot for page-level waits, the dot alone inside buttons.
+
+  ## Bug fixes
+
+  - **Sign-in input contrast** — the Clerk sign-in and sign-up fields rendered the same color as the card behind them, so the box only showed on focus; they now sit on an inset surface with a stronger border.
+  - **Install-toast fade** — the Hero install confirmation cleared its text the same frame it began to fade, so the 240 ms fade ran on a blank line; the message and a warning toast's color now hold through the window.
+  - **Stray development route** — the `/ds-button-rsc` component-preview page is removed from the build.
+</Update>
+
 <Update label="May 19, 2026" tags={["Internal", "Security"]}>
   ## Dashboard tightens its token-handling posture
 
