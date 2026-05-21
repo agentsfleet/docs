@@ -39,14 +39,11 @@ The `usezombie-install-platform-ops` skill is the guided install UX driven from 
 
     Pass `--host=<claude|amp|codex|opencode>` to pin a specific host instead of letting the package decide.
   </Tab>
-  <Tab title="curl (fallback)">
-    Useful when your environment has no node toolchain, or when you want to inspect the file before installing:
+  <Tab title="curl (one command)">
+    Prefer a single command? This installs `zombiectl` and the skill together. Requires Node (it runs npm under the hood):
 
     ```bash
-    # Claude Code — adjust path for Amp / Codex CLI / OpenCode
-    mkdir -p ~/.claude/skills/usezombie-install-platform-ops
-    curl -fsSL https://usezombie.sh/skills.md \
-      -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
+    curl -fsSL https://usezombie.sh | bash
     ```
   </Tab>
 </Tabs>
