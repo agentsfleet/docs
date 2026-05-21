@@ -30,6 +30,17 @@ export const STAGE_RATE_M65 = "$0.10";
   - **Forced prompt mode** — `--tty` forces the REPL even when stdin is piped, then exits when the pipe reaches end-of-file.
 </Update>
 
+<Update label="May 21, 2026" tags={["Security", "UI"]}>
+  ## The dashboard no longer puts an access token in the page source
+
+  A zombie's detail page used to hand its live-activity panel a short-lived API token as a component property, which placed the raw token in the page's HTML source — readable by anyone with access to the open tab (a shared screen, a cached page, a browser extension) without any exploit. The dashboard now hands no token to the browser at all: steering a zombie goes through a server-side action, and the activity stream loads its recent history on the server. This completes the dashboard token-handling work that began on May 19, 2026.
+
+  ## What's new
+
+  - **Steer failures are visible** — when a steer message can't be delivered it shows a `failed` badge instead of staying on `queued`; a delivered steer reconciles to its live event as before.
+  - **Quieter retries** — a failed steer is retried on the server automatically, so the dashboard no longer shows a per-attempt retry counter while steering or while loading recent activity.
+</Update>
+
 <Update label="May 20, 2026" tags={["Dashboard", "Bug fixes", "UI"]}>
   ## Create a workspace inline, plus a readable sign-in and one loading mark
 
