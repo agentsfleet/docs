@@ -155,13 +155,20 @@ zombiectl events zmb_2041 --json | jq 'select(.error)'
 
 There is no `--follow`/streaming-tail flag today. To watch live, poll `events --since 30s` from a script.
 
-### `zombiectl steer <zombie_id> "<message>"`
+### `zombiectl steer <zombie_id> [message]`
 
-Post a steer message — a manual trigger that runs the same reasoning loop as a webhook event. Useful for ad-hoc investigation or before a webhook is wired up.
+Post a steer message — a manual trigger that uses the same reasoning loop as a webhook event. Useful for ad-hoc investigation or before a webhook is wired up.
 
 ```bash
+zombiectl steer zmb_2041
 zombiectl steer zmb_2041 "morning health check — anything red?"
+echo "check the latest deploy event" | zombiectl steer zmb_2041
+echo "check the latest deploy event" | zombiectl steer zmb_2041 --tty
 ```
+
+When you invoke `zombiectl steer <zombie_id>` from a terminal (TTY) and omit the message, `zombiectl` opens a read-eval-print loop (REPL). Each submitted line posts one steer message, streams the reply, then returns to the prompt. Press `Ctrl-D` to exit cleanly, or `Ctrl-C` to cancel the active stream and exit.
+
+Explicit messages stay single-shot, even from a terminal. Piped input also stays single-shot by default so automation and agents can continue invoking the command once per turn. Add `--tty` to force the REPL over piped input; `zombiectl` exits when the pipe reaches end-of-file.
 
 The reply streams back live; the result also persists to the activity stream for replay.
 

@@ -18,6 +18,18 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 21, 2026" tags={["What's new", "CLI"]}>
+  ## `zombiectl steer` opens a terminal prompt when no message is supplied
+
+  `zombiectl steer <zombie_id>` now opens a read-eval-print loop (REPL) when you invoke it from a terminal (TTY) without a message. Automation stays single-shot: explicit messages and piped input still post one steer message, stream one reply, and exit.
+
+  ## CLI
+
+  - **Terminal prompt** — `zombiectl steer <zombie_id>` now prompts for one steer message at a time, streams the reply, then prompts again. `Ctrl-D` exits cleanly; `Ctrl-C` cancels the active stream and exits.
+  - **Single-shot automation** — `zombiectl steer <zombie_id> "message"` and `echo "message" | zombiectl steer <zombie_id>` keep the existing one-turn behavior for scripts and agents.
+  - **Forced prompt mode** — `--tty` forces the REPL even when stdin is piped, then exits when the pipe reaches end-of-file.
+</Update>
+
 <Update label="May 20, 2026" tags={["Dashboard", "Bug fixes", "UI"]}>
   ## Create a workspace inline, plus a readable sign-in and one loading mark
 
