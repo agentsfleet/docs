@@ -18,6 +18,19 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 22, 2026" tags={["What's new", "CLI", "Security"]}>
+  ## `zombiectl login` — verification-code device flow + non-interactive token auth
+
+  Logging in opens a browser approval page that shows a 6-digit verification code; you type it back into the terminal to finish. The code binds the browser approver to the terminal that started the flow, so phishing the approval URL alone can't mint a credential. CI and scripts can skip the browser entirely and supply a token directly.
+
+  ## What's new
+
+  - **Verification-code device flow.** `zombiectl login` opens the approval page; after you Approve, the page shows a 6-digit code to type back into the terminal. The 6-digit shape is checked locally before it's sent, so a typo just re-prompts; wrong codes cap at 5 per session.
+  - **Non-interactive auth.** Supply a token without the browser via `--token <token>`, the `ZOMBIE_TOKEN` environment variable, or by piping it on stdin — resolved in that order. Prefer the env var or stdin to keep the token out of shell history. A non-interactive shell with no token exits with an error instead of waiting.
+  - **Device labels.** `--token-name <label>` names the session on the approval page and in `zombiectl auth status`; it defaults to your platform family (`macos-cli`, `linux-cli`, …).
+  - **One auth-token env var.** `ZOMBIE_TOKEN` is the single environment variable the CLI reads for a user token, everywhere a token is resolved.
+</Update>
+
 <Update label="May 19, 2026" tags={["Internal", "Security"]}>
   ## Dashboard tightens its token-handling posture
 
