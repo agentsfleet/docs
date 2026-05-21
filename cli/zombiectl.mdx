@@ -46,13 +46,13 @@ After the token persists, `login` also fetches `GET /v1/tenants/me/workspaces` a
 
 Flags:
 
-- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer the `ZOMBIE_TOKEN` env var or piping the token on stdin to keep it out of your shell history. `--token-name` is ignored with `--token` (there's no browser session to label).
+- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer the `ZOMBIE_TOKEN` env var or piping the token on stdin to keep it out of your shell history. `--token-name` is ignored for any non-browser token source — `--token`, the `ZOMBIE_TOKEN` env var, or piped stdin — since there's no browser session to label.
 - `--token-name <label>` — human-readable device label persisted alongside the token. Defaults to your platform family (`macos-cli`, `linux-cli`, `windows-cli`). Shows up on the dashboard approval page (so you know which terminal you're approving for) and in `zombiectl auth status`.
 - `--no-open` — print the auth URL instead of opening a browser automatically.
 - `--force` — skip the "you're already logged in as `<name>`, replace?" prompt.
 - `--no-input` — fail fast instead of prompting for the verification code. Supply a token non-interactively via `--token`, the `ZOMBIE_TOKEN` env var, or piped stdin.
 
-`zombiectl login` resolves a token in priority order — the `--token` flag, then the `ZOMBIE_TOKEN` environment variable, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with none of those set. A non-interactive shell (`--no-input`, or no terminal) with no token fails fast asking for one, since the typed verification code can't be supplied without a terminal.
+`zombiectl login` resolves a token in priority order — the `--token` flag, then the `ZOMBIE_TOKEN` environment variable, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with none of those set. A non-interactive shell (`--no-input`, or no terminal) with no token exits immediately with an error instructing you to supply one via `--token`, `ZOMBIE_TOKEN`, or piped stdin — the verification code can't be entered without a terminal.
 
 The login session lives 5 minutes; an unfinished approval expires automatically. The verification code's 6-digit shape is checked locally before it's sent, so a typo just re-prompts. Wrong (but well-formed) code attempts cap at 5 per session — a sixth wrong code aborts the session and you re-run `zombiectl login`.
 
