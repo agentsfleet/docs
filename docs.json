@@ -113,8 +113,7 @@
             "group": "Authentication",
             "pages": [
               "POST /v1/auth/sessions",
-              "GET /v1/auth/sessions/{session_id}",
-              "PATCH /v1/auth/sessions/{session_id}"
+              "GET /v1/auth/sessions/{session_id}"
             ]
           },
           {

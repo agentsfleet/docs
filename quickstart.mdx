@@ -65,14 +65,11 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
 
       Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
     </Tab>
-    <Tab title="curl (fallback)">
-      Useful when your environment has no node toolchain, or when you want to inspect the file first:
+    <Tab title="curl (one command)">
+      Installs `zombiectl` and the skill in one shot (requires Node — it runs npm under the hood). If you skipped the steps above and ran this on a fresh machine, you still need `zombiectl login` (Step 3) before the skill works. Want to read it first? `curl -fsSL https://usezombie.sh` without `| bash` prints the script.
 
       ```bash
-      # Claude Code — adjust the destination for Amp / Codex CLI / OpenCode (their per-host skills paths differ)
-      mkdir -p ~/.claude/skills/usezombie-install-platform-ops
-      curl -fsSL https://usezombie.sh/skills.md \
-        -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
+      curl -fsSL https://usezombie.sh | bash
       ```
     </Tab>
   </Tabs>
