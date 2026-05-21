@@ -18,6 +18,19 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 21, 2026" tags={["What's new", "UI", "Security"]}>
+  ## Create and manage API keys from the dashboard
+
+  Tenant API keys (`zmb_t_…`) — the credentials that authenticate service-to-service callers like CI, cron, or an integration — can now be created, viewed, revoked, and deleted from **Settings → API keys**, with no `curl` required. Creating a key reveals the raw value exactly once in a copy-and-store panel; closing the dialog discards it for good. The same release adds a light/dark theme toggle and a themed fallback avatar.
+
+  ## What's new
+
+  - **API keys in the dashboard** — mint a key with a name and optional description, see each key's status (active or revoked) with created and last-used timestamps, and revoke or delete it from the list. Available to operator-role users and above; others are redirected to Settings.
+  - **One-time key reveal** — the raw `zmb_t_…` value appears once at creation behind a copy button and is never rendered again. A key can be deleted only after it has been revoked, so the audit trail stays intact.
+  - **Light / dark theme toggle** — switch the dashboard theme from the header; the choice persists across reloads and renders correctly on first paint, with no flash of the wrong theme.
+  - **Themed avatar fallback** — with no profile photo set, your initials avatar now uses the dashboard palette instead of a stock fill.
+</Update>
+
 <Update label="May 21, 2026" tags={["What's new", "CLI"]}>
   ## `zombiectl steer` opens a terminal prompt when no message is supplied
 
