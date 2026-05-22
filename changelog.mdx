@@ -18,6 +18,19 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 22, 2026" tags={["What's new", "CLI", "Security"]}>
+  ## `zombiectl login` — verification-code device flow + non-interactive token auth
+
+  Logging in opens a browser approval page that shows a 6-digit verification code; you type it back into the terminal to finish. The code binds the browser approver to the terminal that started the flow, so phishing the approval URL alone can't mint a credential. CI and scripts can skip the browser entirely and supply a token directly.
+
+  ## What's new
+
+  - **Verification-code device flow.** `zombiectl login` opens the approval page; after you Approve, the page shows a 6-digit code to type back into the terminal. The 6-digit shape is checked locally before it's sent, so a typo just re-prompts; wrong codes cap at 5 per session.
+  - **Non-interactive auth.** Supply a token without the browser via `--token <token>`, the `ZOMBIE_TOKEN` environment variable, or by piping it on stdin — resolved in that order. Prefer the env var or stdin to keep the token out of shell history. A non-interactive shell with no token exits with an error instead of waiting.
+  - **Device labels.** `--token-name <label>` names the session on the approval page and in `zombiectl auth status`; it defaults to your platform family (`macos-cli`, `linux-cli`, …).
+  - **One auth-token env var.** `ZOMBIE_TOKEN` is the single environment variable the CLI reads for a user token, everywhere a token is resolved.
+</Update>
+
 <Update label="May 21, 2026" tags={["What's new", "UI", "Security"]}>
   ## Create and manage API keys from the dashboard
 
@@ -186,7 +199,7 @@ export const STAGE_RATE_M65 = "$0.10";
 
   ## What's new
 
-  - **`zombiectl auth status`** — inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_API_TOKEN` env vs none), decodes JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), and probes `GET /v1/tenants/me/billing` to verify the token is still accepted. Exit `0` on valid or unreachable (transient API issues don't poison local state); exit `1` on `UZ-AUTH-001` / `UZ-AUTH-002` / `TOKEN_EXPIRED`.
+  - **`zombiectl auth status`** — inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_TOKEN` env vs none), decodes JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), and probes `GET /v1/tenants/me/billing` to verify the token is still accepted. Exit `0` on valid or unreachable (transient API issues don't poison local state); exit `1` on `UZ-AUTH-001` / `UZ-AUTH-002` / `TOKEN_EXPIRED`.
   - **Trigger panel goes multi-card.** Each declared trigger renders its own card on the dashboard's zombie-detail page — a guided card with the upstream registration command for known providers (GitHub, Linear, Jira, Grafana, Slack, AgentMail, Clerk), a copy-URL card for unknown sources, a schedule + next-fire card for `cron`, and a catch-all for `api`.
   - **Dashboard chat surface.** The `/zombies/{zombie_id}` page mounts an `@assistant-ui/react` thread in place of the prior `LiveEventsPanel`. Webhook / cron / continuation events render as system chips; the agent's reasoning streams as assistant bubbles; the composer at the bottom turns user input into a steer (`POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` — existing endpoint).
   - **Install skill is platform-neutral.** `/usezombie-install-platform-ops` runs in any host with an `AskUserQuestion`-equivalent — Claude Code, Amp, Codex CLI, OpenCode all drive the same skill body. The skill loops `gh api repos/<owner>/<repo>/hooks` per declared webhook trigger and substitutes the workspace `github` credential's `webhook_secret` into each registration. Re-running on a repo with an existing hook at the same URL is idempotent (matched on `config.url`, advanced).

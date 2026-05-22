@@ -24,27 +24,51 @@ Every command accepts the [global flags](/cli/flags). Every command that returns
 
 ### `zombiectl login`
 
-Authenticate via Clerk OIDC device flow. Opens your default browser to complete sign-in.
+Authenticate via a Clerk-backed browser device flow with terminal-side verification. Opens your default browser to the approval page; on Approve, the page displays a 6-digit verification code which you type back into the CLI to complete login. The verification code binds the browser approver to the terminal user — phishing the URL alone is not enough to mint a credential.
 
 ```bash
 zombiectl login
 ```
 
+```bash
+# Label this device for visibility in `auth status` and on the approval page
+zombiectl login --token-name "kishore-macbook"
+```
+
+```bash
+# Non-interactive (CI, scripts): supply a token instead of the browser flow
+ZOMBIE_TOKEN="$MY_TOKEN" zombiectl login
+# …or pipe it so it never lands in shell history
+printf '%s' "$MY_TOKEN" | zombiectl login
+```
+
 After the token persists, `login` also fetches `GET /v1/tenants/me/workspaces` and writes the first workspace into local state as `current_workspace_id`. Signup auto-provisions a default workspace, so a fresh `npm i -g @usezombie/zombiectl && zombiectl login` is enough to reach `zombiectl doctor` green — `workspace add` is only needed if you want a second or custom-named workspace, or if the workspace fetch failed (login still exits 0 in that case).
 
-Use `--no-open` to print the auth URL instead of opening a browser automatically. Use `--timeout-sec` and `--poll-ms` to tune the session poll.
+Flags:
+
+- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer the `ZOMBIE_TOKEN` env var or piping the token on stdin to keep it out of your shell history. `--token-name` is ignored for any non-browser token source — `--token`, the `ZOMBIE_TOKEN` env var, or piped stdin — since there's no browser session to label.
+- `--token-name <label>` — human-readable device label persisted alongside the token. Defaults to your platform family (`macos-cli`, `linux-cli`, `windows-cli`). Shows up on the dashboard approval page (so you know which terminal you're approving for) and in `zombiectl auth status`.
+- `--no-open` — print the auth URL instead of opening a browser automatically.
+- `--force` — skip the "you're already logged in as `<name>`, replace?" prompt.
+- `--no-input` — fail fast instead of prompting for the verification code. Supply a token non-interactively via `--token`, the `ZOMBIE_TOKEN` env var, or piped stdin.
+
+`zombiectl login` resolves a token in priority order — the `--token` flag, then the `ZOMBIE_TOKEN` environment variable, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with none of those set. A non-interactive shell (`--no-input`, or no terminal) with no token exits immediately with an error instructing you to supply one via `--token`, `ZOMBIE_TOKEN`, or piped stdin — the verification code can't be entered without a terminal.
+
+The login session lives 5 minutes; an unfinished approval expires automatically. The verification code's 6-digit shape is checked locally before it's sent, so a typo just re-prompts. Wrong (but well-formed) code attempts cap at 5 per session — a sixth wrong code aborts the session and you re-run `zombiectl login`.
 
 ### `zombiectl logout`
 
-Clear the local session token.
+Removes local credentials (`~/.config/usezombie/credentials.json`) and aborts any in-flight `zombiectl login` flows you have pending.
 
 ```bash
 zombiectl logout
 ```
 
+Does **NOT** revoke your active session token — JWTs are short-lived (~15 min) and expire on their own. Does **NOT** touch the `ZOMBIE_TOKEN` environment variable — if it's set, subsequent commands continue to use that token until you unset it.
+
 ### `zombiectl auth status`
 
-Inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_API_TOKEN` env vs none), decodes the JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), and probes `GET /v1/tenants/me/billing` to check the token is still accepted by the server.
+Inspect the stored credential without re-authenticating. Resolves the token source (file vs `ZOMBIE_TOKEN` env vs none), decodes the JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), surfaces the `token_name` label persisted at login, and probes `GET /v1/tenants/me/billing` to check the token is still accepted by the server.
 
 ```bash
 zombiectl auth status
