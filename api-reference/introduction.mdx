@@ -18,11 +18,10 @@ curl https://api.usezombie.com/v1/workspaces/ws_abc/zombies \
   -H "Authorization: Bearer $ZOMBIE_TOKEN"
 ```
 
-Obtain a token via the CLI login flow (`zombiectl login`) or by creating an auth session programmatically:
+Two kinds of bearer token are accepted:
 
-1. `POST /v1/auth/sessions` — returns a `login_url` and `session_id`
-2. Complete the OAuth flow in the browser
-3. `GET /v1/auth/sessions/{session_id}` — poll until `status: "complete"`, then extract the `token`
+- **Tenant API key (`zmb_t_…`)** — long-lived, for programmatic and service-to-service callers (CI, cron, integrations, scripts). Create one in the dashboard under **Settings → API keys**; the raw value is shown once. This is the right credential for calling the API directly.
+- **User JWT** — short-lived (~15 min), for an interactive human. Mint one with `zombiectl login`, a browser device flow with terminal-side verification. It can't be obtained by a bare API client — the flow needs the dashboard's browser leg — so for unattended access use a tenant API key.
 
 ## Errors
 
