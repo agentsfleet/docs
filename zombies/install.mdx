@@ -29,19 +29,16 @@ Most users don't run `zombiectl install --from` directly. They drive the install
     One-liner. Symlinks `/usezombie-*` into every supported host's skill directory the package can detect:
 
     ```bash
-    npx skills add usezombie/usezombie
+    npx skills add usezombie/skills
     ```
 
     Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
   </Tab>
-  <Tab title="curl (fallback)">
-    Useful when your environment has no node toolchain, or when you want to inspect the file before installing:
+  <Tab title="curl (one command)">
+    Prefer a single command? This installs `zombiectl` and the skill together. Requires Node (it runs npm under the hood). Want to read it first? `curl -fsSL https://usezombie.sh` without `| bash` prints the script.
 
     ```bash
-    # Claude Code — adjust path for Amp / Codex CLI / OpenCode
-    mkdir -p ~/.claude/skills/usezombie-install-platform-ops
-    curl -fsSL https://usezombie.sh/skills.md \
-      -o ~/.claude/skills/usezombie-install-platform-ops/SKILL.md
+    curl -fsSL https://usezombie.sh | bash
     ```
   </Tab>
 </Tabs>
