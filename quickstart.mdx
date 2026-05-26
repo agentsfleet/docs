@@ -3,8 +3,6 @@ title: Quickstart
 description: "Install zombiectl, run /usezombie-install-platform-ops, see a real diagnosis in Slack."
 ---
 
-import { STARTER_CREDIT } from "/snippets/rates.mdx";
-
 This walks through installing the flagship `platform-ops` zombie on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
 
 <Steps>
@@ -31,7 +29,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl --version
   ```
 
-  `zombiectl` is the only binary you install on your machine. It ships the `/usezombie-*` skill samples under `~/.config/usezombie/samples/` so the install skill (next step) can drive `zombiectl install --from` against a known-good source.
+  `zombiectl` is the only binary you install on your machine. It also installs the `/usezombie-*` host skills into every supported agent it detects — so `/usezombie-install-platform-ops` is ready to invoke in the next step — and ships the matching skill samples under `~/.config/usezombie/samples/` so the install skill can drive `zombiectl install --from` against a known-good source.
 </Step>
 
 <Step title="Sign in">
@@ -39,11 +37,15 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. New accounts come with a {STARTER_CREDIT} starter credit pool — never expires, covers hosted execution (event receipts + stages). You bring your provider and model — pay them directly. usezombie marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + stages) is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
 
   <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
+
+  <Note>
+    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `--token <token>` flag, the `ZOMBIE_TOKEN` environment variable, or piped on stdin — resolved in that order (prefer the env var or stdin to keep it out of shell history). Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`zombiectl login`](/cli/zombiectl#zombiectl-login).
+  </Note>
 </Step>
 
 <Step title="(Optional) Create a named workspace">
@@ -54,35 +56,18 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every zombie lives in exactly one. Switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
 </Step>
 
-<Step title="Install and run the install skill">
-  Two ways to drop the `usezombie-install-platform-ops` skill into your host's skills folder. Pick one.
-
-  <Tabs>
-    <Tab title="npx (recommended)">
-      One-liner. The `skills` package symlinks `/usezombie-*` into every supported host's skill directory it can detect:
-
-      ```bash
-      npx skills add usezombie/skills
-      ```
-
-      Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
-    </Tab>
-    <Tab title="curl (one command)">
-      Installs `zombiectl` and the skill in one shot (requires Node — it runs npm under the hood). If you skipped the steps above and ran this on a fresh machine, you still need `zombiectl login` (Step 3) before the skill works. Want to read it first? `curl -fsSL https://usezombie.sh` without `| bash` prints the script.
-
-      ```bash
-      curl -fsSL https://usezombie.sh | bash
-      ```
-    </Tab>
-  </Tabs>
-
-  Then, in your host agent, invoke:
+<Step title="Run the install skill">
+  The `npm install` in Step 2 already added the `/usezombie-install-platform-ops` skill to your agent. Invoke it:
 
   ```
   /usezombie-install-platform-ops
   ```
 
   The skill drives `zombiectl install --from ~/.config/usezombie/samples/platform-ops` under the hood. Power users can run that directly; everyone else gets the guided flow.
+
+  <Tip>
+    **Fresh machine?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill in one shot (it runs npm under the hood) — a one-command replacement for Step 2. You still need `zombiectl login` (Step 3) before the skill works. Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.
+  </Tip>
 
   The skill asks three gating questions:
 

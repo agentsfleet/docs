@@ -248,6 +248,11 @@
           "anchor": "GitHub",
           "href": "https://github.com/usezombie/usezombie",
           "icon": "github"
+        },
+        {
+          "anchor": "Contributing",
+          "href": "https://github.com/usezombie/usezombie#contributing",
+          "icon": "code-pull-request"
         }
       ]
     }

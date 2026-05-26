@@ -1,9 +1,7 @@
 ---
-title: "Operational outcomes don't fall into limbo"
-description: "A deploy fails at 2am. Your senior engineer is asleep. usezombie owns the outcome — wakes on your events, gathers evidence against your infra, posts an evidenced diagnosis to Slack."
+title: "Your deploy failed. The agent already knows why."
+description: "usezombie is an open runtime that owns operational outcomes — a zombie wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps a replayable log of every move it made."
 ---
-
-import { STARTER_CREDIT } from "/snippets/rates.mdx";
 
 <Warning>
   **Stealth-mode testing.** usezombie is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating a zombie or to join as a design partner? Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
@@ -13,78 +11,44 @@ import { STARTER_CREDIT } from "/snippets/rates.mdx";
 
 A deploy fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope. The next morning, half the context is gone — no one remembers what was already tried, the evidence is scattered across CI, logs, dashboards, and chat, and the audit trail is whatever someone thought to paste into a thread.
 
-usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers evidence, reasons over it, and posts an evidenced diagnosis to your Slack channel. The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same zombie is reachable via `zombiectl steer` for a manual investigation.
+usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move it made.
 
-## Three pillars
-
-<Columns cols={3}>
-  <Card title="Open source" icon="github">
-    The runtime that holds your credentials and runs against your infrastructure is code you can read. Apache-2.0.
-  </Card>
-  <Card title="You bring your provider and model" icon="key">
-    Pick the provider — Anthropic, OpenAI, Fireworks (Kimi K2), Together, Groq, Moonshot — attach the key, and pay them directly. Zero markup on inference.
-  </Card>
-  <Card title="Markdown-defined" icon="file-lines">
-    Behaviour lives in `SKILL.md` + `TRIGGER.md`. Iterate on prose, not redeploys. No YAML allowlists, no DAG editors.
-  </Card>
-</Columns>
+The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same zombie is reachable via `zombiectl steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
 
 ## Get started
 
-<Card title="Install platform-ops in ten minutes" icon="rocket" href="/quickstart" horizontal>
-  `npm install -g @usezombie/zombiectl`, then `npx skills add usezombie/skills`, then `/usezombie-install-platform-ops` inside Claude Code, Amp, Codex CLI, or OpenCode.
+`platform-ops` goes from a cold machine to a real diagnosis in Slack in about ten minutes. Install the CLI and sign in:
+
+```bash
+npm install -g @usezombie/zombiectl
+zombiectl login
+```
+
+Then invoke the install skill inside your agent — Claude Code, Amp, Codex CLI, or OpenCode:
+
+```
+/usezombie-install-platform-ops
+```
+
+The skill registers the GitHub webhook and writes `SKILL.md` + `TRIGGER.md` into your repo. From there, behaviour iterates on prose, not redeploys.
+
+<Card title="Full quickstart →" icon="rocket" href="/quickstart" horizontal>
+  Sign in, install `platform-ops`, and trigger a real diagnosis — step by step from a cold machine.
 </Card>
-
-## How a stage works
-
-A zombie does its work in **stages** — one stage is one end-to-end execution on one trigger: event arrives → agent reasons → tool calls → result. Most zombies finish a stage in seconds.
-
-<Columns cols={2}>
-  <Card title="One loop, many event sources" icon="bolt">
-    Webhooks, scheduled cron jobs the zombie sets up itself, and `zombiectl steer` messages all flow through the same reasoning loop.
-  </Card>
-  <Card title="Secrets stay outside the sandbox" icon="shield-halved">
-    The model never sees raw API keys or tokens — only `${secrets.NAME.FIELD}` placeholders. The **tool bridge** substitutes the real value outside the sandbox when the agent calls a tool. A prompt-injection attack recovers only the placeholder. <a href="/zombies/credentials">More →</a>
-  </Card>
-  <Card title="Long incidents keep going" icon="layer-group">
-    If one stage hits the model's context window, the platform restarts it on a fresh prompt with prior findings recovered. <a href="/concepts/context-lifecycle">How long does a stage take? →</a>
-  </Card>
-  <Card title="Approval gating" icon="circle-check">
-    Risky actions block until a human clicks Approve in the dashboard or Slack. The wait survives worker restarts.
-  </Card>
-  <Card title="Spend ceiling" icon="gauge-high">
-    Per-day and per-month dollar caps. {STARTER_CREDIT} starter credit that never expires. Inference cost is yours, paid to your provider directly.
-  </Card>
-  <Card title="Kill switch" icon="power-off">
-    `zombiectl stop` pauses the zombie cleanly; resume with `zombiectl resume`. `zombiectl kill` is terminal — re-install to bring it back.
-  </Card>
-</Columns>
 
 ## Explore
 
 <Columns cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Install `zombiectl`, run the install skill, see a real diagnosis.
-  </Card>
-  <Card title="Authoring a zombie" icon="file-code" href="/zombies/authoring">
-    The `SKILL.md` + `TRIGGER.md` reference for writing your own.
-  </Card>
   <Card title="Concepts" icon="book" href="/concepts">
     Tenants, workspaces, zombies, tools — the four nouns.
   </Card>
-  <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
-    Three knobs, defaults that work, when to override.
+  <Card title="Authoring a zombie" icon="file-code" href="/zombies/authoring">
+    Write your own `SKILL.md` + `TRIGGER.md`.
   </Card>
   <Card title="CLI reference" icon="rectangle-terminal" href="/cli/zombiectl">
     Every `zombiectl` command, with examples.
   </Card>
-  <Card title="Architecture" icon="diagram-project" href="https://github.com/usezombie/usezombie/tree/main/docs/architecture">
-    The canonical technical reference — capabilities, data flow, billing + model providers, path to bastion, post-ship reflection.
-  </Card>
   <Card title="GitHub" icon="github" href="https://github.com/usezombie/usezombie">
     Source, issues, design partners welcome.
-  </Card>
-  <Card title="Discord" icon="discord" href="https://discord.gg/H9hH2nqQjh">
-    Live help from design partners and the core team. Drop in for quick sanity-checks and unreleased-feature questions.
   </Card>
 </Columns>

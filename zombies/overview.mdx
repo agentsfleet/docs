@@ -47,7 +47,7 @@ Every zombie belongs to exactly one **workspace**. The workspace is the boundary
 - **Access control** — teammates invited to a workspace can see, start, and kill its zombies; they cannot see zombies in other workspaces.
 - **Webhook namespace** — every zombie in a workspace gets one unique URL per declared trigger under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
 
-Billing is **not** workspace-scoped. Every stage — no matter which workspace it lives in — debits the same tenant wallet. See [Key concepts](/concepts#credits) for the single-wallet model.
+Billing is **not** workspace-scoped — every workspace draws on the same tenant-level billing. See [Billing](/billing/plans) for the model.
 
 `zombiectl workspace add [name]` creates a new workspace and sets it as active. Switch between existing ones with `zombiectl workspace use <id>` (run `zombiectl workspace list` first to see the IDs). The dashboard's active-workspace selection is independent — switching there does not affect the CLI and vice versa.
 

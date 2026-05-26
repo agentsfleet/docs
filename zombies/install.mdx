@@ -22,32 +22,15 @@ Re-running against the same workspace is safe — running it twice has the same 
 
 ## Two ways to invoke
 
-Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Set up the skill once per machine using either install path:
-
-<Tabs>
-  <Tab title="npx (recommended)">
-    One-liner. Symlinks `/usezombie-*` into every supported host's skill directory the package can detect:
-
-    ```bash
-    npx skills add usezombie/skills
-    ```
-
-    Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
-  </Tab>
-  <Tab title="curl (one command)">
-    Prefer a single command? This installs `zombiectl` and the skill together. Requires Node (it runs npm under the hood). Want to read it first? `curl -fsSL https://usezombie.sh` without `| bash` prints the script.
-
-    ```bash
-    curl -fsSL https://usezombie.sh | bash
-    ```
-  </Tab>
-</Tabs>
-
-Then invoke the slash command in your host agent:
+Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Installing the CLI sets the skill up for you — `npm install -g @usezombie/zombiectl` installs `/usezombie-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
 
 ```
 /usezombie-install-platform-ops
 ```
+
+<Tip>
+  **No global install?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.
+</Tip>
 
 The slash command asks three gating questions (Slack channel, production branch glob, optional cron schedule), registers the webhook via your existing `gh` CLI, and prints a per-trigger registration summary at the end. See [Quickstart](/quickstart) for the full walkthrough.
 
