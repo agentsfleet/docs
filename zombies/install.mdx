@@ -22,7 +22,7 @@ Re-running against the same workspace is safe — running it twice has the same 
 
 ## Two ways to invoke
 
-Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Installing the CLI sets the skill up for you — `npm install -g @usezombie/zombiectl` symlinks `/usezombie-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
+Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Installing the CLI sets the skill up for you — `npm install -g @usezombie/zombiectl` installs `/usezombie-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
 
 ```
 /usezombie-install-platform-ops
