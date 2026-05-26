@@ -3,8 +3,6 @@ title: "Key concepts"
 description: "The four nouns, the tool bridge, and how a stage works."
 ---
 
-import { STARTER_CREDIT } from "/snippets/rates.mdx";
-
 <Tip>
   This page introduces the operator-facing model. For the canonical technical reference — system topology, data flow, billing internals, security boundary, post-ship reflection — read [`docs/architecture/`](https://github.com/usezombie/usezombie/tree/main/docs/architecture) on GitHub.
 </Tip>
@@ -15,13 +13,13 @@ usezombie has four primary objects. Everything else is infrastructure.
 
 <CardGroup cols={2}>
   <Card title="Tenant" icon="building">
-    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries the **credit balance** ({STARTER_CREDIT} starter credit, never expires) and your default Stripe customer.
+    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://usezombie.com/pricing).
   </Card>
   <Card title="Workspace" icon="folder-tree">
-    A container for zombies and credentials. One tenant can have many workspaces (team, project, environment). Credits are **not** fragmented per workspace — every workspace debits the same tenant wallet.
+    A container for zombies and credentials. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
   </Card>
   <Card title="Zombie" icon="ghost">
-    A persistent, durable agent process scoped to one operational outcome. One zombie has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace credentials it uses but never sees raw bytes for. Lives inside a workspace.
+    A persistent, durable agent process scoped to one operational outcome. One zombie has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace credentials it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
   </Card>
   <Card title="Tool" icon="plug">
     A named primitive the zombie's agent can invoke — `http_request`, `memory_store`, `cron_add`. Tools are declared in `TRIGGER.md` and **enforced** by the executor sandbox; the agent literally cannot call a tool that isn't on the list. The companion file `SKILL.md` is **advisory** — natural-language prose the model reads as its system prompt to decide *when* to reach for which tool and what counts as "done." Enforcement comes from `TRIGGER.md`; behavior comes from `SKILL.md`.
@@ -31,7 +29,7 @@ usezombie has four primary objects. Everything else is infrastructure.
 ### How they relate
 
 ```
-Tenant  (wallet: $5.00, provider: anthropic)
+Tenant  (billing + identity, provider: anthropic)
 │
 ├── Workspace: "platform-ops"
 │   │
@@ -48,17 +46,13 @@ Tenant  (wallet: $5.00, provider: anthropic)
         └── Triggers: webhook (Zendesk), steer
 ```
 
-Every stage debits the same tenant balance regardless of which workspace the zombie lives in. This is the **single-wallet, multi-workspace** model — no per-workspace credit pools, no workspace-scoped top-ups.
+## Cost: free during the trial, bring your own model
 
-## Credits and your model provider
+Hosted execution — every event receipt and stage — is **free until July 31, 2026**. No credit card to start.
 
-New tenants start with **{STARTER_CREDIT}** seeded at signup — never expires.
+**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — usezombie marks up zero on inference. The executor resolves your credential at the tool bridge, so the agent never sees the raw key.
 
-- **Hosted execution is metered.** usezombie debits credits on event receipt and per-stage execution. That's what the credit pool pays for.
-- **You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly. usezombie marks up zero on inference. The executor resolves your credential at the tool bridge.
-- **Debits happen on completed work only.** A stage that fails before producing output does not debit.
-
-See [Billing and cost control](/billing/plans).
+For the metered rates that apply after the trial, see [pricing on usezombie.com](https://usezombie.com/pricing).
 
 ## How a stage runs
 
@@ -78,10 +72,6 @@ A trigger lands on the event stream. A stage opens. The agent calls tools allow-
 ## Core terminology
 
 <AccordionGroup>
-  <Accordion title="Zombie">
-    A persistent, always-on agent scoped to one operational outcome. A zombie has two markdown files (`SKILL.md` + `TRIGGER.md`), a trigger that wakes it, a list of tools it can call, and the workspace credentials it needs. Crashes and restarts are transparent — the platform survives them.
-  </Accordion>
-
   <Accordion title="Stage">
     One end-to-end execution of the agent on one trigger: webhook arrives → agent reasons → tool calls → result. Most zombies finish a stage in a few seconds. See [How long does a stage take?](/concepts/context-lifecycle).
   </Accordion>
@@ -96,8 +86,8 @@ A trigger lands on the event stream. A stage opens. The agent calls tools allow-
     `SKILL.md` decides what to do based on the event payload.
   </Accordion>
 
-  <Accordion title="Tool">
-    A named verb the agent can invoke, declared in `TRIGGER.md`:
+  <Accordion title="Tool catalog">
+    The named verbs an agent can invoke, declared in `TRIGGER.md`:
     - `http_request` — outbound HTTP. Slack posts, GitHub calls, your provider — all go through this.
     - `memory_store` / `memory_recall` / `memory_list` / `memory_forget` — durable cross-event learning. See [Memory](/memory).
     - `cron_add` / `cron_list` / `cron_remove` — schedule future stages.
