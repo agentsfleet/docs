@@ -42,6 +42,10 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
 
   <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
+
+  <Note>
+    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `ZOMBIE_TOKEN` environment variable (preferred — keeps it out of shell history), the `--token <token>` flag, or piped on stdin, resolved in that order. Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`zombiectl login`](/cli/zombiectl#zombiectl-login).
+  </Note>
 </Step>
 
 <Step title="(Optional) Create a named workspace">
