@@ -3,7 +3,7 @@ title: "Workspaces"
 description: "What a workspace is and how it relates to your tenant."
 ---
 
-A **workspace** is a tenant-scoped container for zombies, their credentials, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-zombie, when you wire an upstream webhook to a `zombie_id` (see [Webhooks](/zombies/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without giving up the shared tenant wallet.
+A **workspace** is a tenant-scoped container for zombies, their credentials, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-zombie, when you wire an upstream webhook to a `zombie_id` (see [Webhooks](/zombies/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
 
 ## What a workspace contains
 
@@ -11,12 +11,12 @@ Each workspace has its own:
 
 - **Zombies** — the configured agents that live and run here.
 - **Credentials** — the vault keys zombies in this workspace can read. Workspace-scoped on purpose: credentials do not leak across workspaces.
-- **Webhook namespace** — every zombie in a workspace gets its own unique URL under `https://api.usezombie.com/v1/webhooks/{zombie_id}`.
+- **Webhook namespace** — every zombie in a workspace gets its own unique URL under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}`.
 - **Access control** — teammates invited to a workspace can see, start, and kill its zombies; they cannot see zombies in other workspaces.
 
 ## What a workspace does NOT contain
 
-- **Billing.** Credits, plan tier, and Stripe subscription all live on the **tenant**, not the workspace. Creating a second workspace does not give you a second $5 credit; every stage in every workspace debits the same tenant wallet. See [Billing and cost control](/billing/plans).
+- **Billing.** Plan tier and Stripe subscription all live on the **tenant**, not the workspace. Creating a second workspace does not change billing — every stage in every workspace draws on the same tenant account. See [Billing and cost control](/billing/plans).
 - **Per-workspace spend caps.** Monthly spend caps live at the tenant level in v2.
 
 ## Plan limits

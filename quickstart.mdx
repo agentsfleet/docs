@@ -44,7 +44,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
 
   <Note>
-    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `ZOMBIE_TOKEN` environment variable (preferred — keeps it out of shell history), the `--token <token>` flag, or piped on stdin, resolved in that order. Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`zombiectl login`](/cli/zombiectl#zombiectl-login).
+    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `--token <token>` flag, the `ZOMBIE_TOKEN` environment variable, or piped on stdin — resolved in that order (prefer the env var or stdin to keep it out of shell history). Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`zombiectl login`](/cli/zombiectl#zombiectl-login).
   </Note>
 </Step>
 

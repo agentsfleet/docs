@@ -25,23 +25,23 @@ Two kinds of bearer token are accepted:
 
 ## Errors
 
-All errors follow a consistent format:
+All errors use RFC 7807 problem detail (`Content-Type: application/problem+json`):
 
 ```json
 {
-  "error": {
-    "code": "UZ-WORKSPACE-001",
-    "message": "No workspace with the given ID exists."
-  },
+  "docs_uri": "https://docs.usezombie.com/api-reference/error-codes#UZ-WORKSPACE-001",
+  "title": "Workspace not found",
+  "detail": "No workspace with the given ID exists.",
+  "error_code": "UZ-WORKSPACE-001",
   "request_id": "req_01JQ7K..."
 }
 ```
 
-Error codes follow the `UZ-<DOMAIN>-NNN` scheme. Every response includes a `request_id` for tracing. See [Error codes](/api-reference/error-codes) for the full registry.
+Error codes follow the `UZ-<DOMAIN>-NNN` scheme in the `error_code` field. Every response includes a `request_id` for tracing. See [Error codes](/api-reference/error-codes) for the full registry.
 
 ## Conventions
 
-- **IDs** are UUIDs.
+- **IDs** are UUIDv7.
 - **Timestamps** are Unix milliseconds.
 - **State transitions** are partial updates on the parent resource (e.g., `PATCH /v1/workspaces/{workspace_id}/zombies/{zombie_id}` with body `{status: "stopped"}`). Sub-resources (e.g., `/messages`, `/events`, `/events/stream`) handle data-flow operations.
 - **Streaming endpoints** (activity stream) return Server-Sent Events.

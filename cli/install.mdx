@@ -49,14 +49,12 @@ Run the built-in diagnostics command to verify API connectivity, auth status, an
 zombiectl doctor
 ```
 
-`doctor` runs five checks and exits non-zero if any fails:
+`doctor` runs three checks and exits non-zero if any fails. It does **not** require authentication and never short-circuits — every check runs and reports:
 
 | Check | Verifies |
 |---|---|
-| `auth_token_present` | The local config has a valid auth token from `zombiectl login`. Short-circuits the rest — every check downstream needs auth. |
 | `server_reachable` | `GET /healthz` against the configured API URL returns `{ "status": "ok" }` within 5s. |
 | `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `zombiectl login` from your signup-provisioned default workspace; can also be set or replaced by `zombiectl workspace add` / `workspace use`. |
-| `workspace_binding_valid` | The auth token can read the selected workspace's zombies — i.e. it is bound to the right tenant. |
-| `tenant_provider` | Returns the active inference posture for the tenant: `{ mode, model, context_cap_tokens, free_trial }`. `mode` is `platform` (you pay credits, we route to a default model) or `self_managed` (you attached your own provider key via `zombiectl tenant provider set`). `free_trial` carries `{ active, ends_at_ms }` while the launch trial window is open. |
+| `workspace_binding_valid` | The resolved auth token can read the selected workspace's zombies — i.e. it is bound to the right tenant. Reports a failed check (rather than aborting) when no token is present. |
 
-Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight.
+Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight. For the tenant's inference posture and free-trial window, use [`zombiectl tenant provider show`](/cli/zombiectl#tenant-provider).
