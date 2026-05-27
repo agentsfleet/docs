@@ -18,6 +18,20 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 27, 2026" tags={["What's new", "Internal"]}>
+  ## Execution moves to a host-resident runner fleet
+
+  Behind an unchanged user surface, an event's agent now runs in a separate `zombie-runner` daemon instead of inside the API server. `zombied` became the control plane — it owns Postgres, Redis, and the Vault, and hands work to runners over an authenticated HTTPS protocol — while the runner is the execution plane that runs each event in a forked, sandboxed child holding no datastore credentials. Steering, webhooks, cron, the live event tail, and history behave exactly as before; what changed is where the work runs.
+
+  ## What's new
+
+  - **Control plane / execution plane split.** A runner leases an event, runs it, and reports the result; `zombied` does the durable writes. Work can run on hosts that never see a database credential.
+  - **Lease-based ownership with fencing.** Each lease carries a deadline and a monotonic fencing token. A runner that dies mid-event has its work reclaimed and re-run by another runner; a late report from the dead runner is rejected, so state is never double-written.
+  - **Sandbox is mandatory.** Every event runs in a Landlock + cgroups + network-namespace sandbox; a sandbox that fails to start fails closed rather than running unprotected.
+
+  Host-resident runners are not enabled in production yet — this release lands the architecture; turning them on follows in a later update. One known limit ships with it: an agent that runs longer than the 30-second lease window is reclaimed and re-run, so long single events wait on a follow-up that adds lease renewal.
+</Update>
+
 <Update label="May 22, 2026" tags={["What's new", "CLI", "Security"]}>
   ## `zombiectl login` — verification-code device flow + non-interactive token auth
 
