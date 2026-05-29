@@ -1,6 +1,6 @@
 ---
 title: "Your deploy failed. The agent already knows why."
-description: "usezombie is an open runtime that owns operational outcomes — a zombie wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps a replayable log of every move it made."
+description: "usezombie is an open runtime that owns operational outcomes — a zombie wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps an activity stream of every move it made."
 ---
 
 <Warning>
@@ -9,15 +9,15 @@ description: "usezombie is an open runtime that owns operational outcomes — a 
 
 ## The 2am problem
 
-A deploy fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope. The next morning, half the context is gone — no one remembers what was already tried, the evidence is scattered across CI, logs, dashboards, and chat, and the audit trail is whatever someone thought to paste into a thread.
+A deploy fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope. The next morning, half the context is gone — no one remembers what was already tried, and the evidence is scattered across CI, provider output, dashboards, and chat.
 
-usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move it made.
+usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps every move in the activity stream.
 
 The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same zombie is reachable via `zombiectl steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
 
 ## Get started
 
-`platform-ops` goes from a cold machine to a real diagnosis in Slack in about ten minutes. Install the CLI and sign in:
+Install the CLI and sign in:
 
 ```bash
 npm install -g @usezombie/zombiectl

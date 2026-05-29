@@ -18,6 +18,23 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="May 29, 2026" tags={["What's new", "CLI", "Docs"]}>
+  ## Docs match the current install flow and pricing trial
+
+  The docs now match the current website pitch and `zombiectl` install behavior. The CLI package installs the host-agent skill, so the guided `platform-ops` setup starts with `npm install -g @usezombie/zombiectl`, `zombiectl login`, then `/usezombie-install-platform-ops`.
+
+  ## What's new
+
+  - **Landing page trimmed** — the home page uses the current headline, folds the old explanatory sections into the pitch, and keeps Explore focused on the four main destinations.
+  - **Pricing copy points to the website** — quickstart and concepts describe the launch trial as free until July 31, 2026 and link to [pricing](https://usezombie.com/pricing) for post-trial rates.
+  - **Concepts are de-duplicated** — zombie and tool definitions live in the four-nouns cards, while the glossary points readers to the tool catalog.
+
+  ## CLI
+
+  - **Two-command install path** — quickstart, CLI install, and zombie install pages remove the stale `npx skills add usezombie/skills` step. The `curl -fsSL https://usezombie.sh | bash` one-liner remains as the fallback path.
+  - **Contributing link moves to GitHub** — the docs nav now points contributors to the repo README's contributing section.
+</Update>
+
 <Update label="May 27, 2026" tags={["What's new", "Internal"]}>
   ## Execution moves to a host-resident runner fleet
 

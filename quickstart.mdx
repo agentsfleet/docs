@@ -3,7 +3,7 @@ title: Quickstart
 description: "Install zombiectl, run /usezombie-install-platform-ops, see a real diagnosis in Slack."
 ---
 
-This walks through installing the flagship `platform-ops` zombie on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
+This walks through installing the flagship `platform-ops` zombie on one of your repositories. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
 
 <Steps>
 
@@ -37,7 +37,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + stages) is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
 
@@ -63,7 +63,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   /usezombie-install-platform-ops
   ```
 
-  The skill drives `zombiectl install --from ~/.config/usezombie/samples/platform-ops` under the hood. Power users can run that directly; everyone else gets the guided flow.
+  The skill drives `zombiectl install --from ~/.config/usezombie/samples/platform-ops` under the hood. Power users can invoke that directly; everyone else gets the guided flow.
 
   <Tip>
     **Fresh machine?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill in one shot (it runs npm under the hood) — a one-command replacement for Step 2. You still need `zombiectl login` (Step 3) before the skill works. Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.

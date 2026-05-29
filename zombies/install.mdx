@@ -18,7 +18,7 @@ zombiectl install --from ~/.config/usezombie/samples/platform-ops
 
 One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/zombies/webhooks) if you maintain the upstream hook by hand.
 
-Re-running against the same workspace is safe — running it twice has the same effect as running it once. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
+Repeating install against the same workspace is safe. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
 ## Two ways to invoke
 

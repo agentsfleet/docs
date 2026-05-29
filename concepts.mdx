@@ -1,6 +1,6 @@
 ---
 title: "Key concepts"
-description: "The four nouns, the tool bridge, and how a stage works."
+description: "The four nouns, the tool bridge, and how an execution works."
 ---
 
 <Tip>
@@ -16,7 +16,7 @@ usezombie has four primary objects. Everything else is infrastructure.
     Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://usezombie.com/pricing).
   </Card>
   <Card title="Workspace" icon="folder-tree">
-    A container for zombies and credentials. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
+    A container for zombies and credentials. One tenant can have many workspaces (team, repo, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
   </Card>
   <Card title="Zombie" icon="ghost">
     A persistent, durable agent process scoped to one operational outcome. One zombie has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace credentials it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
@@ -48,40 +48,40 @@ Tenant  (billing + identity, provider: anthropic)
 
 ## Cost: free during the trial, bring your own model
 
-Hosted execution — every event receipt and stage — is **free until July 31, 2026**. No credit card to start.
+Hosted execution is **free until July 31, 2026**. No credit card to start.
 
 **You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — usezombie marks up zero on inference. The executor resolves your credential at the tool bridge, so the agent never sees the raw key.
 
 For the metered rates that apply after the trial, see [pricing on usezombie.com](https://usezombie.com/pricing).
 
-## How a stage runs
+## How an execution works
 
 ```mermaid
 flowchart LR
     Trigger[trigger arrives<br/>webhook · cron · steer] --> Event[event recorded<br/>on the activity stream]
-    Event --> Stage[stage opens]
-    Stage --> Tool[tool calls<br/>placeholders only]
+    Event --> Execution[execution opens]
+    Execution --> Tool[tool calls<br/>placeholders only]
     Tool --> Bridge[tool bridge<br/>substitutes secret<br/>outside sandbox]
     Bridge --> Result[result returned<br/>added to context]
     Result --> Tool
-    Tool --> Done[stage exits<br/>diagnosis posts<br/>state checkpointed]
+    Tool --> Done[execution exits<br/>diagnosis posts<br/>state checkpointed]
 ```
 
-A trigger lands on the event stream. A stage opens. The agent calls tools allow-listed by `TRIGGER.md`; each tool result lands in the model's context. The agent never sees raw secret bytes — placeholders substitute at the sandbox boundary. The stage exits when the agent is done or hits a [context boundary](/concepts/context-lifecycle); state checkpoints, the next trigger picks up.
+A trigger lands on the activity stream. An execution opens. The agent calls tools allow-listed by `TRIGGER.md`; each tool result lands in the model's context. The agent never sees raw secret bytes — placeholders substitute at the sandbox boundary. The execution exits when the agent is done or hits a [context boundary](/concepts/context-lifecycle); state checkpoints, the next trigger picks up.
 
 ## Core terminology
 
 <AccordionGroup>
-  <Accordion title="Stage">
-    One end-to-end execution of the agent on one trigger: webhook arrives → agent reasons → tool calls → result. Most zombies finish a stage in a few seconds. See [How long does a stage take?](/concepts/context-lifecycle).
+  <Accordion title="Execution">
+    One billable agent reasoning window for one event: webhook arrives → agent reasons → tool calls → result. See [How long does an execution take?](/concepts/context-lifecycle).
   </Accordion>
 
   <Accordion title="Trigger">
     What wakes a zombie. Three sources, all feeding the same reasoning loop:
 
     - **Webhook** — an external system (GitHub, Slack, your monitoring) POSTs to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` (one URL per declared trigger source).
-    - **Cron** — the zombie schedules its own future stages via the `cron_add` tool.
-    - **Steer** — a human invokes `zombiectl steer <zombie_id> "..."` for a manual stage.
+    - **Cron** — the zombie schedules its own future executions via the `cron_add` tool.
+    - **Steer** — a human invokes `zombiectl steer <zombie_id> "..."` for a manual execution.
 
     `SKILL.md` decides what to do based on the event payload.
   </Accordion>
@@ -90,7 +90,7 @@ A trigger lands on the event stream. A stage opens. The agent calls tools allow-
     The named verbs an agent can invoke, declared in `TRIGGER.md`:
     - `http_request` — outbound HTTP. Slack posts, GitHub calls, your provider — all go through this.
     - `memory_store` / `memory_recall` / `memory_list` / `memory_forget` — durable cross-event learning. See [Memory](/memory).
-    - `cron_add` / `cron_list` / `cron_remove` — schedule future stages.
+    - `cron_add` / `cron_list` / `cron_remove` — schedule future executions.
 
     The agent can only call tools that are explicitly listed. A jailbroken agent cannot reach outside the list.
   </Accordion>
@@ -100,6 +100,6 @@ A trigger lands on the event stream. A stage opens. The agent calls tools allow-
   </Accordion>
 
   <Accordion title="Budget">
-    Dollar ceilings on hosted execution (the platform compute that runs your zombie — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new stages from opening. During the launch free trial (through July 31, 2026) hosted-execution stages are billed at **$0**, so a budget ceiling won't stop a zombie for trial usage — these caps apply to the metered rate after the trial (see [pricing](https://usezombie.com/pricing)). Inference is on your model provider's bill, not on your usezombie invoice — your provider's own caps apply there.
+    Dollar ceilings on hosted execution (the platform compute that runs your zombie — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new executions from opening. During the launch free trial (through July 31, 2026) hosted execution is billed at **$0**, so a budget ceiling won't stop a zombie for trial usage — these caps apply to the metered rate after the trial (see [pricing](https://usezombie.com/pricing)). Inference is on your model provider's bill, not on your usezombie invoice — your provider's own caps apply there.
   </Accordion>
 </AccordionGroup>
