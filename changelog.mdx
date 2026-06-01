@@ -18,6 +18,18 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="Jun 01, 2026" tags={["What's new", "CLI"]}>
+  ## Host skills move to their own repo — install with `npx skills add usezombie/skills`
+
+  The `/usezombie-*` host-agent skills now live in the public [`usezombie/skills`](https://github.com/usezombie/skills) repository and install with `npx skills add usezombie/skills`. The npm package ships the `zombiectl` CLI and zombie samples only; it no longer bundles the skills. Installing the CLI and adding the skills are now two commands. The `curl -fsSL https://usezombie.sh | bash` one-shot installer does both for you and is unchanged.
+
+  ## What's new
+
+  - **`npx skills add usezombie/skills`** — the install path on `index.mdx`, `quickstart.mdx`, `cli/install.mdx`, and `zombies/install.mdx`. Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
+  - **Skills iterate independently.** A skill update ships from the skills repo without a CLI release, so skill fixes reach you without waiting on an npm publish.
+  - **`npm install -g @usezombie/zombiectl`** installs the CLI and samples only. Older instructions that said the npm install also set up the skills no longer apply — add them with the command above.
+</Update>
+
 <Update label="Jun 01, 2026" tags={["What's new", "Internal"]}>
   ## Long single events keep running — lease renewal lands
 
