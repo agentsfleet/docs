@@ -18,6 +18,18 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="Jun 01, 2026" tags={["What's new", "Internal"]}>
+  ## Long single events keep running — lease renewal lands
+
+  The follow-up promised in the May 27, 2026 runner-fleet release is here: an event that runs longer than the lease window is no longer reclaimed and replayed. While a runner is executing an event, it renews the lease in the background, pushing the kill deadline forward so a single long-running agent runs to completion instead of being cut off after 30 seconds. A hard 12-hour ceiling still caps a runaway event.
+
+  ## What's new
+
+  - **Background lease renewal.** A runner renews mid-execution and keeps ownership of the event while it is still working. A runner that loses its lease cannot reclaim it.
+  - **Fail-safe renewal.** A renewal that hits a transient database fault is retried on the next tick rather than ending the event; only a genuinely missing or superseded lease stops it, so a long event survives a brief datastore blip.
+  - **Bounded runtime.** Renewal cannot extend a single event past a 12-hour maximum, so a stuck agent is still reclaimed.
+</Update>
+
 <Update label="May 27, 2026" tags={["What's new", "Internal"]}>
   ## Execution moves to a host-resident runner fleet
 
