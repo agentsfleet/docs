@@ -27,7 +27,13 @@ description: "Install the zombiectl CLI."
 
 ## Agent Skills
 
-The `usezombie-install-platform-ops` skill is the guided install UX driven from a host agent (Claude Code, Amp, Codex CLI, OpenCode). The `npm install -g @usezombie/zombiectl` above already installs the `/usezombie-*` slash commands into every supported host's skill directory it detects on your machine — invoke `/usezombie-install-platform-ops` in your agent and you're set.
+The `usezombie-install-platform-ops` skill is the guided install UX driven from a host agent (Claude Code, Amp, Codex CLI, OpenCode). Add the skills with one command:
+
+```bash
+npx skills add usezombie/skills
+```
+
+This symlinks the `/usezombie-*` slash commands from the public [`usezombie/skills`](https://github.com/usezombie/skills) repo into every supported host's skill directory it detects on your machine — invoke `/usezombie-install-platform-ops` in your agent and you're set. Pass `--host=<claude|amp|codex|opencode>` to target a single host instead of every detected one.
 
 <Tip>
   **No global install?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.

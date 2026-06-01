@@ -18,9 +18,10 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   Pick one. The rest of this page assumes you have a working session in front of you.
 </Step>
 
-<Step title="Install zombiectl">
+<Step title="Install zombiectl and skills">
   ```bash
   npm install -g @usezombie/zombiectl
+  npx skills add usezombie/skills
   ```
 
   Verify:
@@ -29,7 +30,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl --version
   ```
 
-  `zombiectl` is the only binary you install on your machine. It also installs the `/usezombie-*` host skills into every supported agent it detects — so `/usezombie-install-platform-ops` is ready to invoke in the next step — and ships the matching skill samples under `~/.config/usezombie/samples/` so the install skill can drive `zombiectl install --from` against a known-good source.
+  `zombiectl` is the only binary you install on your machine; it ships the skill samples under `~/.config/usezombie/samples/` so the install skill can drive `zombiectl install --from` against a known-good source. `npx skills add usezombie/skills` then symlinks the `/usezombie-*` host skills from the public [`usezombie/skills`](https://github.com/usezombie/skills) repo into every supported agent it detects — so `/usezombie-install-platform-ops` is ready to invoke in the next step.
 </Step>
 
 <Step title="Sign in">
@@ -57,7 +58,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
 </Step>
 
 <Step title="Run the install skill">
-  The `npm install` in Step 2 already added the `/usezombie-install-platform-ops` skill to your agent. Invoke it:
+  The `npx skills add usezombie/skills` in Step 2 already added the `/usezombie-install-platform-ops` skill to your agent. Invoke it:
 
   ```
   /usezombie-install-platform-ops
