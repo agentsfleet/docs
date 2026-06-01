@@ -17,10 +17,11 @@ The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls work
 
 ## Get started
 
-`platform-ops` goes from a cold machine to a real diagnosis in Slack in about ten minutes. Install the CLI and sign in:
+`platform-ops` goes from a cold machine to a real diagnosis in Slack in about ten minutes. Install the CLI, add the host skills, and sign in:
 
 ```bash
 npm install -g @usezombie/zombiectl
+npx skills add usezombie/skills
 zombiectl login
 ```
 
