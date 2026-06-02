@@ -66,12 +66,12 @@ Lets one zombie hand work to another agent. Powerful but advanced — most zombi
 
 ## Browser
 
-Three independently-declarable tools that look related but overlap awkwardly. **Most operational zombies should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud executor. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
+Three independently-declarable tools that look related but overlap awkwardly. **Most operational zombies should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
 
 | Tool | What it does | What it actually does on hosted v2 |
 |---|---|---|
-| `browser` | Multi-action verb. The schema advertises `open`, `screenshot`, `click`, `type`, `scroll`, `read` — but only `open` and `read` are functional. **`screenshot` redirects** to the standalone tool (`return ToolResult.fail("Use the screenshot tool instead")`). **`click`/`type`/`scroll` always fail** ("CDP not available"). `read` is a curl-based HTML fetcher capped at 8 KB. | `open` shells out to `open`/`xdg-open` on the executor host — no display on a headless cloud worker, so this no-ops or errors. `read` works but is inferior to `web_fetch`. |
-| `screenshot` | Independent tool. Captures the executor's screen via platform-native commands. Returns an `[IMAGE:path]` marker. | The hosted v2 executor is headless. There's no display to capture, and the tool reflects that — declare only if you're running a self-hosted executor with a display attached. |
+| `browser` | Multi-action verb. The schema advertises `open`, `screenshot`, `click`, `type`, `scroll`, `read` — but only `open` and `read` are functional. **`screenshot` redirects** to the standalone tool (`return ToolResult.fail("Use the screenshot tool instead")`). **`click`/`type`/`scroll` always fail** ("CDP not available"). `read` is a curl-based HTML fetcher capped at 8 KB. | `open` shells out to `open`/`xdg-open` on the runner host — no display on a headless cloud worker, so this no-ops or errors. `read` works but is inferior to `web_fetch`. |
+| `screenshot` | Independent tool. Captures the runner's screen via platform-native commands. Returns an `[IMAGE:path]` marker. | The hosted v2 runner is headless. There's no display to capture, and the tool reflects that — declare only if you're running a self-hosted runner with a display attached. |
 
 <Warning>
 **Declaring `browser` does NOT unlock `screenshot` capabilities.** They're independent tools; the sub-action name overlap is incidental. If you want a screen capture, declare `screenshot`. Declaring both `browser` and `screenshot` is fine — they don't conflict.
@@ -79,11 +79,11 @@ Three independently-declarable tools that look related but overlap awkwardly. **
 
 ## Git
 
-Repository operations on the executor's workspace directory.
+Repository operations on the runner's workspace directory.
 
 | Tool | What it does |
 |---|---|
-| `git` | Structured wrapper for `status`, `diff`, `log`, `branch`, `commit`, `add`, `checkout`, `stash`. Constrained to the executor's workspace. |
+| `git` | Structured wrapper for `status`, `diff`, `log`, `branch`, `commit`, `add`, `checkout`, `stash`. Constrained to the runner's workspace. |
 
 ## File
 
@@ -129,7 +129,7 @@ Drop any one and the call fails: missing tool → agent can't even try; missing 
 
 ## Validation
 
-`zombiectl install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the executor builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
+`zombiectl install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
 
 The practical consequences:
 

@@ -102,7 +102,7 @@ zombiectl events <zombie_id> --since 1h --json | jq 'select(.error)'
 | `UZ-MEM-001` | Memory scope denied | The agent tried to read another zombie's memory. Check the `key` derivation in `SKILL.md` — keys are zombie-scoped. |
 
 <Note>
-**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the executor logs `UZ-TOOL-005` at warn level and silently skips it. When the agent tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `zombiectl logs <zombie_id>` for the actual error text. See [Tools catalogue → Validation](/zombies/tools#validation).
+**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` at warn level and silently skips it. When the agent tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `zombiectl logs <zombie_id>` for the actual error text. See [Tools catalogue → Validation](/zombies/tools#validation).
 </Note>
 
 ### Network allowlist drops

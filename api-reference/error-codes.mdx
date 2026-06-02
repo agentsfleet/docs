@@ -169,7 +169,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 ## Credentials
 
-These fire on the inference path — when the executor needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your zombie uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-ZMB-003`](#zombie)).
+These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your zombie uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-ZMB-003`](#zombie)).
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
@@ -208,7 +208,7 @@ These fire on the inference path — when the executor needs to call the model a
 | `UZ-STARTUP-005` | 500 | Migration check failed | Database migration state could not be verified. Check DB connectivity. |
 | `UZ-STARTUP-007` | 500 | Redis group creation failed | Redis connected but consumer group creation failed. Check Redis ACL permissions. |
 
-## Executor
+## Runner
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
