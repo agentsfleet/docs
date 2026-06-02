@@ -127,7 +127,7 @@ Four verbs control a zombie's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
-| `stop <zombie_id>` | Halt the running session. New events stop dispatching; in-flight stage finishes cleanly. | Yes — `zombiectl resume`. |
+| `stop <zombie_id>` | Halt the running session. New events stop dispatching; in-flight run finishes cleanly. | Yes — `zombiectl resume`. |
 | `resume <zombie_id>` | Resume from `stopped` or auto-paused state. | — |
 | `kill <zombie_id>` | Mark terminal. The zombie won't process events again, but its row, history, and webhook URL persist. | No, but the zombie can be `delete`d after. |
 | `delete <zombie_id>` | Hard-delete. Removes the zombie row and its webhook URL. **Must `kill` first.** | No. |
@@ -282,7 +282,7 @@ Prints the workspace's `workspace_id`, `name`, `created_at`, and active marker. 
 
 ### `zombiectl workspace delete <id>`
 
-Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight stages finish, retains stage history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `zombie_id`s, so any upstream webhooks pointing at the old workspace's zombies need to be re-wired.
+Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `zombie_id`s, so any upstream webhooks pointing at the old workspace's zombies need to be re-wired.
 
 ```bash
 zombiectl workspace delete ws_abc123
@@ -369,7 +369,7 @@ For per-zombie spend breakdowns, use `zombiectl logs <zombie_id> --json` and agg
 
 ## Tenant provider
 
-By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the stage charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. The flat self-managed stage fee replaces the per-token component, and you pay your provider directly.
+By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. The flat self-managed run fee replaces the per-token component, and you pay your provider directly.
 
 ### `zombiectl tenant provider show`
 

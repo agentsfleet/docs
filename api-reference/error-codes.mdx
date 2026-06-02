@@ -92,7 +92,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-ENTL-001` | 503 | Entitlement service unavailable | Could not verify plan entitlements |
-| `UZ-ENTL-003` | 402 | Stage limit reached | Plan does not allow more pipeline stages |
+| `UZ-ENTL-003` | 402 | Run limit reached | Plan does not allow more pipeline runs |
 | `UZ-ENTL-004` | 403 | Skill not allowed | Plan does not include this skill |
 
 ## Pipeline v1 removed
@@ -213,7 +213,7 @@ These fire on the inference path — when the executor needs to call the model a
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-EXEC-001` | 500 | Execution session create failed | Execution session creation failed. Check runner availability. |
-| `UZ-EXEC-002` | 500 | Stage start failed | Stage failed to start. Check runner configuration. |
+| `UZ-EXEC-002` | 500 | Run start failed | Run failed to start. Check runner configuration. |
 | `UZ-EXEC-003` | 500 | Execution timeout kill | Execution exceeded the timeout limit and was killed. |
 | `UZ-EXEC-009` | 500 | Execution startup posture failure | Execution startup posture check failed. Verify runner security config. |
 | `UZ-EXEC-012` | 500 | Runner agent init failed | Runner agent initialization failed. Check configuration. |

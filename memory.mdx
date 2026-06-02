@@ -13,14 +13,14 @@ Memory is always on — no setup, no flag.
 |---|---|---|---|
 | `core` | zombie | permanent until forgotten | Learned facts about durable entities — customers, accounts, preferences. |
 | `daily` | zombie | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
-| `conversation` | event | dies with the stage | Within-stage scratch — checkpoint findings during a long incident. |
+| `conversation` | event | dies with the run | Within-run scratch — checkpoint findings during a long incident. |
 | `workspace` | workspace | durable | Facts shared across every zombie in the workspace. |
 
-Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for staging during a long stage. Pick `workspace` only when multiple zombies need the same fact.
+Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for staging during a long run. Pick `workspace` only when multiple zombies need the same fact.
 
 ## The four tools
 
-The agent calls these from inside a stage; the runtime wires them to the memory backend.
+The agent calls these from inside a run; the runtime wires them to the memory backend.
 
 | Tool | Shape | Purpose |
 |---|---|---|
@@ -31,16 +31,16 @@ The agent calls these from inside a stage; the runtime wires them to the memory 
 
 There is no vector search. Pre-filter with tags + categories + recency, then let the model reason over the candidate set.
 
-## Where memory fits in a stage
+## Where memory fits in a run
 
-The two memory touchpoints are at the **start** of a stage (`memory_recall` before deciding) and at the **end** (`memory_store` after deciding what was learned). Anything writing to memory in the middle is probably scratch — that belongs in `conversation`.
+The two memory touchpoints are at the **start** of a run (`memory_recall` before deciding) and at the **end** (`memory_store` after deciding what was learned). Anything writing to memory in the middle is probably scratch — that belongs in `conversation`.
 
 ```mermaid
 flowchart LR
-    Start([stage opens]) --> Recall["memory_recall<br/>pull prior context"]
+    Start([run opens]) --> Recall["memory_recall<br/>pull prior context"]
     Recall --> Reason[agent reasons + acts]
     Reason --> Store["memory_store<br/>write what was learned"]
-    Store --> End([stage closes])
+    Store --> End([run closes])
 ```
 
 ## Entry format
@@ -86,7 +86,7 @@ The underlying system changed but memory didn't. Steer the zombie to call `memor
 
 **Should I use `core` or `conversation` for this?**
 
-`conversation` only for stage-scoped scratch (e.g. checkpointing tool-call findings during a long incident — see [How long does a stage take?](/concepts/context-lifecycle)). Everything else is `core` or `daily`.
+`conversation` only for run-scoped scratch (e.g. checkpointing tool-call findings during a long incident — see [How long does a run take?](/concepts/context-lifecycle)). Everything else is `core` or `daily`.
 
 ## Troubleshooting
 

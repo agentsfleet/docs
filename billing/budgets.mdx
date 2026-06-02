@@ -3,7 +3,7 @@ title: "Budgets and cost control"
 description: "Per-zombie dollar ceilings, tenant-wide spend caps, and how debits work."
 ---
 
-usezombie enforces budgets at two levels: per-zombie ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every stage debits against.
+usezombie enforces budgets at two levels: per-zombie ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
 
 <Note>
   **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://usezombie.com/pricing).
@@ -28,10 +28,10 @@ Per-event token and wall-clock caps are internal runtime controls. They are not 
 
 ## Tenant wallet
 
-Separately, your tenant has a single wallet (the $5 free credit at signup, topped up via Stripe). Every completed stage debits this wallet.
+Separately, your tenant has a single wallet (the $5 free credit at signup, topped up via Stripe). Every completed run debits this wallet.
 
 - The wallet is **tenant-scoped**, not workspace-scoped. All workspaces under your tenant share the same pool.
-- When the wallet hits **zero**, stages across all workspaces stop until the tenant tops up or upgrades to Scale.
+- When the wallet hits **zero**, runs across all workspaces stop until the tenant tops up or upgrades to Scale.
 - The wallet balance is visible in the dashboard header and via `zombiectl billing show`.
 
 Set a monthly spend cap on your tenant from the billing page at [app.usezombie.com/billing](https://app.usezombie.com/billing).
@@ -40,16 +40,16 @@ Set a monthly spend cap on your tenant from the billing page at [app.usezombie.c
 
 ## Run cancellation
 
-Cancel an in-flight stage at any time via CLI or API:
+Cancel an in-flight run at any time via CLI or API:
 
 ```bash
 zombiectl kill <zombie_id>
 ```
 
-Cancelled stages stop immediately and do not debit your tenant balance — see [Credit deduction timing](#credit-deduction-timing) below for the full rule.
+Cancelled runs stop immediately and do not debit your tenant balance — see [Credit deduction timing](#credit-deduction-timing) below for the full rule.
 
 ## Credit deduction timing
 
-On the Hobby plan, credit is deducted only **after a stage completes successfully**. Failed and cancelled stages do not reduce your tenant balance.
+On the Hobby plan, credit is deducted only **after a run completes successfully**. Failed and cancelled runs do not reduce your tenant balance.
 
 On the Scale plan, usage-based billing follows the same principle: you pay for completed work, not failed attempts.

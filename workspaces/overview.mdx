@@ -16,7 +16,7 @@ Each workspace has its own:
 
 ## What a workspace does NOT contain
 
-- **Billing.** Plan tier and Stripe subscription all live on the **tenant**, not the workspace. Creating a second workspace does not change billing — every stage in every workspace draws on the same tenant account. See [Billing and cost control](/billing/plans).
+- **Billing.** Plan tier and Stripe subscription all live on the **tenant**, not the workspace. Creating a second workspace does not change billing — every run in every workspace draws on the same tenant account. See [Billing and cost control](/billing/plans).
 - **Per-workspace spend caps.** Monthly spend caps live at the tenant level in v2.
 
 ## Plan limits
@@ -34,5 +34,5 @@ Both plans allow unlimited workspaces under a tenant. The plan-tier difference i
 
 1. **Create** — `zombiectl workspace add [name]` provisions a new workspace under your tenant and sets it active. Workspaces are not bound to a specific GitHub repo at creation time — repo bindings happen later via per-zombie webhook configuration (see [Quickstart](/quickstart)).
 2. **Active** — zombies can be installed, deployed, and triggered.
-3. **Paused** — `POST /v1/workspaces/{workspace_id}/pause` via the API (no CLI subcommand yet). New stages rejected; in-flight stages complete.
-4. **Deleted** — `zombiectl workspace delete <workspace-id>`. Stage history retained 30 days. Webhook URLs are gone — any upstream pointing at a zombie in this workspace starts hitting `UZ-WH-001` (zombie not found).
+3. **Paused** — `POST /v1/workspaces/{workspace_id}/pause` via the API (no CLI subcommand yet). New runs rejected; in-flight runs complete.
+4. **Deleted** — `zombiectl workspace delete <workspace-id>`. Run history retained 30 days. Webhook URLs are gone — any upstream pointing at a zombie in this workspace starts hitting `UZ-WH-001` (zombie not found).

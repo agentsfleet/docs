@@ -71,8 +71,8 @@ zombiectl workspace delete <workspace-id>
 Deleting a workspace:
 
 - Stops accepting new events immediately.
-- Allows in-flight stages to complete.
-- Retains stage history for 30 days.
+- Allows in-flight runs to complete.
+- Retains run history for 30 days.
 
 <Warning>
   This action cannot be undone. You'll need to recreate the workspace, re-add its credentials, and re-install its zombies. Webhook URLs change because each new zombie gets a fresh `zombie_id`, so any upstream webhook configurations will need to be updated too.
