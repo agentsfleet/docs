@@ -1,21 +1,21 @@
 ---
 title: "Plans"
-description: "Hobby and Scale — what you get and how credits work."
+description: "One credit-based model — the starter credit and how per-second run billing works."
 ---
 
-usezombie has two plans. Both include the full platform — always-on agent hosting, the tool bridge, activity stream, webhook ingestion, kill switch. The difference is scale and support.
+usezombie has a single credit-based model. Every tenant gets the full platform — always-on agent hosting, the tool bridge, activity stream, webhook ingestion, kill switch — and pays from one shared credit wallet. There are no tiers to choose between or upgrade to.
 
 <Note>
-  **Free until July 31, 2026.** During the launch trial, hosted execution — every event receipt and run — is free. The plan details below describe billing **after** the trial. See [pricing](https://usezombie.com/pricing).
+  **Free until July 31, 2026.** During the launch trial, hosted execution — every event receipt and run — is free. The billing details below describe charging **after** the trial. See [pricing](https://usezombie.com/pricing).
 </Note>
 
-## Hobby (Free)
+## Starter credit
 
-New tenants start here. The first sign-in seeds the tenant balance with **$5 (500¢)** automatically — there are no tokens to enter or gates to clear. The balance is waiting for you the moment Clerk completes auth.
+New tenants start with **$5 (500¢)** seeded into the tenant balance automatically on first sign-in — there are no tokens to enter or gates to clear. The balance is waiting for you the moment Clerk completes auth.
 
 | Feature | Details |
 |---------|---------|
-| Included credit | $5 (500¢), tenant-scoped |
+| Starter credit | $5 (500¢), tenant-scoped |
 | Zombies per workspace | Unlimited |
 | Workspaces | Unlimited |
 | Event processing | Included |
@@ -23,22 +23,10 @@ New tenants start here. The first sign-in seeds the tenant balance with **$5 (50
 
 The $5 balance is **tenant-scoped and shared across every workspace** you create. There is no per-workspace pool — every run debits the same wallet. This is the single-wallet model introduced with v2.
 
-Credit is deducted only for **completed zombie executions** — the per-event agent reasoning that produced a response. If an event fails before the agent produces output (budget breach, skill error, webhook rejected), it is free.
+## How credits are spent
 
-## Scale (Pay as you go)
+Run time is metered by the second: each background lease renewal debits the elapsed slice from your wallet — plus the model's per-token cost on platform-key runs — with a final settle for the last partial slice when a run ends. Billing accumulates as the run proceeds, so a run that is cancelled or fails partway through is still charged for the time it actually ran; only a run that never starts, or fails before its first metered slice, is free. See [Budgets & limits](/billing/budgets) for the full deduction rule.
 
-Everything in Hobby, plus:
+## Topping up
 
-| Feature | Details |
-|---------|---------|
-| Priority event queue | Included |
-| Cost control dashboards | Included |
-| Support | Email |
-
-Scale billing is usage-based. You are charged for compute and token consumption on completed zombie executions. The same rule applies: failed executions are free, and billing is against the same tenant wallet.
-
-## Choosing a plan
-
-Start with Hobby. When you hit the priority queue or want email support, upgrade to Scale at [app.usezombie.com/billing](https://app.usezombie.com/billing). Plan changes happen via the dashboard, not the CLI — the CLI surface is `zombiectl billing show` for read-only balance and charge history.
-
-Upgrades and top-ups apply to the tenant, not an individual workspace — the subscription follows the wallet.
+When the wallet runs low, top up at [app.usezombie.com/billing](https://app.usezombie.com/billing). Top-ups and payment-method updates happen via the dashboard, not the CLI — the CLI surface is `zombiectl billing show` for read-only balance and charge history. Top-ups apply to the tenant, not an individual workspace — the wallet follows the tenant.
