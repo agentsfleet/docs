@@ -173,7 +173,7 @@ These fire on the inference path — when the executor needs to call the model a
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-CRED-001` | 503 | Anthropic API key missing | Workspace LLM API key not found in `vault.secrets` (key: `anthropic_api_key`). Set via the workspace credentials API, or set `ANTHROPIC_API_KEY` on the runner for dev. |
+| `UZ-CRED-001` | 503 | Anthropic API key missing | Workspace LLM API key not found in `vault.secrets` (key: `anthropic_api_key`). Set via the workspace credentials API, or set `ANTHROPIC_API_KEY` in the environment for dev. |
 | `UZ-CRED-003` | 503 | Platform LLM key missing | No active platform-managed LLM key for the resolved provider. The platform admin must rotate the key, or your tenant must attach its own via the workspace credentials API. |
 
 ## Vault
