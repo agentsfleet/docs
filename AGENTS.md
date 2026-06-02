@@ -19,15 +19,16 @@
 - Use "credential firewall" for the network-layer proxy that injects secrets outside the sandbox
 - Use "activity stream" not "logs" or "audit log" for the append-only event record
 - Use "kill switch" for the immediate stop mechanism
-- Use "event" not "run" or "job" for a single webhook delivery processed by a zombie
-- Use "execution" for the billable per-event agent reasoning window
+- Use "event" not "job" for a single webhook delivery; the agent's work on one event is a "run"
+- Use "run" for one end-to-end execution of the agent on one trigger — formerly "stage"
+- Use "execution" only as the general noun (e.g. "hosted execution"), not for the discrete unit
 - Use "agent" not "bot" or "AI"
 - Use "PR" not "pull request" (except on first mention per page)
 - Use `zombiectl` in code formatting when referring to CLI commands
 - Use `zombied` in code formatting when referring to server processes
 - Use "Dashboard" (capitalized in headings, lowercase "dashboard" in body prose) for the web app at `app.usezombie.com`. The earlier aspirational name for this surface is retired — do not reintroduce it.
 
-Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These refer to a v1 product surface that has been removed. Do not introduce them into new pages.
+Forbidden terminology: `spec`, `stage`, `gate loop`, `scorecard`. These refer to a v1 product surface that has been removed. Do not introduce them into new pages. (`run`/`runs` are now the v2 execution unit — see Terminology above.)
 
 ## Style preferences
 
