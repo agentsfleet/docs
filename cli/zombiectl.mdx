@@ -369,7 +369,7 @@ For per-zombie spend breakdowns, use `zombiectl logs <zombie_id> --json` and agg
 
 ## Tenant provider
 
-By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. The flat self-managed run fee replaces the per-token component, and you pay your provider directly.
+By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from usezombie — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
 
 ### `zombiectl tenant provider show`
 
