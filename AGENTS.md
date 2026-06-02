@@ -21,6 +21,7 @@
 - Use "kill switch" for the immediate stop mechanism
 - Use "event" not "run" or "job" for a single webhook delivery processed by a zombie
 - Use "execution" for the billable per-event agent reasoning window
+- Use "runner" for the execution-plane process that sandboxes and runs a zombie's agent — not "executor"
 - Use "agent" not "bot" or "AI"
 - Use "PR" not "pull request" (except on first mention per page)
 - Use `zombiectl` in code formatting when referring to CLI commands
@@ -44,7 +45,7 @@ Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These re
 
 - Do not document internal deployment playbooks (those live in the main repo)
 - Do not expose credential values, vault paths, or 1Password references
-- Do not document internal agent pipeline internals (NullClaw config details, executor RPC protocol) — keep operator docs at the operational level
+- Do not document internal agent pipeline internals (NullClaw config details, runner RPC protocol) — keep operator docs at the operational level
 - Do not reference specific cloud provider pricing or account details
 
 ## When closing out a feature PR in the lead repo (companion docs flow)
