@@ -46,10 +46,10 @@ Cancel an in-flight run at any time via CLI or API:
 zombiectl kill <zombie_id>
 ```
 
-Cancelled runs stop immediately and do not debit your tenant balance — see [Credit deduction timing](#credit-deduction-timing) below for the full rule.
+Cancelling stops the run at the next lease renewal. The run time already elapsed is metered and debited — cancelling doesn't refund the work done so far. See [Credit deduction timing](#credit-deduction-timing) below for the full rule.
 
 ## Credit deduction timing
 
-On the Hobby plan, credit is deducted only **after a run completes successfully**. Failed and cancelled runs do not reduce your tenant balance.
+On the Hobby plan, credit is metered continuously while a run executes: each background lease renewal debits the elapsed time slice, and a final settle covers the last partial slice when the run ends. Because billing accumulates as the run proceeds, a run that is cancelled or fails partway through is still charged for the time it actually ran — only a run that never starts, or fails before its first metered slice, costs nothing.
 
-On the Scale plan, usage-based billing follows the same principle: you pay for completed work, not failed attempts.
+On the Scale plan, usage-based billing follows the same per-second model: you pay for the run time actually consumed, whether the run completes, fails, or is cancelled.
