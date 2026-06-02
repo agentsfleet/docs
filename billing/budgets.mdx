@@ -50,6 +50,4 @@ Cancelling stops the run at the next lease renewal. The run time already elapsed
 
 ## Credit deduction timing
 
-On the Hobby plan, credit is metered continuously while a run executes: each background lease renewal debits the elapsed time slice, and a final settle covers the last partial slice when the run ends. Because billing accumulates as the run proceeds, a run that is cancelled or fails partway through is still charged for the time it actually ran — only a run that never starts, or fails before its first metered slice, costs nothing.
-
-On the Scale plan, usage-based billing follows the same per-second model: you pay for the run time actually consumed, whether the run completes, fails, or is cancelled.
+Credit is metered continuously while a run executes: each background lease renewal debits the elapsed time slice from your tenant balance, and a final settle covers the last partial slice when the run ends. Because billing accumulates as the run proceeds, a run that is cancelled or fails partway through is still charged for the time it actually ran — only a run that never starts, or fails before its first metered slice, costs nothing. The same single tenant wallet is debited for every run, across all workspaces.
