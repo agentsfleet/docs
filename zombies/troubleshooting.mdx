@@ -12,7 +12,7 @@ A zombie that's misbehaving falls into one of six failure shapes. Find the sympt
 | `zombiectl install --from` exits non-zero | Frontmatter validation failed | [§1 Install rejected](#1-install-rejected) |
 | Upstream says it sent the webhook, zombie didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but zombie silent](#2-webhook-delivered-but-zombie-silent) |
 | Zombie woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
-| Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run runs but output is wrong](#4-run-runs-but-output-is-wrong) |
+| Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
 | Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `zombiectl` itself is broken (auth, network) | Local config or platform reachability | [§6 zombiectl can't reach the platform](#6-zombiectl-cant-reach-the-platform) |
 
@@ -109,7 +109,7 @@ zombiectl events <zombie_id> --since 1h --json | jq 'select(.error)'
 
 If the agent calls `http_request` against a host not in `network.allow:`, the call fails silently from the agent's perspective (the tool returns an error, the agent reasons about it). The drop appears in the activity stream as a tool-error event with the blocked hostname. Add the host to `network.allow:` in `TRIGGER.md` and re-install.
 
-## 4. Run runs but output is wrong
+## 4. Run completes but output is wrong
 
 The hardest class of failure. Run exits cleanly, the diagnosis posts to Slack, but the diagnosis is wrong, off-topic, or omits something it should have said.
 

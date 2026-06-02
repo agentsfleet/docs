@@ -151,7 +151,7 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 A zombie can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any zombie can also be steered via `zombiectl steer` regardless of declared triggers — steer always works. The `api` type is for zombies whose *primary* surface is steer (no inbound webhook).
 
-<Note>**Long-run continuations are not a trigger type.** When a run runs out of context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
+<Note>**Long-run continuations are not a trigger type.** When a run exhausts its context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
 ### Tools
 
