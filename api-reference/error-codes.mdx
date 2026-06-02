@@ -173,7 +173,7 @@ These fire on the inference path — when the executor needs to call the model a
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-CRED-001` | 503 | Anthropic API key missing | Workspace LLM API key not found in `vault.secrets` (key: `anthropic_api_key`). Set via the workspace credentials API, or set `ANTHROPIC_API_KEY` on the worker for dev. |
+| `UZ-CRED-001` | 503 | Anthropic API key missing | Workspace LLM API key not found in `vault.secrets` (key: `anthropic_api_key`). Set via the workspace credentials API, or set `ANTHROPIC_API_KEY` in the environment for dev. |
 | `UZ-CRED-003` | 503 | Platform LLM key missing | No active platform-managed LLM key for the resolved provider. The platform admin must rotate the key, or your tenant must attach its own via the workspace credentials API. |
 
 ## Vault
@@ -204,7 +204,7 @@ These fire on the inference path — when the executor needs to call the model a
 | `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run 'zombied doctor' to see which ones. |
 | `UZ-STARTUP-002` | 500 | Config load failed | Configuration failed to load. Check that all required env vars are set. |
 | `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that DATABASE_URL is set and the database accepts connections. |
-| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that REDIS_URL_API and REDIS_URL_WORKER are set. |
+| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that REDIS_URL_API is set. |
 | `UZ-STARTUP-005` | 500 | Migration check failed | Database migration state could not be verified. Check DB connectivity. |
 | `UZ-STARTUP-007` | 500 | Redis group creation failed | Redis connected but consumer group creation failed. Check Redis ACL permissions. |
 

@@ -18,6 +18,17 @@ export const STAGE_RATE_M65 = "$0.10";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
 </Tip>
 
+<Update label="Jun 02, 2026" tags={["Breaking", "Internal"]}>
+  ## `zombied` runs on a single database role — the worker datastore credentials retire
+
+  Following the runner-fleet split, the deleted worker process left behind a `worker_runtime` Postgres role, a `worker` Redis access-control list (ACL) user, and `DATABASE_URL_WORKER` / `REDIS_URL_WORKER` deploy variables that `zombied` still required at startup but never used to connect. `zombied` already writes every event-path row through its API database role, so the worker role and its variables are removed. The control plane now runs on a single `api_runtime` role for both reads and writes; a host-resident runner continues to hold no datastore credentials at all.
+
+  ## Upgrading
+
+  - **Drop `DATABASE_URL_WORKER` and `REDIS_URL_WORKER`** from the `zombied` deployment. The server boots on `DATABASE_URL_API` + `REDIS_URL_API` alone; the worker variables are no longer read.
+  - **Deploy order matters:** ship the updated `zombied` first, then remove the `worker_runtime` Postgres role and the `worker` Redis ACL user. The old binary still authenticates as `worker_runtime`, so dropping the role before the new build is live would cut its connection.
+</Update>
+
 <Update label="Jun 01, 2026" tags={["What's new", "CLI"]}>
   ## Host skills move to their own repo — install with `npx skills add usezombie/skills`
 
