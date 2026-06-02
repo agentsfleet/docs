@@ -3,16 +3,20 @@ title: "Changelog"
 description: "Stay up to date with the latest usezombie product updates, new features, platform improvements, and bug fixes."
 ---
 
-import { STARTER_CREDIT, EVENT_RATE, STAGE_PLATFORM, STAGE_SELF_MANAGED } from "/snippets/rates.mdx";
+import { STARTER_CREDIT, EVENT_RATE } from "/snippets/rates.mdx";
 
 {/*
-  Historical pricing constants from before the M66 nanos+gradient rebill.
-  Embedded inline so May 9 + earlier entries preserve the rates that
-  shipped at that time. `EVENT_RATE` and `STAGE_PLATFORM` / `STAGE_SELF_MANAGED`
-  imported above resolve to the current values.
+  Historical pricing constants frozen inline so older entries preserve the
+  rates that shipped at the time, independent of current pricing. The pre-M66
+  era used a single per-stage rate (STAGE_RATE_M65); the M66 nanos rebill used
+  a two-rate platform/self-managed gradient (STAGE_*_M66), since superseded by
+  the per-second run-fee model. `EVENT_RATE` / `STARTER_CREDIT` imported above
+  resolve to the current values.
 */}
 export const EVENT_RATE_M65 = "$0.01";
 export const STAGE_RATE_M65 = "$0.10";
+export const STAGE_PLATFORM_M66 = "$0.001";
+export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
 <Tip>
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating a zombie or to join as a design partner.
@@ -358,7 +362,7 @@ export const STAGE_RATE_M65 = "$0.10";
 <Update label="May 11, 2026" tags={["Breaking", "API", "UI", "Internal"]}>
   ## Nanos billing unit, posture-dispatched stage rates, BYOK term retired
 
-  Pricing splits into a two-rate gradient: {STAGE_PLATFORM} per stage on platform default, {STAGE_SELF_MANAGED} per stage when you bring your own provider key — self-managed is 10× cheaper to scale. Event receipts are free in both postures. The starter grant stays at {STARTER_CREDIT}, now denominated in nanos (`1 USD = 1_000_000_000 nanos`) so sub-cent rates have nine decimal places of precision. "BYOK" is retired everywhere in user-facing surfaces; the canonical term is **self-managed provider key**.
+  Pricing splits into a two-rate gradient: {STAGE_PLATFORM_M66} per stage on platform default, {STAGE_SELF_MANAGED_M66} per stage when you bring your own provider key — self-managed is 10× cheaper to scale. Event receipts are free in both postures. The starter grant stays at {STARTER_CREDIT}, now denominated in nanos (`1 USD = 1_000_000_000 nanos`) so sub-cent rates have nine decimal places of precision. "BYOK" is retired everywhere in user-facing surfaces; the canonical term is **self-managed provider key**.
 
   ## Upgrading
 
@@ -387,7 +391,7 @@ export const STAGE_RATE_M65 = "$0.10";
   }
   ```
 
-  `GET /v1/tenants/me/billing/charges` — `charge_type` ∈ `receive` ({EVENT_RATE}) and `stage` ({STAGE_PLATFORM} platform / {STAGE_SELF_MANAGED} self-managed). Row amounts now in `credit_deducted_nanos` (was `credit_deducted_cents`).
+  `GET /v1/tenants/me/billing/charges` — `charge_type` ∈ `receive` ({EVENT_RATE}) and `stage` ({STAGE_PLATFORM_M66} platform / {STAGE_SELF_MANAGED_M66} self-managed). Row amounts now in `credit_deducted_nanos` (was `credit_deducted_cents`).
 
   `PUT /v1/tenants/me/provider`:
 
