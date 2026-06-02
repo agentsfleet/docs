@@ -44,7 +44,7 @@ Forbidden terminology: `spec`, `run`, `runs`, `gate loop`, `scorecard`. These re
 
 - Do not document internal deployment playbooks (those live in the main repo)
 - Do not expose credential values, vault paths, or 1Password references
-- Do not document internal agent pipeline internals (NullClaw config details, executor RPC protocol) — keep operator docs at the operational level
+- Do not document internal agent pipeline internals (NullClaw config details, runner RPC protocol) — keep operator docs at the operational level
 - Do not reference specific cloud provider pricing or account details
 
 ## When closing out a feature PR in the lead repo (companion docs flow)

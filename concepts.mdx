@@ -22,7 +22,7 @@ usezombie has four primary objects. Everything else is infrastructure.
     A persistent, durable agent process scoped to one operational outcome. One zombie has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace credentials it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
   </Card>
   <Card title="Tool" icon="plug">
-    A named primitive the zombie's agent can invoke — `http_request`, `memory_store`, `cron_add`. Tools are declared in `TRIGGER.md` and **enforced** by the executor sandbox; the agent literally cannot call a tool that isn't on the list. The companion file `SKILL.md` is **advisory** — natural-language prose the model reads as its system prompt to decide *when* to reach for which tool and what counts as "done." Enforcement comes from `TRIGGER.md`; behavior comes from `SKILL.md`.
+    A named primitive the zombie's agent can invoke — `http_request`, `memory_store`, `cron_add`. Tools are declared in `TRIGGER.md` and **enforced** by the runner sandbox; the agent literally cannot call a tool that isn't on the list. The companion file `SKILL.md` is **advisory** — natural-language prose the model reads as its system prompt to decide *when* to reach for which tool and what counts as "done." Enforcement comes from `TRIGGER.md`; behavior comes from `SKILL.md`.
   </Card>
 </CardGroup>
 
@@ -50,7 +50,7 @@ Tenant  (billing + identity, provider: anthropic)
 
 Hosted execution — every event receipt and stage — is **free until July 31, 2026**. No credit card to start.
 
-**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — usezombie marks up zero on inference. The executor resolves your credential at the tool bridge, so the agent never sees the raw key.
+**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — usezombie marks up zero on inference. The runner resolves your credential at the tool bridge, so the agent never sees the raw key.
 
 For the metered rates that apply after the trial, see [pricing on usezombie.com](https://usezombie.com/pricing).
 
