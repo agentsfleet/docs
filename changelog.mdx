@@ -33,6 +33,18 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Deploy order matters:** ship the updated `zombied` first, then remove the `worker_runtime` Postgres role and the `worker` Redis ACL user. The old binary still authenticates as `worker_runtime`, so dropping the role before the new build is live would cut its connection.
 </Update>
 
+<Update label="Jun 02, 2026" tags={["What's new", "API"]}>
+  ## Usage-based billing — agent runs metered by the second
+
+  Agent run time is now billed by the second while an agent is actively running, at $0.0001/sec (≈ $0.36/hr), plus the model's per-token cost on platform-key runs. This replaces the flat estimate taken when work started: a long run is charged for the time it actually used, a short one is not over-charged, and an agent that is not running is not billed. The run rate is the same whether you bring your own model key or use a platform key — bring-your-own-key runs record token usage but are charged for run time only.
+
+  Credit drains as the run proceeds: each background lease renewal meters the elapsed slice plus any new token usage, so a multi-minute run bills continuously instead of in one lump at the end. A run that exhausts its balance stops at the next renewal rather than going negative.
+
+  ## API reference
+
+  - **`GET /v1/tenants/me/billing/charges/{event_id}/metering-periods`** — the per-slice breakdown behind a single run charge: one row per renewal plus the final settle, each carrying the run milliseconds, token deltas, run fee, token cost, and the amount actually charged. Scoped to the calling tenant; a foreign `event_id` returns no rows.
+</Update>
+
 <Update label="Jun 01, 2026" tags={["What's new", "CLI"]}>
   ## Host skills move to their own repo — install with `npx skills add usezombie/skills`
 
