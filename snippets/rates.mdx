@@ -9,16 +9,15 @@
     - ui/packages/app/lib/types.ts          — same names, JS Number nanos values
     - zombiectl/src/constants/billing.js    — same names, JS Number nanos values
 
-  The keys below are the display strings keyed by role name. RUN_RATE_PER_SEC
-  is the per-second billing unit and RUN_RATE_PER_HOUR its hourly equivalent
-  (both derived from RUN_NANOS_PER_SEC = 100_000n). Bumping a rate requires a
-  paired PR across the lead repo's rate constants AND this snippet — there is
-  no automated cross-repo guard yet; pin tests on each side fail until the
-  snippet is updated. Historical per-stage rates from before the run-fee rebill
-  are frozen inline in changelog.mdx (STAGE_*_M66), not here.
+  The keys below are the display strings keyed by role name. Bumping a rate
+  requires a paired PR across the lead repo's rate constants AND this snippet —
+  there is no automated cross-repo guard yet; pin tests on each side fail until
+  the snippet is updated. The per-second run rate (RUN_NANOS_PER_SEC) has no
+  docs-side display string: it is announced inline in changelog.mdx as
+  point-in-time history, not surfaced as a live constant. Historical per-stage
+  rates from before the run-fee rebill are likewise frozen inline in
+  changelog.mdx (STAGE_*_M66), not here.
 */}
 
 export const STARTER_CREDIT = "$5";
 export const EVENT_RATE = "free";
-export const RUN_RATE_PER_SEC = "$0.0001/sec";
-export const RUN_RATE_PER_HOUR = "$0.36/hr";
