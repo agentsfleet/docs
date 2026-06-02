@@ -1,17 +1,17 @@
 ---
 title: "Budgets and cost control"
-description: "Per-zombie dollar ceilings, tenant-wide spend caps, and how debits work."
+description: "Per-agent dollar ceilings, tenant-wide spend caps, and how debits work."
 ---
 
-usezombie enforces budgets at two levels: per-zombie ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
+usezombie enforces budgets at two levels: per-agent ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
 
 <Note>
   **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://usezombie.com/pricing).
 </Note>
 
-## Per-zombie ceilings (`daily_dollars` / `monthly_dollars`)
+## Per-agent ceilings (`daily_dollars` / `monthly_dollars`)
 
-Every zombie declares its own dollar ceilings in `TRIGGER.md`:
+Every agent declares its own dollar ceilings in `TRIGGER.md`:
 
 ```yaml
 budget:
@@ -22,7 +22,7 @@ budget:
 - `daily_dollars` caps spend over a rolling 24-hour window.
 - `monthly_dollars` caps spend over the calendar month.
 
-When either ceiling is reached the zombie stops processing new events and a budget breach is recorded in the activity stream. This is the first line of defence — one bad prompt never becomes an infinite burn on a single zombie.
+When either ceiling is reached the agent stops processing new events and a budget breach is recorded in the activity stream. This is the first line of defence — one bad prompt never becomes an infinite burn on a single agent.
 
 Per-event token and wall-clock caps are internal runtime controls. They are not user-configurable in `TRIGGER.md` today.
 

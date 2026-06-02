@@ -3,16 +3,16 @@ title: "Workspaces"
 description: "What a workspace is and how it relates to your tenant."
 ---
 
-A **workspace** is a tenant-scoped container for zombies, their credentials, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-zombie, when you wire an upstream webhook to a `zombie_id` (see [Webhooks](/zombies/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
+A **workspace** is a tenant-scoped container for agents, their credentials, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-agent, when you wire an upstream webhook to a `zombie_id` (see [Webhooks](/zombies/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
 
 ## What a workspace contains
 
 Each workspace has its own:
 
-- **Zombies** — the configured agents that live and run here.
-- **Credentials** — the vault keys zombies in this workspace can read. Workspace-scoped on purpose: credentials do not leak across workspaces.
-- **Webhook namespace** — every zombie in a workspace gets its own unique URL under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}`.
-- **Access control** — teammates invited to a workspace can see, start, and kill its zombies; they cannot see zombies in other workspaces.
+- **Agents** — the configured agents that live and run here.
+- **Credentials** — the vault keys agents in this workspace can read. Workspace-scoped on purpose: credentials do not leak across workspaces.
+- **Webhook namespace** — every agent in a workspace gets its own unique URL under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}`.
+- **Access control** — teammates invited to a workspace can see, start, and kill its agents; they cannot see agents in other workspaces.
 
 ## What a workspace does NOT contain
 
@@ -21,17 +21,17 @@ Each workspace has its own:
 
 ## Limits
 
-A tenant gets unlimited workspaces and unlimited zombies per workspace — there are no count caps to clear. Usage is bounded by your credit wallet, not by workspace or zombie limits.
+A tenant gets unlimited workspaces and unlimited agents per workspace — there are no count caps to clear. Usage is bounded by your credit wallet, not by workspace or agent limits.
 
 | Feature | Details |
 |---------|---------|
 | Workspaces | Unlimited |
-| Zombies per workspace | Unlimited |
+| Agents per workspace | Unlimited |
 | Support | Community (Discord, GitHub) |
 
 ## Workspace lifecycle
 
-1. **Create** — `zombiectl workspace add [name]` provisions a new workspace under your tenant and sets it active. Workspaces are not bound to a specific GitHub repo at creation time — repo bindings happen later via per-zombie webhook configuration (see [Quickstart](/quickstart)).
-2. **Active** — zombies can be installed, deployed, and triggered.
+1. **Create** — `zombiectl workspace add [name]` provisions a new workspace under your tenant and sets it active. Workspaces are not bound to a specific GitHub repo at creation time — repo bindings happen later via per-agent webhook configuration (see [Quickstart](/quickstart)).
+2. **Active** — agents can be installed, deployed, and triggered.
 3. **Paused** — `POST /v1/workspaces/{workspace_id}/pause` via the API (no CLI subcommand yet). New runs rejected; in-flight runs complete.
-4. **Deleted** — `zombiectl workspace delete <workspace-id>`. Run history retained 30 days. Webhook URLs are gone — any upstream pointing at a zombie in this workspace starts hitting `UZ-WH-001` (zombie not found).
+4. **Deleted** — `zombiectl workspace delete <workspace-id>`. Run history retained 30 days. Webhook URLs are gone — any upstream pointing at an agent in this workspace starts hitting `UZ-WH-001` (agent not found).

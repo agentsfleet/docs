@@ -46,7 +46,7 @@
             ]
           },
           {
-            "group": "Zombies",
+            "group": "Agents",
             "pages": [
               "zombies/overview",
               "zombies/install",
@@ -179,7 +179,7 @@
             ]
           },
           {
-            "group": "Zombies",
+            "group": "Agents",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/zombies",
               "POST /v1/workspaces/{workspace_id}/zombies",
@@ -188,13 +188,13 @@
             ]
           },
           {
-            "group": "Zombie messages",
+            "group": "Agent messages",
             "pages": [
               "POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages"
             ]
           },
           {
-            "group": "Zombie memories",
+            "group": "Agent memories",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories",
               "POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories",
@@ -202,7 +202,7 @@
             ]
           },
           {
-            "group": "Zombie events",
+            "group": "Agent events",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/events",
               "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/events/stream"

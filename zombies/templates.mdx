@@ -1,9 +1,9 @@
 ---
 title: "Templates"
-description: "The shipped sample directory — pre-built zombies you can install with one command."
+description: "The shipped sample directory — pre-built agents you can install with one command."
 ---
 
-A **template** is a directory with a valid `SKILL.md` and `TRIGGER.md`. Pick one, install it, get a working zombie.
+A **template** is a directory with a valid `SKILL.md` and `TRIGGER.md`. Pick one, install it, get a working agent.
 
 ```bash
 zombiectl install --from <path>
@@ -27,7 +27,7 @@ More samples land as new flagships ship.
 
 ## Writing your own
 
-A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring a zombie](/zombies/authoring) for the file references; install with:
+A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring an agent](/zombies/authoring) for the file references; install with:
 
 ```bash
 zombiectl install --from .
@@ -38,5 +38,5 @@ zombiectl install --from .
 Templates are markdown — commit `my-zombie/` to git, clone it on a new machine, `zombiectl install --from .`. Credentials never live in the template; they live in the workspace vault. Template-safe to share publicly; credentials are not.
 
 <Note>
-  A hosted template marketplace (community-contributed zombies, one-click install) is on the roadmap. For now, git is the distribution mechanism.
+  A hosted template marketplace (community-contributed agents, one-click install) is on the roadmap. For now, git is the distribution mechanism.
 </Note>

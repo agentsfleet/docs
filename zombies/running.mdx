@@ -5,7 +5,7 @@ description: "The lifecycle commands — install, status, logs, events, steer, s
 
 ## Overview
 
-A small set of verbs cover the live lifecycle: `install --from <path>` brings a zombie up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `zombiectl workspace use` or check with `zombiectl workspace show`.
+A small set of verbs cover the live lifecycle: `install --from <path>` brings an agent up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `zombiectl workspace use` or check with `zombiectl workspace show`.
 
 ```bash
 zombiectl install --from ~/.config/usezombie/samples/platform-ops
@@ -34,7 +34,7 @@ zombiectl install --from ~/.config/usezombie/samples/platform-ops
 
 One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
 
-Re-running `zombiectl install --from <same-path>` against a workspace that already has the same zombie is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
+Re-running `zombiectl install --from <same-path>` against a workspace that already has the same agent is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
 Exit codes:
 
@@ -44,7 +44,7 @@ Exit codes:
 
 ## `zombiectl status`
 
-Lists every zombie in the active workspace with its state, last event, and budget consumed.
+Lists every agent in the active workspace with its state, last event, and budget consumed.
 
 ```bash
 zombiectl status
@@ -65,7 +65,7 @@ zombiectl status --json
 
 ## `zombiectl logs <zombie_id>`
 
-Print the zombie's recent activity stream. Every webhook receipt, cron fire, steer message, tool call, and run exit lands here, tagged with what triggered it (`webhook:github`, `cron:*`, `steer:<user>`, `continuation:<original_actor>`).
+Print the agent's recent activity stream. Every webhook receipt, cron fire, steer message, tool call, and run exit lands here, tagged with what triggered it (`webhook:github`, `cron:*`, `steer:<user>`, `continuation:<original_actor>`).
 
 ```bash
 zombiectl logs zmb_2041
@@ -111,14 +111,14 @@ The reply streams back live; the result is also persisted to the activity stream
 
 ## Lifecycle: `stop` / `resume` / `kill` / `delete`
 
-Four verbs control the zombie's lifecycle, in increasing order of irreversibility:
+Four verbs control the agent's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
 | `stop <zombie_id>` | Halt the running session. New events stop dispatching; the in-flight run finishes cleanly. | Yes — `zombiectl resume`. |
-| `resume <zombie_id>` | Bring a `stopped` (or auto-paused) zombie back to active. | — |
-| `kill <zombie_id>` | Mark terminal. The zombie won't process events again, but its row, history, and webhook URL persist. | No, but a killed zombie can be `delete`d after. |
-| `delete <zombie_id>` | Hard-delete. Removes the zombie row and its webhook URL. **Must `kill` first.** | No. |
+| `resume <zombie_id>` | Bring a `stopped` (or auto-paused) agent back to active. | — |
+| `kill <zombie_id>` | Mark terminal. The agent won't process events again, but its row, history, and webhook URL persist. | No, but a killed agent can be `delete`d after. |
+| `delete <zombie_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
 zombiectl stop   zmb_2041   # pause; resumable

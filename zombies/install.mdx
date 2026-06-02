@@ -1,9 +1,9 @@
 ---
-title: "Installing a zombie"
+title: "Installing an agent"
 description: "What `zombiectl install --from <path>` does and how to invoke it."
 ---
 
-`zombiectl install --from <path>` is how you bring a zombie up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
+`zombiectl install --from <path>` is how you bring an agent up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
 
 ```bash
 zombiectl install --from ~/.config/usezombie/samples/platform-ops
@@ -48,6 +48,6 @@ For the self-managed provider posture, see [`zombiectl tenant provider`](/cli/zo
 
 ## See also
 
-- [Templates](/zombies/templates) — the catalogue of pre-built zombies you can install.
-- [Authoring a zombie](/zombies/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
+- [Templates](/zombies/templates) — the catalogue of pre-built agents you can install.
+- [Authoring an agent](/zombies/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
 - [Starting, observing, and stopping](/zombies/running) — what to do after install.

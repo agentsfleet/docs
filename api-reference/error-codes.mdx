@@ -99,45 +99,45 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-RUNS-410` | 410 | Pipeline v1 permanently removed | Pipeline v1 has been permanently removed. All `/v1/runs/*` and `/v1/specs` endpoints return 410 Gone. Use the zombie event model instead. |
+| `UZ-RUNS-410` | 410 | Pipeline v1 permanently removed | Pipeline v1 has been permanently removed. All `/v1/runs/*` and `/v1/specs` endpoints return 410 Gone. Use the agent event model instead. |
 
 ## Webhook
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-WH-001` | 404 | Zombie not found for webhook | Webhook routing found no matching zombie |
+| `UZ-WH-001` | 404 | Agent not found for webhook | Webhook routing found no matching agent |
 | `UZ-WH-002` | 400 | Malformed webhook | Webhook body is missing required fields |
-| `UZ-WH-003` | 403 | Zombie paused | Zombie exists but is not active |
+| `UZ-WH-003` | 403 | Agent paused | Agent exists but is not active |
 | `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
-| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this zombie's source. Run `zombiectl credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the zombie's workspace, then resend. |
+| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this agent's source. Run `zombiectl credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the agent's workspace, then resend. |
 | `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload at the source or filter fields before forwarding. |
 
 ## Tool
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-TOOL-004` | 400 | Tool not attached | The tool isn't in this zombie's `tools:` list. Add it to `TRIGGER.md` `x-usezombie.tools:` and re-install. |
+| `UZ-TOOL-004` | 400 | Tool not attached | The tool isn't in this agent's `tools:` list. Add it to `TRIGGER.md` `x-usezombie.tools:` and re-install. |
 | `UZ-TOOL-005` | 400 | Unknown tool | Tool name not recognized — typo against the [Tools catalogue](/zombies/tools) is the usual cause. |
 
 <Note>
 **Registered, not always emitted.** The two `UZ-TOOL-*` codes are registered in the platform's error registry but, in v2 today, the user-facing failure path for a missing or misspelled tool is a NullClaw-level "no such tool" message in the activity stream rather than one of these wire codes. Treat the codes as authoritative for *meaning* if you do see them, but don't expect them as the primary signal — audit `zombiectl logs <zombie_id>` for the actual error text.
 </Note>
 
-## Zombie
+## Agent
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-ZMB-001` | 402 | Zombie budget exceeded | Daily dollar budget hit. Raise `budget.daily_dollars` in `TRIGGER.md`. |
-| `UZ-ZMB-002` | 500 | Zombie agent timeout | Agent timed out processing an event. Check the activity stream. |
-| `UZ-ZMB-003` | 424 | Zombie credential missing | A required vault credential is absent. Add it with `zombiectl credential add <name>`. |
-| `UZ-ZMB-004` | 500 | Zombie claim failed | Zombie could not be claimed from the database. Verify the `zombie_id` exists and status is `active`. |
-| `UZ-ZMB-005` | 500 | Zombie checkpoint failed | Session checkpoint write to Postgres failed. |
-| `UZ-ZMB-006` | 409 | Zombie name already exists | Name taken. Kill the existing zombie first, then re-install. |
-| `UZ-ZMB-008` | 400 | Invalid zombie config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
-| `UZ-ZMB-009` | 404 | Zombie not found | No zombie with this ID in the workspace. |
-| `UZ-ZMB-010` | 409 | Zombie already stopped or killed | This zombie is already stopped or killed. Re-install before issuing another stop. |
-| `UZ-ZMB-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per zombie bundle. |
+| `UZ-ZMB-001` | 402 | Agent budget exceeded | Daily dollar budget hit. Raise `budget.daily_dollars` in `TRIGGER.md`. |
+| `UZ-ZMB-002` | 500 | Agent agent timeout | Agent timed out processing an event. Check the activity stream. |
+| `UZ-ZMB-003` | 424 | Agent credential missing | A required vault credential is absent. Add it with `zombiectl credential add <name>`. |
+| `UZ-ZMB-004` | 500 | Agent claim failed | Agent could not be claimed from the database. Verify the `zombie_id` exists and status is `active`. |
+| `UZ-ZMB-005` | 500 | Agent checkpoint failed | Session checkpoint write to Postgres failed. |
+| `UZ-ZMB-006` | 409 | Agent name already exists | Name taken. Kill the existing agent first, then re-install. |
+| `UZ-ZMB-008` | 400 | Invalid agent config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
+| `UZ-ZMB-009` | 404 | Agent not found | No agent with this ID in the workspace. |
+| `UZ-ZMB-010` | 409 | Agent already stopped or killed | This agent is already stopped or killed. Re-install before issuing another stop. |
+| `UZ-ZMB-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per agent bundle. |
 
 <Note>`UZ-ZMB-007` is retired; oversized credential bodies now return [`UZ-VAULT-002`](#vault).</Note>
 
@@ -145,7 +145,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-GRANT-001` | 403 | No integration grant for service | This zombie has no approved grant for the target service. Request one with `POST /v1/zombies/{id}/integration-requests`. |
+| `UZ-GRANT-001` | 403 | No integration grant for service | This agent has no approved grant for the target service. Request one with `POST /v1/zombies/{id}/integration-requests`. |
 | `UZ-GRANT-002` | 403 | Integration grant pending approval | A grant request for this service is pending human approval. Approve in Slack, Discord, or the dashboard. |
 | `UZ-GRANT-003` | 403 | Integration grant denied | The grant for this service was denied or revoked by the workspace owner. Re-request via the host agent. |
 
@@ -169,7 +169,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 ## Credentials
 
-These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your zombie uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-ZMB-003`](#zombie)).
+These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your agent uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-ZMB-003`](#agent)).
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
@@ -187,8 +187,8 @@ These fire on the inference path — when the runner needs to call the model and
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-MEM-001` | 403 | Memory scope denied | Cross-zombie memory access attempted. Memory operations are scoped per `zombie_id`. |
-| `UZ-MEM-002` | 404 | Zombie not found for memory op | The `zombie_id` on the memory call does not exist in the workspace. |
+| `UZ-MEM-001` | 403 | Memory scope denied | Cross-agent memory access attempted. Memory operations are scoped per `zombie_id`. |
+| `UZ-MEM-002` | 404 | Agent not found for memory op | The `zombie_id` on the memory call does not exist in the workspace. |
 | `UZ-MEM-003` | 503 | Memory backend unavailable | Memory store is unreachable. Retry the trigger; if persistent, file an issue. |
 
 ## Relay

@@ -1,19 +1,19 @@
 ---
 title: "Your deploy failed. The agent already knows why."
-description: "usezombie is an open runtime that owns operational outcomes — a zombie wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps a replayable log of every move it made."
+description: "usezombie is an open runtime that owns operational outcomes — an agent wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps a replayable log of every move it made."
 ---
 
 <Warning>
-  **Stealth-mode testing.** usezombie is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating a zombie or to join as a design partner? Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
+  **Stealth-mode testing.** usezombie is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating an agent or to join as a design partner? Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to).
 </Warning>
 
 ## The 2am problem
 
-A deploy fails at 2am. Your senior on-call engineer is asleep. You guess at the cause from a stack trace, ship a patch, hope. The next morning, half the context is gone — no one remembers what was already tried, the evidence is scattered across CI, logs, dashboards, and chat, and the audit trail is whatever someone thought to paste into a thread.
+A deploy fails at 2am. Your on-call engineer is asleep, so someone guesses from a stack trace and ships a patch on hope. By morning the context is gone — no record of what was tried, evidence scattered across CI, logs, dashboards, and chat.
 
-usezombie owns the outcome instead. A **zombie** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the zombie gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move it made.
+usezombie owns the outcome instead. An **agent** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the agent gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move it made.
 
-The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same zombie is reachable via `zombiectl steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
+The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same agent is reachable via `zombiectl steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
 
 ## Get started
 
@@ -41,9 +41,9 @@ The skill registers the GitHub webhook and writes `SKILL.md` + `TRIGGER.md` into
 
 <Columns cols={2}>
   <Card title="Concepts" icon="book" href="/concepts">
-    Tenants, workspaces, zombies, tools — the four nouns.
+    Tenants, workspaces, agents, tools — the four nouns.
   </Card>
-  <Card title="Authoring a zombie" icon="file-code" href="/zombies/authoring">
+  <Card title="Authoring an agent" icon="file-code" href="/zombies/authoring">
     Write your own `SKILL.md` + `TRIGGER.md`.
   </Card>
   <Card title="CLI reference" icon="rectangle-terminal" href="/cli/zombiectl">

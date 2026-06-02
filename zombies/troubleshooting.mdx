@@ -3,15 +3,15 @@ title: "Troubleshooting"
 description: "Common failure modes, the diagnostic command for each, and the fix."
 ---
 
-A zombie that's misbehaving falls into one of six failure shapes. Find the symptom you're seeing and follow the diagnostic chain.
+An agent that's misbehaving falls into one of six failure shapes. Find the symptom you're seeing and follow the diagnostic chain.
 
 ## Decision tree
 
 | Symptom | Most likely cause | Start here |
 |---|---|---|
 | `zombiectl install --from` exits non-zero | Frontmatter validation failed | [§1 Install rejected](#1-install-rejected) |
-| Upstream says it sent the webhook, zombie didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but zombie silent](#2-webhook-delivered-but-zombie-silent) |
-| Zombie woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
+| Upstream says it sent the webhook, agent didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but agent silent](#2-webhook-delivered-but-agent-silent) |
+| Agent woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
 | Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
 | Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `zombiectl` itself is broken (auth, network) | Local config or platform reachability | [§6 zombiectl can't reach the platform](#6-zombiectl-cant-reach-the-platform) |
@@ -36,7 +36,7 @@ For other codes, check [Error codes](/api-reference/error-codes) and grep for th
 
 **Local validation tip:** the parser the platform uses is the same one `zombiectl install --from` runs — there's no separate lint command. To catch schema errors before committing, run `zombiectl install --from <path> --json` and read the structured error output. Note the call still uploads on success; there is no `--validate-only` flag.
 
-## 2. Webhook delivered but zombie silent
+## 2. Webhook delivered but agent silent
 
 The upstream provider says it fired the webhook, your activity stream shows nothing.
 
@@ -63,10 +63,10 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 |---|---|---|
 | `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` — verify the ID matches `zombiectl status`. |
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
-| `UZ-WH-003` | 403 | Zombie is paused or killed. `zombiectl status` will show the state; re-install with `zombiectl install --from <path>`. |
+| `UZ-WH-003` | 403 | Agent is paused or killed. `zombiectl status` will show the state; re-install with `zombiectl install --from <path>`. |
 | `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
-| `UZ-WH-020` | 401 | No webhook credential configured for this zombie's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `zombiectl credential list` to confirm; add with `zombiectl credential add <source> --data=@-`. |
+| `UZ-WH-020` | 401 | No webhook credential configured for this agent's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `zombiectl credential list` to confirm; add with `zombiectl credential add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |
 
 ### Common signature config mistakes
@@ -99,7 +99,7 @@ zombiectl events <zombie_id> --since 1h --json | jq 'select(.error)'
 | `UZ-ZMB-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `zombiectl credential list` to confirm; `zombiectl credential add <name> --data=@-` to add. |
 | `UZ-ZMB-002` | Agent timeout | The model didn't return within the per-event ceiling. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
 | `UZ-MEM-003` | Memory backend unavailable | Transient. Re-trigger; if persistent, file an issue. |
-| `UZ-MEM-001` | Memory scope denied | The agent tried to read another zombie's memory. Check the `key` derivation in `SKILL.md` — keys are zombie-scoped. |
+| `UZ-MEM-001` | Memory scope denied | The agent tried to read another agent's memory. Check the `key` derivation in `SKILL.md` — keys are agent-scoped. |
 
 <Note>
 **Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` at warn level and silently skips it. When the agent tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `zombiectl logs <zombie_id>` for the actual error text. See [Tools catalogue → Validation](/zombies/tools#validation).
@@ -150,10 +150,10 @@ zombiectl status --json | jq '.[] | select(.zombie_id == "<id>") | {state, budge
 
 Two layers of cap exist independently:
 
-1. **Per-zombie** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this zombie's runs until the rolling window resets. Raise the value, re-install.
+1. **Per-agent** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this agent's runs until the rolling window resets. Raise the value, re-install.
 2. **Tenant wallet** — every workspace's runs debit the same pool. When it hits zero, all runs across all workspaces stop. Top up at `app.usezombie.com/billing`. See [Billing → Budgets](/billing/budgets).
 
-If you're hitting the per-zombie cap repeatedly on legitimate traffic, the zombie's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller zombies.
+If you're hitting the per-agent cap repeatedly on legitimate traffic, the agent's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller agents.
 
 ## 6. zombiectl can't reach the platform
 

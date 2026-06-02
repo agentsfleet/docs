@@ -5,7 +5,7 @@ description: "When a run opens, when it stops, and the three knobs you'd ever tu
 
 A single trigger — a webhook, a cron fire, a `steer` message — opens one **run**. The agent reasons, calls tools, and the run closes when it's done or when it would otherwise overflow the model's context window.
 
-Most zombies finish a run in seconds to a couple of minutes and never need any of the controls on this page. Read on if you have a long incident that issues dozens of tool calls and want to understand what stops it.
+Most agents finish a run in seconds to a couple of minutes and never need any of the controls on this page. Read on if you have a long incident that issues dozens of tool calls and want to understand what stops it.
 
 ## The three things that end a run
 
@@ -19,7 +19,7 @@ Most zombies finish a run in seconds to a couple of minutes and never need any o
 
 If the agent can't finish in one run (a forty-tool-call incident on a 200K-token model, for example), it ends the current run with `exit_ok: false` and a `checkpoint_id`. The runtime re-enqueues the same event as a continuation; the next run opens with a fresh prompt and pulls the prior findings via `memory_recall(checkpoint_id)`.
 
-A chain caps at **10 continuations**. The 11th attempt is refused, the originating event is labelled `chunk_chain_escalate_human`, and an operator picks it up. The zombie itself stays alive — only that one chain forfeits.
+A chain caps at **10 continuations**. The 11th attempt is refused, the originating event is labelled `chunk_chain_escalate_human`, and an operator picks it up. The agent itself stays alive — only that one chain forfeits.
 
 ## Knobs you can tune
 
@@ -27,7 +27,7 @@ Set these under `x-usezombie.context` in `TRIGGER.md`. Defaults work for almost 
 
 | Knob | Default | When to touch it |
 |---|---|---|
-| `tool_window` | 20 | Raise if your zombie routinely runs 30+ tool calls and you want fewer continuations. Lower if you want it to compact its findings sooner. |
+| `tool_window` | 20 | Raise if your agent routinely runs 30+ tool calls and you want fewer continuations. Lower if you want it to compact its findings sooner. |
 | `memory_checkpoint_every` | 5 | Cadence at which the agent is prompted to write a memory snapshot during a long run. Rarely worth changing. |
 | `context_cap_tokens` | model-dependent | Set explicitly if your model has no published context cap or differs from the default. |
 
@@ -35,7 +35,7 @@ If you've never seen a `chunk_chain_escalate_human` failure label, you don't nee
 
 ## Common questions
 
-**My zombie ran for two minutes — is that normal?**
+**My agent ran for two minutes — is that normal?**
 
 Yes. Runs can be seconds (a single webhook → Slack post) to a few minutes (a multi-step diagnosis). What matters is that the run closes cleanly, not how long it took.
 
@@ -45,10 +45,10 @@ No. Three independent ceilings stop it: the run's own context cap (the agent vol
 
 **Do I need to tune anything?**
 
-Almost certainly not. The defaults are tuned for the flagship `platform-ops` zombie and translate well to most workloads. Tune your `SKILL.md` prose first — it's where the actual reasoning lives.
+Almost certainly not. The defaults are tuned for the flagship `platform-ops` agent and translate well to most workloads. Tune your `SKILL.md` prose first — it's where the actual reasoning lives.
 
 ## See also
 
 - [Memory](/memory) — the API the agent uses to checkpoint findings during a long run.
 - [Budgets](/billing/budgets) — `daily_dollars` and `monthly_dollars` ceilings.
-- [Authoring a zombie](/zombies/authoring) — the full `TRIGGER.md` reference.
+- [Authoring an agent](/zombies/authoring) — the full `TRIGGER.md` reference.

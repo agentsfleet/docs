@@ -1,6 +1,6 @@
 ---
 title: "Tools catalogue"
-description: "Every tool a zombie can declare in `TRIGGER.md`, what it does, and when to reach for it."
+description: "Every tool an agent can declare in `TRIGGER.md`, what it does, and when to reach for it."
 ---
 
 A **tool** is a named verb the agent inside a run may invoke. Tools are declared in `TRIGGER.md` under `x-usezombie.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
@@ -14,11 +14,11 @@ x-usezombie:
     - cron_add
 ```
 
-23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring a zombie](/zombies/authoring).
+23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring an agent](/zombies/authoring).
 
 ## Network
 
-How a zombie talks to the outside world. Each network tool has a different relationship with `network.allow:` — read the column carefully before declaring one.
+How an agent talks to the outside world. Each network tool has a different relationship with `network.allow:` — read the column carefully before declaring one.
 
 | Tool | What it does | `network.allow:` enforced? | Reach for when |
 |---|---|---|---|
@@ -36,14 +36,14 @@ Cross-run durable state. See [Memory](/memory) for the four-category model and k
 
 | Tool | What it does | Reach for when |
 |---|---|---|
-| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the zombie learned something worth keeping. |
+| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the agent learned something worth keeping. |
 | `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every run, before reasoning. |
 | `memory_list` | Filter entries by category, tags, recency. | When the agent doesn't know the exact key (e.g. "show me all open tickets"). |
 | `memory_forget` | Delete an entry. | Correcting stale facts; fed by `zombiectl steer` corrections. |
 
 ## Cron
 
-Self-scheduled future runs. The zombie sets these from inside the reasoning loop — useful for follow-ups, periodic health checks, and deferred work.
+Self-scheduled future runs. The agent sets these from inside the reasoning loop — useful for follow-ups, periodic health checks, and deferred work.
 
 | Tool | What it does |
 |---|---|
@@ -56,7 +56,7 @@ Self-scheduled future runs. The zombie sets these from inside the reasoning loop
 
 ## Agent orchestration
 
-Lets one zombie hand work to another agent. Powerful but advanced — most zombies won't need these.
+Lets one agent hand work to another agent. Powerful but advanced — most agents won't need these.
 
 | Tool | What it does | Reach for when |
 |---|---|---|
@@ -66,7 +66,7 @@ Lets one zombie hand work to another agent. Powerful but advanced — most zombi
 
 ## Browser
 
-Three independently-declarable tools that look related but overlap awkwardly. **Most operational zombies should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
+Three independently-declarable tools that look related but overlap awkwardly. **Most operational agents should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
 
 | Tool | What it does | What it actually does on hosted v2 |
 |---|---|---|
@@ -87,7 +87,7 @@ Repository operations on the runner's workspace directory.
 
 ## File
 
-The agent does not get a free shell or filesystem inside the sandbox. The one file tool exposed to zombies enforces hash-anchored edits to prevent silent overwrites.
+The agent does not get a free shell or filesystem inside the sandbox. The one file tool exposed to agents enforces hash-anchored edits to prevent silent overwrites.
 
 | Tool | What it does |
 |---|---|
@@ -137,11 +137,11 @@ The practical consequences:
 - **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
 - **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
 
-When the agent tries to invoke a tool not in the zombie's resolved `tools:` set, the underlying agent runtime returns a "no such tool" error to the agent in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
+When the agent tries to invoke a tool not in the agent's resolved `tools:` set, the underlying agent runtime returns a "no such tool" error to the agent in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
 
 ## See also
 
-- [Authoring a zombie](/zombies/authoring) — full `TRIGGER.md` schema.
+- [Authoring an agent](/zombies/authoring) — full `TRIGGER.md` schema.
 - [Memory](/memory) — the four memory categories and how recall/store fit a run.
 - [Credentials](/zombies/credentials) — adding the secrets the tool bridge substitutes.
-- [Webhooks](/zombies/webhooks) — wiring an external system to your zombie.
+- [Webhooks](/zombies/webhooks) — wiring an external system to your agent.
