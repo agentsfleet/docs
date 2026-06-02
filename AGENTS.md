@@ -21,6 +21,7 @@
 - Use "kill switch" for the immediate stop mechanism
 - Use "event" not "run" or "job" for a single webhook delivery processed by a zombie
 - Use "execution" for the billable per-event agent reasoning window
+- Use "runner" for the execution-plane process that sandboxes and runs a zombie's agent — not "executor"
 - Use "agent" not "bot" or "AI"
 - Use "PR" not "pull request" (except on first mention per page)
 - Use `zombiectl` in code formatting when referring to CLI commands
