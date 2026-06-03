@@ -12,17 +12,17 @@
 
 ## Terminology
 
-- Use "zombie" (lowercase) for the product noun — the always-on agent process
+- Use "agent" (lowercase) for the product noun — the always-on agent process. "zombie" is legacy terminology; do not use it in new prose (brand/code tokens like `usezombie`, `zombiectl`, `zombied`, `zmb_`, `zombie_id`, and `/zombies/` paths stay)
 - Use "workspace" not "project"
-- Use "skill" for a named capability a zombie's agent can invoke (agentmail, slack, github, ...)
-- Use "trigger" for how a zombie receives events (today: webhook)
+- Use "skill" for a named capability an agent can invoke (agentmail, slack, github, ...)
+- Use "trigger" for how an agent receives events (today: webhook)
 - Use "credential firewall" for the network-layer proxy that injects secrets outside the sandbox
 - Use "activity stream" not "logs" or "audit log" for the append-only event record
 - Use "kill switch" for the immediate stop mechanism
 - Use "event" not "job" for a single webhook delivery; the agent's work on one event is a "run"
 - Use "run" for one end-to-end execution of the agent on one trigger — formerly "stage"
 - Use "execution" only as the general noun (e.g. "hosted execution"), not for the discrete unit
-- Use "runner" for the execution-plane process that sandboxes and runs a zombie's agent — not "executor"
+- Use "runner" for the execution-plane process that sandboxes and runs an agent — not "executor"
 - Use "agent" not "bot" or "AI"
 - Use "PR" not "pull request" (except on first mention per page)
 - Use `zombiectl` in code formatting when referring to CLI commands
@@ -71,7 +71,7 @@ The rule applies to every milestone PR, not just trigger/CLI ones — schema mig
      Heritage `--z-orange` palette retired in M64 (Operational Restraint
      rollout). Anything still referencing `#d96b2b` / `--z-orange` is stale. */}
 
-The accent is currency, never decoration: cyan-mint pulse appears only on live signals (running zombies, focus rings, primary CTAs, the brand-mark). Everything else is muted/subtle/info/warn/error/evidence.
+The accent is currency, never decoration: cyan-mint pulse appears only on live signals (running agents, focus rings, primary CTAs, the brand-mark). Everything else is muted/subtle/info/warn/error/evidence.
 
 Primary brand accent (the wake-pulse): `#5eead4` (`--pulse`, dark mode), `#14b8a6` (`--pulse`, light mode).
 Pulse glow ring: `rgba(94, 234, 212, 0.35)` (`--pulse-glow`).
