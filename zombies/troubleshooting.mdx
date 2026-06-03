@@ -21,7 +21,7 @@ An agent that's misbehaving falls into one of six failure shapes. Find the sympt
 `zombiectl install --from <path>` exited with code `2`. The platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
 
 ```bash
-zombiectl install --from ./my-zombie --json 2>&1 | tail -5
+zombiectl install --from ./my-agent --json 2>&1 | tail -5
 ```
 
 The `--json` output carries the wire error code:

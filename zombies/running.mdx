@@ -9,8 +9,8 @@ A small set of verbs cover the live lifecycle: `install --from <path>` brings an
 
 ```bash
 zombiectl install --from ~/.config/usezombie/samples/platform-ops
-zombiectl status                               # every zombie in the workspace
-zombiectl logs zmb_2041                        # tail one zombie's recent activity
+zombiectl status                               # every agent in the workspace
+zombiectl logs zmb_2041                        # tail one agent's recent activity
 zombiectl steer zmb_2041 "morning health check"
 zombiectl stop zmb_2041                        # pause; resumable
 zombiectl kill zmb_2041                        # terminal
@@ -26,7 +26,7 @@ zombiectl install --from ~/.config/usezombie/samples/platform-ops
 ```
 
 ```
-✓ platform-ops-zombie is live.
+✓ platform-ops-agent is live.
   Zombie ID: zmb_2041
   Webhook URLs (register on the upstream provider):
     github: https://api.usezombie.com/v1/webhooks/zmb_2041/github
@@ -54,7 +54,7 @@ zombiectl status
 Zombies (workspace: ws_abc123)
 ──────────────────────────────────────────────────────────────────
 ID         Name                  Status  Events  Budget
-zmb_2041   platform-ops-zombie   alive   42      $1.23
+zmb_2041   platform-ops-agent   alive   42      $1.23
 ```
 
 Pass `--json` for a machine-readable shape suitable for scripting:
