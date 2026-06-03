@@ -8,7 +8,7 @@ description: "The `SKILL.md` and `TRIGGER.md` file pair — how an agent is defi
 An agent is two files: a **`SKILL.md`** that tells the agent who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the agent connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
 
 ```
-my-zombie/
+my-agent/
 ├── SKILL.md      # agent instructions (natural language)
 └── TRIGGER.md    # machine-readable config + deployment metadata
 ```
@@ -23,7 +23,7 @@ my-zombie/
 
 ```yaml
 ---
-name: platform-ops-zombie          # required, must match TRIGGER.md
+name: platform-ops-agent          # required, must match TRIGGER.md
 description: Diagnoses platform health from fly.io and upstash, posts to Slack.
 version: 0.1.0                     # required, semver
 when_to_use: ...                   # optional
@@ -55,12 +55,12 @@ Plain markdown. The whole body becomes the agent's system prompt.
 
 ```markdown SKILL.md
 ---
-name: platform-ops-zombie
+name: platform-ops-agent
 description: Diagnoses platform health from fly.io and upstash, posts to Slack.
 version: 0.1.0
 ---
 
-You are Platform Ops Zombie. You diagnose problems in a small production
+You are Platform Ops Agent. You diagnose problems in a small production
 platform that runs on fly.io (app hosting) and upstash (managed Redis).
 You are strictly read-only against fly and upstash; your one write path
 is to post a plain-text summary into one Slack channel.
@@ -85,10 +85,10 @@ always frame as "leading hypothesis" and let the human decide.
 
 ```yaml
 ---
-name: platform-ops-zombie   # top level — must match SKILL.md `name:`
+name: platform-ops-agent   # top level — must match SKILL.md `name:`
 
 x-usezombie:                # all runtime config nests under this key
-  triggers:                 # array, 1–8 entries; one zombie can wake on many sources
+  triggers:                 # array, 1–8 entries; one agent can wake on many sources
     - type: api             # operator chats via /steer; events arrive as event_type: chat
   tools:
     - http_request
@@ -190,12 +190,12 @@ A breach terminates the in-flight event cleanly and records a `budget_breach` en
 `zombiectl install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses. Errors are returned with the field at fault.
 
 ```bash
-zombiectl install --from ./my-zombie
+zombiectl install --from ./my-agent
 ```
 
 ```
 ✗ install rejected: name_mismatch
-  SKILL.md name: platform-ops-zombie
+  SKILL.md name: platform-ops-agent
   TRIGGER.md name: platform-ops-zombe    ← typo
 ```
 
