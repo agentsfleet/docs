@@ -3,7 +3,7 @@ title: Quickstart
 description: "Install zombiectl, run /usezombie-install-platform-ops, see a real diagnosis in Slack."
 ---
 
-This walks through installing the flagship `platform-ops` zombie on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
+This walks through installing the flagship `platform-ops` agent on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
 
 <Steps>
 
@@ -38,9 +38,9 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl login
   ```
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + stages) is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
 
-  Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install zombies immediately — no `workspace add` required.
+  Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install agents immediately — no `workspace add` required.
 
   <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
 
@@ -54,7 +54,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl workspace add platform-ops
   ```
 
-  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every zombie lives in exactly one. Switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
+  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every agent lives in exactly one. Switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
 </Step>
 
 <Step title="Run the install skill">
@@ -90,12 +90,12 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
     HMAC self-verify: ok
   ```
 
-  The zombie filters incoming payloads for `conclusion=failure` on a production-branch workflow — the rule lives in the generated `.usezombie/platform-ops/SKILL.md` and is editable. See [Authoring](/zombies/authoring) to widen or narrow it.
+  The agent filters incoming payloads for `conclusion=failure` on a production-branch workflow — the rule lives in the generated `.usezombie/platform-ops/SKILL.md` and is editable. See [Authoring](/zombies/authoring) to widen or narrow it.
 
   If `gh` is not authenticated for `admin:repo_hook` scope, the skill stops with the exact recovery command (`gh auth refresh -s admin:repo_hook`). If the hook already exists at the same URL, the skill matches on `config.url` and advances — re-running the install is idempotent.
 
   <Tip>
-    **One workspace credential, many repos.** The workspace's `github` credential carries the signing secret for every zombie in the workspace. Tradeoff: rotation is workspace-wide; rotating the workspace `github` credential affects every zombie that uses it.
+    **One workspace credential, many repos.** The workspace's `github` credential carries the signing secret for every agent in the workspace. Tradeoff: rotation is workspace-wide; rotating the workspace `github` credential affects every agent that uses it.
   </Tip>
 
   <Warning>
@@ -130,7 +130,7 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   Cause a deploy failure on the production branch — push a known-broken commit, fail a test on purpose, whatever you have handy. Within seconds:
 
   - GitHub fires `workflow_run.completed` with `conclusion: failure` to the webhook URL.
-  - The zombie wakes, calls the tools `TRIGGER.md` allow-lists (`http_request` against your hosting provider, `memory_store` for findings), gathers evidence from the failed workflow.
+  - The agent wakes, calls the tools `TRIGGER.md` allow-lists (`http_request` against your hosting provider, `memory_store` for findings), gathers evidence from the failed workflow.
   - An evidenced diagnosis posts to your Slack channel.
 
   Tail it — replace `<zombie_id>` with the value the install step printed (e.g. `zmb_2041`):
@@ -139,19 +139,19 @@ This walks through installing the flagship `platform-ops` zombie on one of your 
   zombiectl logs zmb_2041
   ```
 
-  Need to slice by source or time window? `zombiectl events zmb_2041 --actor 'webhook:*' --since 30m`. Lost track of the ID? `zombiectl list` prints every zombie in the active workspace. Or watch the same stream in the dashboard at `app.usezombie.com`.
+  Need to slice by source or time window? `zombiectl events zmb_2041 --actor 'webhook:*' --since 30m`. Lost track of the ID? `zombiectl list` prints every agent in the active workspace. Or watch the same stream in the dashboard at `app.usezombie.com`.
 </Step>
 
 </Steps>
 
 ## What just happened
 
-The platform-ops zombie installed `SKILL.md` (the prose system prompt — what to investigate, how to phrase a diagnosis) and `TRIGGER.md` (which tools the model can call) into your repo. From here, behaviour iterates on prose: edit the `.usezombie/platform-ops/SKILL.md` file, push, the next trigger runs the new behaviour. No redeploys, no DAG editor.
+The platform-ops agent installed `SKILL.md` (the prose system prompt — what to investigate, how to phrase a diagnosis) and `TRIGGER.md` (which tools the model can call) into your repo. From here, behaviour iterates on prose: edit the `.usezombie/platform-ops/SKILL.md` file, push, the next trigger runs the new behaviour. No redeploys, no DAG editor.
 
 ## Next steps
 
 <Columns cols={2}>
-  <Card title="Steer the zombie manually" icon="message" href="/cli/zombiectl">
+  <Card title="Steer the agent manually" icon="message" href="/cli/zombiectl">
     `zombiectl steer <zombie_id> "morning health check"` — same reasoning loop, manual trigger. Useful before you have a webhook firing.
   </Card>
   <Card title="Read SKILL.md / TRIGGER.md" icon="file-pen" href="/concepts">
@@ -160,7 +160,7 @@ The platform-ops zombie installed `SKILL.md` (the prose system prompt — what t
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Why deep incidents keep reasoning past the model's context cap. Defaults work for 95% of cases.
   </Card>
-  <Card title="Authoring a zombie" icon="file-code" href="/zombies/authoring">
+  <Card title="Authoring an agent" icon="file-code" href="/zombies/authoring">
     The `SKILL.md` + `TRIGGER.md` reference for writing your own.
   </Card>
 </Columns>

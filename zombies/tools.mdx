@@ -1,9 +1,9 @@
 ---
 title: "Tools catalogue"
-description: "Every tool a zombie can declare in `TRIGGER.md`, what it does, and when to reach for it."
+description: "Every tool an agent can declare in `TRIGGER.md`, what it does, and when to reach for it."
 ---
 
-A **tool** is a named verb the agent inside a stage may invoke. Tools are declared in `TRIGGER.md` under `x-usezombie.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
+A **tool** is a named verb the agent inside a run may invoke. Tools are declared in `TRIGGER.md` under `x-usezombie.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
 
 ```yaml
 x-usezombie:
@@ -14,16 +14,16 @@ x-usezombie:
     - cron_add
 ```
 
-23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring a zombie](/zombies/authoring).
+23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring an agent](/zombies/authoring).
 
 ## Network
 
-How a zombie talks to the outside world. Each network tool has a different relationship with `network.allow:` — read the column carefully before declaring one.
+How an agent talks to the outside world. Each network tool has a different relationship with `network.allow:` — read the column carefully before declaring one.
 
 | Tool | What it does | `network.allow:` enforced? | Reach for when |
 |---|---|---|---|
 | `http_request` | HTTPS calls (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`) to external APIs. The tool bridge substitutes credential references (`${secrets.NAME.FIELD}`) into headers and bodies outside the sandbox. Default response cap: 1 MB. | **Yes.** Off-list hosts dropped by the sandbox firewall before the request leaves. | Any third-party API. Slack, GitHub, Linear, your hosting provider, your monitoring — everything goes through this. |
-| `web_search` | Internet search across platform-managed providers (SearxNG, DuckDuckGo, Brave, Firecrawl, Tavily, Perplexity, Exa, Jina). The provider chain is hardcoded; the agent picks among them with the `provider` argument. | **No.** Provider hosts aren't user-controllable, so they bypass `network.allow:` entirely. You don't list `searxng.org` etc. in your `network.allow:` — the platform handles that. | Open-web research during a stage — finding a CVE writeup, looking up a stack trace, etc. |
+| `web_search` | Internet search across platform-managed providers (SearxNG, DuckDuckGo, Brave, Firecrawl, Tavily, Perplexity, Exa, Jina). The provider chain is hardcoded; the agent picks among them with the `provider` argument. | **No.** Provider hosts aren't user-controllable, so they bypass `network.allow:` entirely. You don't list `searxng.org` etc. in your `network.allow:` — the platform handles that. | Open-web research during a run — finding a CVE writeup, looking up a stack trace, etc. |
 | `web_fetch` | Fetch an HTTPS page and convert it to readable markdown. | **No (today).** The tool is built with an empty allowlist on hosted v2, which NullClaw treats as allow-any-HTTPS. Don't rely on `network.allow:` to constrain `web_fetch` — if you need host scoping for fetched content, gate it through `http_request` instead. | Pulling docs, blog posts, status pages into the agent's context without writing a custom HTML parser. |
 
 <Note>
@@ -32,18 +32,18 @@ How a zombie talks to the outside world. Each network tool has a different relat
 
 ## Memory
 
-Cross-stage durable state. See [Memory](/memory) for the four-category model and key conventions.
+Cross-run durable state. See [Memory](/memory) for the four-category model and key conventions.
 
 | Tool | What it does | Reach for when |
 |---|---|---|
-| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every stage where the zombie learned something worth keeping. |
-| `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every stage, before reasoning. |
+| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the agent learned something worth keeping. |
+| `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every run, before reasoning. |
 | `memory_list` | Filter entries by category, tags, recency. | When the agent doesn't know the exact key (e.g. "show me all open tickets"). |
 | `memory_forget` | Delete an entry. | Correcting stale facts; fed by `zombiectl steer` corrections. |
 
 ## Cron
 
-Self-scheduled future stages. The zombie sets these from inside the reasoning loop — useful for follow-ups, periodic health checks, and deferred work.
+Self-scheduled future runs. The agent sets these from inside the reasoning loop — useful for follow-ups, periodic health checks, and deferred work.
 
 | Tool | What it does |
 |---|---|
@@ -56,17 +56,17 @@ Self-scheduled future stages. The zombie sets these from inside the reasoning lo
 
 ## Agent orchestration
 
-Lets one zombie hand work to another agent. Powerful but advanced — most zombies won't need these.
+Lets one agent hand work to another agent. Powerful but advanced — most agents won't need these.
 
 | Tool | What it does | Reach for when |
 |---|---|---|
 | `delegate` | Delegate a subtask to a specialized sub-agent (potentially a different model). Synchronous — the parent waits for the result. | The subtask benefits from a stronger model, a different system prompt, or fresh context. |
-| `spawn` | Launch a background subagent asynchronously. Returns a task ID immediately; results arrive as system messages later. | Long-running fanout that shouldn't block the current stage. |
+| `spawn` | Launch a background subagent asynchronously. Returns a task ID immediately; results arrive as system messages later. | Long-running fanout that shouldn't block the current run. |
 | `schedule` | Richer scheduler than `cron_*`. Supports shell `command` jobs and agent `prompt` jobs, with optional channel routing. Actions: `create`, `once`, `list`, `get`, `cancel`, `pause`, `resume`. | When you need agent-as-job (vs. just a shell command), or one-shot timers, or want results routed to a specific channel. |
 
 ## Browser
 
-Three independently-declarable tools that look related but overlap awkwardly. **Most operational zombies should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
+Three independently-declarable tools that look related but overlap awkwardly. **Most operational agents should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
 
 | Tool | What it does | What it actually does on hosted v2 |
 |---|---|---|
@@ -87,7 +87,7 @@ Repository operations on the runner's workspace directory.
 
 ## File
 
-The agent does not get a free shell or filesystem inside the sandbox. The one file tool exposed to zombies enforces hash-anchored edits to prevent silent overwrites.
+The agent does not get a free shell or filesystem inside the sandbox. The one file tool exposed to agents enforces hash-anchored edits to prevent silent overwrites.
 
 | Tool | What it does |
 |---|---|
@@ -129,7 +129,7 @@ Drop any one and the call fails: missing tool → agent can't even try; missing 
 
 ## Validation
 
-`zombiectl install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a stage: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
+`zombiectl install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
 
 The practical consequences:
 
@@ -137,11 +137,11 @@ The practical consequences:
 - **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
 - **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
 
-When the agent tries to invoke a tool not in the zombie's resolved `tools:` set, the underlying agent runtime returns a "no such tool" error to the agent in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
+When the agent tries to invoke a tool not in the agent's resolved `tools:` set, the underlying agent runtime returns a "no such tool" error to the agent in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
 
 ## See also
 
-- [Authoring a zombie](/zombies/authoring) — full `TRIGGER.md` schema.
-- [Memory](/memory) — the four memory categories and how recall/store fit a stage.
+- [Authoring an agent](/zombies/authoring) — full `TRIGGER.md` schema.
+- [Memory](/memory) — the four memory categories and how recall/store fit a run.
 - [Credentials](/zombies/credentials) — adding the secrets the tool bridge substitutes.
-- [Webhooks](/zombies/webhooks) — wiring an external system to your zombie.
+- [Webhooks](/zombies/webhooks) — wiring an external system to your agent.

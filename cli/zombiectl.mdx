@@ -8,7 +8,7 @@ description: "Complete zombiectl command reference."
 | Group | Commands |
 |-------|----------|
 | Authentication | `login`, `logout`, `auth status` |
-| Zombies (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
+| Agents (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
 | External agents | `agent add`, `agent list`, `agent delete` |
@@ -84,7 +84,7 @@ The probe result is one of `valid` (200 from the billing endpoint), `unauthorize
 
 ---
 
-## Zombies
+## Agents
 
 ### `zombiectl install --from <path>`
 
@@ -98,7 +98,7 @@ The `samples/` directory ships with `zombiectl` and contains the flagship `platf
 
 ### `zombiectl list`
 
-List zombies in the active workspace. Keyset-paginated over `(created_at, id)` — the dashboard `/zombies` page uses the same contract.
+List agents in the active workspace. Keyset-paginated over `(created_at, id)` — the dashboard `/zombies` page uses the same contract.
 
 ```bash
 zombiectl list --limit 20
@@ -115,22 +115,22 @@ Human-readable output prints a table and, when more pages remain, a "Next" hint 
 
 ### `zombiectl status`
 
-List every zombie in the current workspace with state, events processed, and budget consumed.
+List every agent in the current workspace with state, events processed, and budget consumed.
 
 ```bash
 zombiectl status
 ```
 
-### Zombie lifecycle: `stop` / `resume` / `kill` / `delete`
+### Agent lifecycle: `stop` / `resume` / `kill` / `delete`
 
-Four verbs control a zombie's lifecycle, in increasing order of irreversibility:
+Four verbs control an agent's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
-| `stop <zombie_id>` | Halt the running session. New events stop dispatching; in-flight stage finishes cleanly. | Yes — `zombiectl resume`. |
+| `stop <zombie_id>` | Halt the running session. New events stop dispatching; in-flight run finishes cleanly. | Yes — `zombiectl resume`. |
 | `resume <zombie_id>` | Resume from `stopped` or auto-paused state. | — |
-| `kill <zombie_id>` | Mark terminal. The zombie won't process events again, but its row, history, and webhook URL persist. | No, but the zombie can be `delete`d after. |
-| `delete <zombie_id>` | Hard-delete. Removes the zombie row and its webhook URL. **Must `kill` first.** | No. |
+| `kill <zombie_id>` | Mark terminal. The agent won't process events again, but its row, history, and webhook URL persist. | No, but the agent can be `delete`d after. |
+| `delete <zombie_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
 zombiectl stop   zmb_2041   # pause; resumable
@@ -143,7 +143,7 @@ State is checkpointed at every transition — nothing on the activity stream is 
 
 ### `zombiectl logs <zombie_id>`
 
-Print the zombie's recent activity stream — newest-first, paginated.
+Print the agent's recent activity stream — newest-first, paginated.
 
 ```bash
 zombiectl logs zmb_2041
@@ -157,7 +157,7 @@ zombiectl logs zmb_2041 --json
 | `--cursor <cursor>` | *(none)* | Pagination cursor returned as `next_cursor` in a previous response. |
 | `--json` | off | Emit the raw `{ items, next_cursor }` envelope. |
 
-The zombie ID may also be passed via `--zombie <id>` for scripting symmetry with `events`.
+The agent ID may also be passed via `--zombie <id>` for scripting symmetry with `events`.
 
 ### `zombiectl events <zombie_id>` — filtered history
 
@@ -227,7 +227,7 @@ Print metadata (created, last-rotated). **Values are never returned.**
 
 ### `zombiectl credential delete <name>`
 
-Remove a credential from the workspace vault. Any zombie still referencing it will fail with `UZ-ZMB-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
+Remove a credential from the workspace vault. Any agent still referencing it will fail with `UZ-ZMB-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
 
 ### `zombiectl credential list`
 
@@ -282,7 +282,7 @@ Prints the workspace's `workspace_id`, `name`, `created_at`, and active marker. 
 
 ### `zombiectl workspace delete <id>`
 
-Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight stages finish, retains stage history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `zombie_id`s, so any upstream webhooks pointing at the old workspace's zombies need to be re-wired.
+Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `zombie_id`s, so any upstream webhooks pointing at the old workspace's agents need to be re-wired.
 
 ```bash
 zombiectl workspace delete ws_abc123
@@ -292,11 +292,11 @@ zombiectl workspace delete ws_abc123
 
 ## External agents
 
-External agents are API-key–authenticated callers (LangGraph, CrewAI, Composio, your own code) that drive a specific zombie programmatically.
+External agents are API-key–authenticated callers (LangGraph, CrewAI, Composio, your own code) that drive a specific agent programmatically.
 
 ### `zombiectl agent add`
 
-Mint an API key bound to one zombie.
+Mint an API key bound to one agent.
 
 ```bash
 zombiectl agent add --workspace ws_abc --zombie zm_xyz --name my-agent
@@ -324,11 +324,11 @@ zombiectl agent delete --workspace ws_abc ag_01JABC...
 
 ## Integration grants
 
-Integration grants are per-zombie permissions to reach a third-party service (Slack workspace, GitHub repo) that the zombie requested interactively.
+Integration grants are per-agent permissions to reach a third-party service (Slack workspace, GitHub repo) that the agent requested interactively.
 
 ### `zombiectl grant list --zombie <id>`
 
-List pending and approved grants for a zombie.
+List pending and approved grants for an agent.
 
 ```bash
 zombiectl grant list --zombie zm_01JABC...
@@ -336,7 +336,7 @@ zombiectl grant list --zombie zm_01JABC...
 
 ### `zombiectl grant delete --zombie <id> <grant-id>`
 
-Revoke a granted integration. Further attempts by the zombie to reach that integration fail with `UZ-GRANT-003`.
+Revoke a granted integration. Further attempts by the agent to reach that integration fail with `UZ-GRANT-003`.
 
 ```bash
 zombiectl grant delete --zombie zm_01JABC... gr_01JXYZ...
@@ -363,13 +363,13 @@ zombiectl billing show --json
 | `--cursor <cursor>` | *(none)* | Pagination cursor from a previous response. |
 | `--json` | off | Emit raw JSON for scripting. |
 
-For per-zombie spend breakdowns, use `zombiectl logs <zombie_id> --json` and aggregate the `tokens` / `wall_ms` fields client-side. Plan changes (Hobby ↔ Scale) and payment-method updates happen at [app.usezombie.com/billing](https://app.usezombie.com/billing).
+For per-agent spend breakdowns, use `zombiectl logs <zombie_id> --json` and aggregate the `tokens` / `wall_ms` fields client-side. Top-ups and payment-method updates happen at [app.usezombie.com/billing](https://app.usezombie.com/billing).
 
 ---
 
 ## Tenant provider
 
-By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the stage charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. The flat self-managed stage fee replaces the per-token component, and you pay your provider directly.
+By default your tenant runs on **platform-managed** inference — usezombie holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from usezombie — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
 
 ### `zombiectl tenant provider show`
 

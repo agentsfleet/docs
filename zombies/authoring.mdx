@@ -1,11 +1,11 @@
 ---
-title: "Authoring a zombie"
-description: "The `SKILL.md` and `TRIGGER.md` file pair — how a zombie is defined end-to-end."
+title: "Authoring an agent"
+description: "The `SKILL.md` and `TRIGGER.md` file pair — how an agent is defined end-to-end."
 ---
 
 ## Overview
 
-A zombie is two files: a **`SKILL.md`** that tells the agent who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the zombie connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
+An agent is two files: a **`SKILL.md`** that tells the agent who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the agent connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
 
 ```
 my-zombie/
@@ -136,7 +136,7 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
 | `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
 | `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/zombies/tools). |
-| `credentials` | optional | Vault key names the zombie reads at event time. |
+| `credentials` | optional | Vault key names the agent reads at event time. |
 | `network.allow` | yes | Outbound hostname allowlist enforced by the sandbox. |
 | `budget.daily_dollars` | yes | Rolling 24-hour dollar ceiling. |
 | `budget.monthly_dollars` | optional | Calendar-month dollar ceiling. |
@@ -145,13 +145,13 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 | YAML value | Wakes from | Use when | Companion fields |
 |---|---|---|---|
-| `webhook` | An external HTTP `POST` to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` with a signed body. | Most production zombies — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/zombies/webhooks). |
-| `cron` | A self-scheduled timer the zombie sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per zombie. |
-| `api` | A `zombiectl steer` invocation or a `POST /v1/.../zombies/{id}/messages` API call. | Steerable, operator-driven zombies — manual investigation, on-demand workflows, the install-time smoke test. | None. |
+| `webhook` | An external HTTP `POST` to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` with a signed body. | Most production agents — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/zombies/webhooks). |
+| `cron` | A self-scheduled timer the agent sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per agent. |
+| `api` | A `zombiectl steer` invocation or a `POST /v1/.../zombies/{id}/messages` API call. | Steerable, operator-driven agents — manual investigation, on-demand workflows, the install-time smoke test. | None. |
 
-A zombie can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any zombie can also be steered via `zombiectl steer` regardless of declared triggers — steer always works. The `api` type is for zombies whose *primary* surface is steer (no inbound webhook).
+An agent can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any agent can also be steered via `zombiectl steer` regardless of declared triggers — steer always works. The `api` type is for agents whose *primary* surface is steer (no inbound webhook).
 
-<Note>**Long-stage continuations are not a trigger type.** When a stage runs out of context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original stage. See [Context lifecycle](/concepts/context-lifecycle).</Note>
+<Note>**Long-run continuations are not a trigger type.** When a run exhausts its context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
 ### Tools
 
@@ -171,7 +171,7 @@ Each entry under `credentials:` is a **bare vault key name** referencing a JSON-
 
 | Field | Purpose |
 |---|---|
-| `daily_dollars` | Rolling 24-hour dollar ceiling for this zombie. |
+| `daily_dollars` | Rolling 24-hour dollar ceiling for this agent. |
 | `monthly_dollars` | Calendar-month dollar ceiling. |
 
 A breach terminates the in-flight event cleanly and records a `budget_breach` entry. Subsequent events in a later billing window are unaffected. Workspace-wide budgets live in [Billing](/billing/budgets).
