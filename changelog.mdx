@@ -31,7 +31,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## Upgrading
 
-  - **`zombie-runner register` is removed.** The runner CLI no longer accepts `--token` or `ZOMBIE_TOKEN`. To enroll a host, a platform admin mints a runner token from the dashboard (Runners → Add runner) and installs it on the host as `ZOMBIE_RUNNER_TOKEN`. Runners already enrolled keep working — only the enrollment step changed.
+  - **`zombie-runner register` is removed.** The runner CLI no longer accepts `--token`, `--host-id`, or `ZOMBIE_TOKEN`. To enroll a host, a platform admin mints a runner token from the dashboard (Runners → Add runner) and installs it on the host as `ZOMBIE_RUNNER_TOKEN`. Runners already enrolled keep working — only the enrollment step changed.
   - **Server errors on non-idempotent requests are no longer retried.** The dashboard and `zombiectl` HTTP clients now retry a server 5xx only for idempotent methods (`GET`/`PUT`/`DELETE`/`HEAD`); a failed `POST` or `PATCH` surfaces immediately instead of risking a duplicate write. Network errors and `Retry-After` responses (`429`/`503`/`504`) retry as before.
 
   ## What's new
@@ -44,7 +44,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## CLI
 
-  - **`zombie-runner register` and its `--token` / `--host-id` flags are gone.** The runner binary no longer takes an identity credential; it runs on the installed `ZOMBIE_RUNNER_TOKEN`.
+  - **`zombie-runner register` is gone.** The subcommand and its `--token` / `--host-id` flags no longer exist; see [Upgrading](#upgrading) for the dashboard enrollment flow.
 </Update>
 
 <Update label="Jun 03, 2026" tags={["What's new", "UI"]}>
