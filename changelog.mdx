@@ -22,6 +22,31 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 04, 2026" tags={["Breaking", "What's new", "UI", "CLI", "Security"]}>
+  ## Enroll runners from the dashboard, plus a regrouped left navigation
+
+  You can now add a runner to your fleet from the dashboard instead of the command line. A platform admin opens **Runners**, clicks **Add runner**, and copies a one-time runner token to install on the host — your platform-admin login never touches a shell. The runner list shows each host's liveness honestly: a host you just enrolled reads **registered** until it first checks in, instead of a false **online**.
+
+  The dashboard's left navigation is regrouped into **Operations** (Agents, Approvals, Events), **Configuration** (Credentials, Model, and Runners for platform admins), and **Organization** (Settings, Billing). The model-and-provider settings move out of Settings to their own **Model** entry at `/settings/models`.
+
+  ## Upgrading
+
+  - **`zombie-runner register` is removed.** The runner CLI no longer accepts `--token` or `ZOMBIE_TOKEN`. To enroll a host, a platform admin mints a runner token from the dashboard (Runners → Add runner) and installs it on the host as `ZOMBIE_RUNNER_TOKEN`. Runners already enrolled keep working — only the enrollment step changed.
+  - **Server errors on non-idempotent requests are no longer retried.** The dashboard and `zombiectl` HTTP clients now retry a server 5xx only for idempotent methods (`GET`/`PUT`/`DELETE`/`HEAD`); a failed `POST` or `PATCH` surfaces immediately instead of risking a duplicate write. Network errors and `Retry-After` responses (`429`/`503`/`504`) retry as before.
+
+  ## What's new
+
+  - **Fleet list in the dashboard** — platform admins see every enrolled runner with its derived liveness: `registered`, `online`, `busy`, or `offline`.
+
+  ## API reference
+
+  - **`GET /v1/fleet/runners`** — platform-admin only; paginated. Each item carries `liveness ∈ {registered, online, busy, offline}` and never includes the token hash. A tenant token gets `403`.
+
+  ## CLI
+
+  - **`zombie-runner register` and its `--token` / `--host-id` flags are gone.** The runner binary no longer takes an identity credential; it runs on the installed `ZOMBIE_RUNNER_TOKEN`.
+</Update>
+
 <Update label="Jun 03, 2026" tags={["What's new", "UI"]}>
   ## One name across the product: the thing you install is an "agent"
 
