@@ -29,9 +29,13 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   If no enrolled runner currently advertises the required labels, the agent waits for a matching runner rather than running on an unsuitable host.
 
+  <Note>
+    A waiting agent surfaces no separate status today. If an agent never starts, confirm an enrolled runner advertises every tag the agent requires.
+  </Note>
+
   ## API reference
 
-  - **`required_tags` on an agent** — derived from the SKILL.md `tags:` on create and re-derived when you `PATCH` a new `source_markdown`. A runner claims an agent only when `required_tags` is a subset of the runner's labels. Each tag is 1–64 characters and an agent carries at most 32; a tag outside those bounds rejects the request with `UZ-REQ-001`.
+  - **`required_tags` on an agent** — derived from the SKILL.md `tags:` on create and re-derived when you `PATCH` a new `source_markdown`. A runner claims an agent only when `required_tags` is a subset of the runner's labels. Each tag is 1–64 characters; an agent carries at most 32. Either bound exceeded rejects the request with `UZ-REQ-001`.
 </Update>
 
 <Update label="Jun 04, 2026" tags={["Breaking", "What's new", "UI", "CLI", "Security"]}>
