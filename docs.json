@@ -196,9 +196,7 @@
           {
             "group": "Agent memories",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories",
-              "POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories",
-              "DELETE /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories/{memory_key}"
+              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories"
             ]
           },
           {
