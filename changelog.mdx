@@ -22,6 +22,28 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 07, 2026" tags={["Breaking", "What's new", "UI", "API"]}>
+  ## Set up a bring-your-own-key model provider without leaving the Models page
+
+  The Models page is now a guided, two-step wizard for bring-your-own-key (BYOK) setup. Choosing "use my own provider key" with an empty vault used to dead-end at a disabled button that sent you off to Credentials; now you paste an API key, the provider and a default model fill themselves in from the key's prefix, you save the credential inline, pick the model, and activate — all on one screen. Platform-managed keys stay a one-click choice. A short note explains that switching providers applies to new runs while in-flight agents finish on their current one.
+
+  Behind the wizard, the public model catalogue moved: the unauthenticated `_um/<key>/model-caps.json` document is now `cap.json`, and it carries the global run and event rates, the starter credit, and the free-trial window alongside the per-model catalogue — one document for the client config that needs no auth.
+
+  ## Upgrading
+
+  - **`_um/<key>/model-caps.json` is now `_um/<key>/cap.json`.** The old path returns `404` (no alias). The per-model `models[]` shape is unchanged, so if you read the public catalogue directly, only the path moves — switch to `cap.json`. If you only use the dashboard or `zombiectl`, there is nothing to do; they handle this for you.
+
+  ## What's new
+
+  - **Inline credential create on the Models page** — a structured provider / API key / model form that names the credential after the provider and detects the provider from the key prefix. No trip to Credentials.
+  - **Catalogue-backed model picker** — the model field is populated from `cap.json`, with free-text entry as a fallback for a model not in the catalogue.
+  - **Global config in `cap.json`** — the document now includes a `rates` block (run and event rates) and a `billing` block (starter credit, free-trial window), so a client no longer hardcodes those constants.
+
+  ## API reference
+
+  - **`GET /_um/<key>/cap.json`** — unauthenticated; replaces `model-caps.json`. Returns `{ version, models, rates, billing }`. Each `models[]` row carries `id`, `provider`, `context_cap_tokens`, and the per-model token rates (unchanged); `rates` carries `run_nanos_per_sec` and `event_nanos`; `billing` carries `starter_credit_nanos`, `free_trial_end_ms`, and `free_trial_stage_nanos`. The optional `?model=` filter narrows `models[]`; the global blocks are always present. A wrong key returns `404`; an empty catalogue returns `503`.
+</Update>
+
 <Update label="Jun 06, 2026" tags={["What's new", "API"]}>
   ## Pin an agent to capable runners with tags
 
