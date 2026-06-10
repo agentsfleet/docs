@@ -25,7 +25,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Jun 11, 2026" tags={["Internal", "Security"]}>
   ## Groundwork for kernel-enforced egress allowlists on sandboxed runners
 
-  Runner network posture is now selected through the `RUNNER_NETWORK_POLICY` environment variable instead of being hard-wired. Nothing changes in this release — the default posture is exactly today's behavior, and the enforced mode stays off until its kernel-level enforcement (nftables in a per-lease network namespace) arrives in an upcoming release.
+  Runner network posture is now selected through the `RUNNER_NETWORK_POLICY` environment variable instead of being hard-wired. Nothing changes in this release — the default posture is exactly today's behavior, and the enforced mode stays off until its kernel-level enforcement arrives in an upcoming release.
 
   - **`allow_all`** — the default, and what an unset variable resolves to: full outbound access, unchanged from today.
   - **`deny_all_egress`** — no outbound network at all.
