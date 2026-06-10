@@ -23,14 +23,14 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 </Tip>
 
 <Update label="Jun 10, 2026" tags={["What's new", "API"]}>
-  ## Take runners out of rotation from the dashboard
+  ## Take runners out of rotation from the Dashboard
 
-  Platform admins can now cordon, drain, or revoke a runner from the Runners page, then inspect that runner's activity history without exposing runner tokens. Cordon stops new work, drain waits for active leases to finish and then marks the runner drained, and revoke immediately blocks runner-plane authentication.
+  Platform admins can now cordon, drain, or revoke a runner from the Runners page, then inspect that runner's activity stream without exposing runner tokens. Cordon stops new work, drain waits for active leases to finish and then marks the runner drained, and revoke immediately blocks runner-plane authentication.
 
   ## What's new
 
   - **Runner actions** — The Runners page now exposes cordon, drain, and revoke actions with state badges for `active`, `cordoned`, `draining`, `drained`, and `revoked`.
-  - **Activity history** — Each runner has an activity view backed by `fleet.runner_events`, covering registration, online/offline, lease, and operator-state events.
+  - **Activity stream** — Each runner has an activity stream backed by `fleet.runner_events`, covering registration, online/offline, lease, and operator-state events.
   - **Drain behavior** — Draining finishes automatically when the runner has no active leases; if no eligible fallback runner exists, work stays held instead of bouncing between unavailable hosts.
 
   ## API reference
