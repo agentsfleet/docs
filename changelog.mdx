@@ -22,6 +22,24 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 10, 2026" tags={["What's new", "API"]}>
+  ## Take runners out of rotation from the Dashboard
+
+  Platform admins can now cordon, drain, or revoke a runner from the Runners page, then inspect that runner's activity stream without exposing runner tokens. Cordon stops new work, drain waits for active leases to finish and then marks the runner drained, and revoke immediately blocks runner-plane authentication.
+
+  ## What's new
+
+  - **Runner actions** — The Runners page now exposes cordon, drain, and revoke actions with state badges for `active`, `cordoned`, `draining`, `drained`, and `revoked`.
+  - **Activity stream** — Each runner has an activity stream backed by `fleet.runner_events`, covering registration, online/offline, lease, and operator-state events.
+  - **Drain behavior** — Draining finishes automatically when the runner has no active leases; if no eligible fallback runner exists, work stays held instead of bouncing between unavailable hosts.
+
+  ## API reference
+
+  - **`PATCH /v1/fleet/runners/{id}`** — platform-admin only; accepts `{ "action": "cordon" | "drain" | "revoke" }` and returns the runner `id` plus its `admin_state`. Tenant admins and tenant API keys get `403 UZ-AUTH-021`.
+  - **`GET /v1/fleet/runners/{id}/events`** — platform-admin only; returns paginated history with `event_type`, `since`, and `until` filters.
+  - **Runner-plane gate** — runner tokens tied to any non-`active` `admin_state` now get `401 UZ-RUN-009` on runner lookup and heartbeat endpoints.
+</Update>
+
 <Update label="Jun 07, 2026" tags={["Breaking", "What's new", "UI", "API"]}>
   ## Set up a bring-your-own-key model provider without leaving the Models page
 
