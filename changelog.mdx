@@ -29,18 +29,18 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
-  - **Steering a paused zombie fails loudly** — `POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` returns `409 UZ-ZMB-012` with a resume hint and a `current_state` field, instead of accepting a message that would silently never run.
-
-  ## Bug fixes
-
-  - **Gate refusals are visible** — a delivery a lease gate refuses is written as a terminal `gate_blocked` event with a named `failure_label` (`secret_missing`, `tenant_resolve_failed`, `approval_denied`, `approval_expired`, `balance_exhausted`), so the events history shows why nothing ran instead of leaving the event pending forever.
-  - **Stranded deliveries recover** — a delivery left pending in a retired or crashed runner's queue is reclaimed and re-leased, rather than waiting forever.
-  - **Webhooks are loss-proof** — a transient enqueue failure no longer burns the idempotency slot, so the sender's retry delivers the event exactly once. A genuine duplicate still dedupes.
-  - **Missing credentials refuse the run** — a zombie that declares a credential absent from the vault no longer ships a run with an empty secrets map; it refuses with a `secret_missing` terminal row.
+  - **Steering a paused agent fails loudly** — `POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` returns `409 UZ-ZMB-012` with a resume hint and a `current_state` field, instead of accepting a message that would silently never run.
 
   ## API reference
 
-  - **Webhooks to a paused zombie** — the generic, GitHub, and Svix webhook endpoints now return `200 {"ignored": "zombie_paused"}` for a paused zombie instead of `409`; the retired `UZ-WH-003` code is gone. The idempotency slot is not consumed, so a redelivery after resume processes normally.
+  - **Webhooks to a paused agent** — the generic, GitHub, and Svix webhook endpoints now return `200 {"ignored": "zombie_paused"}` for a paused agent instead of `409`; the retired `UZ-WH-003` code is gone. The idempotency slot is not consumed, so a redelivery after resume processes normally.
+
+  ## Bug fixes
+
+  - **Gate refusals are visible** — a delivery a lease gate refuses is written as a terminal `gate_blocked` event with a named `failure_label` (`secret_missing`, `tenant_resolve_failed`, `approval_denied`, `approval_expired`, `balance_exhausted`), so the activity stream shows why nothing ran instead of leaving the event pending forever.
+  - **Stranded deliveries recover** — a delivery left pending in a retired or crashed runner's queue is reclaimed and re-leased, rather than waiting forever.
+  - **Webhooks are loss-proof** — a transient enqueue failure no longer burns the idempotency slot, so the sender's retry delivers the event exactly once. A genuine duplicate still dedupes.
+  - **Missing credentials refuse the run** — an agent that declares a credential absent from the vault no longer ships a run with an empty secrets map; it refuses with a `secret_missing` terminal row.
 </Update>
 
 <Update label="Jun 11, 2026" tags={["Internal", "Security"]}>
