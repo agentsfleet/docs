@@ -22,6 +22,26 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["Bug fixes", "API"]}>
+  ## Platform token spend now actually bills
+
+  Runs on a platform-provided model were billed the run fee only — the tokens the agent consumed priced as zero. The server has always known how to charge for token usage, but the runner never told it how many tokens a run spent: the mid-run renewal posted an empty body, and the final report sent a single combined total into fields the server prices from per-side. Both defaulted to zero, so token cost came out to zero. The runner now streams its cumulative input and output token counts to the control plane on every renewal during a run and again on the final report, so a platform run's token spend is charged the way the rate card always described.
+
+  ## Upgrading
+
+  - **Update your runner fleet to bill token spend.** The change is on the runner side; the control plane already accepted these counts. A runner from before this release keeps working against the new server and an old server keeps working against a new runner — every token field defaults to zero on both ends, so a mixed fleet never errors and never charges a negative amount. But a run executed by a not-yet-upgraded runner still bills run-fee-only, exactly as before, until that host is updated.
+
+  ## Bug fixes
+
+  - **Platform-model runs under-billed** — a run that consumed model tokens on a platform-provided key was charged only the per-second run fee; the token component was zero. Such runs now bill the input and output token counts the agent actually consumed, metered incrementally across the run so a long run's spend is charged as it accrues rather than only at the end.
+
+  ## API reference
+
+  - **`POST /v1/runners/me/leases/{id}/renew`** now sends a JSON body carrying the run's cumulative token counts so far: `{"input_tokens": N, "cached_input_tokens": N, "output_tokens": N}` (cumulative for the run, not per-renewal deltas). An empty body is still accepted and meters run-fee-only.
+  - **The runner report** carries the same three cumulative fields alongside the existing combined `tokens` total. All three default to zero, so a report from an older runner settles run-fee-only with no error.
+  - Cached-input tokens ride the wire as zero until the model provider layer reports cache reads separately; cache-heavy runs bill those tokens at whatever class the provider currently folds them into.
+</Update>
+
 <Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
   ## Agent memory loss is now measurable
 
