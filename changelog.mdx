@@ -35,6 +35,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   - **Metering over-report at balance exhaustion** — two same-tenant renewals racing at exhaustion now record audit rows summing exactly to the wallet drain, never more.
   - **Token cursor rewind** — a renewal reporting a lower cumulative token count than already recorded charges zero for that slice and holds the cursor, instead of rewinding it and re-charging the same tokens on a later report.
+  - **Account erasure completes for gated accounts** — deleting an account (or hard-deleting a zombie) failed outright if it had ever raised an approval gate: the gates audit table is append-only, and the purge could not remove the rows its foreign keys require. The purge transactions now carry a transaction-scoped bypass for exactly that table, and account erasure also sweeps the fleet lease, affinity, and metering rows that carried the account's identifiers.
   - **Account teardown recovery** — a database failure midway through an account hard-purge now rolls the transaction back on a path that still works after a statement error, so the connection recovers instead of staying stuck in an aborted transaction.
   - 25 error codes that no code path can raise were removed from the error registry, the dashboard error-message map, and the API description.
 </Update>
