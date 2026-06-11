@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 11, 2026" tags={["Bug fixes", "Observability", "Internal"]}>
+  ## Evening release — billing audit rows now always equal the wallet drain
+
+  Concurrent renewals for the same tenant at the moment its balance ran out could write metering audit rows that summed to more than the wallet actually lost: the per-slice charge was priced off a balance read taken before the wallet row was locked. Audit rows — the substrate future invoices read from — are now priced with the tenant's balance row locked, so they equal the real drain in every interleaving. Metered token cursors also never move backwards, so tokens that were already billed cannot be billed again.
+
+  ## Upgrading
+
+  - **Removed flatlined metrics** — `/metrics` no longer renders series that nothing increments: external retry/failure classification (`zombie_external_*`), run-limit reasons (`zombied_run_limit_exceeded_total`), the agent-duration histogram (`zombie_agent_duration_seconds`), per-zombie completion/failure/token counters (`zombie_completed_total`, `zombie_failed_total`, `zombie_tokens_total`, `zombie_execution_seconds`), agent-token and backoff-wait totals, and per-workspace token series (`zombie_workspace_tokens_total`). These series only ever reported zero; if a dashboard or alert references one, delete that panel — no data is lost. `zombie_triggered_total`, backpressure, Server-Sent Events (SSE), signup-funnel, worker-liveness, and Redis pool series are unchanged.
+
+  ## Bug fixes
+
+  - **Metering over-report at balance exhaustion** — two same-tenant renewals racing at exhaustion now record audit rows summing exactly to the wallet drain, never more.
+  - **Token cursor rewind** — a renewal reporting a lower cumulative token count than already recorded charges zero for that slice and holds the cursor, instead of rewinding it and re-charging the same tokens on a later report.
+  - **Account teardown recovery** — a database failure midway through an account hard-purge now rolls the transaction back on a path that still works after a statement error, so the connection recovers instead of staying stuck in an aborted transaction.
+  - 25 error codes that no code path can raise were removed from the error registry, the dashboard error-message map, and the API description.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["Bug fixes", "API"]}>
   ## Events that can't run now say why, instead of stranding silently
 
