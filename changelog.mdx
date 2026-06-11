@@ -22,6 +22,34 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 11, 2026" tags={["What's new", "Bug fixes", "API", "Observability"]}>
+  ## Backpressure, shared event-stream fan-out, and clean shutdowns
+
+  The API now sheds load with explicit signals instead of queueing without bound, live activity streams share one Redis subscription per instance instead of opening one per viewer, and shutdown drains active streams within a bounded window instead of stranding them. Authentication keeps working through an identity provider's signing-key rotation, and a runner child that outlives its lease deadline is reliably killed.
+
+  ## What's new
+
+  - **In-flight request ceiling** — above the cap, requests get `429` with `Retry-After` and `X-RateLimit-Limit` / `X-RateLimit-Remaining` / `X-RateLimit-Reset` headers (code `UZ-API-001`). Operators raise `API_MAX_IN_FLIGHT_REQUESTS` or add replicas.
+  - **Ops probes are never shed** — `/healthz`, `/readyz`, and `/metrics` answer even at full saturation, so orchestrators and scrapers see a saturated instance instead of killing it blind.
+  - **Event-stream cap** — concurrent Server-Sent Events (SSE) streams per instance are capped by `SSE_MAX_STREAMS` (default 64). Above the cap, new tails get `503` with `Retry-After` (code `UZ-API-002`); existing API traffic is untouched. Each stream runs on its own dedicated thread, so a long-lived tail can no longer stall unrelated requests.
+  - **Shared activity fan-out** — one Redis subscription per instance fans frames out to every viewer of a zombie; a stalled tab takes oldest-frame drops on its own bounded queue instead of slowing its siblings. Watch `zombie_sse_in_flight_streams`, `zombie_sse_dropped_frames_total`, `zombie_sse_hub_reconnects_total`, and `zombie_sse_backpressure_rejections_total`.
+  - **Live-stream listing for operators** — `GET /v1/fleet/streams` (platform-admin token) returns `{items, total, max_streams}` for every open activity stream on the instance.
+
+  ## API reference
+
+  - `429` on any API route at the in-flight ceiling — `application/problem+json` body with `code: "UZ-API-001"`, plus `Retry-After` and `X-RateLimit-*` headers.
+  - `503` on `GET /v1/zombies/{id}/events/stream` at the stream cap — `code: "UZ-API-002"` with `Retry-After`. The stream description in the public OpenAPI now states the shared-subscription fan-out and the cap semantics.
+  - `GET /v1/fleet/streams` — fleet plane (platform admin), list envelope `{items, total, max_streams}`.
+
+  ## Bug fixes
+
+  - **Signing-key rotation no longer locks users out** — token verification refreshes the JSON Web Key Set (JWKS) on an unknown key id instead of returning `401` until restart.
+  - **A parked stream could black-hole other requests** — one long-lived SSE tail poisoned a share of the worker pool's queue; streams now run on dedicated threads and the pool queue is shared, so a parked worker can no longer starve queued requests.
+  - **Runner children die at the lease deadline** — control-plane calls are bounded and batched, so a blocked network call can no longer starve the kill tick past its deadline.
+  - **Shutdown no longer hangs on live streams** — drain rejects new streams, wakes every live one, and exits within a bounded window.
+  - **Telemetry writes no longer tear** — concurrent metric and span writes can't interleave half-written records into the OpenTelemetry export path.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["Internal", "Security"]}>
   ## Groundwork for kernel-enforced egress allowlists on sandboxed runners
 
