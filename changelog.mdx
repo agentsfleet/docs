@@ -22,6 +22,27 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 11, 2026" tags={["Bug fixes", "API"]}>
+  ## Events that can't run now say why, instead of stranding silently
+
+  Every accepted delivery now ends in a state you can see, or stays recoverable. Before, an event refused by a lease gate — a missing credential, a denied approval, an approval that timed out — sat in `received` forever with no signal; a delivery stranded in a retired or crashed runner's queue was never retried; and a webhook whose enqueue hit a transient error came back `duplicate` on the sender's retry and was lost for good. All three are fixed.
+
+  ## What's new
+
+  - **Steering a paused agent fails loudly** — `POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` returns `409 UZ-ZMB-012` with a resume hint and a `current_state` field, instead of accepting a message that would silently never run.
+
+  ## API reference
+
+  - **Webhooks to a paused agent** — the generic, GitHub, and Svix webhook endpoints now return `200 {"ignored": "zombie_paused"}` for a paused agent instead of `409`; the retired `UZ-WH-003` code is gone. The idempotency slot is not consumed, so a redelivery after resume processes normally.
+
+  ## Bug fixes
+
+  - **Gate refusals are visible** — a delivery a lease gate refuses is written as a terminal `gate_blocked` event with a named `failure_label` (`secret_missing`, `tenant_resolve_failed`, `approval_denied`, `approval_expired`, `balance_exhausted`), so the activity stream shows why nothing ran instead of leaving the event pending forever.
+  - **Stranded deliveries recover** — a delivery left pending in a retired or crashed runner's queue is reclaimed and re-leased, rather than waiting forever.
+  - **Webhooks are loss-proof** — a transient enqueue failure no longer burns the idempotency slot, so the sender's retry delivers the event exactly once. A genuine duplicate still dedupes.
+  - **Missing credentials refuse the run** — an agent that declares a credential absent from the vault no longer ships a run with an empty secrets map; it refuses with a `secret_missing` terminal row.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["What's new", "Bug fixes", "API", "Observability"]}>
   ## Backpressure, shared event-stream fan-out, and clean shutdowns
 
