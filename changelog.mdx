@@ -22,6 +22,24 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
+  ## Zombie memory loss is now measurable
+
+  A zombie's learned fact could previously vanish — evicted past the per-zombie cap, windowed out of a hydration reply, or skipped during a capture push — with no signal anywhere. Every one of those loss events now increments a Prometheus counter on `GET /metrics`, so a dashboard answers "is my zombie losing memory?" the day it starts instead of three weeks later through a support ticket.
+
+  ## What's new
+
+  Six counter families, all global and label-free (per-zombie inspection stays in logs and the upcoming CLI read verbs, never in metric labels):
+
+  - **`zombie_memory_hydration_dropped_entries_total` / `zombie_memory_hydration_dropped_bytes_total`** — entries and bytes the hydration byte-budget window cut from a reply; the cold tail stays durable in Postgres, these count what a run did not see.
+  - **`zombie_memory_cap_evictions_total`** — rows deleted by the per-zombie cap after a capture push, counted from the database's own deleted-row report; eviction is never blocked on telemetry.
+  - **`zombie_memory_capture_truncated_total`** — pushes that hit the push byte budget and stopped early, once per truncated push.
+  - **`zombie_memory_capture_skipped_total`** — capture deltas rejected by validation (oversized or empty key, content, or category), counted per delta.
+  - **`zombie_memory_search_zero_hits_total`** — memory searches that matched nothing, the recall-miss signal. A database error mid-read is never counted: only a cleanly empty result moves it, so infrastructure noise cannot impersonate recall loss.
+
+  The three existing memory families keep their names, types, and meaning unchanged.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["Bug fixes", "Observability", "Internal"]}>
   ## Billing audit rows now always equal the wallet drain
 
