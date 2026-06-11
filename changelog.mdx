@@ -32,7 +32,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **In-flight request ceiling** — above the cap, requests get `429` with `Retry-After` and `X-RateLimit-Limit` / `X-RateLimit-Remaining` / `X-RateLimit-Reset` headers (code `UZ-API-001`). Operators raise `API_MAX_IN_FLIGHT_REQUESTS` or add replicas.
   - **Ops probes are never shed** — `/healthz`, `/readyz`, and `/metrics` answer even at full saturation, so orchestrators and scrapers see a saturated instance instead of killing it blind.
   - **Event-stream cap** — concurrent Server-Sent Events (SSE) streams per instance are capped by `SSE_MAX_STREAMS` (default 64). Above the cap, new tails get `503` with `Retry-After` (code `UZ-API-002`); existing API traffic is untouched. Each stream runs on its own dedicated thread, so a long-lived tail can no longer stall unrelated requests.
-  - **Shared activity fan-out** — one Redis subscription per instance fans frames out to every viewer of a zombie; a stalled tab takes oldest-frame drops on its own bounded queue instead of slowing its siblings. Watch `zombie_sse_in_flight_streams`, `zombie_sse_dropped_frames_total`, `zombie_sse_hub_reconnects_total`, and `zombie_sse_backpressure_rejections_total`.
+  - **Shared activity fan-out** — one Redis subscription per instance fans frames out to every viewer of an agent; a stalled tab takes oldest-frame drops on its own bounded queue instead of slowing its siblings. Watch `zombie_sse_in_flight_streams`, `zombie_sse_dropped_frames_total`, `zombie_sse_hub_reconnects_total`, and `zombie_sse_backpressure_rejections_total`.
   - **Live-stream listing for operators** — `GET /v1/fleet/streams` (platform-admin token) returns `{items, total, max_streams}` for every open activity stream on the instance.
 
   ## API reference
