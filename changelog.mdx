@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["What's new", "CLI"]}>
+  ## Inspect a zombie's durable memory from the CLI
+
+  `zombiectl` gains two read-only memory verbs, so "my zombie forgot X" becomes a one-command diagnosis instead of a support ticket: the fact is there (the zombie knows it), absent (it was never stored), or expired by design.
+
+  ## What's new
+
+  - **`zombiectl memory list --zombie <id>`** — newest-first table of key, category, updated time, and a content preview; `--category <name>` filters, `--limit <n>` caps results (server maximum 100), `--workspace <id>` overrides the active workspace.
+  - **`zombiectl memory search --zombie <id> <query>`** — case-insensitive substring match across keys and content, rendered the same way.
+  - **Machine-readable when piped** — piping or redirecting stdout (or passing `--json`) emits the server's JSON envelope verbatim with full, untruncated content and the `request_id`; an interactive terminal gets the human table.
+  - **Empty results exit `0`** — an empty store is an answer, not an error. Unknown zombies fail with `UZ-MEM-002` and a `zombiectl list` hint; a memory-backend outage fails with `UZ-MEM-003` and a retry hint.
+
+  ## CLI
+
+  Both verbs are read-only consumers of `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories`. No write verbs exist — durable memory is written only by the runner plane.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["Bug fixes", "API"]}>
   ## Events that can't run now say why, instead of stranding silently
 
