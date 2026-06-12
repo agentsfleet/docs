@@ -22,6 +22,21 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["Bug fixes"]}>
+  ## Platform token spend now actually bills
+
+  Runs on a platform-provided model were billed the run fee only — the tokens the agent consumed priced as zero. The platform has always known how to charge for token usage, but the runner never reported how many tokens a run spent, so the token component of every platform run settled at zero. A run's input and output token usage is now reported as the run executes, so platform token spend is charged the way the rate card always described.
+
+  ## Upgrading
+
+  - **Update your runner fleet to bill token spend.** The fix is in the runner binary. A host running an older runner keeps working and is never charged a wrong amount — it simply continues to bill run-fee-only, exactly as before, until you update it. Update your runner hosts to start billing the token component on the runs they execute.
+
+  ## Bug fixes
+
+  - **Platform-model runs under-billed** — a run that consumed model tokens on a platform-provided key was charged only the per-second run fee; the token component was zero. Such runs now bill the input and output token counts the agent actually consumed, metered as the run accrues rather than only at the end.
+  - **Cached-input tokens** are not yet billed separately: until the model-provider layer reports cache reads on their own, cache-heavy runs bill those tokens at whatever class the provider folds them into. No run is over-charged for them.
+</Update>
+
 <Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
   ## Agent memory loss is now measurable
 
