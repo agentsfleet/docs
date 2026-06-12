@@ -11,7 +11,7 @@ Memory is always on — no setup, no flag.
 
 | Category | Scope | Lifetime | Use for |
 |---|---|---|---|
-| `core` | agent | permanent until forgotten | Learned facts about durable entities — customers, accounts, preferences. |
+| `core` | agent | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
 | `daily` | agent | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
 | `conversation` | event | dies with the run | Within-run scratch — checkpoint findings during a long incident. |
 | `workspace` | workspace | durable | Facts shared across every agent in the workspace. |
@@ -110,6 +110,6 @@ The underlying system changed but memory didn't. Steer the agent to call `memory
 | Symptom | Cause | Fix |
 |---|---|---|
 | Recall returns nothing on a known entity | Inconsistent key convention | Use a stable, deterministic key derivation in `SKILL.md` (e.g. `customer_<email-slug>`). |
-| Memory grows forever | No pruning on `core` (by design) | Steer the agent to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
+| Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the agent to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
 | `UZ-MEM-003` on store | Memory backend unavailable | Re-run the trigger; if persistent, file an issue. |
 | `UZ-MEM-001` on store | Memory scope denied (cross-agent access attempt) | Memory is per-agent. Use `workspace`-category writes if you need to share facts across agents. |
