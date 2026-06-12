@@ -34,7 +34,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ## What's new
 
   - **72-hour scratch retention** — only the `daily` category expires; `core`, `conversation`, and custom categories persist until the entry cap or an explicit forget, exactly as before. Nothing to configure.
-  - **Expiry is visible, not silent** — each push's server log line reports how many expired rows were swept alongside the existing stored/skipped/evicted counts.
+  - **Expiry is observable** — `zombiectl memory list` shows exactly what survived; an expired note is simply absent after its window. Operators running their own runner fleet additionally see a per-push swept count in the server's structured logs, beside the existing stored/skipped/evicted counts.
 
   ## API reference
 
