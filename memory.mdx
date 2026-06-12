@@ -43,6 +43,23 @@ flowchart LR
     Store --> End([run closes])
 ```
 
+## What survives — selection and eviction
+
+Hydration (what an agent sees at run start) and eviction (what the platform deletes at the per-agent entry cap) are both **category-pinned**: `core` wins.
+
+- **Hydration** fills a fixed byte budget: every `core` entry that fits loads first (newest first), then the newest non-core entries fill the remainder. A `core` fact written once — an owner, a deploy target, a customer's plan — is still in context at entry 1001, even after a noisy month of `daily` writes.
+- **Eviction** at the entry cap deletes the coldest non-core entries first. A `core` entry is deleted only when nothing else remains.
+- **Custom categories** (and anything the platform doesn't recognise) are windowed by recency — never silently pinned.
+
+Selection is deterministic — same entries, same budget, same result — so "why does my agent remember X but not Y?" always has a checkable answer: X was `core`; Y was windowed, or too big for the budget.
+
+Four habits make selection work for you instead of against you:
+
+1. **Store load-bearing facts as `core`.** If a future event must know it, it's `core`. Everything windowed ages out of hydration.
+2. **Reuse stable keys.** Re-storing a key refreshes the entry instead of duplicating it — `deploy_target`, not `deploy_target_jun12`.
+3. **Forget what's stale.** `memory_forget` beats letting eviction pick the victim. Hoarding everything as `core` defeats the pinning: an all-`core` set over the cap evicts your coldest `core` facts.
+4. **Keep entries small.** The hydration budget is bytes, not entries — snapshot conclusions, not transcripts.
+
 ## Entry format
 
 Memory is stored in Postgres but exports as markdown for human review.

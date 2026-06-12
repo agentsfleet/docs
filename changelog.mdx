@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["What's new"]}>
+  ## `core` memories now survive the hydration window and the entry cap
+
+  Memory selection previously ran on write-recency alone: an identity fact stored once — an owner, a deploy target, a customer's plan — was the first thing both the hydration window and cap eviction discarded once noisier `daily` writes piled up. Both mechanisms are now category-pinned, so the facts an agent marked durable stop being the first casualties of the byte budget and the entry cap.
+
+  ## What's new
+
+  - **Category-pinned hydration** — every `core` entry that fits the hydration byte budget loads before any non-core entry is considered; the remaining budget fills with the newest non-core entries. A `core` fact written in run 1 is still in context at entry 1001.
+  - **Tiered cap eviction** — at the per-agent entry cap, the coldest non-core rows are deleted first; a `core` row is evicted only when no non-core row remains.
+  - **Safe default for custom categories** — a category the platform doesn't recognise is windowed by recency, never silently pinned.
+  - **Deterministic selection** — same entries, same budget, same hydration on every run, so "why does my agent remember X but not Y?" has a checkable answer: X was `core`, Y was windowed.
+  - **Memory-hygiene guidance** — the [Memory page](/memory) now documents what to store as `core`, why stable keys beat dated ones, and why hoarding everything as `core` defeats the pinning.
+
+  The four memory tools, the wire shapes, the hydration byte budget, and the entry cap are unchanged — only which entries fill the window.
+</Update>
+
 <Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
   ## Agent memory loss is now measurable
 
