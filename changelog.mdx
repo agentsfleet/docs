@@ -39,6 +39,73 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   Both verbs are read-only consumers of `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories`. No write verbs exist — durable memory is written only by the runner plane.
 </Update>
 
+<Update label="Jun 12, 2026" tags={["What's new"]}>
+  ## `core` memories now survive the hydration window and the entry cap
+
+  Memory selection previously ran on write-recency alone: an identity fact stored once — an owner, a deploy target, a customer's plan — was the first thing both the hydration window and cap eviction discarded once noisier `daily` writes piled up. Both mechanisms are now category-pinned, so the facts an agent marked durable stop being the first casualties of the byte budget and the entry cap.
+
+  ## What's new
+
+  - **Category-pinned hydration** — every `core` entry that fits the hydration byte budget loads before any non-core entry is considered; the remaining budget fills with the newest non-core entries. A `core` fact written in run 1 is still in context at entry 1001.
+  - **Tiered cap eviction** — at the per-agent entry cap, the coldest non-core rows are deleted first; a `core` row is evicted only when no non-core row remains.
+  - **Safe default for custom categories** — a category the platform doesn't recognise is windowed by recency, never silently pinned.
+  - **Deterministic selection** — same entries, same budget, same hydration on every run, so "why does my agent remember X but not Y?" has a checkable answer: X was `core`, Y was windowed.
+  - **Memory-hygiene guidance** — the [Memory page](/memory) now documents what to store as `core`, why stable keys beat dated ones, and why hoarding everything as `core` defeats the pinning.
+
+  The four memory tools, the wire shapes, the hydration byte budget, and the entry cap are unchanged — only which entries fill the window.
+</Update>
+
+<Update label="Jun 12, 2026" tags={["Bug fixes"]}>
+  ## Platform token spend now actually bills
+
+  Runs on a platform-provided model were billed the run fee only — the tokens the agent consumed priced as zero. The platform has always known how to charge for token usage, but the runner never reported how many tokens a run spent, so the token component of every platform run settled at zero. A run's input and output token usage is now reported as the run executes, so platform token spend is charged the way the rate card always described.
+
+  ## Upgrading
+
+  - **Update your runner fleet to bill token spend.** The fix is in the runner binary. A host running an older runner keeps working and is never charged a wrong amount — it simply continues to bill run-fee-only, exactly as before, until you update it. Update your runner hosts to start billing the token component on the runs they execute.
+
+  ## Bug fixes
+
+  - **Platform-model runs under-billed** — a run that consumed model tokens on a platform-provided key was charged only the per-second run fee; the token component was zero. Such runs now bill the input and output token counts the agent actually consumed, metered as the run accrues rather than only at the end.
+  - **Cached-input tokens** are not yet billed separately: until the model-provider layer reports cache reads on their own, cache-heavy runs bill those tokens at whatever class the provider folds them into. No run is over-charged for them.
+</Update>
+
+<Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
+  ## Agent memory loss is now measurable
+
+  An agent's learned fact could previously vanish — evicted past the per-agent cap, windowed out of a hydration reply, or skipped during a capture push — with no signal anywhere. Every one of those loss events now increments a Prometheus counter on `GET /metrics`, so a dashboard answers "is my agent losing memory?" the day it starts instead of three weeks later through a support ticket.
+
+  ## What's new
+
+  Six counter families, all global and label-free (per-agent inspection stays in logs and the upcoming CLI read verbs, never in metric labels):
+
+  - **`zombie_memory_hydration_dropped_entries_total` / `zombie_memory_hydration_dropped_bytes_total`** — entries and bytes the hydration byte-budget window cut from a reply; the cold tail stays durable in Postgres, these count what a run did not see.
+  - **`zombie_memory_cap_evictions_total`** — rows deleted by the per-agent cap after a capture push, counted from the database's own deleted-row report; eviction is never blocked on telemetry.
+  - **`zombie_memory_capture_truncated_total`** — pushes that hit the push byte budget and stopped early, once per truncated push.
+  - **`zombie_memory_capture_skipped_total`** — capture deltas rejected by validation (oversized or empty key, content, or category), counted per delta.
+  - **`zombie_memory_search_zero_hits_total`** — memory searches that matched nothing, the recall-miss signal. A database error mid-read is never counted: only a cleanly empty result moves it, so infrastructure noise cannot impersonate recall loss.
+
+  The three existing memory families keep their names, types, and meaning unchanged.
+</Update>
+
+<Update label="Jun 11, 2026" tags={["Bug fixes", "Observability", "Internal"]}>
+  ## Billing audit rows now always equal the wallet drain
+
+  Concurrent renewals for the same tenant at the moment its balance ran out could write metering audit rows that summed to more than the wallet actually lost: the per-slice charge was priced off a balance read taken before the wallet row was locked. Audit rows — the substrate future invoices read from — are now priced with the tenant's balance row locked, so they equal the real drain in every interleaving. Metered token cursors also never move backwards, so tokens that were already billed cannot be billed again.
+
+  ## Upgrading
+
+  - **Removed flatlined metrics** — `/metrics` no longer renders series that nothing increments: external retry/failure classification (`zombie_external_*`), run-limit reasons (`zombied_run_limit_exceeded_total`), the agent-duration histogram (`zombie_agent_duration_seconds`), per-agent completion/failure/token counters (`zombie_completed_total`, `zombie_failed_total`, `zombie_tokens_total`, `zombie_execution_seconds`), agent-token and backoff-wait totals, and per-workspace token series (`zombie_workspace_tokens_total`). These series only ever reported zero; if a dashboard or alert references one, delete that panel — no data is lost. `zombie_triggered_total`, backpressure, Server-Sent Events (SSE), signup-funnel, worker-liveness, and Redis pool series are unchanged.
+
+  ## Bug fixes
+
+  - **Metering over-report at balance exhaustion** — two same-tenant renewals racing at exhaustion now record audit rows summing exactly to the wallet drain, never more.
+  - **Token cursor rewind** — a renewal reporting a lower cumulative token count than already recorded charges zero for that slice and holds the cursor, instead of rewinding it and re-charging the same tokens on a later report.
+  - **Account erasure completes for gated accounts** — deleting an account (or hard-deleting an agent) failed outright if it had ever raised an approval gate: the gates audit table is append-only, and the purge could not remove the rows its foreign keys require. The purge transactions now carry a transaction-scoped bypass for exactly that table, and account erasure also sweeps the fleet lease, affinity, and metering rows that carried the account's identifiers.
+  - **Account teardown recovery** — a database failure midway through an account hard-purge now rolls the transaction back on a path that still works after a statement error, so the connection recovers instead of staying stuck in an aborted transaction.
+  - 25 error codes that no code path can raise were removed from the error registry, the dashboard error-message map, and the API description.
+</Update>
+
 <Update label="Jun 11, 2026" tags={["Bug fixes", "API"]}>
   ## Events that can't run now say why, instead of stranding silently
 
