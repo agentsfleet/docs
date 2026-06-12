@@ -11,7 +11,7 @@ Memory is always on — no setup, no flag.
 
 | Category | Scope | Lifetime | Use for |
 |---|---|---|---|
-| `core` | agent | permanent until forgotten | Learned facts about durable entities — customers, accounts, preferences. |
+| `core` | agent | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
 | `daily` | agent | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
 | `conversation` | event | dies with the run | Within-run scratch — checkpoint findings during a long incident. |
 | `workspace` | workspace | durable | Facts shared across every agent in the workspace. |
@@ -42,6 +42,23 @@ flowchart LR
     Reason --> Store["memory_store<br/>write what was learned"]
     Store --> End([run closes])
 ```
+
+## What survives — selection and eviction
+
+Hydration (what an agent sees at run start) and eviction (what the platform deletes at the per-agent entry cap) are both **category-pinned**: `core` wins.
+
+- **Hydration** fills a fixed byte budget: every `core` entry that fits loads first (newest first), then the newest non-core entries fill the remainder. A `core` fact written once — an owner, a deploy target, a customer's plan — is still in context at entry 1001, even after a noisy month of `daily` writes.
+- **Eviction** at the entry cap deletes the coldest non-core entries first. A `core` entry is deleted only when nothing else remains.
+- **Custom categories** (and anything the platform doesn't recognise) are windowed by recency — never silently pinned.
+
+Selection is deterministic — same entries, same budget, same result — so "why does my agent remember X but not Y?" always has a checkable answer: X was `core`; Y was windowed, or too big for the budget.
+
+Four habits make selection work for you instead of against you:
+
+1. **Store load-bearing facts as `core`.** If a future event must know it, it's `core`. Everything windowed ages out of hydration.
+2. **Reuse stable keys.** Re-storing a key refreshes the entry instead of duplicating it — `deploy_target`, not `deploy_target_jun12`.
+3. **Forget what's stale.** `memory_forget` beats letting eviction pick the victim. Hoarding everything as `core` defeats the pinning: an all-`core` set over the cap evicts your coldest `core` facts.
+4. **Keep entries small.** The hydration budget is bytes, not entries — snapshot conclusions, not transcripts.
 
 ## Entry format
 
@@ -93,6 +110,6 @@ The underlying system changed but memory didn't. Steer the agent to call `memory
 | Symptom | Cause | Fix |
 |---|---|---|
 | Recall returns nothing on a known entity | Inconsistent key convention | Use a stable, deterministic key derivation in `SKILL.md` (e.g. `customer_<email-slug>`). |
-| Memory grows forever | No pruning on `core` (by design) | Steer the agent to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
+| Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the agent to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
 | `UZ-MEM-003` on store | Memory backend unavailable | Re-run the trigger; if persistent, file an issue. |
 | `UZ-MEM-001` on store | Memory scope denied (cross-agent access attempt) | Memory is per-agent. Use `workspace`-category writes if you need to share facts across agents. |
