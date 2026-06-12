@@ -22,6 +22,29 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 12, 2026" tags={["What's new", "Breaking", "API"]}>
+  ## Scratch memories now expire on their own
+
+  Memories stored under the `daily` category expire 72 hours after their last update, swept automatically on the agent's next memory push. Scratch notes from a noisy week no longer pile up until they crowd durable facts out of the per-agent entry cap — and expired scratch is cleared before cap eviction ever picks a victim, so a `core` fact never loses its slot to a note that was already past its window.
+
+  ## Upgrading
+
+  - **`updated_at` in the memories API is now a JSON number** — epoch milliseconds, previously a decimal string of epoch seconds. If you parse `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories` directly, read the field as a 64-bit integer; the current `zombiectl` release already does. No other field, key, or error code changed.
+
+  ## What's new
+
+  - **72-hour scratch retention** — only the `daily` category expires; `core`, `conversation`, and custom categories persist until the entry cap or an explicit forget, exactly as before. Nothing to configure.
+  - **Expiry is visible, not silent** — each push's server log line reports how many expired rows were swept alongside the existing stored/skipped/evicted counts.
+
+  ## API reference
+
+  Memory items in list and search responses now carry numeric timestamps:
+
+  ```json
+  { "key": "deploy_target", "content": "fly", "category": "core", "updated_at": 1765500300000 }
+  ```
+</Update>
+
 <Update label="Jun 12, 2026" tags={["What's new", "CLI"]}>
   ## Inspect an agent's durable memory from the CLI
 
