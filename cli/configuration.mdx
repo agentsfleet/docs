@@ -5,60 +5,60 @@ description: "Configuration precedence and environment variables."
 
 ## Auth precedence
 
-`zombiectl login` decides which token to **store**, highest priority first:
+`agentsfleet login` decides which token to **store**, highest priority first:
 
 1. **`--token <value>`** — login-only flag
-2. **`ZOMBIE_TOKEN`** environment variable
+2. **`AGENTSFLEET_TOKEN`** environment variable
 3. **Piped stdin** — token read from a pipe
 4. **Browser device flow** — interactive terminals only
 
 Every **other command** then resolves its token, and the order is TTY-aware:
 
-- **Interactive terminal** — `ZOMBIE_TOKEN` wins over stored credentials, so an env var you just exported overrides a possibly-stale file.
-- **Non-interactive (CI, cron, pipes)** — stored credentials (written by `zombiectl login` to `~/.config/zombiectl/credentials.json`) win, falling back to `ZOMBIE_TOKEN` only when no file exists.
+- **Interactive terminal** — `AGENTSFLEET_TOKEN` wins over stored credentials, so an env var you just exported overrides a possibly-stale file.
+- **Non-interactive (CI, cron, pipes)** — stored credentials (written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json`) win, falling back to `AGENTSFLEET_TOKEN` only when no file exists.
 
-`--token` is not accepted on commands other than `login`; use the `ZOMBIE_TOKEN` env var for one-off overrides in scripts.
+`--token` is not accepted on commands other than `login`; use the `AGENTSFLEET_TOKEN` env var for one-off overrides in scripts.
 
 ## API URL precedence
 
 1. **CLI flag** -- `--api https://...`
-2. **Environment variable** -- `ZOMBIE_API_URL`
+2. **Environment variable** -- `AGENTSFLEET_API_URL`
 3. **`.env.local`** -- dev fallback file in the current directory
-4. **Built-in default** -- `https://api.usezombie.com`
+4. **Built-in default** -- `https://api.agentsfleet.net`
 
 ## Environment variables
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `ZOMBIE_API_URL` | API base URL | `https://api.usezombie.com` |
-| `ZOMBIE_TOKEN` | Auth token (for CI and scripts; user-bound, from `zombiectl login`) | *(from `zombiectl login`)* |
-| `ZOMBIE_API_KEY` | Service auth (machine-bound, from `zombiectl agent add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
-| `ZOMBIE_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/zombiectl` |
+| `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
+| `AGENTSFLEET_TOKEN` | Auth token (for CI and scripts; user-bound, from `agentsfleet login`) | *(from `agentsfleet login`)* |
+| `AGENTSFLEET_API_KEY` | Service auth (machine-bound, from `agentsfleet agent add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
+| `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/agentsfleet` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
-| `ZOMBIE_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
+| `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
 | `DO_NOT_TRACK` | Set to `1` to opt out via the industry-standard signal ([consoledonottrack.com](https://consoledonottrack.com/)). | unset |
-| `ZOMBIE_TELEMETRY_POSTHOG_KEY` | Override the bundled PostHog project key (advanced; for self-hosted PostHog routing). | bundled `phc_*` key |
-| `ZOMBIE_TELEMETRY_POSTHOG_HOST` | Override the PostHog ingest host. | `https://us.i.posthog.com` |
-| `ZOMBIE_TELEMETRY_DEBUG` | Set to `1` to print span summaries to stderr for local development. | unset |
+| `AGENTSFLEET_TELEMETRY_POSTHOG_KEY` | Override the bundled PostHog project key (advanced; for self-hosted PostHog routing). | bundled `phc_*` key |
+| `AGENTSFLEET_TELEMETRY_POSTHOG_HOST` | Override the PostHog ingest host. | `https://us.i.posthog.com` |
+| `AGENTSFLEET_TELEMETRY_DEBUG` | Set to `1` to print span summaries to stderr for local development. | unset |
 
 ## Telemetry
 
-`zombiectl` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$ZOMBIE_STATE_DIR/telemetry.json` (default `~/.config/zombiectl/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
+`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
 
 Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
 
 ```bash
 # One command
-ZOMBIE_TELEMETRY_DISABLED=1 zombiectl status
+AGENTSFLEET_TELEMETRY_DISABLED=1 agentsfleet status
 
 # Whole shell session
-export ZOMBIE_TELEMETRY_DISABLED=1
+export AGENTSFLEET_TELEMETRY_DISABLED=1
 
 # Industry-standard signal (same effect, honored by many CLIs)
 export DO_NOT_TRACK=1
 
-# Persistent — edit $ZOMBIE_STATE_DIR/telemetry.json:
-# (defaults to ~/.config/zombiectl/telemetry.json)
+# Persistent — edit $AGENTSFLEET_STATE_DIR/telemetry.json:
+# (defaults to ~/.config/agentsfleet/telemetry.json)
 #   { "consent": "denied", ... }
 ```
 
@@ -66,9 +66,9 @@ Either env variable forces consent to `denied` regardless of the persisted value
 
 ## CI usage
 
-In CI environments, set `ZOMBIE_TOKEN` from your secrets manager and use `--no-input` for non-interactive operation:
+In CI environments, set `AGENTSFLEET_TOKEN` from your secrets manager and use `--no-input` for non-interactive operation:
 
 ```bash
-export ZOMBIE_TOKEN="$ZOMBIE_SECRET"
-zombiectl status --no-input --json
+export AGENTSFLEET_TOKEN="$AGENTSFLEET_SECRET"
+agentsfleet status --no-input --json
 ```

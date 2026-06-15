@@ -4,16 +4,16 @@ description: "The four nouns, the tool bridge, and how a run works."
 ---
 
 <Tip>
-  This page introduces the operator-facing model. For the canonical technical reference — system topology, data flow, billing internals, security boundary, post-ship reflection — read [`docs/architecture/`](https://github.com/usezombie/usezombie/tree/main/docs/architecture) on GitHub.
+  This page introduces the operator-facing model. For the canonical technical reference — system topology, data flow, billing internals, security boundary, post-ship reflection — read [`docs/architecture/`](https://github.com/agentsfleet/agentsfleet/tree/main/docs/architecture) on GitHub.
 </Tip>
 
 ## The four nouns
 
-usezombie has four primary objects. Everything else is infrastructure.
+agentsfleet has four primary objects. Everything else is infrastructure.
 
 <CardGroup cols={2}>
   <Card title="Tenant" icon="building">
-    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://usezombie.com/pricing).
+    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://agentsfleet.net/pricing).
   </Card>
   <Card title="Workspace" icon="folder-tree">
     A container for agents and credentials. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
@@ -33,7 +33,7 @@ Tenant  (billing + identity, provider: anthropic)
 │
 ├── Workspace: "platform-ops"
 │   │
-│   ├── Zombie: platform-ops      (zmb_2041)
+│   ├── Agent: platform-ops      (zmb_2041)
 │   │   ├── Tools:    http_request, memory_store, cron_add
 │   │   └── Triggers: webhook (GitHub Actions), cron, steer
 │   │
@@ -41,7 +41,7 @@ Tenant  (billing + identity, provider: anthropic)
 │
 └── Workspace: "support"
     │
-    └── Zombie: ticket-triage     (zmb_2042)
+    └── Agent: ticket-triage     (zmb_2042)
         ├── Tools:    http_request, memory_store
         └── Triggers: webhook (Zendesk), steer
 ```
@@ -50,9 +50,9 @@ Tenant  (billing + identity, provider: anthropic)
 
 Hosted execution — every event receipt and run — is **free until July 31, 2026**. No credit card to start.
 
-**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — usezombie marks up zero on inference. The runner resolves your credential at the tool bridge, so the agent never sees the raw key.
+**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — agentsfleet marks up zero on inference. The runner resolves your credential at the tool bridge, so the agent never sees the raw key.
 
-For the metered rates that apply after the trial, see [pricing on usezombie.com](https://usezombie.com/pricing).
+For the metered rates that apply after the trial, see [pricing on agentsfleet.net](https://agentsfleet.net/pricing).
 
 ## How a run works
 
@@ -79,9 +79,9 @@ A trigger lands on the event stream. A run opens. The agent calls tools allow-li
   <Accordion title="Trigger">
     What wakes an agent. Three sources, all feeding the same reasoning loop:
 
-    - **Webhook** — an external system (GitHub, Slack, your monitoring) POSTs to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` (one URL per declared trigger source).
+    - **Webhook** — an external system (GitHub, Slack, your monitoring) POSTs to `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}` (one URL per declared trigger source).
     - **Cron** — the agent schedules its own future runs via the `cron_add` tool.
-    - **Steer** — a human invokes `zombiectl steer <zombie_id> "..."` for a manual run.
+    - **Steer** — a human invokes `agentsfleet steer <agent_id> "..."` for a manual run.
 
     `SKILL.md` decides what to do based on the event payload.
   </Accordion>
@@ -96,10 +96,10 @@ A trigger lands on the event stream. A run opens. The agent calls tools allow-li
   </Accordion>
 
   <Accordion title="Tool bridge">
-    The boundary between your secrets and the model. Credentials are stored encrypted in the workspace vault; the model itself only sees `${secrets.NAME.FIELD}` placeholders. When the agent invokes a tool, the **tool bridge** substitutes the real secret value outside the sandbox, makes the outbound call, and returns the response — never the secret. A prompt-injection attack recovers only the placeholder string. See [Workspace credentials](/zombies/credentials).
+    The boundary between your secrets and the model. Credentials are stored encrypted in the workspace vault; the model itself only sees `${secrets.NAME.FIELD}` placeholders. When the agent invokes a tool, the **tool bridge** substitutes the real secret value outside the sandbox, makes the outbound call, and returns the response — never the secret. A prompt-injection attack recovers only the placeholder string. See [Workspace credentials](/agents/credentials).
   </Accordion>
 
   <Accordion title="Budget">
-    Dollar ceilings on hosted execution (the platform compute that runs your agent — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new runs from opening. During the launch free trial (through July 31, 2026) hosted-execution runs are billed at **$0**, so a budget ceiling won't stop an agent for trial usage — these caps apply to the metered rate after the trial (see [pricing](https://usezombie.com/pricing)). Inference is on your model provider's bill, not on your usezombie invoice — your provider's own caps apply there.
+    Dollar ceilings on hosted execution (the platform compute that runs your agent — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new runs from opening. During the launch free trial (through July 31, 2026) hosted-execution runs are billed at **$0**, so a budget ceiling won't stop an agent for trial usage — these caps apply to the metered rate after the trial (see [pricing](https://agentsfleet.net/pricing)). Inference is on your model provider's bill, not on your agentsfleet invoice — your provider's own caps apply there.
   </Accordion>
 </AccordionGroup>

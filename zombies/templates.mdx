@@ -6,10 +6,10 @@ description: "The shipped sample directory — pre-built agents you can install 
 A **template** is a directory with a valid `SKILL.md` and `TRIGGER.md`. Pick one, install it, get a working agent.
 
 ```bash
-zombiectl install --from <path>
+agentsfleet install --from <path>
 ```
 
-The `zombiectl` package ships sample directories under `~/.config/usezombie/samples/`.
+The `agentsfleet` package ships sample directories under `~/.config/agentsfleet/samples/`.
 
 ## Catalogue
 
@@ -27,15 +27,15 @@ More samples land as new flagships ship.
 
 ## Writing your own
 
-A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring an agent](/zombies/authoring) for the file references; install with:
+A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring an agent](/agents/authoring) for the file references; install with:
 
 ```bash
-zombiectl install --from .
+agentsfleet install --from .
 ```
 
 ## Sharing
 
-Templates are markdown — commit `my-agent/` to git, clone it on a new machine, `zombiectl install --from .`. Credentials never live in the template; they live in the workspace vault. Template-safe to share publicly; credentials are not.
+Templates are markdown — commit `my-agent/` to git, clone it on a new machine, `agentsfleet install --from .`. Credentials never live in the template; they live in the workspace vault. Template-safe to share publicly; credentials are not.
 
 <Note>
   A hosted template marketplace (community-contributed agents, one-click install) is on the roadmap. For now, git is the distribution mechanism.

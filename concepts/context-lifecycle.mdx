@@ -23,7 +23,7 @@ A chain caps at **10 continuations**. The 11th attempt is refused, the originati
 
 ## Knobs you can tune
 
-Set these under `x-usezombie.context` in `TRIGGER.md`. Defaults work for almost every workload — leave them alone unless you have a specific reason.
+Set these under `x-agentsfleet.context` in `TRIGGER.md`. Defaults work for almost every workload — leave them alone unless you have a specific reason.
 
 | Knob | Default | When to touch it |
 |---|---|---|
@@ -51,4 +51,4 @@ Almost certainly not. The defaults are tuned for the flagship `platform-ops` age
 
 - [Memory](/memory) — the API the agent uses to checkpoint findings during a long run.
 - [Budgets](/billing/budgets) — `daily_dollars` and `monthly_dollars` ceilings.
-- [Authoring an agent](/zombies/authoring) — the full `TRIGGER.md` reference.
+- [Authoring an agent](/agents/authoring) — the full `TRIGGER.md` reference.

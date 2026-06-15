@@ -3,10 +3,10 @@ title: "Budgets and cost control"
 description: "Per-agent dollar ceilings, tenant-wide spend caps, and how debits work."
 ---
 
-usezombie enforces budgets at two levels: per-agent ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
+agentsfleet enforces budgets at two levels: per-agent ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
 
 <Note>
-  **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://usezombie.com/pricing).
+  **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://agentsfleet.net/pricing).
 </Note>
 
 ## Per-agent ceilings (`daily_dollars` / `monthly_dollars`)
@@ -32,18 +32,18 @@ Separately, your tenant has a single wallet (the $5 free credit at signup, toppe
 
 - The wallet is **tenant-scoped**, not workspace-scoped. All workspaces under your tenant share the same pool.
 - When the wallet hits **zero**, runs across all workspaces stop until the tenant tops up.
-- The wallet balance is visible in the dashboard header and via `zombiectl billing show`.
+- The wallet balance is visible in the dashboard header and via `agentsfleet billing show`.
 
-Set a monthly spend cap on your tenant from the billing page at [app.usezombie.com/billing](https://app.usezombie.com/billing).
+Set a monthly spend cap on your tenant from the billing page at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing).
 
-<Note>A `zombiectl billing budget set` CLI command is planned for a future release.</Note>
+<Note>A `agentsfleet billing budget set` CLI command is planned for a future release.</Note>
 
 ## Run cancellation
 
 Cancel an in-flight run at any time via CLI or API:
 
 ```bash
-zombiectl kill <zombie_id>
+agentsfleet kill <agent_id>
 ```
 
 Cancelling stops the run at the next lease renewal. The run time already elapsed is metered and debited — cancelling doesn't refund the work done so far. See [Credit deduction timing](#credit-deduction-timing) below for the full rule.

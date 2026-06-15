@@ -3,10 +3,10 @@ title: "Plans"
 description: "One credit-based model — the starter credit and how per-second run billing works."
 ---
 
-usezombie has a single credit-based model. Every tenant gets the full platform — always-on agent hosting, the tool bridge, activity stream, webhook ingestion, kill switch — and pays from one shared credit wallet. There are no tiers to choose between or upgrade to.
+agentsfleet has a single credit-based model. Every tenant gets the full platform — always-on agent hosting, the tool bridge, activity stream, webhook ingestion, kill switch — and pays from one shared credit wallet. There are no tiers to choose between or upgrade to.
 
 <Note>
-  **Free until July 31, 2026.** During the launch trial, hosted execution — every event receipt and run — is free. The billing details below describe charging **after** the trial. See [pricing](https://usezombie.com/pricing).
+  **Free until July 31, 2026.** During the launch trial, hosted execution — every event receipt and run — is free. The billing details below describe charging **after** the trial. See [pricing](https://agentsfleet.net/pricing).
 </Note>
 
 ## Starter credit
@@ -29,4 +29,4 @@ Run time is metered by the second: each background lease renewal debits the elap
 
 ## Topping up
 
-When the wallet runs low, top up at [app.usezombie.com/billing](https://app.usezombie.com/billing). Top-ups and payment-method updates happen via the dashboard, not the CLI — the CLI surface is `zombiectl billing show` for read-only balance and charge history. Top-ups apply to the tenant, not an individual workspace — the wallet follows the tenant.
+When the wallet runs low, top up at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing). Top-ups and payment-method updates happen via the dashboard, not the CLI — the CLI surface is `agentsfleet billing show` for read-only balance and charge history. Top-ups apply to the tenant, not an individual workspace — the wallet follows the tenant.

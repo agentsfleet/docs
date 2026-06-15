@@ -3,10 +3,10 @@ title: "Tools catalogue"
 description: "Every tool an agent can declare in `TRIGGER.md`, what it does, and when to reach for it."
 ---
 
-A **tool** is a named verb the agent inside a run may invoke. Tools are declared in `TRIGGER.md` under `x-usezombie.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
+A **tool** is a named verb the agent inside a run may invoke. Tools are declared in `TRIGGER.md` under `x-agentsfleet.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
 
 ```yaml
-x-usezombie:
+x-agentsfleet:
   tools:
     - http_request
     - memory_recall
@@ -14,7 +14,7 @@ x-usezombie:
     - cron_add
 ```
 
-23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring an agent](/zombies/authoring).
+23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring an agent](/agents/authoring).
 
 ## Network
 
@@ -39,7 +39,7 @@ Cross-run durable state. See [Memory](/memory) for the four-category model and k
 | `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the agent learned something worth keeping. |
 | `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every run, before reasoning. |
 | `memory_list` | Filter entries by category, tags, recency. | When the agent doesn't know the exact key (e.g. "show me all open tickets"). |
-| `memory_forget` | Delete an entry. | Correcting stale facts; fed by `zombiectl steer` corrections. |
+| `memory_forget` | Delete an entry. | Correcting stale facts; fed by `agentsfleet steer` corrections. |
 
 ## Cron
 
@@ -110,12 +110,12 @@ Pure-function helpers — no side effects, no network, no state.
 
 ## How tools, credentials, and the network allowlist combine
 
-Tools are the *what* (verbs the agent may invoke). Credentials are the *what-with* (named secrets the tool bridge substitutes into outbound calls — see [Credentials](/zombies/credentials)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
+Tools are the *what* (verbs the agent may invoke). Credentials are the *what-with* (named secrets the tool bridge substitutes into outbound calls — see [Credentials](/agents/credentials)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
 
 A working `http_request` to Slack needs all three:
 
 ```yaml
-x-usezombie:
+x-agentsfleet:
   tools:
     - http_request                    # the verb
   credentials:
@@ -129,11 +129,11 @@ Drop any one and the call fails: missing tool → agent can't even try; missing 
 
 ## Validation
 
-`zombiectl install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
+`agentsfleet install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The agent runs with the remaining tools.
 
 The practical consequences:
 
-- **Typos pass install.** Declaring `http_requesst:` (typo) won't fail `zombiectl install --from`. Catch this by tailing `zombiectl logs <zombie_id>` after the first event and looking for the skip warning, or by spotting tool calls in the activity stream that don't match what your `SKILL.md` prose expects.
+- **Typos pass install.** Declaring `http_requesst:` (typo) won't fail `agentsfleet install --from`. Catch this by tailing `agentsfleet logs <agent_id>` after the first event and looking for the skip warning, or by spotting tool calls in the activity stream that don't match what your `SKILL.md` prose expects.
 - **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
 - **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
 
@@ -141,7 +141,7 @@ When the agent tries to invoke a tool not in the agent's resolved `tools:` set, 
 
 ## See also
 
-- [Authoring an agent](/zombies/authoring) — full `TRIGGER.md` schema.
+- [Authoring an agent](/agents/authoring) — full `TRIGGER.md` schema.
 - [Memory](/memory) — the four memory categories and how recall/store fit a run.
-- [Credentials](/zombies/credentials) — adding the secrets the tool bridge substitutes.
-- [Webhooks](/zombies/webhooks) — wiring an external system to your agent.
+- [Credentials](/agents/credentials) — adding the secrets the tool bridge substitutes.
+- [Webhooks](/agents/webhooks) — wiring an external system to your agent.

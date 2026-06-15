@@ -2,7 +2,7 @@
 <!--
   agentsfleet horizontal wordmark — pulse circle + Commit Mono wordmark.
 
-  Direct rename of the usezombie wordmark; mark geometry, palette and
+  Direct rename of the agentsfleet wordmark; mark geometry, palette and
   type spec unchanged per docs/DESIGN_SYSTEM.md ("Operational
   Restraint"). Consumers without Commit Mono fall back to the generic
   monospace stack.

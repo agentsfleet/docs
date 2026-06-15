@@ -1,15 +1,15 @@
 ---
 title: "Global flags"
-description: "Flags available on all zombiectl commands."
+description: "Flags available on all agentsfleet commands."
 ---
 
 ## Global flags
 
-These flags can be passed to any `zombiectl` command.
+These flags can be passed to any `agentsfleet` command.
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--api <url>` | API base URL | `https://api.usezombie.com` |
+| `--api <url>` | API base URL | `https://api.agentsfleet.net` |
 | `--json` | Machine-readable JSON output | `false` |
 | `--no-open` | Suppress browser auto-open (login) | `false` |
 | `--no-input` | Non-interactive mode | `false` |
@@ -28,8 +28,8 @@ When `--json` is enabled, error responses include structured error codes for pro
 ```json
 {
   "error": {
-    "code": "UZ-ZMB-008",
-    "message": "Invalid zombie config: TRIGGER.md config_json fails schema validation."
+    "code": "UZ-AGT-008",
+    "message": "Invalid agent config: TRIGGER.md config_json fails schema validation."
   }
 }
 ```

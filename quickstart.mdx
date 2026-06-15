@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: "Install zombiectl, run /usezombie-install-platform-ops, see a real diagnosis in Slack."
+description: "Install agentsfleet, run /agentsfleet-install-platform-ops, see a real diagnosis in Slack."
 ---
 
 This walks through installing the flagship `platform-ops` agent on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
@@ -18,56 +18,56 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   Pick one. The rest of this page assumes you have a working session in front of you.
 </Step>
 
-<Step title="Install zombiectl and skills">
+<Step title="Install agentsfleet and skills">
   ```bash
-  npm install -g @usezombie/zombiectl
-  npx skills add usezombie/skills
+  npm install -g @agentsfleet/cli
+  npx skills add agentsfleet/skills
   ```
 
   Verify:
 
   ```bash
-  zombiectl --version
+  agentsfleet --version
   ```
 
-  `zombiectl` is the only binary you install on your machine; it ships the skill samples under `~/.config/usezombie/samples/` so the install skill can drive `zombiectl install --from` against a known-good source. `npx skills add usezombie/skills` then symlinks the `/usezombie-*` host skills from the public [`usezombie/skills`](https://github.com/usezombie/skills) repo into every supported agent it detects — so `/usezombie-install-platform-ops` is ready to invoke in the next step.
+  `agentsfleet` is the only binary you install on your machine; it ships the skill samples under `~/.config/agentsfleet/samples/` so the install skill can drive `agentsfleet install --from` against a known-good source. `npx skills add agentsfleet/skills` then symlinks the `/agentsfleet-*` host skills from the public [`agentsfleet/skills`](https://github.com/agentsfleet/skills) repo into every supported agent it detects — so `/agentsfleet-install-platform-ops` is ready to invoke in the next step.
 </Step>
 
 <Step title="Sign in">
   ```bash
-  zombiectl login
+  agentsfleet login
   ```
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://usezombie.com/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. usezombie marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://agentsfleet.net/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. agentsfleet marks up zero on inference.
 
   Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install agents immediately — no `workspace add` required.
 
-  <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `zombiectl auth status` later. Defaults to your platform family otherwise.</Tip>
+  <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `agentsfleet auth status` later. Defaults to your platform family otherwise.</Tip>
 
   <Note>
-    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `--token <token>` flag, the `ZOMBIE_TOKEN` environment variable, or piped on stdin — resolved in that order (prefer the env var or stdin to keep it out of shell history). Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`zombiectl login`](/cli/zombiectl#zombiectl-login).
+    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `--token <token>` flag, the `AGENTSFLEET_TOKEN` environment variable, or piped on stdin — resolved in that order (prefer the env var or stdin to keep it out of shell history). Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`agentsfleet login`](/cli/agentsfleet#agentsfleet-login).
   </Note>
 </Step>
 
 <Step title="(Optional) Create a named workspace">
   ```bash
-  zombiectl workspace add platform-ops
+  agentsfleet workspace add platform-ops
   ```
 
-  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every agent lives in exactly one. Switch later with `zombiectl workspace use <id>`. See [Command reference → workspaces](/cli/zombiectl#workspaces).
+  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every agent lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
 </Step>
 
 <Step title="Run the install skill">
-  The `npx skills add usezombie/skills` in Step 2 already added the `/usezombie-install-platform-ops` skill to your agent. Invoke it:
+  The `npx skills add agentsfleet/skills` in Step 2 already added the `/agentsfleet-install-platform-ops` skill to your agent. Invoke it:
 
   ```
-  /usezombie-install-platform-ops
+  /agentsfleet-install-platform-ops
   ```
 
-  The skill drives `zombiectl install --from ~/.config/usezombie/samples/platform-ops` under the hood. Power users can run that directly; everyone else gets the guided flow.
+  The skill drives `agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops` under the hood. Power users can run that directly; everyone else gets the guided flow.
 
   <Tip>
-    **Fresh machine?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill in one shot (it runs npm under the hood) — a one-command replacement for Step 2. You still need `zombiectl login` (Step 3) before the skill works. Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.
+    **Fresh machine?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill in one shot (it runs npm under the hood) — a one-command replacement for Step 2. You still need `agentsfleet login` (Step 3) before the skill works. Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
   </Tip>
 
   The skill asks three gating questions:
@@ -76,7 +76,7 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   - **Production branch glob** — which branches count as production (default `main`).
   - **Cron schedule** (optional) — for periodic health checks (e.g. `*/30 * * * *`). Leave blank for webhook-only.
 
-  It writes `.usezombie/platform-ops/SKILL.md` and `.usezombie/platform-ops/TRIGGER.md` into the current repo. Re-running against the same workspace is idempotent; existing files are diffed and updated.
+  It writes `.agentsfleet/platform-ops/SKILL.md` and `.agentsfleet/platform-ops/TRIGGER.md` into the current repo. Re-running against the same workspace is idempotent; existing files are diffed and updated.
 </Step>
 
 <Step title="Verify the registered webhook">
@@ -85,12 +85,12 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   After install, the skill prints a summary line per registered hook:
 
   ```
-  ✓ github · https://api.usezombie.com/v1/webhooks/zmb_2041/github
+  ✓ github · https://api.agentsfleet.net/v1/webhooks/zmb_2041/github
     hook_id=489182  events=[workflow_run]  active=true
     HMAC self-verify: ok
   ```
 
-  The agent filters incoming payloads for `conclusion=failure` on a production-branch workflow — the rule lives in the generated `.usezombie/platform-ops/SKILL.md` and is editable. See [Authoring](/zombies/authoring) to widen or narrow it.
+  The agent filters incoming payloads for `conclusion=failure` on a production-branch workflow — the rule lives in the generated `.agentsfleet/platform-ops/SKILL.md` and is editable. See [Authoring](/agents/authoring) to widen or narrow it.
 
   If `gh` is not authenticated for `admin:repo_hook` scope, the skill stops with the exact recovery command (`gh auth refresh -s admin:repo_hook`). If the hook already exists at the same URL, the skill matches on `config.url` and advances — re-running the install is idempotent.
 
@@ -101,28 +101,28 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   <Warning>
     **Rotating the webhook secret.** The signing secret lives in the workspace vault under the `github` credential — there is no user-visible copy printed at install. To rotate, replace the credential then update every registered hook with `gh`. Two steps:
 
-    **1. Rotate the workspace `github` credential.** Generate a new webhook secret (e.g. `openssl rand -hex 32`), store it in 1Password, then pipe the credential JSON through `op inject` so the secret never appears in shell history or argv. Run `op signin` first — if the 1Password session is stale, `op inject` fails before `zombiectl` runs and the workspace vault is left untouched (don't proceed to step 2 in that case, or your GitHub webhooks will be set to a secret the server never stored):
+    **1. Rotate the workspace `github` credential.** Generate a new webhook secret (e.g. `openssl rand -hex 32`), store it in 1Password, then pipe the credential JSON through `op inject` so the secret never appears in shell history or argv. Run `op signin` first — if the 1Password session is stale, `op inject` fails before `agentsfleet` runs and the workspace vault is left untouched (don't proceed to step 2 in that case, or your GitHub webhooks will be set to a secret the server never stored):
 
     ```bash
-    cat <<'JSON' | op inject | zombiectl credential add github --data=@- --force
+    cat <<'JSON' | op inject | agentsfleet credential add github --data=@- --force
     {
-      "api_token":      "{{ op://Personal/usezombie-github/api_token }}",
-      "webhook_secret": "{{ op://Personal/usezombie-github/webhook_secret }}"
+      "api_token":      "{{ op://Personal/agentsfleet-github/api_token }}",
+      "webhook_secret": "{{ op://Personal/agentsfleet-github/webhook_secret }}"
     }
     JSON
     ```
 
-    `op inject` substitutes each `{{ op://... }}` reference with the resolved secret and pipes the rendered JSON to `zombiectl`. `--data=@-` reads from stdin; `--force` overwrites the existing credential. If you don't use 1Password, the literal-JSON form below works the same — just keep it on stdin, never inline:
+    `op inject` substitutes each `{{ op://... }}` reference with the resolved secret and pipes the rendered JSON to `agentsfleet`. `--data=@-` reads from stdin; `--force` overwrites the existing credential. If you don't use 1Password, the literal-JSON form below works the same — just keep it on stdin, never inline:
 
     ```bash
-    cat <<'JSON' | zombiectl credential add github --data=@- --force
+    cat <<'JSON' | agentsfleet credential add github --data=@- --force
     { "api_token": "ghp_...", "webhook_secret": "<new-secret>" }
     JSON
     ```
 
-    See [Credentials](/zombies/credentials) for the full schema.
+    See [Credentials](/agents/credentials) for the full schema.
 
-    **2. Update every registered hook.** Re-run `/usezombie-install-platform-ops` in each repo — the install skill detects the existing hook, calls `gh api -X PATCH repos/<owner>/<repo>/hooks/<hook_id>` with the new secret, and re-runs HMAC self-verify. The old secret stops working the moment step 1 completes, so do this immediately after.
+    **2. Update every registered hook.** Re-run `/agentsfleet-install-platform-ops` in each repo — the install skill detects the existing hook, calls `gh api -X PATCH repos/<owner>/<repo>/hooks/<hook_id>` with the new secret, and re-runs HMAC self-verify. The old secret stops working the moment step 1 completes, so do this immediately after.
   </Warning>
 </Step>
 
@@ -133,34 +133,34 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   - The agent wakes, calls the tools `TRIGGER.md` allow-lists (`http_request` against your hosting provider, `memory_store` for findings), gathers evidence from the failed workflow.
   - An evidenced diagnosis posts to your Slack channel.
 
-  Tail it — replace `<zombie_id>` with the value the install step printed (e.g. `zmb_2041`):
+  Tail it — replace `<agent_id>` with the value the install step printed (e.g. `zmb_2041`):
 
   ```bash
-  zombiectl logs zmb_2041
+  agentsfleet logs zmb_2041
   ```
 
-  Need to slice by source or time window? `zombiectl events zmb_2041 --actor 'webhook:*' --since 30m`. Lost track of the ID? `zombiectl list` prints every agent in the active workspace. Or watch the same stream in the dashboard at `app.usezombie.com`.
+  Need to slice by source or time window? `agentsfleet events zmb_2041 --actor 'webhook:*' --since 30m`. Lost track of the ID? `agentsfleet list` prints every agent in the active workspace. Or watch the same stream in the dashboard at `app.agentsfleet.net`.
 </Step>
 
 </Steps>
 
 ## What just happened
 
-The platform-ops agent installed `SKILL.md` (the prose system prompt — what to investigate, how to phrase a diagnosis) and `TRIGGER.md` (which tools the model can call) into your repo. From here, behaviour iterates on prose: edit the `.usezombie/platform-ops/SKILL.md` file, push, the next trigger runs the new behaviour. No redeploys, no DAG editor.
+The platform-ops agent installed `SKILL.md` (the prose system prompt — what to investigate, how to phrase a diagnosis) and `TRIGGER.md` (which tools the model can call) into your repo. From here, behaviour iterates on prose: edit the `.agentsfleet/platform-ops/SKILL.md` file, push, the next trigger runs the new behaviour. No redeploys, no DAG editor.
 
 ## Next steps
 
 <Columns cols={2}>
-  <Card title="Steer the agent manually" icon="message" href="/cli/zombiectl">
-    `zombiectl steer <zombie_id> "morning health check"` — same reasoning loop, manual trigger. Useful before you have a webhook firing.
+  <Card title="Steer the agent manually" icon="message" href="/cli/agentsfleet">
+    `agentsfleet steer <agent_id> "morning health check"` — same reasoning loop, manual trigger. Useful before you have a webhook firing.
   </Card>
   <Card title="Read SKILL.md / TRIGGER.md" icon="file-pen" href="/concepts">
-    The two markdown files in `.usezombie/platform-ops/` are the entire behaviour. Edit them like any other source file.
+    The two markdown files in `.agentsfleet/platform-ops/` are the entire behaviour. Edit them like any other source file.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Why deep incidents keep reasoning past the model's context cap. Defaults work for 95% of cases.
   </Card>
-  <Card title="Authoring an agent" icon="file-code" href="/zombies/authoring">
+  <Card title="Authoring an agent" icon="file-code" href="/agents/authoring">
     The `SKILL.md` + `TRIGGER.md` reference for writing your own.
   </Card>
 </Columns>

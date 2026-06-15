@@ -1,42 +1,42 @@
 ---
 title: "Installing an agent"
-description: "What `zombiectl install --from <path>` does and how to invoke it."
+description: "What `agentsfleet install --from <path>` does and how to invoke it."
 ---
 
-`zombiectl install --from <path>` is how you bring an agent up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
+`agentsfleet install --from <path>` is how you bring an agent up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
 
 ```bash
-zombiectl install --from ~/.config/usezombie/samples/platform-ops
+agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
 ```
 ✓ platform-ops-agent is live.
-  Zombie ID: zmb_2041
+  Agent ID: zmb_2041
   Webhook URLs (register on the upstream provider):
-    github: https://api.usezombie.com/v1/webhooks/zmb_2041/github
+    github: https://api.agentsfleet.net/v1/webhooks/zmb_2041/github
 ```
 
-One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/zombies/webhooks) if you maintain the upstream hook by hand.
+One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/agents/webhooks) if you maintain the upstream hook by hand.
 
 Re-running against the same workspace is safe — running it twice has the same effect as running it once. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
 ## Two ways to invoke
 
-Most users don't run `zombiectl install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/usezombie-install-platform-ops` slash command. Add the skills with `npx skills add usezombie/skills`, which symlinks `/usezombie-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
+Most users don't run `agentsfleet install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/agentsfleet-install-platform-ops` slash command. Add the skills with `npx skills add agentsfleet/skills`, which symlinks `/agentsfleet-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
 
 ```
-/usezombie-install-platform-ops
+/agentsfleet-install-platform-ops
 ```
 
 <Tip>
-  **No global install?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.
+  **No global install?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
 </Tip>
 
 The slash command asks three gating questions (Slack channel, production branch glob, optional cron schedule), registers the webhook via your existing `gh` CLI, and prints a per-trigger registration summary at the end. See [Quickstart](/quickstart) for the full walkthrough.
 
-Power users and scripted setups call `zombiectl install --from <path>` directly — the same flow as the slash command, minus the gating questions and the auto-registration.
+Power users and scripted setups call `agentsfleet install --from <path>` directly — the same flow as the slash command, minus the gating questions and the auto-registration.
 
-For the self-managed provider posture, see [`zombiectl tenant provider`](/cli/zombiectl#tenant-provider).
+For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/agentsfleet#tenant-provider).
 
 ## Exit codes
 
@@ -48,6 +48,6 @@ For the self-managed provider posture, see [`zombiectl tenant provider`](/cli/zo
 
 ## See also
 
-- [Templates](/zombies/templates) — the catalogue of pre-built agents you can install.
-- [Authoring an agent](/zombies/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
-- [Starting, observing, and stopping](/zombies/running) — what to do after install.
+- [Templates](/agents/templates) — the catalogue of pre-built agents you can install.
+- [Authoring an agent](/agents/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
+- [Starting, observing, and stopping](/agents/running) — what to do after install.

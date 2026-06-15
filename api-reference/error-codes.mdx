@@ -1,6 +1,6 @@
 ---
 title: 'Error Codes'
-description: 'All error responses from zombied use RFC 7807 (application/problem+json). This page lists every error code, its HTTP status, and common causes.'
+description: 'All error responses from agentsfleetd use RFC 7807 (application/problem+json). This page lists every error code, its HTTP status, and common causes.'
 ---
 
 ## Response format
@@ -9,10 +9,10 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 ```json
 {
-  "docs_uri": "https://docs.usezombie.com/api-reference/error-codes#UZ-ZMB-009",
-  "title": "Zombie not found",
-  "detail": "No zombie with id 'abc123' in this workspace.",
-  "error_code": "UZ-ZMB-009",
+  "docs_uri": "https://docs.agentsfleet.net/api-reference/error-codes#UZ-AGT-009",
+  "title": "Agent not found",
+  "detail": "No agent with id 'abc123' in this workspace.",
+  "error_code": "UZ-AGT-009",
   "request_id": "req_a1b2c3d4e5f6"
 }
 ```
@@ -110,42 +110,42 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | `UZ-WH-003` | 403 | Agent paused | Agent exists but is not active |
 | `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
-| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this agent's source. Run `zombiectl credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the agent's workspace, then resend. |
+| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this agent's source. Run `agentsfleet credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the agent's workspace, then resend. |
 | `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload at the source or filter fields before forwarding. |
 
 ## Tool
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-TOOL-004` | 400 | Tool not attached | The tool isn't in this agent's `tools:` list. Add it to `TRIGGER.md` `x-usezombie.tools:` and re-install. |
-| `UZ-TOOL-005` | 400 | Unknown tool | Tool name not recognized — typo against the [Tools catalogue](/zombies/tools) is the usual cause. |
+| `UZ-TOOL-004` | 400 | Tool not attached | The tool isn't in this agent's `tools:` list. Add it to `TRIGGER.md` `x-agentsfleet.tools:` and re-install. |
+| `UZ-TOOL-005` | 400 | Unknown tool | Tool name not recognized — typo against the [Tools catalogue](/agents/tools) is the usual cause. |
 
 <Note>
-**Registered, not always emitted.** The two `UZ-TOOL-*` codes are registered in the platform's error registry but, in v2 today, the user-facing failure path for a missing or misspelled tool is a NullClaw-level "no such tool" message in the activity stream rather than one of these wire codes. Treat the codes as authoritative for *meaning* if you do see them, but don't expect them as the primary signal — audit `zombiectl logs <zombie_id>` for the actual error text.
+**Registered, not always emitted.** The two `UZ-TOOL-*` codes are registered in the platform's error registry but, in v2 today, the user-facing failure path for a missing or misspelled tool is a NullClaw-level "no such tool" message in the activity stream rather than one of these wire codes. Treat the codes as authoritative for *meaning* if you do see them, but don't expect them as the primary signal — audit `agentsfleet logs <agent_id>` for the actual error text.
 </Note>
 
 ## Agent
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-ZMB-001` | 402 | Agent budget exceeded | Daily dollar budget hit. Raise `budget.daily_dollars` in `TRIGGER.md`. |
-| `UZ-ZMB-002` | 500 | Agent agent timeout | Agent timed out processing an event. Check the activity stream. |
-| `UZ-ZMB-003` | 424 | Agent credential missing | A required vault credential is absent. Add it with `zombiectl credential add <name>`. |
-| `UZ-ZMB-004` | 500 | Agent claim failed | Agent could not be claimed from the database. Verify the `zombie_id` exists and status is `active`. |
-| `UZ-ZMB-005` | 500 | Agent checkpoint failed | Session checkpoint write to Postgres failed. |
-| `UZ-ZMB-006` | 409 | Agent name already exists | Name taken. Kill the existing agent first, then re-install. |
-| `UZ-ZMB-008` | 400 | Invalid agent config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
-| `UZ-ZMB-009` | 404 | Agent not found | No agent with this ID in the workspace. |
-| `UZ-ZMB-010` | 409 | Agent already stopped or killed | This agent is already stopped or killed. Re-install before issuing another stop. |
-| `UZ-ZMB-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per agent bundle. |
+| `UZ-AGT-001` | 402 | Agent budget exceeded | Daily dollar budget hit. Raise `budget.daily_dollars` in `TRIGGER.md`. |
+| `UZ-AGT-002` | 500 | Agent agent timeout | Agent timed out processing an event. Check the activity stream. |
+| `UZ-AGT-003` | 424 | Agent credential missing | A required vault credential is absent. Add it with `agentsfleet credential add <name>`. |
+| `UZ-AGT-004` | 500 | Agent claim failed | Agent could not be claimed from the database. Verify the `agent_id` exists and status is `active`. |
+| `UZ-AGT-005` | 500 | Agent checkpoint failed | Session checkpoint write to Postgres failed. |
+| `UZ-AGT-006` | 409 | Agent name already exists | Name taken. Kill the existing agent first, then re-install. |
+| `UZ-AGT-008` | 400 | Invalid agent config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
+| `UZ-AGT-009` | 404 | Agent not found | No agent with this ID in the workspace. |
+| `UZ-AGT-010` | 409 | Agent already stopped or killed | This agent is already stopped or killed. Re-install before issuing another stop. |
+| `UZ-AGT-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per agent bundle. |
 
-<Note>`UZ-ZMB-007` is retired; oversized credential bodies now return [`UZ-VAULT-002`](#vault).</Note>
+<Note>`UZ-AGT-007` is retired; oversized credential bodies now return [`UZ-VAULT-002`](#vault).</Note>
 
 ## Integration grants
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-GRANT-001` | 403 | No integration grant for service | This agent has no approved grant for the target service. Request one with `POST /v1/zombies/{id}/integration-requests`. |
+| `UZ-GRANT-001` | 403 | No integration grant for service | This agent has no approved grant for the target service. Request one with `POST /v1/agents/{id}/integration-requests`. |
 | `UZ-GRANT-002` | 403 | Integration grant pending approval | A grant request for this service is pending human approval. Approve in Slack, Discord, or the dashboard. |
 | `UZ-GRANT-003` | 403 | Integration grant denied | The grant for this service was denied or revoked by the workspace owner. Re-request via the host agent. |
 
@@ -169,7 +169,7 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 ## Credentials
 
-These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your agent uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-ZMB-003`](#agent)).
+These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your agent uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-AGT-003`](#agent)).
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
@@ -187,8 +187,8 @@ These fire on the inference path — when the runner needs to call the model and
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-MEM-001` | 403 | Memory scope denied | Cross-agent memory access attempted. Memory operations are scoped per `zombie_id`. |
-| `UZ-MEM-002` | 404 | Agent not found for memory op | The `zombie_id` on the memory call does not exist in the workspace. |
+| `UZ-MEM-001` | 403 | Memory scope denied | Cross-agent memory access attempted. Memory operations are scoped per `agent_id`. |
+| `UZ-MEM-002` | 404 | Agent not found for memory op | The `agent_id` on the memory call does not exist in the workspace. |
 | `UZ-MEM-003` | 503 | Memory backend unavailable | Memory store is unreachable. Retry the trigger; if persistent, file an issue. |
 
 ## Relay
@@ -201,7 +201,7 @@ These fire on the inference path — when the runner needs to call the model and
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run 'zombied doctor' to see which ones. |
+| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run 'agentsfleetd doctor' to see which ones. |
 | `UZ-STARTUP-002` | 500 | Config load failed | Configuration failed to load. Check that all required env vars are set. |
 | `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that DATABASE_URL is set and the database accepts connections. |
 | `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that REDIS_URL_API is set. |
@@ -226,4 +226,4 @@ These fire on the inference path — when the runner needs to call the model and
 |---|---|---|---|
 | `UZ-SLACK-001` | 403 | Slack OAuth state invalid | OAuth state parameter mismatch — possible CSRF attempt. |
 | `UZ-SLACK-002` | 502 | Slack token exchange failed | Could not exchange OAuth code for bot token. Verify SLACK_CLIENT_SECRET is set. |
-| `UZ-SLACK-003` | 401 | Slack bot token expired | The Slack bot token has been revoked or expired. Reinstall usezombie to Slack. |
+| `UZ-SLACK-003` | 401 | Slack bot token expired | The Slack bot token has been revoked or expired. Reinstall agentsfleet to Slack. |

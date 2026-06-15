@@ -1,5 +1,5 @@
 /*
- * usezombie Mintlify overrides — Operational Restraint.
+ * agentsfleet Mintlify overrides — Operational Restraint.
  *
  * Mintlify's docs.json owns the bulk of the theming (colors, fonts,
  * code-block syntax theme). This file owns only the bits the schema
@@ -7,7 +7,7 @@
  * convention for cloud-build custom CSS pickup.
  *
  * Source-of-truth tokens live in
- * ~/Projects/usezombie/ui/packages/design-system/src/tokens.css.
+ * ~/Projects/agentsfleet/ui/packages/design-system/src/tokens.css.
  * Hex literals here are mirrored from there — change upstream first,
  * land here in the same release window.
  */
@@ -45,8 +45,8 @@
  * Selector targets the navbar primary button by its href; this is
  * stable against Mintlify's class-name churn between minor releases.
  */
-a[href="https://app.usezombie.com"],
-a[href="https://app.usezombie.com"] *,
+a[href="https://app.agentsfleet.net"],
+a[href="https://app.agentsfleet.net"] *,
 [data-mintlify-primary-button] {
   color: #0a0d0e;
 }

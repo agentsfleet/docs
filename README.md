@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="logo/dark.svg" />
   <source media="(prefers-color-scheme: light)" srcset="logo/light.svg" />
-  <img src="logo/dark.svg" width="200" alt="usezombie" />
+  <img src="logo/dark.svg" width="200" alt="agentsfleet" />
 </picture>
 
 **Your deploy failed. The agent already knows why.**
@@ -12,8 +12,8 @@ A long-lived runtime that owns one operational outcome end to end.
 Wakes on your events. Runs against a durable, replayable log.
 Posts evidenced answers — never chats.
 
-[![Docs](https://img.shields.io/badge/usezombie-Docs-5EEAD4?style=for-the-badge)](https://docs.usezombie.com)
-[![Get early access](https://img.shields.io/badge/usezombie-Get_early_access-5EEAD4?style=for-the-badge)](https://usezombie.com)
+[![Docs](https://img.shields.io/badge/agentsfleet-Docs-5EEAD4?style=for-the-badge)](https://docs.agentsfleet.net)
+[![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-5EEAD4?style=for-the-badge)](https://agentsfleet.net)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -37,4 +37,4 @@ Changes pushed to the default branch are deployed automatically via the [Mintlif
 
 ## License
 
-MIT — Copyright (c) 2026 usezombie
+MIT — Copyright (c) 2026 agentsfleet

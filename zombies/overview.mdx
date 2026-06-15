@@ -15,55 +15,55 @@ An agent moves through five observable states.
 
 ```mermaid
 flowchart LR
-    Install[zombiectl install --from path] --> Alive[Alive<br/>webhook live]
+    Install[agentsfleet install --from path] --> Alive[Alive<br/>webhook live]
     Alive -->|event arrives| Processing[Processing<br/>agent reasoning]
     Processing -->|run exits| Alive
-    Alive -->|zombiectl stop| Stopped[Stopped<br/>paused]
-    Stopped -->|zombiectl resume| Alive
-    Alive -->|zombiectl kill| Killed[Killed<br/>terminal]
-    Stopped -->|zombiectl kill| Killed
-    Killed -->|zombiectl delete| Deleted([deleted — hard-removed])
+    Alive -->|agentsfleet stop| Stopped[Stopped<br/>paused]
+    Stopped -->|agentsfleet resume| Alive
+    Alive -->|agentsfleet kill| Killed[Killed<br/>terminal]
+    Stopped -->|agentsfleet kill| Killed
+    Killed -->|agentsfleet delete| Deleted([deleted — hard-removed])
 ```
 
-1. **Alive.** `zombiectl install --from <path>` reads the local `SKILL.md` + `TRIGGER.md`, validates the schema, uploads to your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step.
-2. **Processing.** When a signed event arrives (webhook, cron, or steer), the platform opens a **run**: the agent reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay any time with `zombiectl logs <zombie_id>` (or `events --actor 'webhook:*'` for filtered history).
-3. **Stopped.** `zombiectl stop <zombie_id>` halts the running session — new events stop dispatching, the in-flight run finishes cleanly. Reversible with `zombiectl resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
-4. **Killed.** `zombiectl kill <zombie_id>` marks the agent terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-install with the same `SKILL.md` produces a **new** `zombie_id`.
-5. **Deleted.** `zombiectl delete <zombie_id>` hard-removes the agent. The row, its `zombie_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/zombiectl#observability); replays after delete reference the prior `zombie_id` as a historical record only. You must `kill` the agent before `delete` will accept it.
+1. **Alive.** `agentsfleet install --from <path>` reads the local `SKILL.md` + `TRIGGER.md`, validates the schema, uploads to your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step.
+2. **Processing.** When a signed event arrives (webhook, cron, or steer), the platform opens a **run**: the agent reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay any time with `agentsfleet logs <agent_id>` (or `events --actor 'webhook:*'` for filtered history).
+3. **Stopped.** `agentsfleet stop <agent_id>` halts the running session — new events stop dispatching, the in-flight run finishes cleanly. Reversible with `agentsfleet resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
+4. **Killed.** `agentsfleet kill <agent_id>` marks the agent terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-install with the same `SKILL.md` produces a **new** `agent_id`.
+5. **Deleted.** `agentsfleet delete <agent_id>` hard-removes the agent. The row, its `agent_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/agentsfleet#observability); replays after delete reference the prior `agent_id` as a historical record only. You must `kill` the agent before `delete` will accept it.
 
 You can inspect state at any time:
 
 ```bash
-zombiectl status                     # every agent in the active workspace
-zombiectl logs zmb_2041              # tail one agent's recent activity
-zombiectl steer zmb_2041 "morning health check"   # manual trigger
+agentsfleet status                     # every agent in the active workspace
+agentsfleet logs zmb_2041              # tail one agent's recent activity
+agentsfleet steer zmb_2041 "morning health check"   # manual trigger
 ```
 
 ## Workspace scoping
 
 Every agent belongs to exactly one **workspace**. The workspace is the boundary for:
 
-- **Credentials** — the vault that agents read from when they invoke skills. See [Credentials](/zombies/credentials).
+- **Credentials** — the vault that agents read from when they invoke skills. See [Credentials](/agents/credentials).
 - **Access control** — teammates invited to a workspace can see, start, and kill its agents; they cannot see agents in other workspaces.
-- **Webhook namespace** — every agent in a workspace gets one unique URL per declared trigger under `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
+- **Webhook namespace** — every agent in a workspace gets one unique URL per declared trigger under `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
 
 Billing is **not** workspace-scoped — every workspace draws on the same tenant-level billing. See [Billing](/billing/plans) for the model.
 
-`zombiectl workspace add [name]` creates a new workspace and sets it as active. Switch between existing ones with `zombiectl workspace use <id>` (run `zombiectl workspace list` first to see the IDs). The dashboard's active-workspace selection is independent — switching there does not affect the CLI and vice versa.
+`agentsfleet workspace add [name]` creates a new workspace and sets it as active. Switch between existing ones with `agentsfleet workspace use <id>` (run `agentsfleet workspace list` first to see the IDs). The dashboard's active-workspace selection is independent — switching there does not affect the CLI and vice versa.
 
 ## What's next
 
 <CardGroup cols={2}>
-  <Card title="Install an agent" icon="download" href="/zombies/install">
+  <Card title="Install an agent" icon="download" href="/agents/install">
     Scaffold an agent from a bundled template.
   </Card>
-  <Card title="Start, stop, observe" icon="circle-play" href="/zombies/running">
+  <Card title="Start, stop, observe" icon="circle-play" href="/agents/running">
     The `install`, `status`, `events`, `steer`, and `kill` commands.
   </Card>
-  <Card title="Workspace credentials" icon="key" href="/zombies/credentials">
+  <Card title="Workspace credentials" icon="key" href="/agents/credentials">
     Add secrets to the vault without the agent ever seeing them.
   </Card>
-  <Card title="Authoring an agent" icon="file-code" href="/zombies/authoring">
+  <Card title="Authoring an agent" icon="file-code" href="/agents/authoring">
     How `SKILL.md` and `TRIGGER.md` combine to define an agent.
   </Card>
 </CardGroup>

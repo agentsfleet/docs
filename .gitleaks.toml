@@ -1,4 +1,4 @@
-title = "Zombie Docs Gitleaks Config"
+title = "Agent Docs Gitleaks Config"
 
 [allowlist]
   description = "Allow placeholder tokens used in documentation examples"
