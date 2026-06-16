@@ -82,7 +82,7 @@ Frontmatter is structured metadata; the body is the distilled prose the agent wr
 To remove or fix a fact, the agent itself calls `memory_forget(key)` followed by `memory_store(...)` with the corrected entry — typically driven from a steer message:
 
 ```bash
-agentsfleet steer zmb_2041 "forget customer_bob_chen_acme; Bob is now on the Enterprise plan"
+agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "forget customer_bob_chen_acme; Bob is now on the Enterprise plan"
 ```
 
 The next event uses the corrected memory.

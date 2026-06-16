@@ -133,10 +133,10 @@ Four verbs control an agent's lifecycle, in increasing order of irreversibility:
 | `delete <agent_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
-agentsfleet stop   zmb_2041   # pause; resumable
-agentsfleet resume zmb_2041   # back to active
-agentsfleet kill   zmb_2041   # terminal; webhook still 200s but routes nowhere new
-agentsfleet delete zmb_2041   # hard-delete; webhook URL starts returning UZ-WH-001
+agentsfleet stop   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # pause; resumable
+agentsfleet resume 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # back to active
+agentsfleet kill   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # terminal; webhook still 200s but routes nowhere new
+agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # hard-delete; webhook URL starts returning UZ-WH-001
 ```
 
 State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`.
@@ -146,9 +146,9 @@ State is checkpointed at every transition — nothing on the activity stream is 
 Print the agent's recent activity stream — newest-first, paginated.
 
 ```bash
-agentsfleet logs zmb_2041
-agentsfleet logs zmb_2041 --limit 50 --cursor <next_cursor>
-agentsfleet logs zmb_2041 --json
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --limit 50 --cursor <next_cursor>
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json
 ```
 
 | Flag | Default | Purpose |
@@ -164,9 +164,9 @@ The agent ID may also be passed via `--agent <id>` for scripting symmetry with `
 Richer filter surface than `logs`. Use this when you need to slice by actor or time window — for example, when [troubleshooting](/agents/troubleshooting) a specific webhook source.
 
 ```bash
-agentsfleet events zmb_2041 --actor 'webhook:*' --since 2h
-agentsfleet events zmb_2041 --actor 'steer:*' --since 7d --limit 100
-agentsfleet events zmb_2041 --json | jq 'select(.error)'
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 2h
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'steer:*' --since 7d --limit 100
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.error)'
 ```
 
 | Flag | Default | Purpose |
@@ -184,10 +184,10 @@ There is no `--follow`/streaming-tail flag today. To watch live, poll `events --
 Post a steer message — a manual trigger that uses the same reasoning loop as a webhook event. Useful for ad-hoc investigation or before a webhook is wired up.
 
 ```bash
-agentsfleet steer zmb_2041
-agentsfleet steer zmb_2041 "morning health check — anything red?"
-echo "check the latest deploy event" | agentsfleet steer zmb_2041
-printf "check the latest deploy event\ncheck memory usage\n" | agentsfleet steer zmb_2041 --tty
+agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check — anything red?"
+echo "check the latest deploy event" | agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+printf "check the latest deploy event\ncheck memory usage\n" | agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --tty
 ```
 
 | Flag | Default | Purpose |
@@ -265,7 +265,7 @@ agentsfleet workspace list
 Set the active workspace persistently. Writes `current_workspace_id` to `~/.config/agentsfleet/workspaces.json`; every subsequent command that accepts `--workspace-id` defaults to this value when the flag is omitted.
 
 ```bash
-agentsfleet workspace use ws_abc123
+agentsfleet workspace use 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
 
 Errors out if the id isn't in the local list (run `agentsfleet workspace list` first). The dashboard's own `active_workspace_id` cookie and the CLI config are independent — switching one does not affect the other. See [Workspaces overview](/workspaces/overview).
@@ -285,7 +285,7 @@ Prints the workspace's `workspace_id`, `name`, `created_at`, and active marker. 
 Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `agent_id`s, so any upstream webhooks pointing at the old workspace's agents need to be re-wired.
 
 ```bash
-agentsfleet workspace delete ws_abc123
+agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
 
 ---
@@ -299,25 +299,25 @@ External agents are API-key–authenticated callers (LangGraph, CrewAI, Composio
 Mint an API key bound to one agent.
 
 ```bash
-agentsfleet agent add --workspace ws_abc --agent zm_xyz --name my-agent
+agentsfleet agent add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-agent
 ```
 
-The raw key (`zmb_…`) is returned **once**; store it in your secret manager.
+The raw key (`agt_a…`) is returned **once**; store it in your secret manager.
 
 ### `agentsfleet agent list`
 
 List every external agent key in a workspace.
 
 ```bash
-agentsfleet agent list --workspace ws_abc
+agentsfleet agent list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
 
-### `agentsfleet agent delete <agent-id>`
+### `agentsfleet agent delete <agent-key-id>`
 
 Revoke an external agent key.
 
 ```bash
-agentsfleet agent delete --workspace ws_abc ag_01JABC...
+agentsfleet agent delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
 ```
 
 ---
@@ -331,7 +331,7 @@ Integration grants are per-agent permissions to reach a third-party service (Sla
 List pending and approved grants for an agent.
 
 ```bash
-agentsfleet grant list --agent zm_01JABC...
+agentsfleet grant list --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
 ```
 
 ### `agentsfleet grant delete --agent <id> <grant-id>`
@@ -339,7 +339,7 @@ agentsfleet grant list --agent zm_01JABC...
 Revoke a granted integration. Further attempts by the agent to reach that integration fail with `UZ-GRANT-003`.
 
 ```bash
-agentsfleet grant delete --agent zm_01JABC... gr_01JXYZ...
+agentsfleet grant delete --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 0198a7b4-2b5c-7d18-8f63-4e9a1c7d3b20
 ```
 
 ---

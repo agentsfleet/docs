@@ -85,7 +85,7 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   After install, the skill prints a summary line per registered hook:
 
   ```
-  ✓ github · https://api.agentsfleet.net/v1/webhooks/zmb_2041/github
+  ✓ github · https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
     hook_id=489182  events=[workflow_run]  active=true
     HMAC self-verify: ok
   ```
@@ -133,13 +133,13 @@ This walks through installing the flagship `platform-ops` agent on one of your r
   - The agent wakes, calls the tools `TRIGGER.md` allow-lists (`http_request` against your hosting provider, `memory_store` for findings), gathers evidence from the failed workflow.
   - An evidenced diagnosis posts to your Slack channel.
 
-  Tail it — replace `<agent_id>` with the value the install step printed (e.g. `zmb_2041`):
+  Tail it — replace `<agent_id>` with the value the install step printed (e.g. `0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71`):
 
   ```bash
-  agentsfleet logs zmb_2041
+  agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
   ```
 
-  Need to slice by source or time window? `agentsfleet events zmb_2041 --actor 'webhook:*' --since 30m`. Lost track of the ID? `agentsfleet list` prints every agent in the active workspace. Or watch the same stream in the dashboard at `app.agentsfleet.net`.
+  Need to slice by source or time window? `agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 30m`. Lost track of the ID? `agentsfleet list` prints every agent in the active workspace. Or watch the same stream in the dashboard at `app.agentsfleet.net`.
 </Step>
 
 </Steps>

@@ -158,7 +158,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/agent-keys",
               "POST /v1/workspaces/{workspace_id}/agent-keys",
-              "DELETE /v1/workspaces/{workspace_id}/agent-keys/{agent_id}"
+              "DELETE /v1/workspaces/{workspace_id}/agent-keys/{agent_key_id}"
             ]
           },
           {

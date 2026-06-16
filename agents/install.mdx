@@ -11,9 +11,9 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 
 ```
 ✓ platform-ops-agent is live.
-  Agent ID: zmb_2041
+  Agent ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
   Webhook URLs (register on the upstream provider):
-    github: https://api.agentsfleet.net/v1/webhooks/zmb_2041/github
+    github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
 One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/agents/webhooks) if you maintain the upstream hook by hand.

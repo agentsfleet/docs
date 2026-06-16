@@ -28,10 +28,10 @@ agentsfleet workspace list
 Lists every workspace under your tenant that the local CLI knows about, with the active marker.
 
 ```
-   WORKSPACE          NAME
-*  ws_01J8XV9R2M      platform-ops
-   ws_01J8XVKA3M      stripe-recon
-   ws_01J8XVKB7N      sentry-triage
+   WORKSPACE                               NAME
+*  0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50    platform-ops
+   0198a7b1-5d3e-7a29-b410-2c7f5e1a9d63    stripe-recon
+   0198a7b1-8f4a-7c1d-9e52-3a8b6d2f0c91    sentry-triage
 ```
 
 The leading `*` marks the active workspace (the one set by `agentsfleet workspace use`). Add `--json` for the raw `{ items, current_workspace_id }` envelope.

@@ -90,7 +90,7 @@ The parser rejects an unknown `source` that supplies only `secret_ref` with no `
 Once the agent is installed, your provider POSTs to its URL with a signed body:
 
 ```bash
-curl -X POST https://api.agentsfleet.net/v1/webhooks/zmb_2041/github \
+curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github \
   -H "x-hub-signature-256: sha256=<computed-hmac>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -103,7 +103,7 @@ curl -X POST https://api.agentsfleet.net/v1/webhooks/zmb_2041/github \
 The platform verifies the signature, enqueues the event, and returns `202 Accepted`:
 
 ```json
-{ "accepted": true, "request_id": "req_01JQ7K..." }
+{ "accepted": true, "request_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
 ```
 
 Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the agent can dedupe.
@@ -125,10 +125,10 @@ Some agent actions — sending money, merging a PR, posting to a public channel 
 For programmatic decisions (e.g. an internal tool calling back into agentsfleet), POST the decision to:
 
 ```bash
-curl -X POST https://api.agentsfleet.net/v1/webhooks/zmb_2041/approval \
+curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/approval \
   -H "Authorization: Bearer $APPROVAL_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "approval_id": "apr_01JQ...", "decision": "approve" }'
+  -d '{ "approval_id": "0198a7b9-5a3f-7e24-9b18-4c7d2a8f5e63", "decision": "approve" }'
 ```
 
 The approval token is auto-provisioned for the agent at install time.
@@ -138,7 +138,7 @@ The approval token is auto-provisioned for the agent at install time.
 Every accepted and rejected webhook appears in the activity stream:
 
 ```bash
-agentsfleet logs zmb_2041
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
 ```
 
 Rejected requests carry a reason code (`webhook_rejected: signature_mismatch`, etc.) so you can tell a noisy upstream from a real auth bug.
@@ -153,4 +153,4 @@ https://api.agentsfleet.net/v1/webhooks/{agent_id}/{url_secret}
 
 The `url_secret` is matched in constant time. Reserved segments (`approval`, `grant-approval`, `svix`) cannot be used as secret values. Prefer HMAC where the upstream supports it — the URL-embedded form is a fallback.
 
-**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/zmb_2041/github` routes to the `github` source when the agent declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same agent — the source wins and the secret will never match.
+**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github` routes to the `github` source when the agent declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same agent — the source wins and the secret will never match.

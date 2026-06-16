@@ -10,11 +10,11 @@ A small set of verbs cover the live lifecycle: `install --from <path>` brings an
 ```bash
 agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 agentsfleet status                               # every agent in the workspace
-agentsfleet logs zmb_2041                        # tail one agent's recent activity
-agentsfleet steer zmb_2041 "morning health check"
-agentsfleet stop zmb_2041                        # pause; resumable
-agentsfleet kill zmb_2041                        # terminal
-agentsfleet delete zmb_2041                      # hard-delete (kill first)
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # tail one agent's recent activity
+agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check"
+agentsfleet stop 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # pause; resumable
+agentsfleet kill 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # terminal
+agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                      # hard-delete (kill first)
 ```
 
 ## `agentsfleet install --from <path>`
@@ -27,9 +27,9 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 
 ```
 ✓ platform-ops-agent is live.
-  Agent ID: zmb_2041
+  Agent ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
   Webhook URLs (register on the upstream provider):
-    github: https://api.agentsfleet.net/v1/webhooks/zmb_2041/github
+    github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
 One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
@@ -51,10 +51,10 @@ agentsfleet status
 ```
 
 ```
-Agents (workspace: ws_abc123)
-──────────────────────────────────────────────────────────────────
-ID         Name                  Status  Events  Budget
-zmb_2041   platform-ops-agent   alive   42      $1.23
+Agents (workspace: 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50)
+────────────────────────────────────────────────────────────────────────────────
+ID                                    Name                  Status  Events  Budget
+0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71  platform-ops-agent   alive   42      $1.23
 ```
 
 Pass `--json` for a machine-readable shape suitable for scripting:
@@ -68,9 +68,9 @@ agentsfleet status --json
 Print the agent's recent activity stream. Every webhook receipt, cron fire, steer message, tool call, and run exit lands here, tagged with what triggered it (`webhook:github`, `cron:*`, `steer:<user>`, `continuation:<original_actor>`).
 
 ```bash
-agentsfleet logs zmb_2041
-agentsfleet logs zmb_2041 --limit 50 --cursor <next_cursor>
-agentsfleet logs zmb_2041 --json
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --limit 50 --cursor <next_cursor>
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json
 ```
 
 | Flag | Default | Purpose |
@@ -84,9 +84,9 @@ agentsfleet logs zmb_2041 --json
 Richer filter surface than `logs`. Use this when you need to slice by actor or time window:
 
 ```bash
-agentsfleet events zmb_2041 --actor 'webhook:*' --since 2h
-agentsfleet events zmb_2041 --actor 'steer:*' --since 7d --limit 100
-agentsfleet events zmb_2041 --json | jq 'select(.error)'
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 2h
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'steer:*' --since 7d --limit 100
+agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.error)'
 ```
 
 | Flag | Default | Purpose |
@@ -104,7 +104,7 @@ There's no streaming-tail flag today. Poll `events --since 30s` from a script if
 Posts a steer message — a manual trigger that runs the same reasoning loop as a webhook event. Useful before you have a webhook wired up, or for one-off investigation.
 
 ```bash
-agentsfleet steer zmb_2041 "morning health check — anything red?"
+agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check — anything red?"
 ```
 
 The reply streams back live; the result is also persisted to the activity stream for replay.
@@ -121,10 +121,10 @@ Four verbs control the agent's lifecycle, in increasing order of irreversibility
 | `delete <agent_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
-agentsfleet stop   zmb_2041   # pause; resumable
-agentsfleet resume zmb_2041   # back to active
-agentsfleet kill   zmb_2041   # terminal; webhook still 200s but routes nowhere new
-agentsfleet delete zmb_2041   # hard-delete; webhook URL starts returning UZ-WH-001
+agentsfleet stop   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # pause; resumable
+agentsfleet resume 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # back to active
+agentsfleet kill   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # terminal; webhook still 200s but routes nowhere new
+agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # hard-delete; webhook URL starts returning UZ-WH-001
 ```
 
 State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`. After delete, recreating with the same `SKILL.md` produces a **new** `agent_id` and a **new** webhook URL; any upstream wiring needs to be updated.
