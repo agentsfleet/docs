@@ -2,8 +2,8 @@
   "ignorePatterns": [
     { "pattern": "^/" },
     { "pattern": "^https://discord.gg" },
-    { "pattern": "^https://usezombie.com" },
-    { "pattern": "^https://app.usezombie.com" },
+    { "pattern": "^https://agentsfleet.net" },
+    { "pattern": "^https://app.agentsfleet.net" },
     { "pattern": "^mailto:" }
   ],
   "retryOn429": true,

@@ -6,10 +6,10 @@ description: "How external systems deliver events to your agent, and how the pla
 Every webhook trigger declared in `TRIGGER.md` gets a unique, stable URL keyed by `source`:
 
 ```
-https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}
+https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}
 ```
 
-External systems POST to this URL. The platform verifies the signature and delivers the event to the agent. No tunneling, no ngrok, no custom servers on your side. `zombiectl install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
+External systems POST to this URL. The platform verifies the signature and delivers the event to the agent. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
   **Most users don't wire webhooks by hand.** The `platform-ops` install skill registers each declared webhook automatically via your existing `gh` CLI — no paste-into-GitHub step. Use [Quickstart](/quickstart) for the full guided flow. The reference below is for custom webhooks — your own provider, an internal service, etc.
@@ -23,7 +23,7 @@ An agent declares its webhooks in `TRIGGER.md` under the `triggers:` array (1–
 ---
 name: my-agent
 
-x-usezombie:
+x-agentsfleet:
   triggers:
     - type: webhook
       source: github
@@ -35,9 +35,9 @@ x-usezombie:
 ---
 ```
 
-`source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
+`source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
 
-The singular `trigger:` shape is rejected at install (`ERR_ZOMBIE_INVALID_CONFIG: use "triggers:" (array)`); always declare the array form, even for a single webhook.
+The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`); always declare the array form, even for a single webhook.
 
 ## Authentication
 
@@ -79,10 +79,10 @@ triggers:
 
 The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
 
-`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/zombies/credentials).
+`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/agents/credentials).
 
 <Note>
-  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{zombie_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the agent sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{zombie_id}`, to accommodate Svix's multi-signature rotation scheme.
+  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{agent_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the agent sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{agent_id}`, to accommodate Svix's multi-signature rotation scheme.
 </Note>
 
 ## Sending an event
@@ -90,7 +90,7 @@ The parser rejects an unknown `source` that supplies only `secret_ref` with no `
 Once the agent is installed, your provider POSTs to its URL with a signed body:
 
 ```bash
-curl -X POST https://api.usezombie.com/v1/webhooks/zmb_2041/github \
+curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github \
   -H "x-hub-signature-256: sha256=<computed-hmac>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -103,7 +103,7 @@ curl -X POST https://api.usezombie.com/v1/webhooks/zmb_2041/github \
 The platform verifies the signature, enqueues the event, and returns `202 Accepted`:
 
 ```json
-{ "accepted": true, "request_id": "req_01JQ7K..." }
+{ "accepted": true, "request_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
 ```
 
 Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the agent can dedupe.
@@ -114,7 +114,7 @@ Delivery is **at-least-once** — your provider may retry on transient failure, 
 |--------|-------|
 | `401` | Missing, malformed, or mis-signed signature header. |
 | `404` | Agent ID does not exist. |
-| `410` | Agent was killed; re-install with `zombiectl install --from <path>`. |
+| `410` | Agent was killed; re-install with `agentsfleet install --from <path>`. |
 | `429` | Rate limit hit; back off per `Retry-After`. |
 | `503` | Budget breached, or platform applying backpressure; safe to retry after the period resets. |
 
@@ -122,13 +122,13 @@ Delivery is **at-least-once** — your provider may retry on transient failure, 
 
 Some agent actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets an agent pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
 
-For programmatic decisions (e.g. an internal tool calling back into usezombie), POST the decision to:
+For programmatic decisions (e.g. an internal tool calling back into agentsfleet), POST the decision to:
 
 ```bash
-curl -X POST https://api.usezombie.com/v1/webhooks/zmb_2041/approval \
+curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/approval \
   -H "Authorization: Bearer $APPROVAL_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "approval_id": "apr_01JQ...", "decision": "approve" }'
+  -d '{ "approval_id": "0198a7b9-5a3f-7e24-9b18-4c7d2a8f5e63", "decision": "approve" }'
 ```
 
 The approval token is auto-provisioned for the agent at install time.
@@ -138,7 +138,7 @@ The approval token is auto-provisioned for the agent at install time.
 Every accepted and rejected webhook appears in the activity stream:
 
 ```bash
-zombiectl logs zmb_2041
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
 ```
 
 Rejected requests carry a reason code (`webhook_rejected: signature_mismatch`, etc.) so you can tell a noisy upstream from a real auth bug.
@@ -148,9 +148,9 @@ Rejected requests carry a reason code (`webhook_rejected: signature_mismatch`, e
 Some upstreams (a few SaaS form-postbacks, a few legacy systems) can't attach a signature header. For those, the platform accepts a path-embedded secret:
 
 ```
-https://api.usezombie.com/v1/webhooks/{zombie_id}/{url_secret}
+https://api.agentsfleet.net/v1/webhooks/{agent_id}/{url_secret}
 ```
 
 The `url_secret` is matched in constant time. Reserved segments (`approval`, `grant-approval`, `svix`) cannot be used as secret values. Prefer HMAC where the upstream supports it — the URL-embedded form is a fallback.
 
-**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/zmb_2041/github` routes to the `github` source when the agent declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same agent — the source wins and the secret will never match.
+**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github` routes to the `github` source when the agent declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same agent — the source wins and the secret will never match.

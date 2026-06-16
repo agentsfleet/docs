@@ -1,6 +1,6 @@
 ---
 title: "Changelog"
-description: "Stay up to date with the latest usezombie product updates, new features, platform improvements, and bug fixes."
+description: "Stay up to date with the latest agentsfleet product updates, new features, platform improvements, and bug fixes."
 ---
 
 import { STARTER_CREDIT, EVENT_RATE } from "/snippets/rates.mdx";
@@ -19,8 +19,42 @@ export const STAGE_PLATFORM_M66 = "$0.001";
 export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
 <Tip>
-  usezombie is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [usezombie@agentmail.to](mailto:usezombie@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
+  agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
+
+<Update label="Jun 15, 2026" tags={["Breaking", "What's new", "API", "CLI"]}>
+  ## The product is now agentsfleet
+
+  usezombie is now **agentsfleet**. Every operator-facing name moved together: the CLI is `agentsfleet`, the API answers on `api.agentsfleet.net`, the dashboard on `app.agentsfleet.net`, and the install one-liner lives at `agentsfleet.dev`. The durable, event-woken worker the API exposes is now uniformly an **agent** across routes, wire fields, error codes, and config — existing data is untouched, the surfaces around it were renamed.
+
+  ## Upgrading
+
+  A hard cutover with no compatibility shims — the CLI and server must move together.
+
+  - **Reinstall the CLI** — `zombiectl` is now `agentsfleet`. Reinstall from `https://agentsfleet.dev`, or `npm i -g @agentsfleet/cli` in place of `@usezombie/zombiectl`. Config moves from `~/.config/zombiectl` to `~/.config/agentsfleet`, and the CLI re-asks telemetry consent once on first run.
+  - **Repoint API hosts** — `api.usezombie.com` becomes `api.agentsfleet.net` (dev: `api-dev.agentsfleet.net`). Any pinned base URL must change.
+  - **Rename environment variables** — every `ZOMBIE_*` variable is now `AGENTSFLEET_*`. The old names are no longer read; a process started with a legacy `ZOMBIE_*` value logs a loud diagnostic and ignores it.
+  - **Update routes and wire fields** — `…/zombies/{zombie_id}/…` is now `…/agents/{agent_id}/…`, and the `zombie_id` field is `agent_id`. The `/agents` collection replaces `/zombies`.
+  - **Re-read entity error codes** — `UZ-ZMB-*` codes are now `UZ-AGT-*` (a 404 on a missing agent is `UZ-AGT-009`). `UZ-AUTH-*` codes are unchanged.
+  - **Re-mint raw tokens** — prefixes are now role-symmetric: agent keys start `agt_a` (was `zmb_a`), tenant API keys `agt_t` (was `zmb_t`), runner tokens `agt_r` (was `zmb_r`). Tokens minted under the old prefixes no longer validate.
+
+  ## What's new
+
+  - **One brand, end to end** — README, dashboard, CLI, container images (`ghcr.io/agentsfleet/agentsfleetd`), and runner metrics (`agentsfleet_runner_*`) all read agentsfleet.
+  - **Agent keys are their own credential** — a workspace-scoped key (`agt_a…`) carries its own `agent_key_id`, distinct from the `agent_id` it acts against, managed under `/v1/workspaces/{workspace_id}/agent-keys` and `agentsfleet agent-key …`.
+
+  ## API reference
+
+  ```http
+  GET /v1/workspaces/{workspace_id}/agents/{agent_id}
+  → 200 { "agent_id": "…", "agent_slug": "…", … }
+  → 404 { "error_code": "UZ-AGT-009", … }
+  ```
+
+  ## CLI
+
+  - **`agentsfleet`** replaces `zombiectl`; subcommand shapes are unchanged. `agentsfleet agent-key add|list|delete` manages workspace agent keys.
+</Update>
 
 <Update label="Jun 12, 2026" tags={["What's new", "Breaking", "API"]}>
   ## Scratch memories now expire on their own
@@ -1047,7 +1081,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   2. **SKILL.md** — frontmatter needs `name:`, `description:`, `version:`. Match `name:` to TRIGGER.md.
   3. **`zombiectl install --from <dir>`** — re-run until field-level errors clear.
 
-  See [Authoring skills](/zombies/authoring) for the canonical shape.
+  See [Authoring skills](/agents/authoring) for the canonical shape.
 
   ## What's new
 
@@ -1287,7 +1321,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ## What's new
 
   - **New quickstart** — sign up → dashboard → create agent → copy webhook → `curl` trigger → verify credit debit. One page, end-to-end.
-  - **New CLI reference** at [`/cli/zombiectl`](/cli/zombiectl).
+  - **New CLI reference** at [`/cli/agentsfleet`](/cli/agentsfleet).
   - **Self-hosting section** under `/operator` — _(removed in M51 prep when self-host was deferred to v3; see [`usezombie/usezombie:docs/architecture/`](https://github.com/usezombie/usezombie/tree/main/docs/architecture) for the canonical reference)_.
   - **Concepts page** — four nouns (tenant, workspace, agent, skill) + tenant-scoped credit model.
   - **Billing pages** — rewritten around single-wallet, multi-workspace.
@@ -1374,15 +1408,15 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Apr 19, 2026" tags={["Improvements", "CLI"]}>
   ## Agent lifecycle is the unified product model
 
-  The CLI and API now speak one language: `zombiectl install → up → status → logs → kill`. `zombiectl --help` is shorter, the API surface is tighter, and the docs, product, and code all describe the same thing. See [Agents](/zombies/overview).
+  The CLI and API now speak one language: `zombiectl install → up → status → logs → kill`. `zombiectl --help` is shorter, the API surface is tighter, and the docs, product, and code all describe the same thing. See [Agents](/agents/overview).
 </Update>
 
 <Update label="Apr 18, 2026" tags={["Docs"]}>
   ## Docs reshaped around the agent lifecycle
 
-  A new [Agents](/zombies/overview) section walks through installing a template, adding credentials, running, observing, and killing an agent. Pages describing the legacy v1 pipeline have been retired; the old `/specs/*` and `/runs/*` URLs now 404.
+  A new [Agents](/agents/overview) section walks through installing a template, adding credentials, running, observing, and killing an agent. Pages describing the legacy v1 pipeline have been retired; the old `/specs/*` and `/runs/*` URLs now 404.
 
-  New pages: [overview](/zombies/overview), [install](/zombies/install), [running](/zombies/running), [credentials](/zombies/credentials), [webhooks](/zombies/webhooks), [skills](/zombies/authoring), [templates](/zombies/templates).
+  New pages: [overview](/agents/overview), [install](/agents/install), [running](/agents/running), [credentials](/agents/credentials), [webhooks](/agents/webhooks), [skills](/agents/authoring), [templates](/agents/templates).
 </Update>
 
 <Update label="Apr 18, 2026" tags={["New", "API", "Security"]}>
@@ -1398,7 +1432,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   Every per-agent webhook flows through one fail-closed middleware that handles URL-embedded secrets, Bearer tokens, HMAC signatures, and Svix multi-signature rotation with constant-time comparisons.
 
-  Seven providers ship first-class: **agentmail**, **Grafana**, **Slack**, **GitHub**, **Linear**, **Jira**, and **Clerk** (via Svix). Onboarding takes one field in `TRIGGER.md`; secrets are workspace-vaulted and rotate without an agent redeploy. See [Webhooks](/zombies/webhooks).
+  Seven providers ship first-class: **agentmail**, **Grafana**, **Slack**, **GitHub**, **Linear**, **Jira**, and **Clerk** (via Svix). Onboarding takes one field in `TRIGGER.md`; secrets are workspace-vaulted and rotate without an agent redeploy. See [Webhooks](/agents/webhooks).
 </Update>
 
 <Update label="Apr 16, 2026" tags={["New", "API", "UI"]}>

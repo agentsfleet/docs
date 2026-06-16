@@ -1,12 +1,12 @@
 ---
 title: 'API Reference'
-description: 'usezombie Control Plane API — deploy, observe, and control agents programmatically.'
+description: 'agentsfleet Control Plane API — deploy, observe, and control agents programmatically.'
 ---
 
 ## Base URL
 
 ```
-https://api.usezombie.com
+https://api.agentsfleet.net
 ```
 
 ## Authentication
@@ -14,14 +14,14 @@ https://api.usezombie.com
 All API endpoints require a Bearer token in the `Authorization` header, except health checks and the initial auth session creation.
 
 ```bash
-curl https://api.usezombie.com/v1/workspaces/ws_abc/zombies \
-  -H "Authorization: Bearer $ZOMBIE_TOKEN"
+curl https://api.agentsfleet.net/v1/workspaces/0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50/agents \
+  -H "Authorization: Bearer $AGENTSFLEET_TOKEN"
 ```
 
 Two kinds of bearer token are accepted:
 
-- **Tenant API key (`zmb_t_…`)** — long-lived, for programmatic and service-to-service callers (CI, cron, integrations, scripts). Create one in the dashboard under **Settings → API keys**; the raw value is shown once. This is the right credential for calling the API directly.
-- **User JWT** — short-lived (~15 min), for an interactive human. Mint one with `zombiectl login`, a browser device flow with terminal-side verification. It can't be obtained by a bare API client — the flow needs the dashboard's browser leg — so for unattended access use a tenant API key.
+- **Tenant API key (`agt_t…`)** — long-lived, for programmatic and service-to-service callers (CI, cron, integrations, scripts). Create one in the dashboard under **Settings → API keys**; the raw value is shown once. This is the right credential for calling the API directly.
+- **User JWT** — short-lived (~15 min), for an interactive human. Mint one with `agentsfleet login`, a browser device flow with terminal-side verification. It can't be obtained by a bare API client — the flow needs the dashboard's browser leg — so for unattended access use a tenant API key.
 
 ## Errors
 
@@ -29,11 +29,11 @@ All errors use RFC 7807 problem detail (`Content-Type: application/problem+json`
 
 ```json
 {
-  "docs_uri": "https://docs.usezombie.com/api-reference/error-codes#UZ-WORKSPACE-001",
+  "docs_uri": "https://docs.agentsfleet.net/api-reference/error-codes#UZ-WORKSPACE-001",
   "title": "Workspace not found",
   "detail": "No workspace with the given ID exists.",
   "error_code": "UZ-WORKSPACE-001",
-  "request_id": "req_01JQ7K..."
+  "request_id": "0198a7b6-1f2a-7d53-8c94-2b7e5a1f9d40"
 }
 ```
 
@@ -43,7 +43,7 @@ Error codes follow the `UZ-<DOMAIN>-NNN` scheme in the `error_code` field. Every
 
 - **IDs** are UUIDv7.
 - **Timestamps** are Unix milliseconds.
-- **State transitions** are partial updates on the parent resource (e.g., `PATCH /v1/workspaces/{workspace_id}/zombies/{zombie_id}` with body `{status: "stopped"}`). Sub-resources (e.g., `/messages`, `/events`, `/events/stream`) handle data-flow operations.
+- **State transitions** are partial updates on the parent resource (e.g., `PATCH /v1/workspaces/{workspace_id}/agents/{agent_id}` with body `{status: "stopped"}`). Sub-resources (e.g., `/messages`, `/events`, `/events/stream`) handle data-flow operations.
 - **Streaming endpoints** (activity stream) return Server-Sent Events.
 
 ## Rate limits
@@ -53,7 +53,7 @@ API rate limits are per-workspace. If you hit a rate limit, the response include
 <Card
   title="OpenAPI Spec"
   icon="code"
-  href="https://raw.githubusercontent.com/usezombie/usezombie/main/public/openapi.json"
+  href="https://raw.githubusercontent.com/agentsfleet/agentsfleet/main/public/openapi.json"
 >
   View the full OpenAPI 3.1 specification
 </Card>

@@ -2,7 +2,7 @@
 
 ## About this project
 
-- This is the usezombie documentation site built on [Mintlify](https://mintlify.com)
+- This is the agentsfleet documentation site built on [Mintlify](https://mintlify.com)
 - Pages are MDX files with YAML frontmatter
 - Configuration lives in `docs.json`
 - Run `mint dev` to preview locally on port 3000
@@ -12,7 +12,7 @@
 
 ## Terminology
 
-- Use "agent" (lowercase) for the product noun — the always-on agent process. "zombie" is legacy terminology; do not use it in new prose (brand/code tokens like `usezombie`, `zombiectl`, `zombied`, `zmb_`, `zombie_id`, and `/zombies/` paths stay)
+- Use "agent" (lowercase) for the product noun — the always-on agent process. "agent" is legacy terminology; do not use it in new prose (brand/code tokens like `agentsfleet`, `agentsfleet`, `agentsfleetd`, `zmb_`, `agent_id`, and `/agents/` paths stay)
 - Use "workspace" not "project"
 - Use "skill" for a named capability an agent can invoke (agentmail, slack, github, ...)
 - Use "trigger" for how an agent receives events (today: webhook)
@@ -25,9 +25,9 @@
 - Use "runner" for the execution-plane process that sandboxes and runs an agent — not "executor"
 - Use "agent" not "bot" or "AI"
 - Use "PR" not "pull request" (except on first mention per page)
-- Use `zombiectl` in code formatting when referring to CLI commands
-- Use `zombied` in code formatting when referring to server processes
-- Use "Dashboard" (capitalized in headings, lowercase "dashboard" in body prose) for the web app at `app.usezombie.com`. The earlier aspirational name for this surface is retired — do not reintroduce it.
+- Use `agentsfleet` in code formatting when referring to CLI commands
+- Use `agentsfleetd` in code formatting when referring to server processes
+- Use "Dashboard" (capitalized in headings, lowercase "dashboard" in body prose) for the web app at `app.agentsfleet.net`. The earlier aspirational name for this surface is retired — do not reintroduce it.
 
 Forbidden terminology: `spec`, `stage`, `gate loop`, `scorecard`. These refer to a v1 product surface that has been removed. Do not introduce them into new pages. (`run`/`runs` are now the v2 execution unit — see Terminology above.)
 
@@ -51,10 +51,10 @@ Forbidden terminology: `spec`, `stage`, `gate loop`, `scorecard`. These refer to
 
 ## When closing out a feature PR in the lead repo (companion docs flow)
 
-A landing PR in any lead repo (`usezombie`, `zombiectl`, the website, the app) almost always drifts the docs site. Before the lead-repo PR flips ready-for-review:
+A landing PR in any lead repo (`agentsfleet`, `agentsfleet`, the website, the app) almost always drifts the docs site. Before the lead-repo PR flips ready-for-review:
 
 1. **Review the lead PR's changed files.** Every public-surface change is a candidate doc edit — HTTP request/response shape, CLI subcommand or flag, frontmatter schema, error code, env var, default value, response field, pricing / billing copy, dashboard flow.
-2. **Identify the `.mdx` pages that drift.** Grep this docs repo for the old field name, old YAML shape, old subcommand, old copy. Common candidates: `quickstart.mdx`, `cli/*.mdx`, `zombies/*.mdx` (especially `authoring.mdx`, `webhooks.mdx`, `install.mdx`, `running.mdx`), `api-reference/*.mdx`, `billing/*.mdx`, `snippets/rates.mdx`, `concepts/*.mdx`.
+2. **Identify the `.mdx` pages that drift.** Grep this docs repo for the old field name, old YAML shape, old subcommand, old copy. Common candidates: `quickstart.mdx`, `cli/*.mdx`, `agents/*.mdx` (especially `authoring.mdx`, `webhooks.mdx`, `install.mdx`, `running.mdx`), `api-reference/*.mdx`, `billing/*.mdx`, `snippets/rates.mdx`, `concepts/*.mdx`.
 3. **Update the relevant pages.** Fix examples, tables, and prose. Preserve load-bearing detail (`UZ-XXX-NNN` error codes, endpoint paths, env var names, schema column names, money amounts). Don't rewrite past entries; only touch pages that no longer describe what shipped.
 4. **Add a `changelog.mdx` `<Update>` block** at the top, after the leading `<Tip>`. Section order is fixed: Upgrading → What's new → API reference → Bug fixes → CLI. Voice rules: lead with the change, no marketing words, no milestone IDs / spec filenames / `RULE XXX` references. Date label `MMM DD, YYYY`, no semver prefix. Two entries on the same date get distinct titles (no disambiguator suffix needed) or a merged block.
 5. **All four steps land on a dedicated docs-repo branch** — `chore/m{N}-{slug}-changelog` off `main`. Do not commit docs changes on the lead-repo feature branch (it's a separate repository) and do not commit on `main` directly. Open the docs PR alongside the lead PR so reviewers can cross-link the two.
@@ -63,10 +63,10 @@ The rule applies to every milestone PR, not just trigger/CLI ones — schema mig
 
 ## Design system colors
 
-{/* SYNC SOURCE: ~/Projects/usezombie/ui/packages/design-system/src/tokens.css
+{/* SYNC SOURCE: ~/Projects/agentsfleet/ui/packages/design-system/src/tokens.css
      When touching colors in this repo (docs.json, logos, custom CSS), always
      verify values against the canonical design-system tokens first.
-     Run: grep -E "^  --(pulse|bg|surface|text|success|warn|error|info|evidence)" ~/Projects/usezombie/ui/packages/design-system/src/tokens.css
+     Run: grep -E "^  --(pulse|bg|surface|text|success|warn|error|info|evidence)" ~/Projects/agentsfleet/ui/packages/design-system/src/tokens.css
 
      Heritage `--z-orange` palette retired in M64 (Operational Restraint
      rollout). Anything still referencing `#d96b2b` / `--z-orange` is stale. */}

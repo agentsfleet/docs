@@ -13,7 +13,7 @@ my-agent/
 └── TRIGGER.md    # machine-readable config + deployment metadata
 ```
 
-`zombiectl install <template>` scaffolds both. This page is the reference for authoring your own.
+`agentsfleet install <template>` scaffolds both. This page is the reference for authoring your own.
 
 ## `SKILL.md` — agent instructions
 
@@ -28,7 +28,7 @@ description: Diagnoses platform health from fly.io and upstash, posts to Slack.
 version: 0.1.0                     # required, semver
 when_to_use: ...                   # optional
 tags: [platform-ops, diagnostics]  # optional
-author: usezombie                  # optional
+author: agentsfleet                  # optional
 model: claude-sonnet-4-6           # optional, hint
 ---
 ```
@@ -87,7 +87,7 @@ always frame as "leading hypothesis" and let the human decide.
 ---
 name: platform-ops-agent   # top level — must match SKILL.md `name:`
 
-x-usezombie:                # all runtime config nests under this key
+x-agentsfleet:                # all runtime config nests under this key
   triggers:                 # array, 1–8 entries; one agent can wake on many sources
     - type: api             # operator chats via /steer; events arrive as event_type: chat
   tools:
@@ -120,22 +120,22 @@ x-usezombie:                # all runtime config nests under this key
 | Field | Required | Purpose |
 |---|---|---|
 | `name` | yes | Identity. Must equal `SKILL.md` `name:`. |
-| `x-usezombie` | yes | Runtime config block. Required subkeys below. |
+| `x-agentsfleet` | yes | Runtime config block. Required subkeys below. |
 
-Top-level keys other than `name`/`x-*` are accepted silently. Runtime keys (`tools`, `credentials`, `network`, `budget`, `trigger`) **must not** appear at the top level — they belong inside `x-usezombie:`.
+Top-level keys other than `name`/`x-*` are accepted silently. Runtime keys (`tools`, `credentials`, `network`, `budget`, `trigger`) **must not** appear at the top level — they belong inside `x-agentsfleet:`.
 
-### `x-usezombie:` subkeys
+### `x-agentsfleet:` subkeys
 
 Validation under this block is rigid: an unknown subkey is rejected with a typo hint. All listed subkeys are required unless marked optional.
 
 | Subkey | Required | Purpose |
 |---|---|---|
-| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install (`ERR_ZOMBIE_INVALID_CONFIG: use "triggers:" (array)`). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
+| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
 | `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
-| `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{zombie_id}/{source}` — see [Webhooks](/zombies/webhooks). |
+| `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{agent_id}/{source}` — see [Webhooks](/agents/webhooks). |
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
 | `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
-| `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/zombies/tools). |
+| `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/agents/tools). |
 | `credentials` | optional | Vault key names the agent reads at event time. |
 | `network.allow` | yes | Outbound hostname allowlist enforced by the sandbox. |
 | `budget.daily_dollars` | yes | Rolling 24-hour dollar ceiling. |
@@ -145,11 +145,11 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 | YAML value | Wakes from | Use when | Companion fields |
 |---|---|---|---|
-| `webhook` | An external HTTP `POST` to `https://api.usezombie.com/v1/webhooks/{zombie_id}/{source}` with a signed body. | Most production agents — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/zombies/webhooks). |
+| `webhook` | An external HTTP `POST` to `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}` with a signed body. | Most production agents — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/agents/webhooks). |
 | `cron` | A self-scheduled timer the agent sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per agent. |
-| `api` | A `zombiectl steer` invocation or a `POST /v1/.../zombies/{id}/messages` API call. | Steerable, operator-driven agents — manual investigation, on-demand workflows, the install-time smoke test. | None. |
+| `api` | A `agentsfleet steer` invocation or a `POST /v1/.../agents/{id}/messages` API call. | Steerable, operator-driven agents — manual investigation, on-demand workflows, the install-time smoke test. | None. |
 
-An agent can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any agent can also be steered via `zombiectl steer` regardless of declared triggers — steer always works. The `api` type is for agents whose *primary* surface is steer (no inbound webhook).
+An agent can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any agent can also be steered via `agentsfleet steer` regardless of declared triggers — steer always works. The `api` type is for agents whose *primary* surface is steer (no inbound webhook).
 
 <Note>**Long-run continuations are not a trigger type.** When a run exhausts its context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
@@ -157,11 +157,11 @@ An agent can declare up to eight triggers and wake on any of them — e.g. one w
 
 The `tools:` list is the explicit allowlist of tools the agent may invoke. A compromised or jailbroken agent cannot reach outside this list.
 
-23 tools are user-callable today, grouped by category — network (`http_request`, `web_search`, `web_fetch`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), agent orchestration (`delegate`, `spawn`, `schedule`), browser, git, file edits, and stateless utilities. **See [Tools catalogue](/zombies/tools) for every tool with its purpose and use cases.**
+23 tools are user-callable today, grouped by category — network (`http_request`, `web_search`, `web_fetch`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), agent orchestration (`delegate`, `spawn`, `schedule`), browser, git, file edits, and stateless utilities. **See [Tools catalogue](/agents/tools) for every tool with its purpose and use cases.**
 
 ### Credentials
 
-Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are credential references — **not** tool names. The tool bridge resolves the named credential at `http_request` time and substitutes its fields into outbound calls; the agent sees the response, never the raw secret. Add and rotate via [Credentials](/zombies/credentials).
+Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are credential references — **not** tool names. The tool bridge resolves the named credential at `http_request` time and substitutes its fields into outbound calls; the agent sees the response, never the raw secret. Add and rotate via [Credentials](/agents/credentials).
 
 ### Network allowlist
 
@@ -180,17 +180,17 @@ A breach terminates the in-flight event cleanly and records a `budget_breach` en
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `RuntimeKeysOutsideBlock` at install | `tools:`, `credentials:`, etc. at the top of TRIGGER.md | Indent them under `x-usezombie:`. |
-| `UnknownRuntimeKey` at install | Typo in a runtime subkey (e.g. `crendentials:` instead of `credentials:`) | Fix the spelling, or remove the key. Validation under `x-usezombie:` is strict. |
+| `RuntimeKeysOutsideBlock` at install | `tools:`, `credentials:`, etc. at the top of TRIGGER.md | Indent them under `x-agentsfleet:`. |
+| `UnknownRuntimeKey` at install | Typo in a runtime subkey (e.g. `crendentials:` instead of `credentials:`) | Fix the spelling, or remove the key. Validation under `x-agentsfleet:` is strict. |
 | `name_mismatch` at install | SKILL.md and TRIGGER.md disagree on `name:` | One identity per bundle. Make both top-level `name:` values equal. |
 | `MissingRequiredField` for SKILL.md | `name`, `description`, or `version` missing from SKILL.md frontmatter | All three are required at the top level. |
 
 ## Validation
 
-`zombiectl install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses. Errors are returned with the field at fault.
+`agentsfleet install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses. Errors are returned with the field at fault.
 
 ```bash
-zombiectl install --from ./my-agent
+agentsfleet install --from ./my-agent
 ```
 
 ```
@@ -202,10 +202,10 @@ zombiectl install --from ./my-agent
 ## Next
 
 <CardGroup cols={2}>
-  <Card title="Bundled templates" icon="layer-group" href="/zombies/templates">
+  <Card title="Bundled templates" icon="layer-group" href="/agents/templates">
     See the anatomy of the flagship `platform-ops` sample.
   </Card>
-  <Card title="Webhooks" icon="webhook" href="/zombies/webhooks">
+  <Card title="Webhooks" icon="webhook" href="/agents/webhooks">
     Authentication modes and approval gates in depth.
   </Card>
 </CardGroup>

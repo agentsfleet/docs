@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "usezombie",
+  "name": "agentsfleet",
   "appearance": {
     "default": "dark"
   },
@@ -48,15 +48,15 @@
           {
             "group": "Agents",
             "pages": [
-              "zombies/overview",
-              "zombies/install",
-              "zombies/running",
-              "zombies/credentials",
-              "zombies/webhooks",
-              "zombies/authoring",
-              "zombies/tools",
-              "zombies/templates",
-              "zombies/troubleshooting"
+              "agents/overview",
+              "agents/install",
+              "agents/running",
+              "agents/credentials",
+              "agents/webhooks",
+              "agents/authoring",
+              "agents/tools",
+              "agents/templates",
+              "agents/troubleshooting"
             ]
           },
           {
@@ -77,7 +77,7 @@
             "group": "CLI reference",
             "pages": [
               "cli/install",
-              "cli/zombiectl",
+              "cli/agentsfleet",
               "cli/flags",
               "cli/configuration"
             ]
@@ -92,7 +92,7 @@
       },
       {
         "tab": "API reference",
-        "openapi": "https://raw.githubusercontent.com/usezombie/usezombie/main/public/openapi.json",
+        "openapi": "https://raw.githubusercontent.com/agentsfleet/agentsfleet/main/public/openapi.json",
         "groups": [
           {
             "group": "Overview",
@@ -158,7 +158,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/agent-keys",
               "POST /v1/workspaces/{workspace_id}/agent-keys",
-              "DELETE /v1/workspaces/{workspace_id}/agent-keys/{agent_id}"
+              "DELETE /v1/workspaces/{workspace_id}/agent-keys/{agent_key_id}"
             ]
           },
           {
@@ -181,47 +181,47 @@
           {
             "group": "Agents",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/zombies",
-              "POST /v1/workspaces/{workspace_id}/zombies",
-              "PATCH /v1/workspaces/{workspace_id}/zombies/{zombie_id}",
-              "DELETE /v1/workspaces/{workspace_id}/zombies/{zombie_id}"
+              "GET /v1/workspaces/{workspace_id}/agents",
+              "POST /v1/workspaces/{workspace_id}/agents",
+              "PATCH /v1/workspaces/{workspace_id}/agents/{agent_id}",
+              "DELETE /v1/workspaces/{workspace_id}/agents/{agent_id}"
             ]
           },
           {
             "group": "Agent messages",
             "pages": [
-              "POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages"
+              "POST /v1/workspaces/{workspace_id}/agents/{agent_id}/messages"
             ]
           },
           {
             "group": "Agent memories",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories"
+              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/memories"
             ]
           },
           {
             "group": "Agent events",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/events",
-              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/events/stream"
+              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/events",
+              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/events/stream"
             ]
           },
           {
             "group": "Integration grants",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/integration-grants",
-              "POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/integration-requests",
-              "DELETE /v1/workspaces/{workspace_id}/zombies/{zombie_id}/integration-grants/{grant_id}"
+              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-grants",
+              "POST /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-requests",
+              "DELETE /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-grants/{grant_id}"
             ]
           },
           {
             "group": "Webhooks",
             "pages": [
-              "POST /v1/webhooks/svix/{zombie_id}",
-              "POST /v1/webhooks/{zombie_id}",
-              "POST /v1/webhooks/{zombie_id}/approval",
-              "POST /v1/webhooks/{zombie_id}/github",
-              "POST /v1/webhooks/{zombie_id}/grant-approval"
+              "POST /v1/webhooks/svix/{agent_id}",
+              "POST /v1/webhooks/{agent_id}",
+              "POST /v1/webhooks/{agent_id}/approval",
+              "POST /v1/webhooks/{agent_id}/github",
+              "POST /v1/webhooks/{agent_id}/grant-approval"
             ]
           },
           {
@@ -239,17 +239,17 @@
       "anchors": [
         {
           "anchor": "Website",
-          "href": "https://usezombie.com",
+          "href": "https://agentsfleet.net",
           "icon": "globe"
         },
         {
           "anchor": "GitHub",
-          "href": "https://github.com/usezombie/usezombie",
+          "href": "https://github.com/agentsfleet/agentsfleet",
           "icon": "github"
         },
         {
           "anchor": "Contributing",
-          "href": "https://github.com/usezombie/usezombie#contributing",
+          "href": "https://github.com/agentsfleet/agentsfleet#contributing",
           "icon": "code-pull-request"
         }
       ]
@@ -267,13 +267,13 @@
       },
       {
         "label": "Talk to us",
-        "href": "https://usezombie.com/contact/sales"
+        "href": "https://agentsfleet.net/contact/sales"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Get early access",
-      "href": "https://app.usezombie.com"
+      "href": "https://app.agentsfleet.net"
     }
   },
   "contextual": {
@@ -290,7 +290,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/usezombie",
+      "github": "https://github.com/agentsfleet",
       "discord": "https://discord.gg/H9hH2nqQjh"
     }
   },

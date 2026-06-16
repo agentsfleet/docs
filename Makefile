@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 .PHONY: dev lint test _lint-openapi-drift
 
-OPENAPI_URL ?= https://raw.githubusercontent.com/usezombie/usezombie/main/public/openapi.json
+OPENAPI_URL ?= https://raw.githubusercontent.com/agentsfleet/agentsfleet/main/public/openapi.json
 
 dev:
 	npx mintlify dev

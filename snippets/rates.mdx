@@ -1,5 +1,5 @@
 {/*
-  Single source of truth for usezombie pricing strings on the docs site.
+  Single source of truth for agentsfleet pricing strings on the docs site.
 
   Mirrors the canonical Zig + TS + JS rate constants identifier-for-identifier
   (cross-tier parity rule):
@@ -7,7 +7,7 @@
                                               RUN_NANOS_PER_SEC
     - ui/packages/website/src/lib/rates.ts  — same names, bigint nanos values
     - ui/packages/app/lib/types.ts          — same names, JS Number nanos values
-    - zombiectl/src/constants/billing.js    — same names, JS Number nanos values
+    - cli/src/constants/billing.js    — same names, JS Number nanos values
 
   The keys below are the display strings keyed by role name. Bumping a rate
   requires a paired PR across the lead repo's rate constants AND this snippet —

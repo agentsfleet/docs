@@ -1,6 +1,6 @@
 ---
 title: "Install"
-description: "Install the zombiectl CLI."
+description: "Install the agentsfleet CLI."
 ---
 
 ## Install
@@ -14,37 +14,37 @@ description: "Install the zombiectl CLI."
     Run the following command in your terminal:
 
     ```bash
-    npm install -g @usezombie/zombiectl
+    npm install -g @agentsfleet/cli
     ```
 
     Use `npx` to run without a global install:
 
     ```bash
-    npx @usezombie/zombiectl --help
+    npx @agentsfleet/cli --help
     ```
   </Step>
 </Steps>
 
 ## Agent Skills
 
-The `usezombie-install-platform-ops` skill is the guided install UX driven from a host agent (Claude Code, Amp, Codex CLI, OpenCode). Add the skills with one command:
+The `agentsfleet-install-platform-ops` skill is the guided install UX driven from a host agent (Claude Code, Amp, Codex CLI, OpenCode). Add the skills with one command:
 
 ```bash
-npx skills add usezombie/skills
+npx skills add agentsfleet/skills
 ```
 
-This symlinks the `/usezombie-*` slash commands from the public [`usezombie/skills`](https://github.com/usezombie/skills) repo into every supported host's skill directory it detects on your machine — invoke `/usezombie-install-platform-ops` in your agent and you're set. Pass `--host=<claude|amp|codex|opencode>` to target a single host instead of every detected one.
+This symlinks the `/agentsfleet-*` slash commands from the public [`agentsfleet/skills`](https://github.com/agentsfleet/skills) repo into every supported host's skill directory it detects on your machine — invoke `/agentsfleet-install-platform-ops` in your agent and you're set. Pass `--host=<claude|amp|codex|opencode>` to target a single host instead of every detected one.
 
 <Tip>
-  **No global install?** `curl -fsSL https://usezombie.sh | bash` installs `zombiectl` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://usezombie.sh` without `| bash` to read it first.
+  **No global install?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
 </Tip>
 
-The skill drives `zombiectl install --from`, `zombiectl credential`, `zombiectl steer`, `zombiectl logs`, and the doctor preflight under the hood. See [Quickstart](/quickstart) for the end-to-end flow.
+The skill drives `agentsfleet install --from`, `agentsfleet credential`, `agentsfleet steer`, `agentsfleet logs`, and the doctor preflight under the hood. See [Quickstart](/quickstart) for the end-to-end flow.
 
 ## Verify installation
 
 ```bash
-zombiectl --version
+agentsfleet --version
 ```
 
 ## Check connectivity
@@ -52,7 +52,7 @@ zombiectl --version
 Run the built-in diagnostics command to verify API connectivity, auth status, and local configuration:
 
 ```bash
-zombiectl doctor
+agentsfleet doctor
 ```
 
 `doctor` runs three checks and exits non-zero if any fails. It does **not** require authentication and never short-circuits — every check runs and reports:
@@ -60,7 +60,7 @@ zombiectl doctor
 | Check | Verifies |
 |---|---|
 | `server_reachable` | `GET /healthz` against the configured API URL returns `{ "status": "ok" }` within 5s. |
-| `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `zombiectl login` from your signup-provisioned default workspace; can also be set or replaced by `zombiectl workspace add` / `workspace use`. |
+| `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `agentsfleet login` from your signup-provisioned default workspace; can also be set or replaced by `agentsfleet workspace add` / `workspace use`. |
 | `workspace_binding_valid` | The resolved auth token can read the selected workspace's agents — i.e. it is bound to the right tenant. Reports a failed check (rather than aborting) when no token is present. |
 
-Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight. For the tenant's inference posture and free-trial window, use [`zombiectl tenant provider show`](/cli/zombiectl#tenant-provider).
+Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight. For the tenant's inference posture and free-trial window, use [`agentsfleet tenant provider show`](/cli/agentsfleet#tenant-provider).
