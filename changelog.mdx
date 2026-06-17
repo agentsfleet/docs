@@ -22,6 +22,20 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 17, 2026" tags={["Breaking", "API"]}>
+  ## Invalid gate conditions are rejected at write time
+
+  A gate rule whose `condition` is not a valid expression now fails `agent create` / `agent patch` with `400 UZ-APPROVAL-005` instead of being accepted and silently firing the gate on every matching action. Conditions must read `field == 'value'` or `field != 'value'` (single-quoted).
+
+  - **`UZ-APPROVAL-005` is now raised** — a malformed `gates[].condition` in `TRIGGER.md` (or a directly-supplied `config_json`) returns `400` at create/patch; it previously parsed and over-gated at run time, which could mass-pause an `auto_kill` rule. Fix the expression and re-install.
+  - **Installed agents keep running** — the runtime parser stays lenient, so an agent stored before this change still loads; only new writes are validated.
+  - **`UZ-APPROVAL-004` now appears in logs** — when the approval gate fails closed because Redis is unreachable, the default-deny carries the registry code for tracing.
+
+  ## Error-codes reference
+
+  The [error-codes reference](/api-reference/error-codes) now lists exactly the codes `agentsfleetd` can emit. The full runner control-plane (`UZ-RUN-*`), runner-engine (`UZ-EXEC-*`), CLI login (`UZ-AUTH-011`–`UZ-AUTH-021`), API-key (`UZ-APIKEY-*`), and LLM-provider (`UZ-PROVIDER-*`) codes are documented; codes with no producer (`UZ-BILLING-*`, `UZ-WORKSPACE-*`, and the retired `UZ-MEM-001`) were removed. Cross-workspace memory access returns `UZ-MEM-002` / `404`, never a `403` — resource existence is not leaked.
+</Update>
+
 <Update label="Jun 15, 2026" tags={["Breaking", "What's new", "API", "CLI"]}>
   ## The product is now agentsfleet
 
