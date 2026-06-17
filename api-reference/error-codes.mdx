@@ -74,7 +74,7 @@ The device-style flow behind `agentsfleet login` (verification code + dashboard 
 | `UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit code did not match what the dashboard issued |
 | `UZ-AUTH-012` | 410 | Login session already consumed | Session already used — re-run `agentsfleet login` |
 | `UZ-AUTH-013` | 410 | Login session aborted | Too many wrong codes, explicit cancel, or replaced by a newer session |
-| `UZ-AUTH-014` | 410 | Login session not approved | Not yet approved in the dashboard |
+| `UZ-AUTH-014` | 410 | Login session not approved | Session window closed before dashboard approval — re-run `agentsfleet login` to start a new session |
 | `UZ-AUTH-015` | 409 | Login session already approved | `/approve` was called a second time |
 | `UZ-AUTH-016` | 400 | Invalid CLI public key | `public_key` malformed — expect base64url-encoded P-256 SubjectPublicKeyInfo |
 | `UZ-AUTH-017` | 400 | Invalid token name | `token_name` must be 1–64 characters of printable ASCII |
@@ -89,7 +89,7 @@ Tenant- and workspace-scoped API keys (`agt_t` / `agt_a` prefixes) managed via `
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGENT-001` | 404 | Agent key not found | Agent key not found. Verify the `agent_key_id`. |
+| `UZ-AGENT-001` | 404 | Agent key not found | Agent key (`agt_a`) lookup — verify the `agent_key_id`. Distinct namespace from the tenant `UZ-APIKEY-*` codes below. |
 | `UZ-APIKEY-001` | 401 | Invalid API key | Key is invalid or revoked |
 | `UZ-APIKEY-003` | 404 | API key not found | No key matches the supplied id for this tenant. Verify with `GET /v1/api-keys`. |
 | `UZ-APIKEY-004` | 401 | API key has been revoked | Revoked key can no longer authenticate. Mint a replacement with `POST /v1/api-keys`. |
