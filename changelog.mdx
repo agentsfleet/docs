@@ -51,6 +51,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Update routes and wire fields** — `…/zombies/{zombie_id}/…` is now `…/agents/{agent_id}/…`, and the `zombie_id` field is `agent_id`. The `/agents` collection replaces `/zombies`.
   - **Re-read entity error codes** — `UZ-ZMB-*` codes are now `UZ-AGT-*` (a 404 on a missing agent is `UZ-AGT-009`). `UZ-AUTH-*` codes are unchanged.
   - **Re-mint raw tokens** — prefixes are now role-symmetric: agent keys start `agt_a` (was `zmb_a`), tenant API keys `agt_t` (was `zmb_t`), runner tokens `agt_r` (was `zmb_r`). Tokens minted under the old prefixes no longer validate.
+  - **Re-point Prometheus dashboards and alerts** — every `zombie_*` metric is renamed: agent-entity metrics are now `agent_*` (e.g. `agent_duration_seconds`, `agent_tokens_total`), fleet/runner metrics `agentsfleet_runner_*`, daemon metrics `agentsfleetd_*`. Queries on the old names return no data silently — panels go blank and alerts stop firing, with no error.
 
   ## What's new
 
