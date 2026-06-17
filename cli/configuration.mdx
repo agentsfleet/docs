@@ -32,7 +32,7 @@ Every **other command** then resolves its token, and the order is TTY-aware:
 |----------|---------|---------|
 | `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
 | `AGENTSFLEET_TOKEN` | Auth token (for CI and scripts; user-bound, from `agentsfleet login`) | *(from `agentsfleet login`)* |
-| `AGENTSFLEET_API_KEY` | Service auth (machine-bound, from `agentsfleet agent add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
+| `AGENTSFLEET_API_KEY` | Service auth (machine-bound, from `agentsfleet agent-key add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
 | `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/agentsfleet` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
