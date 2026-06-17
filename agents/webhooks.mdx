@@ -143,14 +143,4 @@ agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
 
 Rejected requests carry a reason code (`webhook_rejected: signature_mismatch`, etc.) so you can tell a noisy upstream from a real auth bug.
 
-## Advanced: URL-embedded secret
-
-Some upstreams (a few SaaS form-postbacks, a few legacy systems) can't attach a signature header. For those, the platform accepts a path-embedded secret:
-
-```
-https://api.agentsfleet.net/v1/webhooks/{agent_id}/{url_secret}
-```
-
-The `url_secret` is matched in constant time. Reserved segments (`approval`, `grant-approval`, `svix`) cannot be used as secret values. Prefer HMAC where the upstream supports it — the URL-embedded form is a fallback.
-
-**Path resolution order.** The trailing segment is resolved against declared `triggers[].source` values *first*, then falls back to a `url_secret` lookup. So `POST /v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github` routes to the `github` source when the agent declares one, and only searches `url_secret` values for a constant-time match on the literal string `github` when no such source is declared. Practical consequence: avoid choosing a `url_secret` value that collides with any `triggers[].source` on the same agent — the source wins and the secret will never match.
+The platform accepts webhooks only with a valid signature (HMAC or Svix) or the per-source path (`/github`, `/approval`, `/grant-approval`, `/svix`). There is no URL-embedded-secret fallback.

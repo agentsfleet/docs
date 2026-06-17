@@ -11,7 +11,7 @@ description: "Complete agentsfleet command reference."
 | Agents (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
-| External agents | `agent add`, `agent list`, `agent delete` |
+| External agents | `agent-key add`, `agent-key list`, `agent-key delete` |
 | Integration grants | `grant list`, `grant delete` |
 | Billing | `billing show` |
 | Diagnostics | `doctor` |
@@ -294,30 +294,30 @@ agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 
 External agents are API-key–authenticated callers (LangGraph, CrewAI, Composio, your own code) that drive a specific agent programmatically.
 
-### `agentsfleet agent add`
+### `agentsfleet agent-key add`
 
 Mint an API key bound to one agent.
 
 ```bash
-agentsfleet agent add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-agent
+agentsfleet agent-key add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-agent
 ```
 
 The raw key (`agt_a…`) is returned **once**; store it in your secret manager.
 
-### `agentsfleet agent list`
+### `agentsfleet agent-key list`
 
 List every external agent key in a workspace.
 
 ```bash
-agentsfleet agent list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
+agentsfleet agent-key list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
 
-### `agentsfleet agent delete <agent-key-id>`
+### `agentsfleet agent-key delete <agent-key-id>`
 
 Revoke an external agent key.
 
 ```bash
-agentsfleet agent delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
+agentsfleet agent-key delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
 ```
 
 ---
@@ -380,7 +380,7 @@ agentsfleet tenant provider show
 agentsfleet tenant provider show --json
 ```
 
-### `agentsfleet tenant provider set`
+### `agentsfleet tenant provider add`
 
 Activate a self-managed credential for the tenant. The credential must already exist in the workspace vault (`agentsfleet credential add <name>`). The command validates the credential structure, resolves the model's context cap from the `cap.json` endpoint, and pins both into the tenant's provider row.
 
@@ -389,17 +389,17 @@ Activate a self-managed credential for the tenant. The credential must already e
 agentsfleet credential add account-fireworks --data='{"provider":"fireworks","api_key":"fw_…","model":"accounts/fireworks/models/kimi-k2.6"}'
 
 # 2. Activate it for the tenant
-agentsfleet tenant provider set --credential account-fireworks
+agentsfleet tenant provider add --credential account-fireworks
 ```
 
 In-flight events finish under the snapshot they were claimed under; the next event's debits use the new posture.
 
-### `agentsfleet tenant provider reset`
+### `agentsfleet tenant provider delete`
 
 Drop the explicit `tenant_providers` row and fall back to the platform-managed synth-default.
 
 ```bash
-agentsfleet tenant provider reset
+agentsfleet tenant provider delete
 ```
 
 For the install-time vs trigger-time resolution flow, the frontmatter overlay sentinels, and the provider routing details, see [`docs/architecture/user_flow.md` §8.7](https://github.com/agentsfleet/agentsfleet/blob/main/docs/architecture/user_flow.md#87-model-and-context-cap-origin-platform-vs-self-managed) and [`docs/architecture/billing_and_provider_keys.md`](https://github.com/agentsfleet/agentsfleet/blob/main/docs/architecture/billing_and_provider_keys.md). The architecture is the canonical reference; this page is the command surface.
