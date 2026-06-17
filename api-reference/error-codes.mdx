@@ -25,6 +25,10 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | `error_code` | Machine-readable code. Use this for programmatic handling. |
 | `request_id` | Correlation ID for support and log tracing |
 
+<Note>
+Every code on this page is one `agentsfleetd` can actually emit — the list is generated from the server's error registry. Codes that no longer have a producer have been removed; if you have an old `docs_uri` anchor that 404s here, the code was retired.
+</Note>
+
 ---
 
 ## UUID validation
@@ -58,48 +62,61 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | `UZ-AUTH-004` | 503 | Authentication service unavailable | OIDC provider unreachable |
 | `UZ-AUTH-005` | 404 | Session not found | Auth session ID not found or already expired |
 | `UZ-AUTH-006` | 401 | Session expired | Auth session timed out before completion |
-| `UZ-AUTH-007` | 409 | Session already complete | Auth session was already resolved |
-| `UZ-AUTH-008` | 503 | Session limit reached | Too many concurrent auth sessions. Retry shortly. |
 | `UZ-AUTH-009` | 403 | Insufficient role | Token role is too low for this endpoint |
 | `UZ-AUTH-010` | 403 | Unsupported role | Token contains an unrecognized role claim |
 
-## Workspace
+## CLI login
+
+The device-style flow behind `agentsfleet login` (verification code + dashboard approval, then an encrypted token hand-off).
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-WORKSPACE-001` | 404 | Workspace not found | No workspace with this ID exists |
-| `UZ-WORKSPACE-002` | 402 | Workspace paused | Workspace billing is paused. Update payment. |
-| `UZ-WORKSPACE-003` | 402 | Workspace free limit reached | Free-tier execution limit reached. Upgrade plan. |
+| `UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit code did not match what the dashboard issued |
+| `UZ-AUTH-012` | 410 | Login session already consumed | Session already used — re-run `agentsfleet login` |
+| `UZ-AUTH-013` | 410 | Login session aborted | Too many wrong codes, explicit cancel, or replaced by a newer session |
+| `UZ-AUTH-014` | 410 | Login session not approved | Not yet approved in the dashboard |
+| `UZ-AUTH-015` | 409 | Login session already approved | `/approve` was called a second time |
+| `UZ-AUTH-016` | 400 | Invalid CLI public key | `public_key` malformed — expect base64url-encoded P-256 SubjectPublicKeyInfo |
+| `UZ-AUTH-017` | 400 | Invalid token name | `token_name` must be 1–64 characters of printable ASCII |
+| `UZ-AUTH-018` | 400 | Invalid verification code shape | `verification_code` must be exactly 6 ASCII digits |
+| `UZ-AUTH-019` | 400 | Invalid ciphertext | `ciphertext` missing or empty — expect base64url-encoded AES-256-GCM output |
+| `UZ-AUTH-020` | 400 | Invalid nonce | `nonce` missing, empty, or wrong length — expect a base64url-encoded 12-byte value |
+| `UZ-AUTH-021` | 403 | Platform-admin privileges required | Action restricted to agentsfleet platform operators |
 
-## Billing
+## API keys
 
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-BILLING-001` | 400 | Invalid subscription ID | Subscription ID format is invalid |
-| `UZ-BILLING-002` | 500 | Billing state missing | Workspace has no billing record |
-| `UZ-BILLING-003` | 500 | Billing state invalid | Workspace billing record is in an inconsistent state |
-| `UZ-BILLING-004` | 400 | Invalid billing event | Billing webhook payload is malformed or unknown |
-| `UZ-BILLING-005` | 402 | Credit exhausted | Workspace has no remaining execution credit |
-
-## Scoring
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-SCORING-001` | 400 | Invalid scoring context | Scoring context tokens are invalid. Check the context_tokens field. |
-
-## Entitlement
+Tenant- and workspace-scoped API keys (`agt_t` / `agt_a` prefixes) managed via `/v1/api-keys`.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-ENTL-001` | 503 | Entitlement service unavailable | Could not verify plan entitlements |
-| `UZ-ENTL-003` | 402 | Run limit reached | Plan does not allow more pipeline runs |
-| `UZ-ENTL-004` | 403 | Skill not allowed | Plan does not include this skill |
+| `UZ-AGENT-001` | 404 | Agent key not found | Agent key not found. Verify the `agent_key_id`. |
+| `UZ-APIKEY-001` | 401 | Invalid API key | Key is invalid or revoked |
+| `UZ-APIKEY-003` | 404 | API key not found | No key matches the supplied id for this tenant. Verify with `GET /v1/api-keys`. |
+| `UZ-APIKEY-004` | 401 | API key has been revoked | Revoked key can no longer authenticate. Mint a replacement with `POST /v1/api-keys`. |
+| `UZ-APIKEY-005` | 409 | Key name already exists in this tenant | `key_name` must be unique per tenant |
+| `UZ-APIKEY-006` | 409 | API key is already revoked | No further action required |
+| `UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | Re-activation is not supported. Create a new key, then revoke the old one. |
+| `UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke the key first (PATCH `active: false`), then DELETE |
 
-## Pipeline v1 removed
+## LLM provider
+
+Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) — how the runner resolves a model API key.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-RUNS-410` | 410 | Pipeline v1 permanently removed | Pipeline v1 has been permanently removed. All `/v1/runs/*` and `/v1/specs` endpoints return 410 Gone. Use the agent event model instead. |
+| `UZ-PROVIDER-001` | 400 | credential_ref required when mode=self_managed | PUT body must name a vault `credential_ref` when `mode` is `self_managed` |
+| `UZ-PROVIDER-002` | 400 | Credential row not found in vault | The named `credential_ref` has no vault row in the tenant's primary workspace |
+| `UZ-PROVIDER-003` | 400 | Credential JSON missing required field | Stored credential must include `provider`, `api_key`, and `model` (all non-empty) |
+| `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_caps`. Pick one from the model-caps endpoint. |
+
+## API limits
+
+Load-shedding on a saturated API instance — back off and retry.
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-API-001` | 429 | Too many in-flight requests | Instance is at its in-flight request ceiling and is shedding load |
+| `UZ-API-002` | 503 | Event-stream capacity reached | Instance is serving its maximum number of concurrent event streams |
 
 ## Webhook
 
@@ -107,7 +124,6 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 |---|---|---|---|
 | `UZ-WH-001` | 404 | Agent not found for webhook | Webhook routing found no matching agent |
 | `UZ-WH-002` | 400 | Malformed webhook | Webhook body is missing required fields |
-| `UZ-WH-003` | 403 | Agent paused | Agent exists but is not active |
 | `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
 | `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this agent's source. Run `agentsfleet credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the agent's workspace, then resend. |
@@ -117,45 +133,30 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-TOOL-004` | 400 | Tool not attached | The tool isn't in this agent's `tools:` list. Add it to `TRIGGER.md` `x-agentsfleet.tools:` and re-install. |
 | `UZ-TOOL-005` | 400 | Unknown tool | Tool name not recognized — typo against the [Tools catalogue](/agents/tools) is the usual cause. |
 
 <Note>
-**Registered, not always emitted.** The two `UZ-TOOL-*` codes are registered in the platform's error registry but, in v2 today, the user-facing failure path for a missing or misspelled tool is a NullClaw-level "no such tool" message in the activity stream rather than one of these wire codes. Treat the codes as authoritative for *meaning* if you do see them, but don't expect them as the primary signal — audit `agentsfleet logs <agent_id>` for the actual error text.
+**Registered, not always emitted.** `UZ-TOOL-005` is registered, but in v2 today a missing or misspelled tool usually surfaces as a NullClaw-level "no such tool" message in the activity stream rather than this wire code. Treat the code as authoritative for *meaning* if you see it, but audit `agentsfleet logs <agent_id>` for the actual error text.
 </Note>
 
 ## Agent
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGT-001` | 402 | Agent budget exceeded | Daily dollar budget hit. Raise `budget.daily_dollars` in `TRIGGER.md`. |
-| `UZ-AGT-002` | 500 | Agent agent timeout | Agent timed out processing an event. Check the activity stream. |
 | `UZ-AGT-003` | 424 | Agent credential missing | A required vault credential is absent. Add it with `agentsfleet credential add <name>`. |
 | `UZ-AGT-004` | 500 | Agent claim failed | Agent could not be claimed from the database. Verify the `agent_id` exists and status is `active`. |
-| `UZ-AGT-005` | 500 | Agent checkpoint failed | Session checkpoint write to Postgres failed. |
 | `UZ-AGT-006` | 409 | Agent name already exists | Name taken. Kill the existing agent first, then re-install. |
 | `UZ-AGT-008` | 400 | Invalid agent config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
 | `UZ-AGT-009` | 404 | Agent not found | No agent with this ID in the workspace. |
 | `UZ-AGT-010` | 409 | Agent already stopped or killed | This agent is already stopped or killed. Re-install before issuing another stop. |
 | `UZ-AGT-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per agent bundle. |
-
-<Note>`UZ-AGT-007` is retired; oversized credential bodies now return [`UZ-VAULT-002`](#vault).</Note>
+| `UZ-AGT-012` | 409 | Agent is paused | Agent is not active and refuses new work. Resume with `agentsfleet resume <agent>`, then retry. |
 
 ## Integration grants
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-GRANT-001` | 403 | No integration grant for service | This agent has no approved grant for the target service. Request one with `POST /v1/agents/{id}/integration-requests`. |
-| `UZ-GRANT-002` | 403 | Integration grant pending approval | A grant request for this service is pending human approval. Approve in Slack, Discord, or the dashboard. |
-| `UZ-GRANT-003` | 403 | Integration grant denied | The grant for this service was denied or revoked by the workspace owner. Re-request via the host agent. |
-
-## Gate
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-GATE-001` | 500 | Gate command failed | A gate command (make lint/test/build) failed. Check the gate results for stdout/stderr output. |
-| `UZ-GATE-002` | 504 | Gate command timed out | A gate command exceeded its timeout. Increase GATE_TOOL_TIMEOUT_MS or optimize the command. |
-| `UZ-GATE-003` | 500 | Gate repair attempts exhausted | Agent exhausted all repair attempts without passing gates. Review gate results for the repeated failure pattern. |
 
 ## Approval gate
 
@@ -165,16 +166,8 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | `UZ-APPROVAL-002` | 404 | Approval not found | Approval action not found or already resolved |
 | `UZ-APPROVAL-003` | 401 | Approval invalid signature | Slack signature or timestamp verification failed |
 | `UZ-APPROVAL-004` | 503 | Approval Redis unavailable | Gate service down; default-deny applied |
-| `UZ-APPROVAL-005` | 400 | Approval condition invalid | Gate condition expression is invalid |
-
-## Credentials
-
-These fire on the inference path — when the runner needs to call the model and can't resolve a usable LLM provider key. Not the same as workspace vault credentials your agent uses for `http_request` (those are [`UZ-VAULT-*`](#vault) and [`UZ-AGT-003`](#agent)).
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-CRED-001` | 503 | Anthropic API key missing | Workspace LLM API key not found in `vault.secrets` (key: `anthropic_api_key`). Set via the workspace credentials API, or set `ANTHROPIC_API_KEY` in the environment for dev. |
-| `UZ-CRED-003` | 503 | Platform LLM key missing | No active platform-managed LLM key for the resolved provider. The platform admin must rotate the key, or your tenant must attach its own via the workspace credentials API. |
+| `UZ-APPROVAL-005` | 400 | Approval condition invalid | Gate condition is invalid. Use `field == 'value'` or `field != 'value'` (single-quoted). |
+| `UZ-APPROVAL-006` | 409 | Approval already resolved | Resolved earlier by Slack, dashboard, or auto-timeout. Original outcome + resolver in body. |
 
 ## Vault
 
@@ -187,43 +180,60 @@ These fire on the inference path — when the runner needs to call the model and
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-MEM-001` | 403 | Memory scope denied | Cross-agent memory access attempted. Memory operations are scoped per `agent_id`. |
-| `UZ-MEM-002` | 404 | Agent not found for memory op | The `agent_id` on the memory call does not exist in the workspace. |
+| `UZ-MEM-002` | 404 | Agent not found for memory op | The `agent_id` on the memory call does not exist in the workspace. A cross-workspace `agent_id` also returns this 404 (not a 403) so existence is not leaked. |
 | `UZ-MEM-003` | 503 | Memory backend unavailable | Memory store is unreachable. Retry the trigger; if persistent, file an issue. |
-
-## Relay
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-RELAY-001` | 400 | No LLM provider configured | Workspace has no LLM credentials configured |
 
 ## Startup
 
+`agentsfleetd` refuses to start when these fail — they surface in the process log, not over the API.
+
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run 'agentsfleetd doctor' to see which ones. |
+| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run `agentsfleetd doctor` to see which ones. |
 | `UZ-STARTUP-002` | 500 | Config load failed | Configuration failed to load. Check that all required env vars are set. |
-| `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that DATABASE_URL is set and the database accepts connections. |
-| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that REDIS_URL_API is set. |
+| `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that `DATABASE_URL` is set and the database accepts connections. |
+| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that `REDIS_URL_API` is set. |
 | `UZ-STARTUP-005` | 500 | Migration check failed | Database migration state could not be verified. Check DB connectivity. |
-| `UZ-STARTUP-007` | 500 | Redis group creation failed | Redis connected but consumer group creation failed. Check Redis ACL permissions. |
+| `UZ-STARTUP-006` | 500 | Startup env allocation failed | An environment variable could not be allocated at startup (out of memory). |
 
-## Runner
+## Runner engine
+
+Execution-path failures from the sandboxed runner engine.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-EXEC-001` | 500 | Execution session create failed | Execution session creation failed. Check runner availability. |
 | `UZ-EXEC-002` | 500 | Run start failed | Run failed to start. Check runner configuration. |
-| `UZ-EXEC-003` | 500 | Execution timeout kill | Execution exceeded the timeout limit and was killed. |
+| `UZ-EXEC-003` | 500 | Execution timeout kill | Execution exceeded the wall-clock timeout and was killed. |
+| `UZ-EXEC-004` | 500 | Execution OOM kill | Execution exceeded its memory limit and was killed. |
+| `UZ-EXEC-005` | 500 | Execution resource kill | Execution exceeded a resource limit (e.g. cgroup PID cap) and was killed. |
+| `UZ-EXEC-006` | 500 | Execution transport loss | Connection to the execution transport was lost. |
+| `UZ-EXEC-007` | 500 | Execution lease expired | Execution lease expired. The task took too long to complete. |
+| `UZ-EXEC-008` | 500 | Execution renewal-terminated | The control plane stopped the lease mid-run (lease lost, max-runtime cap, or no credits) — a policy stop, kept distinct from a wall-clock timeout (`UZ-EXEC-003`). |
 | `UZ-EXEC-009` | 500 | Execution startup posture failure | Execution startup posture check failed. Verify runner security config. |
+| `UZ-EXEC-010` | 500 | Execution crash | The execution process crashed. Check logs for details. |
+| `UZ-EXEC-011` | 403 | Landlock policy deny | A Landlock (or seccomp) policy denied a filesystem or syscall operation. |
 | `UZ-EXEC-012` | 500 | Runner agent init failed | Runner agent initialization failed. Check configuration. |
 | `UZ-EXEC-013` | 500 | Runner agent run failed | Runner agent execution failed. Check logs for details. |
-| `UZ-EXEC-014` | 400 | Runner invalid config | Runner configuration is invalid. Check config_json fields. |
+| `UZ-EXEC-014` | 400 | Runner invalid config | Runner configuration is invalid. Check `config_json` fields. |
 
-## Slack plugin
+## Runner control plane
+
+The runner ↔ control-plane lease protocol (`/v1/runner/*`). Codes a runner host sees while claiming, renewing, or reporting a lease.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-SLACK-001` | 403 | Slack OAuth state invalid | OAuth state parameter mismatch — possible CSRF attempt. |
-| `UZ-SLACK-002` | 502 | Slack token exchange failed | Could not exchange OAuth code for bot token. Verify SLACK_CLIENT_SECRET is set. |
-| `UZ-SLACK-003` | 401 | Slack bot token expired | The Slack bot token has been revoked or expired. Reinstall agentsfleet to Slack. |
+| `UZ-RUN-001` | 401 | Invalid runner token | The Bearer `runner_token` is missing, malformed, or unrecognized. Re-register the runner. |
+| `UZ-RUN-005` | 409 | Stale fencing token | The lease was reclaimed by a newer holder; this report is rejected and the current holder's result wins. |
+| `UZ-RUN-006` | 404 | Lease not found | No active lease matches this `lease_id` for the presenting runner — expired, reclaimed, or never existed. |
+| `UZ-RUN-007` | 500 | Sandbox establishment failed | The runner could not establish the required sandbox (Landlock/cgroup/netns); the lease was refused fail-closed rather than run unconfined. |
+| `UZ-RUN-009` | 401 | Runner admin state blocks access | This runner is cordoned, draining, drained, or revoked. Re-enroll the host to mint a fresh runner token. |
+| `UZ-RUN-010` | 409 | Lease exceeded max runtime | The lease reached the hard maximum runtime and may not be renewed further; the run is terminated. |
+| `UZ-RUN-011` | 409 | Lease lost | The lease was reassigned to another runner before this renewal; the presenting runner must terminate its child. |
+| `UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant's balance can no longer cover continued execution; the lease may not be renewed and the run terminates gracefully. |
+| `UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed; token counts default to zero (the lease is still renewed). |
+| `UZ-RUN-014` | 404 | Runner not found | No runner matches this `runner_id`. Verify the platform admin minted the runner before mutating it. |
+
+## Removed surfaces
+
+Pipeline v1 (`/v1/runs/*`, `/v1/specs`) was permanently removed — those endpoints now return **404** (the pre-2.0 convention), not a dedicated code. Use the agent event model instead. Webhook delivery to a paused agent, cross-agent memory scope, and the legacy CLI login error-map no longer have dedicated codes either; the live equivalents are `UZ-AGT-012` (paused), `UZ-MEM-002` (memory scope → 404), and the typed CLI login codes above.
