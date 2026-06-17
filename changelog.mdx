@@ -22,6 +22,19 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 17, 2026" tags={["What's new", "UI"]}>
+  ## The website explains agentsfleet as one resident-engineer loop
+
+  agentsfleet.net now describes the product as a single loop a resident engineer runs: a first signal becomes a recurring problem class, then a scenario and test, then a fix pull request a human reviews before merge — so the same incident recurs less often. A hero pipeline diagram draws the loop end to end, replacing the earlier deploy-failure wake-on-event framing.
+
+  ## What's new
+
+  - **Hero pipeline diagram** — the home page shows the loop step by step (first signal → recurring problem class → scenario and test → fix pull request → human review → fewer repeats), with the human-approval gate marked explicitly.
+  - **Signal source strip** — names the categories the agent reads: Signals, Telemetry, Code, and Control plane.
+  - **Compounding-knowledge section and competition table** — describe how recurring problem classes accrue over time and how a resident engineer differs from a wrapper around a model.
+  - **Unchanged paths still work** — the install copy-row, the animated terminal, the per-second pricing section, and the `/pricing` and `/agents` routes behave exactly as before.
+</Update>
+
 <Update label="Jun 17, 2026" tags={["Breaking", "API"]}>
   ## Invalid gate conditions are rejected at write time
 
