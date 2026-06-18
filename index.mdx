@@ -13,7 +13,7 @@ A pull request lands. A deploy fails at 2am. Normally someone guesses from a sta
 
 A teammate owns the outcome instead. An **agent** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, it gathers the evidence, reasons over it, opens a scenario-backed fix, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move — holding at human approval before anything merges or ships.
 
-The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same agent is reachable via `agentsfleet steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
+`platform-ops` is **one** prebuilt teammate, and more keep joining the fleet — code review, incident triage, security review. It wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same agent is reachable via `agentsfleet steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
 
 ## Get started
 
