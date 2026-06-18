@@ -267,13 +267,13 @@
       },
       {
         "label": "Talk to us",
-        "href": "https://agentsfleet.net/contact/sales"
+        "href": "mailto:agentsfleet@agentmail.to?subject=Talk%20to%20us"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Get early access",
-      "href": "https://app.agentsfleet.net"
+      "href": "https://accounts.agentsfleet.net/waitlist"
     }
   },
   "contextual": {
