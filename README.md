@@ -6,9 +6,9 @@
   <img src="logo/dark.svg" width="200" alt="agentsfleet" />
 </picture>
 
-**A resident engineer for your support escalations.**
+**A fleet of prebuilt AI teammates for recurring engineering work.**
 
-Takes a ticket through investigation across your code, telemetry, and live control-plane state. Proposes a fix, waits for human approval, then ships it or drafts the customer reply. Runs against a durable, replayable log — posts evidenced answers, never chats.
+Each one wakes on an event — a pull request, an incident, a deploy — investigates across your code, telemetry, and live control-plane state, opens a scenario-backed fix, and waits for human approval before it ships or drafts the customer reply. Runs against a durable, replayable log — posts evidenced answers, never chats.
 
 [![Docs](https://img.shields.io/badge/agentsfleet-Docs-5EEAD4?style=for-the-badge)](https://docs.agentsfleet.net)
 [![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-5EEAD4?style=for-the-badge)](https://agentsfleet.net)

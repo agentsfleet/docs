@@ -1,17 +1,17 @@
 ---
-title: "Your deploy failed. The agent already knows why."
-description: "agentsfleet is an open runtime that owns operational outcomes — an agent wakes on your events, gathers evidence from your own systems, posts a diagnosis with proof, and keeps a replayable log of every move it made."
+title: "A fleet, ready to run."
+description: "agentsfleet is a fleet of prebuilt AI teammates for recurring engineering work — each one wakes on an event, gathers evidence from your own systems, opens a scenario-backed fix, and holds at human approval. Every move is a replayable log."
 ---
 
-<Warning>
-  **Stealth-mode testing.** agentsfleet is in private alpha — APIs and agent behavior may change without long deprecation windows. Want a hand calibrating an agent or to join as a design partner? Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to).
-</Warning>
+<Card title="Get early access →" icon="rocket" href="https://accounts.agentsfleet.net/waitlist" horizontal>
+  agentsfleet is in early access. Join the waitlist to get in — or email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) to come on as a design partner.
+</Card>
 
-## The 2am problem
+## A teammate that owns the outcome
 
-A deploy fails at 2am. Your on-call engineer is asleep, so someone guesses from a stack trace and ships a patch on hope. By morning the context is gone — no record of what was tried, evidence scattered across CI, logs, dashboards, and chat.
+A pull request lands. A deploy fails at 2am. Normally someone guesses from a stack trace and ships a patch on hope — and by morning the context is gone, evidence scattered across CI, logs, dashboards, and chat.
 
-agentsfleet owns the outcome instead. An **agent** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, the agent gathers the evidence, reasons over it, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move it made.
+A teammate owns the outcome instead. An **agent** is a durable runtime described in two markdown files — `SKILL.md` (the senior engineer's playbook in prose) plus `TRIGGER.md` (which tools the agent can reach and which events wake it). When a trigger fires, it gathers the evidence, reasons over it, opens a scenario-backed fix, posts an evidenced diagnosis to your Slack channel, and keeps a replayable log of every move — holding at human approval before anything merges or ships.
 
 The flagship `platform-ops` wakes on a GitHub Actions deploy failure, pulls workflow logs + your hosting provider's app state + your data-plane's health, and posts a one-paragraph diagnosis with a leading hypothesis. The same agent is reachable via `agentsfleet steer` for a manual investigation. The runtime is open source, you bring your own model and pay your provider directly, and the agent never sees your raw keys — only `${secrets.NAME.FIELD}` placeholders, swapped for real values outside the sandbox.
 
