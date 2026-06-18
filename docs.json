@@ -113,7 +113,12 @@
             "group": "Authentication",
             "pages": [
               "POST /v1/auth/sessions",
-              "GET /v1/auth/sessions/{session_id}"
+              "GET /v1/auth/sessions/{session_id}",
+              "PATCH /v1/auth/sessions/{session_id}/approve",
+              "POST /v1/auth/sessions/{session_id}/verify",
+              "DELETE /v1/auth/sessions/{session_id}",
+              "DELETE /v1/auth/sessions/all",
+              "POST /v1/auth/identity-events/clerk"
             ]
           },
           {
@@ -143,7 +148,23 @@
             "group": "Billing",
             "pages": [
               "GET /v1/tenants/me/billing",
-              "GET /v1/tenants/me/billing/charges"
+              "GET /v1/tenants/me/billing/charges",
+              "GET /v1/tenants/me/billing/charges/{event_id}/telemetry"
+            ]
+          },
+          {
+            "group": "Fleet",
+            "pages": [
+              "POST /v1/runners",
+              "GET /v1/fleet/runners",
+              "PATCH /v1/fleet/runners/{id}",
+              "GET /v1/fleet/runners/{id}/events"
+            ]
+          },
+          {
+            "group": "Model Catalogue",
+            "pages": [
+              "GET /_um/da5b6b3810543fe108d816ee972e4ff8/cap.json"
             ]
           },
           {
