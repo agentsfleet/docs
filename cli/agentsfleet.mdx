@@ -9,11 +9,14 @@ description: "Complete agentsfleet command reference."
 |-------|----------|
 | Authentication | `login`, `logout`, `auth status` |
 | Agents (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
+| Agents (in-place update) | `agent update --from` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
+| Memory | `memory list`, `memory search` |
 | External agents | `agent-key add`, `agent-key list`, `agent-key delete` |
 | Integration grants | `grant list`, `grant delete` |
 | Billing | `billing show` |
+| Tenant provider | `tenant provider show`, `tenant provider add`, `tenant provider delete` |
 | Diagnostics | `doctor` |
 
 Every command accepts the [global flags](/cli/flags). Every command that returns structured data supports `--json` for machine-readable output.
@@ -95,6 +98,18 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
 The `samples/` directory ships with `agentsfleet` and contains the flagship `platform-ops` sample. The host-agent install skill (`/agentsfleet-install-platform-ops`) drives this command under the hood. See [Quickstart](/quickstart) and [Templates](/agents/templates).
+
+### `agentsfleet agent update <agent_id> --from <path>`
+
+Re-parse `SKILL.md` and `TRIGGER.md` from a local bundle and `PATCH` them onto an existing agent — the in-place counterpart to `install`. Use it to roll a configuration change onto an already-registered agent without re-creating it.
+
+```bash
+agentsfleet agent update 01900000-0000-7000-8000-000000000001 --from ~/.config/agentsfleet/samples/platform-ops
+```
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--from <path>` | *(required)* | Local bundle whose `SKILL.md` + `TRIGGER.md` are re-parsed and patched onto the agent. |
 
 ### `agentsfleet list`
 
@@ -287,6 +302,41 @@ Delete a workspace and everything in it. Stops accepting new events immediately,
 ```bash
 agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
+
+---
+
+## Memory
+
+A read-only window into an agent's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; agents write their own memory during runs.
+
+### `agentsfleet memory list`
+
+List memory entries newest-first.
+
+```bash
+agentsfleet memory list --agent 01900000-0000-7000-8000-000000000001
+```
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--agent <id>` | *(active)* | Agent whose memory to read. |
+| `--category <name>` | *(all)* | Filter to a single memory category. |
+| `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
+| `--workspace <id>` | *(active)* | Override the active workspace for this call. |
+
+### `agentsfleet memory search <query>`
+
+Substring-search keys and content across an agent's memory.
+
+```bash
+agentsfleet memory search "deploy" --agent 01900000-0000-7000-8000-000000000001
+```
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--agent <id>` | *(active)* | Agent whose memory to search. |
+| `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
+| `--workspace <id>` | *(active)* | Override the active workspace for this call. |
 
 ---
 
