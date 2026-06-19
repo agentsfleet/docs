@@ -8,16 +8,15 @@ description: "Configuration precedence and environment variables."
 `agentsfleet login` decides which token to **store**, highest priority first:
 
 1. **`--token <value>`** — login-only flag
-2. **`AGENTSFLEET_TOKEN`** environment variable
-3. **Piped stdin** — token read from a pipe
-4. **Browser device flow** — interactive terminals only
+2. **Piped stdin** — token read from a pipe
+3. **Browser device flow** — interactive terminals only
 
-Every **other command** then resolves its token, and the order is TTY-aware:
+Every **other command** then resolves which bearer to send:
 
-- **Interactive terminal** — `AGENTSFLEET_TOKEN` wins over stored credentials, so an env var you just exported overrides a possibly-stale file.
-- **Non-interactive (CI, cron, pipes)** — stored credentials (written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json`) win, falling back to `AGENTSFLEET_TOKEN` only when no file exists.
+- **`AGENTSFLEET_API_KEY`** (a service API key) wins whenever it is set — an exported key overrides whatever `agentsfleet login` stored, so machines and CI authenticate as that key.
+- Otherwise the **stored credentials** written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json` are used.
 
-`--token` is not accepted on commands other than `login`; use the `AGENTSFLEET_TOKEN` env var for one-off overrides in scripts.
+`--token` is not accepted on commands other than `login`; set `AGENTSFLEET_API_KEY` for non-interactive script and CI auth.
 
 ## API URL precedence
 
@@ -32,8 +31,7 @@ Every **other command** then resolves its token, and the order is TTY-aware:
 |----------|---------|---------|
 | `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
 | `AGENTSFLEET_DASHBOARD_URL` | Dashboard base URL — used for the login verification page. | `https://app.agentsfleet.net` |
-| `AGENTSFLEET_TOKEN` | Auth token (for CI and scripts; user-bound, from `agentsfleet login`) | *(from `agentsfleet login`)* |
-| `AGENTSFLEET_API_KEY` | Service auth (machine-bound, from `agentsfleet agent-key add`). Use this for service-to-service calls and external agents (LangGraph, CrewAI, Composio, your own code). | — |
+| `AGENTSFLEET_API_KEY` | Service auth (machine-bound). Sent as the bearer and **overrides a stored `login` session**. Use this for CI, service-to-service calls, and external agents (LangGraph, CrewAI, Composio, your own code). | — |
 | `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/agentsfleet` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
@@ -67,9 +65,9 @@ Either env variable forces consent to `denied` regardless of the persisted value
 
 ## CI usage
 
-In CI environments, set `AGENTSFLEET_TOKEN` from your secrets manager and use `--no-input` for non-interactive operation:
+In CI environments, set `AGENTSFLEET_API_KEY` from your secrets manager and use `--no-input` for non-interactive operation:
 
 ```bash
-export AGENTSFLEET_TOKEN="$AGENTSFLEET_SECRET"
+export AGENTSFLEET_API_KEY="$AGENTSFLEET_SECRET"
 agentsfleet status --no-input --json
 ```

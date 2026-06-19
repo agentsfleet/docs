@@ -40,7 +40,7 @@ agentsfleet login --token-name "kishore-macbook"
 
 ```bash
 # Non-interactive (CI, scripts): supply a token instead of the browser flow
-AGENTSFLEET_TOKEN="$MY_TOKEN" agentsfleet login
+agentsfleet login --token "$MY_TOKEN"
 # …or pipe it so it never lands in shell history
 printf '%s' "$MY_TOKEN" | agentsfleet login
 ```
@@ -49,13 +49,13 @@ After the token persists, `login` also fetches `GET /v1/tenants/me/workspaces` a
 
 Flags:
 
-- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer the `AGENTSFLEET_TOKEN` env var or piping the token on stdin to keep it out of your shell history. `--token-name` is ignored for any non-browser token source — `--token`, the `AGENTSFLEET_TOKEN` env var, or piped stdin — since there's no browser session to label.
+- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer piping the token on stdin to keep it out of your shell history. `--token-name` is ignored for any non-browser token source — `--token` or piped stdin — since there's no browser session to label.
 - `--token-name <label>` — human-readable device label persisted alongside the token. Defaults to your platform family (`macos-cli`, `linux-cli`, `windows-cli`). Shows up on the dashboard approval page (so you know which terminal you're approving for) and in `agentsfleet auth status`.
 - `--no-open` — print the auth URL instead of opening a browser automatically.
 - `--force` — skip the "you're already logged in as `<name>`, replace?" prompt.
-- `--no-input` — fail fast instead of prompting for the verification code. Supply a token non-interactively via `--token`, the `AGENTSFLEET_TOKEN` env var, or piped stdin.
+- `--no-input` — fail fast instead of prompting for the verification code. Supply a token non-interactively via `--token` or piped stdin.
 
-`agentsfleet login` resolves a token in priority order — the `--token` flag, then the `AGENTSFLEET_TOKEN` environment variable, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with none of those set. A non-interactive shell (`--no-input`, or no terminal) with no token exits immediately with an error instructing you to supply one via `--token`, `AGENTSFLEET_TOKEN`, or piped stdin — the verification code can't be entered without a terminal.
+`agentsfleet login` resolves a token in priority order — the `--token` flag, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with neither set. A non-interactive shell (`--no-input`, or no terminal) with no token exits immediately with an error instructing you to supply one via `--token` or piped stdin — the verification code can't be entered without a terminal. For unattended machine auth that doesn't log in at all, set `AGENTSFLEET_API_KEY` (it overrides a stored login on every command).
 
 The login session lives 5 minutes; an unfinished approval expires automatically. The verification code's 6-digit shape is checked locally before it's sent, so a typo just re-prompts. Wrong (but well-formed) code attempts cap at 5 per session — a sixth wrong code aborts the session and you re-run `agentsfleet login`.
 
@@ -67,11 +67,11 @@ Removes local credentials (`~/.config/agentsfleet/credentials.json`) and aborts 
 agentsfleet logout
 ```
 
-Does **NOT** revoke your active session token — JWTs are short-lived (~15 min) and expire on their own. Does **NOT** touch the `AGENTSFLEET_TOKEN` environment variable — if it's set, subsequent commands continue to use that token until you unset it.
+Does **NOT** revoke your active session token — JWTs are short-lived (~15 min) and expire on their own. Does **NOT** touch the `AGENTSFLEET_API_KEY` environment variable — if it's set, subsequent commands continue to authenticate with that key (it overrides a stored login) until you unset it.
 
 ### `agentsfleet auth status`
 
-Inspect the stored credential without re-authenticating. Resolves the token source (file vs `AGENTSFLEET_TOKEN` env vs none), decodes the JWT claims (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), surfaces the `token_name` label persisted at login, and probes `GET /v1/tenants/me/billing` to check the token is still accepted by the server.
+Inspect the active credential without re-authenticating. Resolves the token source (`AGENTSFLEET_API_KEY` env vs the stored login file vs none), decodes the login JWT's claims when present (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), surfaces the `token_name` label persisted at login, and probes `GET /v1/tenants/me/billing` to check the credential is still accepted by the server.
 
 ```bash
 agentsfleet auth status

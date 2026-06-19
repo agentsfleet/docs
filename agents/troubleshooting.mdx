@@ -177,13 +177,12 @@ Pass `--json` for the structured envelope: `{ ok: bool, api_url: string, checks:
 
 ### Auth resolution order
 
-If `agentsfleet` keeps acting unauthenticated, your token might be coming from somewhere unexpected. Resolution order, highest priority first:
+If `agentsfleet` keeps acting unauthenticated, your bearer might be coming from somewhere unexpected. Resolution order, highest priority first:
 
-1. `--token <value>` flag
-2. `AGENTSFLEET_TOKEN` environment variable
-3. Stored credentials at `~/.config/agentsfleet/credentials` (written by `agentsfleet login`)
+1. `AGENTSFLEET_API_KEY` environment variable (a service API key)
+2. Stored credentials at `~/.config/agentsfleet/credentials.json` (written by `agentsfleet login`)
 
-Unset `AGENTSFLEET_TOKEN` if you've been running CI scripts that exported it; otherwise it overrides whatever `agentsfleet login` wrote.
+Unset `AGENTSFLEET_API_KEY` if you've been running CI scripts that exported it; otherwise it overrides whatever `agentsfleet login` wrote.
 
 ## When to escalate
 
