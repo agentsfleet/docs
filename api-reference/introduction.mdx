@@ -1,6 +1,6 @@
 ---
 title: 'API Reference'
-description: 'agentsfleet Control Plane API — deploy, observe, and control agents programmatically.'
+description: 'agentsfleet Control Plane API — deploy, observe, and control fleets programmatically.'
 ---
 
 ## Base URL
@@ -14,7 +14,7 @@ https://api.agentsfleet.net
 All API endpoints require a Bearer token in the `Authorization` header, except health checks and the initial auth session creation.
 
 ```bash
-curl https://api.agentsfleet.net/v1/workspaces/0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50/agents \
+curl https://api.agentsfleet.net/v1/workspaces/0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50/fleets \
   -H "Authorization: Bearer $AGENTSFLEET_API_KEY"
 ```
 
@@ -43,7 +43,7 @@ Error codes follow the `UZ-<DOMAIN>-NNN` scheme in the `error_code` field. Every
 
 - **IDs** are UUIDv7.
 - **Timestamps** are Unix milliseconds.
-- **State transitions** are partial updates on the parent resource (e.g., `PATCH /v1/workspaces/{workspace_id}/agents/{agent_id}` with body `{status: "stopped"}`). Sub-resources (e.g., `/messages`, `/events`, `/events/stream`) handle data-flow operations.
+- **State transitions** are partial updates on the parent resource (e.g., `PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}` with body `{status: "stopped"}`). Sub-resources (e.g., `/messages`, `/events`, `/events/stream`) handle data-flow operations.
 - **Streaming endpoints** (activity stream) return Server-Sent Events.
 
 ## Rate limits

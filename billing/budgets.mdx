@@ -1,17 +1,17 @@
 ---
 title: "Budgets and cost control"
-description: "Per-agent dollar ceilings, tenant-wide spend caps, and how debits work."
+description: "Per-fleet dollar ceilings, tenant-wide spend caps, and how debits work."
 ---
 
-agentsfleet enforces budgets at two levels: per-agent ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
+agentsfleet enforces budgets at two levels: per-fleet ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
 
 <Note>
   **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://agentsfleet.net/pricing).
 </Note>
 
-## Per-agent ceilings (`daily_dollars` / `monthly_dollars`)
+## Per-fleet ceilings (`daily_dollars` / `monthly_dollars`)
 
-Every agent declares its own dollar ceilings in `TRIGGER.md`:
+Every fleet declares its own dollar ceilings in `TRIGGER.md`:
 
 ```yaml
 budget:
@@ -22,7 +22,7 @@ budget:
 - `daily_dollars` caps spend over a rolling 24-hour window.
 - `monthly_dollars` caps spend over the calendar month.
 
-When either ceiling is reached the agent stops processing new events and a budget breach is recorded in the activity stream. This is the first line of defence — one bad prompt never becomes an infinite burn on a single agent.
+When either ceiling is reached the fleet stops processing new events and a budget breach is recorded in the activity stream. This is the first line of defence — one bad prompt never becomes an infinite burn on a single fleet.
 
 Per-event token and wall-clock caps are internal runtime controls. They are not user-configurable in `TRIGGER.md` today.
 
@@ -43,7 +43,7 @@ Set a monthly spend cap on your tenant from the billing page at [app.agentsfleet
 Cancel an in-flight run at any time via CLI or API:
 
 ```bash
-agentsfleet kill <agent_id>
+agentsfleet kill <fleet_id>
 ```
 
 Cancelling stops the run at the next lease renewal. The run time already elapsed is metered and debited — cancelling doesn't refund the work done so far. See [Credit deduction timing](#credit-deduction-timing) below for the full rule.

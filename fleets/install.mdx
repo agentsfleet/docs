@@ -1,22 +1,22 @@
 ---
-title: "Installing an agent"
+title: "Installing a fleet"
 description: "What `agentsfleet install --from <path>` does and how to invoke it."
 ---
 
-`agentsfleet install --from <path>` is how you bring an agent up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
+`agentsfleet install --from <path>` is how you bring a fleet up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
 
 ```bash
 agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
 ```
-✓ platform-ops-agent is live.
-  Agent ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+✓ platform-ops-fleet is live.
+  Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
   Webhook URLs (register on the upstream provider):
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
-One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/agents/webhooks) if you maintain the upstream hook by hand.
+One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/fleets/webhooks) if you maintain the upstream hook by hand.
 
 Re-running against the same workspace is safe — running it twice has the same effect as running it once. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
@@ -48,6 +48,6 @@ For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/
 
 ## See also
 
-- [Templates](/agents/templates) — the catalogue of pre-built agents you can install.
-- [Authoring an agent](/agents/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
-- [Starting, observing, and stopping](/agents/running) — what to do after install.
+- [Templates](/fleets/templates) — the catalogue of pre-built fleets you can install.
+- [Authoring a fleet](/fleets/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
+- [Starting, observing, and stopping](/fleets/running) — what to do after install.

@@ -1,0 +1,147 @@
+---
+title: "Tools catalogue"
+description: "Every tool a fleet can declare in `TRIGGER.md`, what it does, and when to reach for it."
+---
+
+A **tool** is a named verb the fleet inside a run may invoke. Tools are declared in `TRIGGER.md` under `x-agentsfleet.tools:` — anything not on the list is unreachable, even if the model tries to call it. This page is the canonical catalogue.
+
+```yaml
+x-agentsfleet:
+  tools:
+    - http_request
+    - memory_recall
+    - memory_store
+    - cron_add
+```
+
+23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring a fleet](/fleets/authoring).
+
+## Network
+
+How a fleet talks to the outside world. Each network tool has a different relationship with `network.allow:` — read the column carefully before declaring one.
+
+| Tool | What it does | `network.allow:` enforced? | Reach for when |
+|---|---|---|---|
+| `http_request` | HTTPS calls (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`) to external APIs. The tool bridge substitutes credential references (`${secrets.NAME.FIELD}`) into headers and bodies outside the sandbox. Default response cap: 1 MB. | **Yes.** Off-list hosts dropped by the sandbox firewall before the request leaves. | Any third-party API. Slack, GitHub, Linear, your hosting provider, your monitoring — everything goes through this. |
+| `web_search` | Internet search across platform-managed providers (SearxNG, DuckDuckGo, Brave, Firecrawl, Tavily, Perplexity, Exa, Jina). The provider chain is hardcoded; the fleet picks among them with the `provider` argument. | **No.** Provider hosts aren't user-controllable, so they bypass `network.allow:` entirely. You don't list `searxng.org` etc. in your `network.allow:` — the platform handles that. | Open-web research during a run — finding a CVE writeup, looking up a stack trace, etc. |
+| `web_fetch` | Fetch an HTTPS page and convert it to readable markdown. | **No (today).** The tool is built with an empty allowlist on hosted v2, which NullClaw treats as allow-any-HTTPS. Don't rely on `network.allow:` to constrain `web_fetch` — if you need host scoping for fetched content, gate it through `http_request` instead. | Pulling docs, blog posts, status pages into the fleet's context without writing a custom HTML parser. |
+
+<Note>
+**Three different stories on one page.** The `network.allow:` list **only** governs `http_request`. `web_search` uses platform-managed search backends. `web_fetch` is currently unconstrained (no host filter) — this is a known limitation on hosted v2 and may tighten in a future release.
+</Note>
+
+## Memory
+
+Cross-run durable state. See [Memory](/memory) for the four-category model and key conventions.
+
+| Tool | What it does | Reach for when |
+|---|---|---|
+| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the fleet learned something worth keeping. |
+| `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every run, before reasoning. |
+| `memory_list` | Filter entries by category, tags, recency. | When the fleet doesn't know the exact key (e.g. "show me all open tickets"). |
+| `memory_forget` | Delete an entry. | Correcting stale facts; fed by `agentsfleet steer` corrections. |
+
+## Cron
+
+Self-scheduled future runs. The fleet sets these from inside the reasoning loop — useful for follow-ups, periodic health checks, and deferred work.
+
+| Tool | What it does |
+|---|---|
+| `cron_add` | Create a scheduled job. Takes either `expression` (cron syntax) or `delay` (`30m`, `2h`) plus a `command`. |
+| `cron_list` | List scheduled jobs with status and next run time. |
+| `cron_remove` | Delete a scheduled job by ID. |
+| `cron_update` | Update an existing job's expression, command, or enabled state. |
+| `cron_run` | Force-run a job immediately, regardless of schedule. |
+| `cron_runs` | Show execution history for a job. |
+
+## Fleet orchestration
+
+Lets one fleet hand work to another fleet. Powerful but advanced — most fleets won't need these.
+
+| Tool | What it does | Reach for when |
+|---|---|---|
+| `delegate` | Delegate a subtask to a specialized sub-fleet (potentially a different model). Synchronous — the parent waits for the result. | The subtask benefits from a stronger model, a different system prompt, or fresh context. |
+| `spawn` | Launch a background subagent asynchronously. Returns a task ID immediately; results arrive as system messages later. | Long-running fanout that shouldn't block the current run. |
+| `schedule` | Richer scheduler than `cron_*`. Supports shell `command` jobs and fleet `prompt` jobs, with optional channel routing. Actions: `create`, `once`, `list`, `get`, `cancel`, `pause`, `resume`. | When you need fleet-as-job (vs. just a shell command), or one-shot timers, or want results routed to a specific channel. |
+
+## Browser
+
+Three independently-declarable tools that look related but overlap awkwardly. **Most operational fleets should not declare these.** Prefer `http_request` for API calls and `web_fetch` for HTML extraction — both work cleanly on the headless cloud runner. The browser tools exist for desktop/local use cases that don't translate to hosted v2.
+
+| Tool | What it does | What it actually does on hosted v2 |
+|---|---|---|
+| `browser` | Multi-action verb. The schema advertises `open`, `screenshot`, `click`, `type`, `scroll`, `read` — but only `open` and `read` are functional. **`screenshot` redirects** to the standalone tool (`return ToolResult.fail("Use the screenshot tool instead")`). **`click`/`type`/`scroll` always fail** ("CDP not available"). `read` is a curl-based HTML fetcher capped at 8 KB. | `open` shells out to `open`/`xdg-open` on the runner host — no display on a headless cloud worker, so this no-ops or errors. `read` works but is inferior to `web_fetch`. |
+| `screenshot` | Independent tool. Captures the runner's screen via platform-native commands. Returns an `[IMAGE:path]` marker. | The hosted v2 runner is headless. There's no display to capture, and the tool reflects that — declare only if you're running a self-hosted runner with a display attached. |
+
+<Warning>
+**Declaring `browser` does NOT unlock `screenshot` capabilities.** They're independent tools; the sub-action name overlap is incidental. If you want a screen capture, declare `screenshot`. Declaring both `browser` and `screenshot` is fine — they don't conflict.
+</Warning>
+
+## Git
+
+Repository operations on the runner's workspace directory.
+
+| Tool | What it does |
+|---|---|
+| `git` | Structured wrapper for `status`, `diff`, `log`, `branch`, `commit`, `add`, `checkout`, `stash`. Constrained to the runner's workspace. |
+
+## File
+
+The fleet does not get a free shell or filesystem inside the sandbox. The one file tool exposed to fleets enforces hash-anchored edits to prevent silent overwrites.
+
+| Tool | What it does |
+|---|---|
+| `file_edit_hashed` | Replace lines in a file using Hashline anchors. Edits are rejected if the on-disk content has drifted from the hash the fleet saw — protects against concurrent-edit races. |
+
+## Stateless utilities
+
+Pure-function helpers — no side effects, no network, no state.
+
+| Tool | What it does |
+|---|---|
+| `image` | Read image metadata (format, dimensions, size). Capped at 5 MB. |
+| `calculator` | Arithmetic, logarithms, rounding, basic statistics. Use this rather than letting the model do math in prose — it's deterministic. |
+
+## Channel routing
+
+| Tool | What it does |
+|---|---|
+| `message` | Send a message to a channel. If `channel`/`chat_id` are omitted, posts to the current conversation. Supports attachment markers (`[FILE:...]`, `[DOCUMENT:...]`, `[IMAGE:...]`) on marker-aware channels. |
+
+## How tools, credentials, and the network allowlist combine
+
+Tools are the *what* (verbs the fleet may invoke). Credentials are the *what-with* (named secrets the tool bridge substitutes into outbound calls — see [Credentials](/fleets/credentials)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
+
+A working `http_request` to Slack needs all three:
+
+```yaml
+x-agentsfleet:
+  tools:
+    - http_request                    # the verb
+  credentials:
+    - slack                           # the secret (bot_token field)
+  network:
+    allow:
+      - slack.com                     # the destination
+```
+
+Drop any one and the call fails: missing tool → fleet can't even try; missing credential → tool bridge has nothing to substitute; missing host → firewall drops the request.
+
+## Validation
+
+`agentsfleet install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The fleet runs with the remaining tools.
+
+The practical consequences:
+
+- **Typos pass install.** Declaring `http_requesst:` (typo) won't fail `agentsfleet install --from`. Catch this by tailing `agentsfleet logs <fleet_id>` after the first event and looking for the skip warning, or by spotting tool calls in the activity stream that don't match what your `SKILL.md` prose expects.
+- **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
+- **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
+
+When the fleet tries to invoke a tool not in the fleet's resolved `tools:` set, the underlying fleet runtime returns a "no such tool" error to the fleet in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
+
+## See also
+
+- [Authoring a fleet](/fleets/authoring) — full `TRIGGER.md` schema.
+- [Memory](/memory) — the four memory categories and how recall/store fit a run.
+- [Credentials](/fleets/credentials) — adding the secrets the tool bridge substitutes.
+- [Webhooks](/fleets/webhooks) — wiring an external system to your fleet.
