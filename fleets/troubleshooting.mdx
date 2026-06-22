@@ -3,15 +3,15 @@ title: "Troubleshooting"
 description: "Common failure modes, the diagnostic command for each, and the fix."
 ---
 
-An agent that's misbehaving falls into one of six failure shapes. Find the symptom you're seeing and follow the diagnostic chain.
+A fleet that's misbehaving falls into one of six failure shapes. Find the symptom you're seeing and follow the diagnostic chain.
 
 ## Decision tree
 
 | Symptom | Most likely cause | Start here |
 |---|---|---|
 | `agentsfleet install --from` exits non-zero | Frontmatter validation failed | [§1 Install rejected](#1-install-rejected) |
-| Upstream says it sent the webhook, agent didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but agent silent](#2-webhook-delivered-but-agent-silent) |
-| Agent woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
+| Upstream says it sent the webhook, fleet didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but fleet silent](#2-webhook-delivered-but-fleet-silent) |
+| Fleet woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
 | Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
 | Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `agentsfleet` itself is broken (auth, network) | Local config or platform reachability | [§6 agentsfleet can't reach the platform](#6-agentsfleet-cant-reach-the-platform) |
@@ -21,14 +21,14 @@ An agent that's misbehaving falls into one of six failure shapes. Find the sympt
 `agentsfleet install --from <path>` exited with code `2`. The platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
 
 ```bash
-agentsfleet install --from ./my-agent --json 2>&1 | tail -5
+agentsfleet install --from ./my-fleet --json 2>&1 | tail -5
 ```
 
 The `--json` output carries the wire error code:
 
 | Wire code | Cause | Fix |
 |---|---|---|
-| `UZ-AGT-008` | `TRIGGER.md` config_json fails schema validation | Re-read [Authoring](/agents/authoring) §`x-agentsfleet:` subkeys. Common: a runtime key (`tools`, `credentials`, `network`) at the top level instead of nested under `x-agentsfleet:`. |
+| `UZ-AGT-008` | `TRIGGER.md` config_json fails schema validation | Re-read [Authoring](/fleets/authoring) §`x-agentsfleet:` subkeys. Common: a runtime key (`tools`, `credentials`, `network`) at the top level instead of nested under `x-agentsfleet:`. |
 | `UZ-AGT-011` | `SKILL.md` and `TRIGGER.md` disagree on top-level `name:` | Make both files' `name:` value identical. |
 | `UZ-VAULT-001` | Credential `data` body is empty / not a JSON object | The error is from a prior `credential add` call, not from `install` itself. Re-run `agentsfleet credential add <name> --data=@-` with a non-empty JSON object. |
 
@@ -36,7 +36,7 @@ For other codes, check [Error codes](/api-reference/error-codes) and grep for th
 
 **Local validation tip:** the parser the platform uses is the same one `agentsfleet install --from` runs — there's no separate lint command. To catch schema errors before committing, run `agentsfleet install --from <path> --json` and read the structured error output. Note the call still uploads on success; there is no `--validate-only` flag.
 
-## 2. Webhook delivered but agent silent
+## 2. Webhook delivered but fleet silent
 
 The upstream provider says it fired the webhook, your activity stream shows nothing.
 
@@ -44,7 +44,7 @@ The upstream provider says it fired the webhook, your activity stream shows noth
 
 ```bash
 # All webhook-actor events in the last hour, including rejected ones
-agentsfleet events <agent_id> --actor 'webhook:*' --since 1h --json
+agentsfleet events <fleet_id> --actor 'webhook:*' --since 1h --json
 ```
 
 Three things to look for in the output:
@@ -61,12 +61,12 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 
 | Wire code | HTTP | What to check |
 |---|---|---|
-| `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}` — verify the ID matches `agentsfleet status`. |
+| `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` — verify the ID matches `agentsfleet status`. |
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
-| `UZ-WH-003` | 403 | Agent is paused or killed. `agentsfleet status` will show the state; re-install with `agentsfleet install --from <path>`. |
+| `UZ-WH-003` | 403 | Fleet is paused or killed. `agentsfleet status` will show the state; re-install with `agentsfleet install --from <path>`. |
 | `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
-| `UZ-WH-020` | 401 | No webhook credential configured for this agent's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet credential list` to confirm; add with `agentsfleet credential add <source> --data=@-`. |
+| `UZ-WH-020` | 401 | No webhook credential configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet credential list` to confirm; add with `agentsfleet credential add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |
 
 ### Common signature config mistakes
@@ -82,7 +82,7 @@ signature:
   secret_ref: github
 ```
 
-For first-class providers (`github`, `slack`, `linear`), don't set `header` and `prefix` manually — the registry fills those. See [Webhooks → Natively normalized providers](/agents/webhooks#natively-normalized-providers).
+For first-class providers (`github`, `slack`, `linear`), don't set `header` and `prefix` manually — the registry fills those. See [Webhooks → Natively normalized providers](/fleets/webhooks#natively-normalized-providers).
 
 ## 3. Run opens then fails
 
@@ -91,23 +91,23 @@ The webhook landed and a run opened, but it terminated before producing output. 
 ### Diagnostic
 
 ```bash
-agentsfleet events <agent_id> --since 1h --json | jq 'select(.error)'
+agentsfleet events <fleet_id> --since 1h --json | jq 'select(.error)'
 ```
 
 | Wire code | Cause | Fix |
 |---|---|---|
 | `UZ-AGT-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet credential list` to confirm; `agentsfleet credential add <name> --data=@-` to add. |
-| `UZ-AGT-002` | Agent timeout | The model didn't return within the per-event ceiling. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
+| `UZ-AGT-002` | Fleet timeout | The model didn't return within the per-event ceiling. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
 | `UZ-MEM-003` | Memory backend unavailable | Transient. Re-trigger; if persistent, file an issue. |
-| `UZ-MEM-001` | Memory scope denied | The agent tried to read another agent's memory. Check the `key` derivation in `SKILL.md` — keys are agent-scoped. |
+| `UZ-MEM-001` | Memory scope denied | The fleet tried to read another fleet's memory. Check the `key` derivation in `SKILL.md` — keys are fleet-scoped. |
 
 <Note>
-**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` at warn level and silently skips it. When the agent tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `agentsfleet logs <agent_id>` for the actual error text. See [Tools catalogue → Validation](/agents/tools#validation).
+**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` at warn level and silently skips it. When the fleet tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `agentsfleet logs <fleet_id>` for the actual error text. See [Tools catalogue → Validation](/fleets/tools#validation).
 </Note>
 
 ### Network allowlist drops
 
-If the agent calls `http_request` against a host not in `network.allow:`, the call fails silently from the agent's perspective (the tool returns an error, the agent reasons about it). The drop appears in the activity stream as a tool-error event with the blocked hostname. Add the host to `network.allow:` in `TRIGGER.md` and re-install.
+If the fleet calls `http_request` against a host not in `network.allow:`, the call fails silently from the fleet's perspective (the tool returns an error, the fleet reasons about it). The drop appears in the activity stream as a tool-error event with the blocked hostname. Add the host to `network.allow:` in `TRIGGER.md` and re-install.
 
 ## 4. Run completes but output is wrong
 
@@ -116,26 +116,26 @@ The hardest class of failure. Run exits cleanly, the diagnosis posts to Slack, b
 ### Diagnostic
 
 ```bash
-# Full event with the agent's tool calls and reasoning trail
-agentsfleet events <agent_id> --since 30m --json | jq 'select(.actor | startswith("webhook:") or startswith("steer:"))'
+# Full event with the fleet's tool calls and reasoning trail
+agentsfleet events <fleet_id> --since 30m --json | jq 'select(.actor | startswith("webhook:") or startswith("steer:"))'
 ```
 
 The model's tool-call trail tells you what it actually did. Compare against what your `SKILL.md` told it to do:
 
 | Symptom | Likely cause |
 |---|---|
-| Agent skipped a step you specified | Step is unclear, ambiguous, or buried mid-paragraph. Move it to a numbered list at the top. |
-| Agent called the wrong endpoint | `SKILL.md` named the endpoint without context. Add the full URL or the credential name explicitly. |
-| Agent hallucinated a value | Source data wasn't in the event payload or a memory recall. Don't ask the agent to invent — surface every input explicitly. |
-| Agent re-asked for info you already gave it | `memory_recall` isn't being called at the start of the run. Audit your `SKILL.md` — recall must happen before reasoning. See [Memory](/memory). |
-| Agent posted twice | Webhook delivery is at-least-once. Add a dedupe step using the upstream `event_id` in `memory_recall`/`memory_store`. |
+| Fleet skipped a step you specified | Step is unclear, ambiguous, or buried mid-paragraph. Move it to a numbered list at the top. |
+| Fleet called the wrong endpoint | `SKILL.md` named the endpoint without context. Add the full URL or the credential name explicitly. |
+| Fleet hallucinated a value | Source data wasn't in the event payload or a memory recall. Don't ask the fleet to invent — surface every input explicitly. |
+| Fleet re-asked for info you already gave it | `memory_recall` isn't being called at the start of the run. Audit your `SKILL.md` — recall must happen before reasoning. See [Memory](/memory). |
+| Fleet posted twice | Webhook delivery is at-least-once. Add a dedupe step using the upstream `event_id` in `memory_recall`/`memory_store`. |
 
 ### Iterating on prose
 
 `SKILL.md` is a prompt. The fastest debug loop is `agentsfleet steer`:
 
 ```bash
-agentsfleet steer <agent_id> "<the same input that triggered the bug>"
+agentsfleet steer <fleet_id> "<the same input that triggered the bug>"
 ```
 
 Edit `SKILL.md`, `agentsfleet install --from .`, re-steer. The next event uses the new prose — no redeploy.
@@ -145,15 +145,15 @@ Edit `SKILL.md`, `agentsfleet install --from .`, re-steer. The next event uses t
 Run terminated with `UZ-AGT-001`. The `daily_dollars` or `monthly_dollars` ceiling in `TRIGGER.md` was hit.
 
 ```bash
-agentsfleet status --json | jq '.[] | select(.agent_id == "<id>") | {state, budget}'
+agentsfleet status --json | jq '.[] | select(.fleet_id == "<id>") | {state, budget}'
 ```
 
 Two layers of cap exist independently:
 
-1. **Per-agent** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this agent's runs until the rolling window resets. Raise the value, re-install.
+1. **Per-fleet** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this fleet's runs until the rolling window resets. Raise the value, re-install.
 2. **Tenant wallet** — every workspace's runs debit the same pool. When it hits zero, all runs across all workspaces stop. Top up at `app.agentsfleet.net/billing`. See [Billing → Budgets](/billing/budgets).
 
-If you're hitting the per-agent cap repeatedly on legitimate traffic, the agent's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller agents.
+If you're hitting the per-fleet cap repeatedly on legitimate traffic, the fleet's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller fleets.
 
 ## 6. agentsfleet can't reach the platform
 
@@ -201,6 +201,6 @@ Either way, include the `request_id` from the `--json` error envelope, the wire 
 ## See also
 
 - [Error codes](/api-reference/error-codes) — full registry of `UZ-*` codes.
-- [Webhooks](/agents/webhooks) — signature config reference.
-- [Authoring](/agents/authoring) — `SKILL.md` / `TRIGGER.md` schema.
+- [Webhooks](/fleets/webhooks) — signature config reference.
+- [Authoring](/fleets/authoring) — `SKILL.md` / `TRIGGER.md` schema.
 - [Context lifecycle](/concepts/context-lifecycle) — when long runs get continued or escalated.

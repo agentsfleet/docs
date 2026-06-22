@@ -30,6 +30,9 @@
     }
   },
   "favicon": "/favicon.svg",
+  "redirects": [
+    { "source": "/agents/:slug", "destination": "/fleets/:slug" }
+  ],
   "navigation": {
     "tabs": [
       {
@@ -46,17 +49,17 @@
             ]
           },
           {
-            "group": "Agents",
+            "group": "Fleets",
             "pages": [
-              "agents/overview",
-              "agents/install",
-              "agents/running",
-              "agents/credentials",
-              "agents/webhooks",
-              "agents/authoring",
-              "agents/tools",
-              "agents/templates",
-              "agents/troubleshooting"
+              "fleets/overview",
+              "fleets/install",
+              "fleets/running",
+              "fleets/credentials",
+              "fleets/webhooks",
+              "fleets/authoring",
+              "fleets/tools",
+              "fleets/templates",
+              "fleets/troubleshooting"
             ]
           },
           {
@@ -156,9 +159,9 @@
             "group": "Fleet",
             "pages": [
               "POST /v1/runners",
-              "GET /v1/fleet/runners",
-              "PATCH /v1/fleet/runners/{id}",
-              "GET /v1/fleet/runners/{id}/events"
+              "GET /v1/fleets/runners",
+              "PATCH /v1/fleets/runners/{id}",
+              "GET /v1/fleets/runners/{id}/events"
             ]
           },
           {
@@ -175,11 +178,11 @@
             ]
           },
           {
-            "group": "Agent keys",
+            "group": "Fleet keys",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/agent-keys",
-              "POST /v1/workspaces/{workspace_id}/agent-keys",
-              "DELETE /v1/workspaces/{workspace_id}/agent-keys/{agent_key_id}"
+              "GET /v1/workspaces/{workspace_id}/fleet-keys",
+              "POST /v1/workspaces/{workspace_id}/fleet-keys",
+              "DELETE /v1/workspaces/{workspace_id}/fleet-keys/{fleet_key_id}"
             ]
           },
           {
@@ -200,49 +203,57 @@
             ]
           },
           {
-            "group": "Agents",
+            "group": "Fleets",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/agents",
-              "POST /v1/workspaces/{workspace_id}/agents",
-              "PATCH /v1/workspaces/{workspace_id}/agents/{agent_id}",
-              "DELETE /v1/workspaces/{workspace_id}/agents/{agent_id}"
+              "GET /v1/workspaces/{workspace_id}/fleets",
+              "POST /v1/workspaces/{workspace_id}/fleets",
+              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}"
             ]
           },
           {
-            "group": "Agent messages",
+            "group": "Fleet bundles",
             "pages": [
-              "POST /v1/workspaces/{workspace_id}/agents/{agent_id}/messages"
+              "GET /v1/fleets/bundles",
+              "POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots",
+              "GET /v1/workspaces/{workspace_id}/fleets/bundles/snapshots/{bundle_id}"
             ]
           },
           {
-            "group": "Agent memories",
+            "group": "Fleet messages",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/memories"
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages"
             ]
           },
           {
-            "group": "Agent events",
+            "group": "Fleet memories",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/events",
-              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/events/stream"
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories"
+            ]
+          },
+          {
+            "group": "Fleet events",
+            "pages": [
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events/stream"
             ]
           },
           {
             "group": "Integration grants",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-grants",
-              "POST /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-requests",
-              "DELETE /v1/workspaces/{workspace_id}/agents/{agent_id}/integration-grants/{grant_id}"
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-grants",
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests",
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-grants/{grant_id}"
             ]
           },
           {
             "group": "Webhooks",
             "pages": [
-              "POST /v1/webhooks/svix/{agent_id}",
-              "POST /v1/webhooks/{agent_id}",
-              "POST /v1/webhooks/{agent_id}/approval",
-              "POST /v1/webhooks/{agent_id}/github",
-              "POST /v1/webhooks/{agent_id}/grant-approval"
+              "POST /v1/webhooks/svix/{fleet_id}",
+              "POST /v1/webhooks/{fleet_id}",
+              "POST /v1/webhooks/{fleet_id}/approval",
+              "POST /v1/webhooks/{fleet_id}/github",
+              "POST /v1/webhooks/{fleet_id}/grant-approval"
             ]
           },
           {

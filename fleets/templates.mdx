@@ -1,0 +1,85 @@
+---
+title: "Templates"
+description: "The first-party template catalogue and the local sample directory — pre-built fleets you install with one command."
+---
+
+A **template** is a pre-built fleet you install in one command. There are two sources:
+
+- The **first-party catalogue** — curated templates hosted by agentsfleet, browsable with `agentsfleet templates` and installed by id.
+- A **local directory** — any folder with a valid `SKILL.md` and `TRIGGER.md`, installed with `--from`.
+
+`--template` and `--from` are mutually exclusive: every `install` takes exactly one source.
+
+## Browse the catalogue
+
+`agentsfleet templates` lists the curated first-party templates — the same gallery the dashboard shows. It reads `GET /v1/fleets/bundles`; metadata only, no workspace required:
+
+```bash
+agentsfleet templates
+```
+
+```
+TEMPLATE                       NAME                            CREDENTIALS
+github-pr-reviewer             GitHub Pull Request reviewer    github
+security-reviewer              Security reviewer               github
+zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
+```
+
+Each row shows the template id, its name, and the credentials it needs. Wire those into the workspace vault (see [Credentials](/fleets/credentials)) before or after install. Pass `--json` for the full metadata, including declared tools and network hosts.
+
+## Install from the catalogue
+
+Install a catalogue template by its id:
+
+```bash
+agentsfleet install --template github-pr-reviewer
+```
+
+agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet. If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+
+### Install the same template more than once
+
+Pass `--name` to give the new fleet a distinct name, so one template can back several fleets in a workspace — for example, one PR reviewer per repository:
+
+```bash
+agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
+agentsfleet install --template github-pr-reviewer --name pr-reviewer-backend
+```
+
+Without `--name`, the fleet takes the template's own `name:`. Installing the same template twice without it collides with `UZ-AGT-006` (fleet name already exists) — see [Error codes](/api-reference/error-codes).
+
+## Install from a local directory
+
+Any directory with a valid `SKILL.md` and `TRIGGER.md` installs with `--from`:
+
+```bash
+agentsfleet install --from <path>
+```
+
+The `agentsfleet` package ships sample directories under `~/.config/agentsfleet/samples/`.
+
+### `platform-ops`
+
+The flagship v2 sample. Wakes on a GitHub Actions deploy failure, gathers evidence from your hosting provider and the failed workflow, and posts an evidenced diagnosis to Slack. Read-only against your infrastructure; the only write path is the channel post.
+
+- **Tools:** `http_request`, `memory_recall`, `memory_store`, `cron_add`, `cron_list`, `cron_remove`.
+- **Credentials:** `github` (with `webhook_secret` for signature verification), `slack` (bot token).
+- **Trigger:** `webhook` from GitHub Actions (`workflow_run.conclusion=failure`).
+
+For the full install walkthrough — host agent, gating questions, webhook wiring — see [Quickstart](/quickstart). Don't duplicate the steps here.
+
+## Writing your own
+
+A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring a fleet](/fleets/authoring) for the file references; install with:
+
+```bash
+agentsfleet install --from .
+```
+
+## Sharing
+
+Templates are markdown — commit `my-fleet/` to git, clone it on a new machine, `agentsfleet install --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
+
+<Note>
+  A hosted template marketplace (community-contributed templates, one-click install) is on the roadmap. The first-party catalogue above is the curated starting set; git remains the distribution mechanism for your own templates.
+</Note>

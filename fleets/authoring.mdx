@@ -1,29 +1,29 @@
 ---
-title: "Authoring an agent"
-description: "The `SKILL.md` and `TRIGGER.md` file pair — how an agent is defined end-to-end."
+title: "Authoring a fleet"
+description: "The `SKILL.md` and `TRIGGER.md` file pair — how a fleet is defined end-to-end."
 ---
 
 ## Overview
 
-An agent is two files: a **`SKILL.md`** that tells the agent who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the agent connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
+A fleet is two files: a **`SKILL.md`** that tells the fleet who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the fleet connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
 
 ```
-my-agent/
-├── SKILL.md      # agent instructions (natural language)
+my-fleet/
+├── SKILL.md      # fleet instructions (natural language)
 └── TRIGGER.md    # machine-readable config + deployment metadata
 ```
 
 `agentsfleet install <template>` scaffolds both. This page is the reference for authoring your own.
 
-## `SKILL.md` — agent instructions
+## `SKILL.md` — fleet instructions
 
-`SKILL.md` is plain markdown. The body is handed to the agent as its system prompt on every event. The frontmatter at the top carries small authoring metadata.
+`SKILL.md` is plain markdown. The body is handed to the fleet as its system prompt on every event. The frontmatter at the top carries small authoring metadata.
 
 ### Frontmatter
 
 ```yaml
 ---
-name: platform-ops-agent          # required, must match TRIGGER.md
+name: platform-ops-fleet          # required, must match TRIGGER.md
 description: Diagnoses platform health from fly.io and upstash, posts to Slack.
 version: 0.1.0                     # required, semver
 when_to_use: ...                   # optional
@@ -44,9 +44,9 @@ Unknown top-level keys are accepted silently — drop in vendor-specific extras 
 
 ### Body
 
-Plain markdown. The whole body becomes the agent's system prompt.
+Plain markdown. The whole body becomes the fleet's system prompt.
 
-- **State the role plainly.** "You are a lead qualification agent." First sentence.
+- **State the role plainly.** "You are a lead qualification fleet." First sentence.
 - **List the event shape.** What arrives on the webhook? Name the fields.
 - **Give an explicit procedure.** Numbered steps beat prose.
 - **Name the tools it can invoke.** Match the names to the `tools:` list in `TRIGGER.md`.
@@ -55,12 +55,12 @@ Plain markdown. The whole body becomes the agent's system prompt.
 
 ```markdown SKILL.md
 ---
-name: platform-ops-agent
+name: platform-ops-fleet
 description: Diagnoses platform health from fly.io and upstash, posts to Slack.
 version: 0.1.0
 ---
 
-You are Platform Ops Agent. You diagnose problems in a small production
+You are Platform Ops Fleet. You diagnose problems in a small production
 platform that runs on fly.io (app hosting) and upstash (managed Redis).
 You are strictly read-only against fly and upstash; your one write path
 is to post a plain-text summary into one Slack channel.
@@ -85,10 +85,10 @@ always frame as "leading hypothesis" and let the human decide.
 
 ```yaml
 ---
-name: platform-ops-agent   # top level — must match SKILL.md `name:`
+name: platform-ops-fleet   # top level — must match SKILL.md `name:`
 
 x-agentsfleet:                # all runtime config nests under this key
-  triggers:                 # array, 1–8 entries; one agent can wake on many sources
+  triggers:                 # array, 1–8 entries; one fleet can wake on many sources
     - type: api             # operator chats via /steer; events arrive as event_type: chat
   tools:
     - http_request
@@ -132,11 +132,11 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 |---|---|---|
 | `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
 | `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
-| `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{agent_id}/{source}` — see [Webhooks](/agents/webhooks). |
+| `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{fleet_id}/{source}` — see [Webhooks](/fleets/webhooks). |
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
 | `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
-| `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/agents/tools). |
-| `credentials` | optional | Vault key names the agent reads at event time. |
+| `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/fleets/tools). |
+| `credentials` | optional | Vault key names the fleet reads at event time. |
 | `network.allow` | yes | Outbound hostname allowlist enforced by the sandbox. |
 | `budget.daily_dollars` | yes | Rolling 24-hour dollar ceiling. |
 | `budget.monthly_dollars` | optional | Calendar-month dollar ceiling. |
@@ -145,23 +145,23 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 | YAML value | Wakes from | Use when | Companion fields |
 |---|---|---|---|
-| `webhook` | An external HTTP `POST` to `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}` with a signed body. | Most production agents — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/agents/webhooks). |
-| `cron` | A self-scheduled timer the agent sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per agent. |
-| `api` | A `agentsfleet steer` invocation or a `POST /v1/.../agents/{id}/messages` API call. | Steerable, operator-driven agents — manual investigation, on-demand workflows, the install-time smoke test. | None. |
+| `webhook` | An external HTTP `POST` to `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` with a signed body. | Most production fleets — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/fleets/webhooks). |
+| `cron` | A self-scheduled timer the fleet sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per fleet. |
+| `api` | A `agentsfleet steer` invocation or a `POST /v1/.../fleets/{id}/messages` API call. | Steerable, operator-driven fleets — manual investigation, on-demand workflows, the install-time smoke test. | None. |
 
-An agent can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any agent can also be steered via `agentsfleet steer` regardless of declared triggers — steer always works. The `api` type is for agents whose *primary* surface is steer (no inbound webhook).
+A fleet can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any fleet can also be steered via `agentsfleet steer` regardless of declared triggers — steer always works. The `api` type is for fleets whose *primary* surface is steer (no inbound webhook).
 
 <Note>**Long-run continuations are not a trigger type.** When a run exhausts its context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
 ### Tools
 
-The `tools:` list is the explicit allowlist of tools the agent may invoke. A compromised or jailbroken agent cannot reach outside this list.
+The `tools:` list is the explicit allowlist of tools the fleet may invoke. A compromised or jailbroken fleet cannot reach outside this list.
 
-23 tools are user-callable today, grouped by category — network (`http_request`, `web_search`, `web_fetch`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), agent orchestration (`delegate`, `spawn`, `schedule`), browser, git, file edits, and stateless utilities. **See [Tools catalogue](/agents/tools) for every tool with its purpose and use cases.**
+23 tools are user-callable today, grouped by category — network (`http_request`, `web_search`, `web_fetch`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), fleet orchestration (`delegate`, `spawn`, `schedule`), browser, git, file edits, and stateless utilities. **See [Tools catalogue](/fleets/tools) for every tool with its purpose and use cases.**
 
 ### Credentials
 
-Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are credential references — **not** tool names. The tool bridge resolves the named credential at `http_request` time and substitutes its fields into outbound calls; the agent sees the response, never the raw secret. Add and rotate via [Credentials](/agents/credentials).
+Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are credential references — **not** tool names. The tool bridge resolves the named credential at `http_request` time and substitutes its fields into outbound calls; the fleet sees the response, never the raw secret. Add and rotate via [Credentials](/fleets/credentials).
 
 ### Network allowlist
 
@@ -171,7 +171,7 @@ Each entry under `credentials:` is a **bare vault key name** referencing a JSON-
 
 | Field | Purpose |
 |---|---|
-| `daily_dollars` | Rolling 24-hour dollar ceiling for this agent. |
+| `daily_dollars` | Rolling 24-hour dollar ceiling for this fleet. |
 | `monthly_dollars` | Calendar-month dollar ceiling. |
 
 A breach terminates the in-flight event cleanly and records a `budget_breach` entry. Subsequent events in a later billing window are unaffected. Workspace-wide budgets live in [Billing](/billing/budgets).
@@ -190,22 +190,22 @@ A breach terminates the in-flight event cleanly and records a `budget_breach` en
 `agentsfleet install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses. Errors are returned with the field at fault.
 
 ```bash
-agentsfleet install --from ./my-agent
+agentsfleet install --from ./my-fleet
 ```
 
 ```
 ✗ install rejected: name_mismatch
-  SKILL.md name: platform-ops-agent
+  SKILL.md name: platform-ops-fleet
   TRIGGER.md name: platform-ops-zombe    ← typo
 ```
 
 ## Next
 
 <CardGroup cols={2}>
-  <Card title="Bundled templates" icon="layer-group" href="/agents/templates">
+  <Card title="Bundled templates" icon="layer-group" href="/fleets/templates">
     See the anatomy of the flagship `platform-ops` sample.
   </Card>
-  <Card title="Webhooks" icon="webhook" href="/agents/webhooks">
+  <Card title="Webhooks" icon="webhook" href="/fleets/webhooks">
     Authentication modes and approval gates in depth.
   </Card>
 </CardGroup>

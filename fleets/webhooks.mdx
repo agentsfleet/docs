@@ -1,15 +1,15 @@
 ---
 title: "Webhooks"
-description: "How external systems deliver events to your agent, and how the platform authenticates them."
+description: "How external systems deliver events to your fleet, and how the platform authenticates them."
 ---
 
 Every webhook trigger declared in `TRIGGER.md` gets a unique, stable URL keyed by `source`:
 
 ```
-https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}
+https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
 ```
 
-External systems POST to this URL. The platform verifies the signature and delivers the event to the agent. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
+External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
   **Most users don't wire webhooks by hand.** The `platform-ops` install skill registers each declared webhook automatically via your existing `gh` CLI — no paste-into-GitHub step. Use [Quickstart](/quickstart) for the full guided flow. The reference below is for custom webhooks — your own provider, an internal service, etc.
@@ -17,11 +17,11 @@ External systems POST to this URL. The platform verifies the signature and deliv
 
 ## Declaring a webhook trigger
 
-An agent declares its webhooks in `TRIGGER.md` under the `triggers:` array (1–8 entries). One agent can wake on multiple webhook sources plus a `cron`:
+A fleet declares its webhooks in `TRIGGER.md` under the `triggers:` array (1–8 entries). One fleet can wake on multiple webhook sources plus a `cron`:
 
 ```yaml
 ---
-name: my-agent
+name: my-fleet
 
 x-agentsfleet:
   triggers:
@@ -35,13 +35,13 @@ x-agentsfleet:
 ---
 ```
 
-`source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{agent_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
+`source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
 
 The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`); always declare the array form, even for a single webhook.
 
 ## Authentication
 
-Every inbound webhook is authenticated before the agent is woken. The platform supports **HMAC** signature verification — Hash-based Message Authentication Code, a standard scheme where the sender signs the payload with a shared secret and the receiver re-computes the signature to verify it. GitHub, Slack, Linear, Jira, Grafana, and most SaaS providers use HMAC.
+Every inbound webhook is authenticated before the fleet is woken. The platform supports **HMAC** signature verification — Hash-based Message Authentication Code, a standard scheme where the sender signs the payload with a shared secret and the receiver re-computes the signature to verify it. GitHub, Slack, Linear, Jira, Grafana, and most SaaS providers use HMAC.
 
 ### Natively normalized providers
 
@@ -79,15 +79,15 @@ triggers:
 
 The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
 
-`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/agents/credentials).
+`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/fleets/credentials).
 
 <Note>
-  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{agent_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the agent sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{agent_id}`, to accommodate Svix's multi-signature rotation scheme.
+  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{fleet_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the fleet sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{fleet_id}`, to accommodate Svix's multi-signature rotation scheme.
 </Note>
 
 ## Sending an event
 
-Once the agent is installed, your provider POSTs to its URL with a signed body:
+Once the fleet is installed, your provider POSTs to its URL with a signed body:
 
 ```bash
 curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github \
@@ -106,21 +106,21 @@ The platform verifies the signature, enqueues the event, and returns `202 Accept
 { "accepted": true, "request_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
 ```
 
-Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the agent can dedupe.
+Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the fleet can dedupe.
 
 ## Failure responses
 
 | Status | Cause |
 |--------|-------|
 | `401` | Missing, malformed, or mis-signed signature header. |
-| `404` | Agent ID does not exist. |
-| `410` | Agent was killed; re-install with `agentsfleet install --from <path>`. |
+| `404` | Fleet ID does not exist. |
+| `410` | Fleet was killed; re-install with `agentsfleet install --from <path>`. |
 | `429` | Rate limit hit; back off per `Retry-After`. |
 | `503` | Budget breached, or platform applying backpressure; safe to retry after the period resets. |
 
 ## Approval gate webhooks
 
-Some agent actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets an agent pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
+Some fleet actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a fleet pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
 
 For programmatic decisions (e.g. an internal tool calling back into agentsfleet), POST the decision to:
 
@@ -131,7 +131,7 @@ curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4
   -d '{ "approval_id": "0198a7b9-5a3f-7e24-9b18-4c7d2a8f5e63", "decision": "approve" }'
 ```
 
-The approval token is auto-provisioned for the agent at install time.
+The approval token is auto-provisioned for the fleet at install time.
 
 ## Observing webhook traffic
 

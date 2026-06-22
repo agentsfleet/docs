@@ -5,12 +5,12 @@ description: "The lifecycle commands — install, status, logs, events, steer, s
 
 ## Overview
 
-A small set of verbs cover the live lifecycle: `install --from <path>` brings an agent up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
+A small set of verbs cover the live lifecycle: `install --from <path>` brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
 
 ```bash
 agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
-agentsfleet status                               # every agent in the workspace
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # tail one agent's recent activity
+agentsfleet status                               # every fleet in the workspace
+agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # tail one fleet's recent activity
 agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check"
 agentsfleet stop 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # pause; resumable
 agentsfleet kill 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # terminal
@@ -26,15 +26,15 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
 ```
-✓ platform-ops-agent is live.
-  Agent ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+✓ platform-ops-fleet is live.
+  Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
   Webhook URLs (register on the upstream provider):
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
 One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
 
-Re-running `agentsfleet install --from <same-path>` against a workspace that already has the same agent is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
+Re-running `agentsfleet install --from <same-path>` against a workspace that already has the same fleet is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
 Exit codes:
 
@@ -44,17 +44,17 @@ Exit codes:
 
 ## `agentsfleet status`
 
-Lists every agent in the active workspace with its state, last event, and budget consumed.
+Lists every fleet in the active workspace with its state, last event, and budget consumed.
 
 ```bash
 agentsfleet status
 ```
 
 ```
-Agents (workspace: 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50)
+Fleets (workspace: 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50)
 ────────────────────────────────────────────────────────────────────────────────
 ID                                    Name                  Status  Events  Budget
-0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71  platform-ops-agent   alive   42      $1.23
+0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71  platform-ops-fleet   alive   42      $1.23
 ```
 
 Pass `--json` for a machine-readable shape suitable for scripting:
@@ -63,9 +63,9 @@ Pass `--json` for a machine-readable shape suitable for scripting:
 agentsfleet status --json
 ```
 
-## `agentsfleet logs <agent_id>`
+## `agentsfleet logs <fleet_id>`
 
-Print the agent's recent activity stream. Every webhook receipt, cron fire, steer message, tool call, and run exit lands here, tagged with what triggered it (`webhook:github`, `cron:*`, `steer:<user>`, `continuation:<original_actor>`).
+Print the fleet's recent activity stream. Every webhook receipt, cron fire, steer message, tool call, and run exit lands here, tagged with what triggered it (`webhook:github`, `cron:*`, `steer:<user>`, `continuation:<original_actor>`).
 
 ```bash
 agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
@@ -79,7 +79,7 @@ agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json
 | `--cursor <cursor>` | *(none)* | Pagination cursor returned as `next_cursor` in a previous response. |
 | `--json` | off | Emit the raw `{ items, next_cursor }` envelope. |
 
-## `agentsfleet events <agent_id>` — filtered history
+## `agentsfleet events <fleet_id>` — filtered history
 
 Richer filter surface than `logs`. Use this when you need to slice by actor or time window:
 
@@ -99,7 +99,7 @@ agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.err
 
 There's no streaming-tail flag today. Poll `events --since 30s` from a script if you need near-live behaviour.
 
-## `agentsfleet steer <agent_id> "<message>"`
+## `agentsfleet steer <fleet_id> "<message>"`
 
 Posts a steer message — a manual trigger that runs the same reasoning loop as a webhook event. Useful before you have a webhook wired up, or for one-off investigation.
 
@@ -111,14 +111,14 @@ The reply streams back live; the result is also persisted to the activity stream
 
 ## Lifecycle: `stop` / `resume` / `kill` / `delete`
 
-Four verbs control the agent's lifecycle, in increasing order of irreversibility:
+Four verbs control the fleet's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
-| `stop <agent_id>` | Halt the running session. New events stop dispatching; the in-flight run finishes cleanly. | Yes — `agentsfleet resume`. |
-| `resume <agent_id>` | Bring a `stopped` (or auto-paused) agent back to active. | — |
-| `kill <agent_id>` | Mark terminal. The agent won't process events again, but its row, history, and webhook URL persist. | No, but a killed agent can be `delete`d after. |
-| `delete <agent_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
+| `stop <fleet_id>` | Halt the running session. New events stop dispatching; the in-flight run finishes cleanly. | Yes — `agentsfleet resume`. |
+| `resume <fleet_id>` | Bring a `stopped` (or auto-paused) fleet back to active. | — |
+| `kill <fleet_id>` | Mark terminal. The fleet won't process events again, but its row, history, and webhook URL persist. | No, but a killed fleet can be `delete`d after. |
+| `delete <fleet_id>` | Hard-delete. Removes the fleet row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
 agentsfleet stop   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # pause; resumable
@@ -127,7 +127,7 @@ agentsfleet kill   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # terminal; webhook st
 agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # hard-delete; webhook URL starts returning UZ-WH-001
 ```
 
-State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`. After delete, recreating with the same `SKILL.md` produces a **new** `agent_id` and a **new** webhook URL; any upstream wiring needs to be updated.
+State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`. After delete, recreating with the same `SKILL.md` produces a **new** `fleet_id` and a **new** webhook URL; any upstream wiring needs to be updated.
 
 ## Exit codes
 
@@ -135,6 +135,6 @@ State is checkpointed at every transition — nothing on the activity stream is 
 |------|---------|
 | `0` | Success. |
 | `1` | Workspace not selected, network error, or server rejected the call. |
-| `2` | Invalid or missing argument (missing `--from`, missing `<agent_id>`, etc.). |
+| `2` | Invalid or missing argument (missing `--from`, missing `<fleet_id>`, etc.). |
 
 See the [CLI reference](/cli/agentsfleet) for the full command matrix.

@@ -1,9 +1,9 @@
 ---
 title: "Memory"
-description: "How an agent remembers across events — four categories, four tools, when to use each."
+description: "How a fleet remembers across events — four categories, four tools, when to use each."
 ---
 
-Memory is what an agent *learned* from prior events that lets it behave like a teammate who's been here before, instead of one that showed up this morning. An agent writes facts via `memory_store` and reads them back via `memory_recall` on the next event.
+Memory is what a fleet *learned* from prior events that lets it behave like a teammate who's been here before, instead of one that showed up this morning. A fleet writes facts via `memory_store` and reads them back via `memory_recall` on the next event.
 
 Memory is always on — no setup, no flag.
 
@@ -11,16 +11,16 @@ Memory is always on — no setup, no flag.
 
 | Category | Scope | Lifetime | Use for |
 |---|---|---|---|
-| `core` | agent | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
-| `daily` | agent | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
+| `core` | fleet | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
+| `daily` | fleet | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
 | `conversation` | event | dies with the run | Within-run scratch — checkpoint findings during a long incident. |
-| `workspace` | workspace | durable | Facts shared across every agent in the workspace. |
+| `workspace` | workspace | durable | Facts shared across every fleet in the workspace. |
 
-Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for staging during a long run. Pick `workspace` only when multiple agents need the same fact.
+Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for staging during a long run. Pick `workspace` only when multiple fleets need the same fact.
 
 ## The four tools
 
-The agent calls these from inside a run; the runtime wires them to the memory backend.
+The fleet calls these from inside a run; the runtime wires them to the memory backend.
 
 | Tool | Shape | Purpose |
 |---|---|---|
@@ -38,20 +38,20 @@ The two memory touchpoints are at the **start** of a run (`memory_recall` before
 ```mermaid
 flowchart LR
     Start([run opens]) --> Recall["memory_recall<br/>pull prior context"]
-    Recall --> Reason[agent reasons + acts]
+    Recall --> Reason[fleet reasons + acts]
     Reason --> Store["memory_store<br/>write what was learned"]
     Store --> End([run closes])
 ```
 
 ## What survives — selection and eviction
 
-Hydration (what an agent sees at run start) and eviction (what the platform deletes at the per-agent entry cap) are both **category-pinned**: `core` wins.
+Hydration (what a fleet sees at run start) and eviction (what the platform deletes at the per-fleet entry cap) are both **category-pinned**: `core` wins.
 
 - **Hydration** fills a fixed byte budget: every `core` entry that fits loads first (newest first), then the newest non-core entries fill the remainder. A `core` fact written once — an owner, a deploy target, a customer's plan — is still in context at entry 1001, even after a noisy month of `daily` writes.
 - **Eviction** at the entry cap deletes the coldest non-core entries first. A `core` entry is deleted only when nothing else remains.
 - **Custom categories** (and anything the platform doesn't recognise) are windowed by recency — never silently pinned.
 
-Selection is deterministic — same entries, same budget, same result — so "why does my agent remember X but not Y?" always has a checkable answer: X was `core`; Y was windowed, or too big for the budget.
+Selection is deterministic — same entries, same budget, same result — so "why does my fleet remember X but not Y?" always has a checkable answer: X was `core`; Y was windowed, or too big for the budget.
 
 Four habits make selection work for you instead of against you:
 
@@ -75,11 +75,11 @@ Bob Chen, Acme. Pro since Jan 15. API user (not dashboard), webhooks → Slack.
 Prefers technical responses. Prior: Feb 3 signature issue (NTP).
 ```
 
-Frontmatter is structured metadata; the body is the distilled prose the agent wrote.
+Frontmatter is structured metadata; the body is the distilled prose the fleet wrote.
 
-## Correcting what the agent learned
+## Correcting what the fleet learned
 
-To remove or fix a fact, the agent itself calls `memory_forget(key)` followed by `memory_store(...)` with the corrected entry — typically driven from a steer message:
+To remove or fix a fact, the fleet itself calls `memory_forget(key)` followed by `memory_store(...)` with the corrected entry — typically driven from a steer message:
 
 ```bash
 agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "forget customer_bob_chen_acme; Bob is now on the Enterprise plan"
@@ -89,17 +89,17 @@ The next event uses the corrected memory.
 
 ## Isolation
 
-Every memory operation is scoped by `agent_id`. Agent A cannot read Agent B's memory. The memory store is a separate Postgres database, not a shared filesystem — even an agent with shell or file tools can't reach it through the wrong protocol.
+Every memory operation is scoped by `fleet_id`. Fleet A cannot read Fleet B's memory. The memory store is a separate Postgres database, not a shared filesystem — even a fleet with shell or file tools can't reach it through the wrong protocol.
 
 ## Common questions
 
-**My agent keeps re-asking the user for the same info.**
+**My fleet keeps re-asking the user for the same info.**
 
 Either `memory_store` isn't being called at the end of the previous event, or `memory_recall` isn't being called at the start of the next one. Audit your `SKILL.md` — recall must happen *before* the reasoning step.
 
-**My agent remembers something stale.**
+**My fleet remembers something stale.**
 
-The underlying system changed but memory didn't. Steer the agent to call `memory_forget(key)` and re-store the corrected entry. For systems-of-record that change frequently, build a sync job into the agent's prose.
+The underlying system changed but memory didn't. Steer the fleet to call `memory_forget(key)` and re-store the corrected entry. For systems-of-record that change frequently, build a sync job into the fleet's prose.
 
 **Should I use `core` or `conversation` for this?**
 
@@ -110,6 +110,6 @@ The underlying system changed but memory didn't. Steer the agent to call `memory
 | Symptom | Cause | Fix |
 |---|---|---|
 | Recall returns nothing on a known entity | Inconsistent key convention | Use a stable, deterministic key derivation in `SKILL.md` (e.g. `customer_<email-slug>`). |
-| Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the agent to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
+| Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the fleet to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
 | `UZ-MEM-003` on store | Memory backend unavailable | Re-run the trigger; if persistent, file an issue. |
-| `UZ-MEM-001` on store | Memory scope denied (cross-agent access attempt) | Memory is per-agent. Use `workspace`-category writes if you need to share facts across agents. |
+| `UZ-MEM-001` on store | Memory scope denied (cross-fleet access attempt) | Memory is per-fleet. Use `workspace`-category writes if you need to share facts across fleets. |

@@ -3,23 +3,23 @@ title: "How long does a run take?"
 description: "When a run opens, when it stops, and the three knobs you'd ever tune."
 ---
 
-A single trigger — a webhook, a cron fire, a `steer` message — opens one **run**. The agent reasons, calls tools, and the run closes when it's done or when it would otherwise overflow the model's context window.
+A single trigger — a webhook, a cron fire, a `steer` message — opens one **run**. The fleet reasons, calls tools, and the run closes when it's done or when it would otherwise overflow the model's context window.
 
-Most agents finish a run in seconds to a couple of minutes and never need any of the controls on this page. Read on if you have a long incident that issues dozens of tool calls and want to understand what stops it.
+Most fleets finish a run in seconds to a couple of minutes and never need any of the controls on this page. Read on if you have a long incident that issues dozens of tool calls and want to understand what stops it.
 
 ## The three things that end a run
 
 | What | When it fires | What happens |
 |---|---|---|
-| **Run finished** | Agent decides it's done | Run closes cleanly. Diagnosis posted, state checkpointed. |
-| **Context full** | Prompt approaches the model's context cap | Agent ends the run with a checkpoint, the runtime opens a fresh run on the same chain, the new run `memory_recall`s where it left off. |
+| **Run finished** | Fleet decides it's done | Run closes cleanly. Diagnosis posted, state checkpointed. |
+| **Context full** | Prompt approaches the model's context cap | Fleet ends the run with a checkpoint, the runtime opens a fresh run on the same chain, the new run `memory_recall`s where it left off. |
 | **Budget breach** | Daily or monthly dollar cap hit | Run terminates, `budget_breach` recorded. Future runs in the next billing window are unaffected. |
 
 ## Continuation chains — when one run isn't enough
 
-If the agent can't finish in one run (a forty-tool-call incident on a 200K-token model, for example), it ends the current run with `exit_ok: false` and a `checkpoint_id`. The runtime re-enqueues the same event as a continuation; the next run opens with a fresh prompt and pulls the prior findings via `memory_recall(checkpoint_id)`.
+If the fleet can't finish in one run (a forty-tool-call incident on a 200K-token model, for example), it ends the current run with `exit_ok: false` and a `checkpoint_id`. The runtime re-enqueues the same event as a continuation; the next run opens with a fresh prompt and pulls the prior findings via `memory_recall(checkpoint_id)`.
 
-A chain caps at **10 continuations**. The 11th attempt is refused, the originating event is labelled `chunk_chain_escalate_human`, and an operator picks it up. The agent itself stays alive — only that one chain forfeits.
+A chain caps at **10 continuations**. The 11th attempt is refused, the originating event is labelled `chunk_chain_escalate_human`, and an operator picks it up. The fleet itself stays alive — only that one chain forfeits.
 
 ## Knobs you can tune
 
@@ -27,28 +27,28 @@ Set these under `x-agentsfleet.context` in `TRIGGER.md`. Defaults work for almos
 
 | Knob | Default | When to touch it |
 |---|---|---|
-| `tool_window` | 20 | Raise if your agent routinely runs 30+ tool calls and you want fewer continuations. Lower if you want it to compact its findings sooner. |
-| `memory_checkpoint_every` | 5 | Cadence at which the agent is prompted to write a memory snapshot during a long run. Rarely worth changing. |
+| `tool_window` | 20 | Raise if your fleet routinely runs 30+ tool calls and you want fewer continuations. Lower if you want it to compact its findings sooner. |
+| `memory_checkpoint_every` | 5 | Cadence at which the fleet is prompted to write a memory snapshot during a long run. Rarely worth changing. |
 | `context_cap_tokens` | model-dependent | Set explicitly if your model has no published context cap or differs from the default. |
 
 If you've never seen a `chunk_chain_escalate_human` failure label, you don't need to change any of these.
 
 ## Common questions
 
-**My agent ran for two minutes — is that normal?**
+**My fleet ran for two minutes — is that normal?**
 
 Yes. Runs can be seconds (a single webhook → Slack post) to a few minutes (a multi-step diagnosis). What matters is that the run closes cleanly, not how long it took.
 
 **Will it run forever?**
 
-No. Three independent ceilings stop it: the run's own context cap (the agent voluntarily ends and continues), the continuation cap (10 chunks max), and the budget cap (`daily_dollars` / `monthly_dollars` in `TRIGGER.md`).
+No. Three independent ceilings stop it: the run's own context cap (the fleet voluntarily ends and continues), the continuation cap (10 chunks max), and the budget cap (`daily_dollars` / `monthly_dollars` in `TRIGGER.md`).
 
 **Do I need to tune anything?**
 
-Almost certainly not. The defaults are tuned for the flagship `platform-ops` agent and translate well to most workloads. Tune your `SKILL.md` prose first — it's where the actual reasoning lives.
+Almost certainly not. The defaults are tuned for the flagship `platform-ops` fleet and translate well to most workloads. Tune your `SKILL.md` prose first — it's where the actual reasoning lives.
 
 ## See also
 
-- [Memory](/memory) — the API the agent uses to checkpoint findings during a long run.
+- [Memory](/memory) — the API the fleet uses to checkpoint findings during a long run.
 - [Budgets](/billing/budgets) — `daily_dollars` and `monthly_dollars` ceilings.
-- [Authoring an agent](/agents/authoring) — the full `TRIGGER.md` reference.
+- [Authoring a fleet](/fleets/authoring) — the full `TRIGGER.md` reference.

@@ -8,12 +8,12 @@ description: "Complete agentsfleet command reference."
 | Group | Commands |
 |-------|----------|
 | Authentication | `login`, `logout`, `auth status` |
-| Agents (top-level) | `install --from`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
-| Agents (in-place update) | `agent update --from` |
+| Fleets (top-level) | `install --from`, `install --template`, `templates`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
+| Fleets (in-place update) | `fleet update --from` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
 | Memory | `memory list`, `memory search` |
-| External agents | `agent-key add`, `agent-key list`, `agent-key delete` |
+| Fleet keys (external access) | `fleet-key add`, `fleet-key list`, `fleet-key delete` |
 | Integration grants | `grant list`, `grant delete` |
 | Billing | `billing show` |
 | Tenant provider | `tenant provider show`, `tenant provider add`, `tenant provider delete` |
@@ -87,33 +87,61 @@ The probe result is one of `valid` (200 from the billing endpoint), `unauthorize
 
 ---
 
-## Agents
+## Fleets
 
 ### `agentsfleet install --from <path>`
 
-Reads `SKILL.md` and `TRIGGER.md` from `<path>`, validates them, and uploads to the active workspace. The two markdown files are the configuration; the `agentsfleet-install-platform-ops` host-agent skill is what generates them under `.agentsfleet/<agent>/` in your repo. The `--from` flag is required — there are no bare-name template aliases.
+Reads `SKILL.md` and `TRIGGER.md` from `<path>`, validates them, and uploads to the active workspace. The two markdown files are the configuration; the `agentsfleet-install-platform-ops` host-agent skill is what generates them under `.agentsfleet/<fleet>/` in your repo. The `--from` flag is required — there are no bare-name template aliases.
 
 ```bash
 agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
-The `samples/` directory ships with `agentsfleet` and contains the flagship `platform-ops` sample. The host-agent install skill (`/agentsfleet-install-platform-ops`) drives this command under the hood. See [Quickstart](/quickstart) and [Templates](/agents/templates).
+The `samples/` directory ships with `agentsfleet` and contains the flagship `platform-ops` sample. The host-agent install skill (`/agentsfleet-install-platform-ops`) drives this command under the hood. See [Quickstart](/quickstart) and [Templates](/fleets/templates).
 
-### `agentsfleet agent update <agent_id> --from <path>`
+### `agentsfleet install --template <id>`
 
-Re-parse `SKILL.md` and `TRIGGER.md` from a local bundle and `PATCH` them onto an existing agent — the in-place counterpart to `install`. Use it to roll a configuration change onto an already-registered agent without re-creating it.
+Install a fleet from the first-party template catalogue (browse it with `agentsfleet templates`) instead of a local directory. agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet.
 
 ```bash
-agentsfleet agent update 01900000-0000-7000-8000-000000000001 --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet install --template github-pr-reviewer
+agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
+```
+
+`--from` and `--template` are mutually exclusive — exactly one source per install. If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--from <path>` | *(one source required)* | Install from a local directory containing `SKILL.md` + `TRIGGER.md`. |
+| `--template <id>` | *(one source required)* | Install from a catalogue template by id (see `agentsfleet templates`). |
+| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one bundle or template can back several fleets in a workspace. Without it, a second install of the same source collides with `UZ-AGT-006`. |
+
+### `agentsfleet templates`
+
+List the first-party template catalogue — the same gallery the dashboard shows. Reads `GET /v1/fleets/bundles`; metadata only, no workspace required.
+
+```bash
+agentsfleet templates
+agentsfleet templates --json
+```
+
+Prints a table of template id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts). Install one with `agentsfleet install --template <id>`. See [Templates](/fleets/templates).
+
+### `agentsfleet fleet update <fleet_id> --from <path>`
+
+Re-parse `SKILL.md` and `TRIGGER.md` from a local bundle and `PATCH` them onto an existing fleet — the in-place counterpart to `install`. Use it to roll a configuration change onto an already-registered fleet without re-creating it.
+
+```bash
+agentsfleet fleet update 01900000-0000-7000-8000-000000000001 --from ~/.config/agentsfleet/samples/platform-ops
 ```
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--from <path>` | *(required)* | Local bundle whose `SKILL.md` + `TRIGGER.md` are re-parsed and patched onto the agent. |
+| `--from <path>` | *(required)* | Local bundle whose `SKILL.md` + `TRIGGER.md` are re-parsed and patched onto the fleet. |
 
 ### `agentsfleet list`
 
-List agents in the active workspace. Keyset-paginated over `(created_at, id)` — the dashboard `/agents` page uses the same contract.
+List fleets in the active workspace. Keyset-paginated over `(created_at, id)` — the dashboard `/fleets` page uses the same contract.
 
 ```bash
 agentsfleet list --limit 20
@@ -130,22 +158,22 @@ Human-readable output prints a table and, when more pages remain, a "Next" hint 
 
 ### `agentsfleet status`
 
-List every agent in the current workspace with state, events processed, and budget consumed.
+List every fleet in the current workspace with state, events processed, and budget consumed.
 
 ```bash
 agentsfleet status
 ```
 
-### Agent lifecycle: `stop` / `resume` / `kill` / `delete`
+### Fleet lifecycle: `stop` / `resume` / `kill` / `delete`
 
-Four verbs control an agent's lifecycle, in increasing order of irreversibility:
+Four verbs control a fleet's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
-| `stop <agent_id>` | Halt the running session. New events stop dispatching; in-flight run finishes cleanly. | Yes — `agentsfleet resume`. |
-| `resume <agent_id>` | Resume from `stopped` or auto-paused state. | — |
-| `kill <agent_id>` | Mark terminal. The agent won't process events again, but its row, history, and webhook URL persist. | No, but the agent can be `delete`d after. |
-| `delete <agent_id>` | Hard-delete. Removes the agent row and its webhook URL. **Must `kill` first.** | No. |
+| `stop <fleet_id>` | Halt the running session. New events stop dispatching; in-flight run finishes cleanly. | Yes — `agentsfleet resume`. |
+| `resume <fleet_id>` | Resume from `stopped` or auto-paused state. | — |
+| `kill <fleet_id>` | Mark terminal. The fleet won't process events again, but its row, history, and webhook URL persist. | No, but the fleet can be `delete`d after. |
+| `delete <fleet_id>` | Hard-delete. Removes the fleet row and its webhook URL. **Must `kill` first.** | No. |
 
 ```bash
 agentsfleet stop   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # pause; resumable
@@ -156,9 +184,9 @@ agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # hard-delete; webhook
 
 State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`.
 
-### `agentsfleet logs <agent_id>`
+### `agentsfleet logs <fleet_id>`
 
-Print the agent's recent activity stream — newest-first, paginated.
+Print the fleet's recent activity stream — newest-first, paginated.
 
 ```bash
 agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
@@ -172,11 +200,11 @@ agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json
 | `--cursor <cursor>` | *(none)* | Pagination cursor returned as `next_cursor` in a previous response. |
 | `--json` | off | Emit the raw `{ items, next_cursor }` envelope. |
 
-The agent ID may also be passed via `--agent <id>` for scripting symmetry with `events`.
+The fleet ID may also be passed via `--fleet <id>` for scripting symmetry with `events`.
 
-### `agentsfleet events <agent_id>` — filtered history
+### `agentsfleet events <fleet_id>` — filtered history
 
-Richer filter surface than `logs`. Use this when you need to slice by actor or time window — for example, when [troubleshooting](/agents/troubleshooting) a specific webhook source.
+Richer filter surface than `logs`. Use this when you need to slice by actor or time window — for example, when [troubleshooting](/fleets/troubleshooting) a specific webhook source.
 
 ```bash
 agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 2h
@@ -194,7 +222,7 @@ agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.err
 
 There is no `--follow`/streaming-tail flag today. To watch live, poll `events --since 30s` from a script.
 
-### `agentsfleet steer <agent_id> [message]`
+### `agentsfleet steer <fleet_id> [message]`
 
 Post a steer message — a manual trigger that uses the same reasoning loop as a webhook event. Useful for ad-hoc investigation or before a webhook is wired up.
 
@@ -210,7 +238,7 @@ printf "check the latest deploy event\ncheck memory usage\n" | agentsfleet steer
 | `--tty` | *(auto on TTY)* | Force the interactive REPL even when stdin is piped — each line is a separate turn; exits at end-of-file. |
 | `--json` | off | Emit the steer result as JSON. |
 
-When you invoke `agentsfleet steer <agent_id>` from a terminal (TTY) and omit the message, `agentsfleet` opens a read-eval-print loop (REPL). Each submitted line posts one steer message, streams the reply, then returns to the prompt. Press `Ctrl-D` to exit cleanly, or `Ctrl-C` to cancel the active stream and exit.
+When you invoke `agentsfleet steer <fleet_id>` from a terminal (TTY) and omit the message, `agentsfleet` opens a read-eval-print loop (REPL). Each submitted line posts one steer message, streams the reply, then returns to the prompt. Press `Ctrl-D` to exit cleanly, or `Ctrl-C` to cancel the active stream and exit.
 
 Explicit messages stay single-shot, even from a terminal. Piped input also stays single-shot by default so automation and agents can continue invoking the command once per turn. Add `--tty` to force the REPL over piped input; `agentsfleet` exits when the pipe reaches end-of-file.
 
@@ -222,7 +250,7 @@ The reply streams back live; the result also persists to the activity stream for
 
 ### `agentsfleet credential add <name> --data=@-`
 
-Store a JSON-shaped secret in the current workspace vault. The agent references it by name from `TRIGGER.md`.
+Store a JSON-shaped secret in the current workspace vault. The fleet references it by name from `TRIGGER.md`.
 
 Always pipe JSON on stdin via `--data=@-`. Never pass it inline as `--data='{...}'` — that puts the secret in shell history and process argv:
 
@@ -234,7 +262,7 @@ JSON
 
 Default behaviour is skip-if-exists. Use `--force` to overwrite for rotation.
 
-See [Workspace credentials](/agents/credentials) for the full vault model.
+See [Workspace credentials](/fleets/credentials) for the full vault model.
 
 ### `agentsfleet credential show <name>`
 
@@ -242,7 +270,7 @@ Print metadata (created, last-rotated). **Values are never returned.**
 
 ### `agentsfleet credential delete <name>`
 
-Remove a credential from the workspace vault. Any agent still referencing it will fail with `UZ-AGT-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
+Remove a credential from the workspace vault. Any fleet still referencing it will fail with `UZ-AGT-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
 
 ### `agentsfleet credential list`
 
@@ -297,7 +325,7 @@ Prints the workspace's `workspace_id`, `name`, `created_at`, and active marker. 
 
 ### `agentsfleet workspace delete <id>`
 
-Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `agent_id`s, so any upstream webhooks pointing at the old workspace's agents need to be re-wired.
+Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `fleet_id`s, so any upstream webhooks pointing at the old workspace's fleets need to be re-wired.
 
 ```bash
 agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
@@ -307,89 +335,89 @@ agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 
 ## Memory
 
-A read-only window into an agent's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; agents write their own memory during runs.
+A read-only window into a fleet's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; fleets write their own memory during runs.
 
 ### `agentsfleet memory list`
 
 List memory entries newest-first.
 
 ```bash
-agentsfleet memory list --agent 01900000-0000-7000-8000-000000000001
+agentsfleet memory list --fleet 01900000-0000-7000-8000-000000000001
 ```
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--agent <id>` | *(active)* | Agent whose memory to read. |
+| `--fleet <id>` | *(active)* | Fleet whose memory to read. |
 | `--category <name>` | *(all)* | Filter to a single memory category. |
 | `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
 | `--workspace <id>` | *(active)* | Override the active workspace for this call. |
 
 ### `agentsfleet memory search <query>`
 
-Substring-search keys and content across an agent's memory.
+Substring-search keys and content across a fleet's memory.
 
 ```bash
-agentsfleet memory search "deploy" --agent 01900000-0000-7000-8000-000000000001
+agentsfleet memory search "deploy" --fleet 01900000-0000-7000-8000-000000000001
 ```
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--agent <id>` | *(active)* | Agent whose memory to search. |
+| `--fleet <id>` | *(active)* | Fleet whose memory to search. |
 | `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
 | `--workspace <id>` | *(active)* | Override the active workspace for this call. |
 
 ---
 
-## External agents
+## Fleet keys (external access)
 
-External agents are API-key–authenticated callers (LangGraph, CrewAI, Composio, your own code) that drive a specific agent programmatically.
+A **fleet key** is an API key that lets an external caller (LangGraph, CrewAI, Composio, your own code) drive a specific fleet programmatically.
 
-### `agentsfleet agent-key add`
+### `agentsfleet fleet-key add`
 
-Mint an API key bound to one agent.
+Mint an API key bound to one fleet.
 
 ```bash
-agentsfleet agent-key add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-agent
+agentsfleet fleet-key add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-fleet
 ```
 
 The raw key (`agt_a…`) is returned **once**; store it in your secret manager.
 
-### `agentsfleet agent-key list`
+### `agentsfleet fleet-key list`
 
-List every external agent key in a workspace.
+List every fleet key in a workspace.
 
 ```bash
-agentsfleet agent-key list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
+agentsfleet fleet-key list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 ```
 
-### `agentsfleet agent-key delete <agent-key-id>`
+### `agentsfleet fleet-key delete <fleet-key-id>`
 
-Revoke an external agent key.
+Revoke a fleet key.
 
 ```bash
-agentsfleet agent-key delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
+agentsfleet fleet-key delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
 ```
 
 ---
 
 ## Integration grants
 
-Integration grants are per-agent permissions to reach a third-party service (Slack workspace, GitHub repo) that the agent requested interactively.
+Integration grants are per-fleet permissions to reach a third-party service (Slack workspace, GitHub repo) that the fleet requested interactively.
 
-### `agentsfleet grant list --agent <id>`
+### `agentsfleet grant list --fleet <id>`
 
-List pending and approved grants for an agent.
+List pending and approved grants for a fleet.
 
 ```bash
-agentsfleet grant list --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+agentsfleet grant list --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
 ```
 
-### `agentsfleet grant delete --agent <id> <grant-id>`
+### `agentsfleet grant delete --fleet <id> <grant-id>`
 
-Revoke a granted integration. Further attempts by the agent to reach that integration fail with `UZ-GRANT-003`.
+Revoke a granted integration. Further attempts by the fleet to reach that integration fail with `UZ-GRANT-003`.
 
 ```bash
-agentsfleet grant delete --agent 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 0198a7b4-2b5c-7d18-8f63-4e9a1c7d3b20
+agentsfleet grant delete --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 0198a7b4-2b5c-7d18-8f63-4e9a1c7d3b20
 ```
 
 ---
@@ -413,7 +441,7 @@ agentsfleet billing show --json
 | `--cursor <cursor>` | *(none)* | Pagination cursor from a previous response. |
 | `--json` | off | Emit raw JSON for scripting. |
 
-For per-agent spend breakdowns, use `agentsfleet logs <agent_id> --json` and aggregate the `tokens` / `wall_ms` fields client-side. Top-ups and payment-method updates happen at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing).
+For per-fleet spend breakdowns, use `agentsfleet logs <fleet_id> --json` and aggregate the `tokens` / `wall_ms` fields client-side. Top-ups and payment-method updates happen at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing).
 
 ---
 

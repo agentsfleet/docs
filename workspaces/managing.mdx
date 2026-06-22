@@ -9,7 +9,7 @@ description: "Create, list, and remove workspaces."
 agentsfleet workspace add [name]
 ```
 
-The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are tenant-scoped containers for credentials, agents, and webhook namespaces. Repos enter the picture later, when you configure per-agent webhooks (see [Quickstart](/quickstart)).
+The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are tenant-scoped containers for credentials, fleets, and webhook namespaces. Repos enter the picture later, when you configure per-fleet webhooks (see [Quickstart](/quickstart)).
 
 For example:
 
@@ -75,5 +75,5 @@ Deleting a workspace:
 - Retains run history for 30 days.
 
 <Warning>
-  This action cannot be undone. You'll need to recreate the workspace, re-add its credentials, and re-install its agents. Webhook URLs change because each new agent gets a fresh `agent_id`, so any upstream webhook configurations will need to be updated too.
+  This action cannot be undone. You'll need to recreate the workspace, re-add its credentials, and re-install its fleets. Webhook URLs change because each new fleet gets a fresh `fleet_id`, so any upstream webhook configurations will need to be updated too.
 </Warning>
