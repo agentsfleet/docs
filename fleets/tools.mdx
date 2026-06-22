@@ -60,7 +60,7 @@ Lets one fleet hand work to another fleet. Powerful but advanced — most fleets
 
 | Tool | What it does | Reach for when |
 |---|---|---|
-| `delegate` | Delegate a subtask to a specialized sub-fleet (potentially a different model). Synchronous — the parent waits for the result. | The subtask benefits from a stronger model, a different system prompt, or fresh context. |
+| `delegate` | Delegate a subtask to a specialized sub-agent (potentially a different model). Synchronous — the parent waits for the result. | The subtask benefits from a stronger model, a different system prompt, or fresh context. |
 | `spawn` | Launch a background subagent asynchronously. Returns a task ID immediately; results arrive as system messages later. | Long-running fanout that shouldn't block the current run. |
 | `schedule` | Richer scheduler than `cron_*`. Supports shell `command` jobs and fleet `prompt` jobs, with optional channel routing. Actions: `create`, `once`, `list`, `get`, `cancel`, `pause`, `resume`. | When you need fleet-as-job (vs. just a shell command), or one-shot timers, or want results routed to a specific channel. |
 

@@ -32,7 +32,7 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
-One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-fleet install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
+One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
 
 Re-running `agentsfleet install --from <same-path>` against a workspace that already has the same fleet is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 

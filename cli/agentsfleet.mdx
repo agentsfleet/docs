@@ -166,7 +166,7 @@ agentsfleet status
 
 ### Fleet lifecycle: `stop` / `resume` / `kill` / `delete`
 
-Four verbs control an fleet's lifecycle, in increasing order of irreversibility:
+Four verbs control a fleet's lifecycle, in increasing order of irreversibility:
 
 | Verb | What it does | Reversible? |
 |---|---|---|
@@ -335,7 +335,7 @@ agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
 
 ## Memory
 
-A read-only window into an fleet's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; fleets write their own memory during runs.
+A read-only window into a fleet's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; fleets write their own memory during runs.
 
 ### `agentsfleet memory list`
 
@@ -354,7 +354,7 @@ agentsfleet memory list --fleet 01900000-0000-7000-8000-000000000001
 
 ### `agentsfleet memory search <query>`
 
-Substring-search keys and content across an fleet's memory.
+Substring-search keys and content across a fleet's memory.
 
 ```bash
 agentsfleet memory search "deploy" --fleet 01900000-0000-7000-8000-000000000001
@@ -406,7 +406,7 @@ Integration grants are per-fleet permissions to reach a third-party service (Sla
 
 ### `agentsfleet grant list --fleet <id>`
 
-List pending and approved grants for an fleet.
+List pending and approved grants for a fleet.
 
 ```bash
 agentsfleet grant list --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71

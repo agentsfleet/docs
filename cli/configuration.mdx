@@ -31,7 +31,7 @@ Every **other command** then resolves which bearer to send:
 |----------|---------|---------|
 | `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
 | `AGENTSFLEET_DASHBOARD_URL` | Dashboard base URL — used for the login verification page. | `https://app.agentsfleet.net` |
-| `AGENTSFLEET_API_KEY` | Service auth (machine-bound). Sent as the bearer and **overrides a stored `login` session**. Use this for CI, service-to-service calls, and external fleets (LangGraph, CrewAI, Composio, your own code). | — |
+| `AGENTSFLEET_API_KEY` | Service auth (machine-bound). Sent as the bearer and **overrides a stored `login` session**. Use this for CI, service-to-service calls, and external agents (LangGraph, CrewAI, Composio, your own code). | — |
 | `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/agentsfleet` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
@@ -42,7 +42,7 @@ Every **other command** then resolves which bearer to send:
 
 ## Telemetry
 
-`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI fleet if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
+`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
 
 Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
 
