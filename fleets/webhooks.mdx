@@ -12,7 +12,7 @@ https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
 External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --from` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
-  **Most users don't wire webhooks by hand.** The `platform-ops` install skill registers each declared webhook automatically via your existing `gh` CLI — no paste-into-GitHub step. Use [Quickstart](/quickstart) for the full guided flow. The reference below is for custom webhooks — your own provider, an internal service, etc.
+  **`agentsfleet install` prints the webhook URL(s) to register.** Add each printed URL to its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). The reference below covers the signature config the platform expects.
 </Tip>
 
 ## Declaring a webhook trigger
@@ -37,7 +37,7 @@ x-agentsfleet:
 
 `source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
 
-The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`); always declare the array form, even for a single webhook.
+The singular `trigger:` shape is rejected at install with `UZ-AGT-008` (invalid fleet config); always declare the array form, even for a single webhook.
 
 ## Authentication
 
@@ -103,20 +103,22 @@ curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4
 The platform verifies the signature, enqueues the event, and returns `202 Accepted`:
 
 ```json
-{ "accepted": true, "request_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
+{ "status": "accepted", "event_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
 ```
 
 Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the fleet can dedupe.
 
-## Failure responses
+## Responses
 
-| Status | Cause |
-|--------|-------|
-| `401` | Missing, malformed, or mis-signed signature header. |
-| `404` | Fleet ID does not exist. |
-| `410` | Fleet was killed; re-install with `agentsfleet install --from <path>`. |
-| `429` | Rate limit hit; back off per `Retry-After`. |
-| `503` | Budget breached, or platform applying backpressure; safe to retry after the period resets. |
+| Status | Body | Meaning |
+|--------|------|---------|
+| `202` | `{ "status": "accepted", "event_id": "…" }` | Signature verified; event enqueued. |
+| `200` | `{ "ignored": "fleet_paused" }` (or a filter reason) | Fleet is paused, stopped, or killed — or the event was filtered out. Accepted without opening a run; retry queues add no value, so this is `200`, not `4xx`. |
+| `401` | `UZ-WH-010` / `UZ-WH-011` / `UZ-WH-020` | Missing, malformed, mis-signed, or stale signature; or no webhook credential configured. |
+| `404` | `UZ-WH-001` | No fleet at this URL — wrong `fleet_id`, or the fleet was deleted. |
+| `413` | `UZ-WH-030` | Payload exceeds the 1 MiB ingest limit. |
+| `429` | — | Rate limit hit; back off per `Retry-After`. |
+| `503` | — | Platform applying backpressure; safe to retry after the period resets. |
 
 ## Approval gate webhooks
 

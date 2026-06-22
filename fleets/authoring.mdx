@@ -36,7 +36,7 @@ model: claude-sonnet-4-6           # optional, hint
 | Field | Required | Purpose |
 |---|---|---|
 | `name` | yes | Identity. Must equal `TRIGGER.md` `name:` (install rejects mismatch). |
-| `description` | yes | One-line summary, ≤200 chars. |
+| `description` | yes | One-line summary. |
 | `version` | yes | Semver string. |
 | `when_to_use`, `tags`, `author`, `model` | no | Pass-through metadata. |
 
@@ -130,14 +130,14 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 | Subkey | Required | Purpose |
 |---|---|---|
-| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install (`ERR_AGENTSFLEET_INVALID_CONFIG: use "triggers:" (array)`). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
+| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install with `UZ-AGT-008` (invalid fleet config). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
 | `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
 | `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{fleet_id}/{source}` — see [Webhooks](/fleets/webhooks). |
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
 | `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
 | `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/fleets/tools). |
 | `credentials` | optional | Vault key names the fleet reads at event time. |
-| `network.allow` | yes | Outbound hostname allowlist enforced by the sandbox. |
+| `network.allow` | optional | Outbound hostname allowlist enforced by the sandbox. Omit it (or the whole `network:` block) for an empty allowlist — `http_request` then has no permitted hosts. |
 | `budget.daily_dollars` | yes | Rolling 24-hour dollar ceiling. |
 | `budget.monthly_dollars` | optional | Calendar-month dollar ceiling. |
 
@@ -157,7 +157,7 @@ A fleet can declare up to eight triggers and wake on any of them — e.g. one we
 
 The `tools:` list is the explicit allowlist of tools the fleet may invoke. A compromised or jailbroken fleet cannot reach outside this list.
 
-23 tools are user-callable today, grouped by category — network (`http_request`, `web_search`, `web_fetch`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), fleet orchestration (`delegate`, `spawn`, `schedule`), browser, git, file edits, and stateless utilities. **See [Tools catalogue](/fleets/tools) for every tool with its purpose and use cases.**
+The runner exposes 32 built-in tools — network (`http_request`, `web_search`, `web_fetch`, `pushover`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), fleet orchestration (`delegate`, `spawn`, `schedule`), browser, git, `shell` and the file tools, and stateless utilities. The list is deny-by-default — declare only what the fleet needs. **See [Tools catalogue](/fleets/tools) for every tool with its purpose and use cases.**
 
 ### Credentials
 
@@ -180,23 +180,21 @@ A breach terminates the in-flight event cleanly and records a `budget_breach` en
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `RuntimeKeysOutsideBlock` at install | `tools:`, `credentials:`, etc. at the top of TRIGGER.md | Indent them under `x-agentsfleet:`. |
-| `UnknownRuntimeKey` at install | Typo in a runtime subkey (e.g. `crendentials:` instead of `credentials:`) | Fix the spelling, or remove the key. Validation under `x-agentsfleet:` is strict. |
-| `name_mismatch` at install | SKILL.md and TRIGGER.md disagree on `name:` | One identity per bundle. Make both top-level `name:` values equal. |
-| `MissingRequiredField` for SKILL.md | `name`, `description`, or `version` missing from SKILL.md frontmatter | All three are required at the top level. |
+| `UZ-AGT-008` (invalid fleet config) | A runtime key (`tools:`, `credentials:`, `network:`, …) at the top of TRIGGER.md instead of nested; a typo'd subkey under `x-agentsfleet:`; a singular `trigger:`; or a malformed `name:` | Nest runtime keys under `x-agentsfleet:`, fix the spelling, use the `triggers:` array, and keep `name:` kebab-case (`^[a-z0-9-]+$`, 1–64 chars). Validation under `x-agentsfleet:` is strict — unknown subkeys are rejected. |
+| `UZ-AGT-011` (name mismatch) | SKILL.md and TRIGGER.md disagree on top-level `name:` | One identity per bundle. Make both `name:` values equal. |
+| Missing `name` / `description` / `version` in SKILL.md | A required frontmatter field is absent | All three are required at the top level of `SKILL.md`. |
 
 ## Validation
 
-`agentsfleet install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses. Errors are returned with the field at fault.
+`agentsfleet install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses — there is no separate local lint step. Errors come back as a `UZ-AGT-*` wire code with a suggestion.
 
 ```bash
 agentsfleet install --from ./my-fleet
 ```
 
 ```
-✗ install rejected: name_mismatch
-  SKILL.md name: platform-ops-fleet
-  TRIGGER.md name: platform-ops-zombe    ← typo
+UZ-AGT-011  SKILL.md and TRIGGER.md disagree on `name:`
+  Suggestion: make the top-level name: identical in both files
 ```
 
 ## Next

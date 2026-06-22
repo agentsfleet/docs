@@ -6,7 +6,7 @@ description: "What `agentsfleet install --from <path>` does and how to invoke it
 `agentsfleet install --from <path>` is how you bring a fleet up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
 
 ```bash
-agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet install --from ./platform-ops
 ```
 
 ```
@@ -16,25 +16,20 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
-One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. The host-agent install skill consumes this map and registers each URL on the upstream provider via the user's own `gh` (or equivalent) CLI — no paste-into-GitHub step. See [Quickstart](/quickstart) for the guided flow, or [Webhooks](/fleets/webhooks) if you maintain the upstream hook by hand.
+One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. Register each URL on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config the platform expects.
 
 Re-running against the same workspace is safe — running it twice has the same effect as running it once. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
-## Two ways to invoke
+## Install from the catalogue instead
 
-Most users don't run `agentsfleet install --from` directly. They drive the install from a host agent (Claude Code, Amp, Codex CLI, OpenCode) via the `/agentsfleet-install-platform-ops` slash command. Add the skills with `npx skills add agentsfleet/skills`, which symlinks `/agentsfleet-*` into every supported host's skill directory it detects. Then invoke the slash command in your host agent:
+To start from a curated, ready-to-run fleet rather than a local directory, install a [template](/fleets/templates) by id:
 
+```bash
+agentsfleet templates                          # browse the catalogue
+agentsfleet install --template github-pr-reviewer
 ```
-/agentsfleet-install-platform-ops
-```
 
-<Tip>
-  **No global install?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
-</Tip>
-
-The slash command asks three gating questions (Slack channel, production branch glob, optional cron schedule), registers the webhook via your existing `gh` CLI, and prints a per-trigger registration summary at the end. See [Quickstart](/quickstart) for the full walkthrough.
-
-Power users and scripted setups call `agentsfleet install --from <path>` directly — the same flow as the slash command, minus the gating questions and the auto-registration.
+`--from` and `--template` are mutually exclusive — exactly one source per install. See [Quickstart](/quickstart) for the end-to-end walkthrough from a cold machine.
 
 For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/agentsfleet#tenant-provider).
 
@@ -43,8 +38,11 @@ For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/
 | Code | Meaning |
 |---|---|
 | `0` | Installed (or updated). |
-| `1` | No workspace selected, or API error. |
-| `2` | Missing `--from`, invalid path, or schema rejection. |
+| `1` | Not authenticated. |
+| `2` | Network error reaching the API. |
+| `3` | The API rejected the bundle (schema validation, name clash, etc.). |
+| `4` | Missing or invalid argument (e.g. no `--from`/`--template`). |
+| `5` | Bad local bundle (path missing, no `SKILL.md`). |
 
 ## See also
 

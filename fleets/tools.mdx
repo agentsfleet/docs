@@ -14,7 +14,7 @@ x-agentsfleet:
     - cron_add
 ```
 
-23 tools are user-callable today. They group into nine categories below. For the file format, validation rules, and frontmatter, see [Authoring a fleet](/fleets/authoring).
+The runner exposes 32 built-in tools, grouped into the categories below. The `tools:` list in `TRIGGER.md` is an explicit allowlist — declare only what the fleet needs; anything you omit is unreachable. For the file format, validation rules, and frontmatter, see [Authoring a fleet](/fleets/authoring).
 
 ## Network
 
@@ -32,13 +32,13 @@ How a fleet talks to the outside world. Each network tool has a different relati
 
 ## Memory
 
-Cross-run durable state. See [Memory](/memory) for the four-category model and key conventions.
+Cross-run durable state. See [Memory](/memory) for the category model and key conventions.
 
 | Tool | What it does | Reach for when |
 |---|---|---|
-| `memory_store` | Upsert a distilled fact (key + category + body + tags). | End of every run where the fleet learned something worth keeping. |
-| `memory_recall` | Exact-key lookup; returns the entry or empty. | Start of every run, before reasoning. |
-| `memory_list` | Filter entries by category, tags, recency. | When the fleet doesn't know the exact key (e.g. "show me all open tickets"). |
+| `memory_store` | Upsert a distilled fact under a stable key (`key` + `content`, optional `category`). | End of every run where the fleet learned something worth keeping. |
+| `memory_recall` | Return memory entries whose key matches the query (substring filter); the model judges relevance — no ranking or vector search. | Start of every run, before reasoning. |
+| `memory_list` | Filter entries by category / recency. | When the fleet doesn't know the exact key (e.g. "show me all open tickets"). |
 | `memory_forget` | Delete an entry. | Correcting stale facts; fed by `agentsfleet steer` corrections. |
 
 ## Cron
@@ -72,6 +72,7 @@ Three independently-declarable tools that look related but overlap awkwardly. **
 |---|---|---|
 | `browser` | Multi-action verb. The schema advertises `open`, `screenshot`, `click`, `type`, `scroll`, `read` — but only `open` and `read` are functional. **`screenshot` redirects** to the standalone tool (`return ToolResult.fail("Use the screenshot tool instead")`). **`click`/`type`/`scroll` always fail** ("CDP not available"). `read` is a curl-based HTML fetcher capped at 8 KB. | `open` shells out to `open`/`xdg-open` on the runner host — no display on a headless cloud worker, so this no-ops or errors. `read` works but is inferior to `web_fetch`. |
 | `screenshot` | Independent tool. Captures the runner's screen via platform-native commands. Returns an `[IMAGE:path]` marker. | The hosted v2 runner is headless. There's no display to capture, and the tool reflects that — declare only if you're running a self-hosted runner with a display attached. |
+| `browser_open` | Open a URL on the runner host (`open`/`xdg-open`). | Same headless limitation as `browser`'s `open` action — no-ops or errors on the cloud runner; for self-hosted runners with a display only. |
 
 <Warning>
 **Declaring `browser` does NOT unlock `screenshot` capabilities.** They're independent tools; the sub-action name overlap is incidental. If you want a screen capture, declare `screenshot`. Declaring both `browser` and `screenshot` is fine — they don't conflict.
@@ -85,13 +86,20 @@ Repository operations on the runner's workspace directory.
 |---|---|
 | `git` | Structured wrapper for `status`, `diff`, `log`, `branch`, `commit`, `add`, `checkout`, `stash`. Constrained to the runner's workspace. |
 
-## File
+## Shell and file
 
-The fleet does not get a free shell or filesystem inside the sandbox. The one file tool exposed to fleets enforces hash-anchored edits to prevent silent overwrites.
+These operate on the runner's sandbox workspace and are **deny-by-default** — a fleet gets them only if its `TRIGGER.md` `tools:` list names them. Declare the narrowest set you need; `shell` and the write/delete tools are powerful, so add them deliberately. Most operational fleets need none of these — they reach external systems through `http_request`, not the local filesystem.
 
 | Tool | What it does |
 |---|---|
-| `file_edit_hashed` | Replace lines in a file using Hashline anchors. Edits are rejected if the on-disk content has drifted from the hash the fleet saw — protects against concurrent-edit races. |
+| `shell` | Run a shell command in the sandbox workspace. |
+| `file_read` | Read a file from the workspace. |
+| `file_write` | Write (create or overwrite) a file. |
+| `file_append` | Append to a file. |
+| `file_delete` | Delete a file. |
+| `file_edit` | Replace lines in a file. |
+| `file_edit_hashed` | Replace lines using Hashline anchors — rejected if the on-disk content drifted from the hash the fleet saw, protecting against concurrent-edit races. |
+| `file_read_hashed` | Read a file with per-line hashes, so a later `file_edit_hashed` can anchor safely. |
 
 ## Stateless utilities
 
@@ -107,6 +115,7 @@ Pure-function helpers — no side effects, no network, no state.
 | Tool | What it does |
 |---|---|
 | `message` | Send a message to a channel. If `channel`/`chat_id` are omitted, posts to the current conversation. Supports attachment markers (`[FILE:...]`, `[DOCUMENT:...]`, `[IMAGE:...]`) on marker-aware channels. |
+| `pushover` | Send a push notification to your devices via [Pushover](https://pushover.net) — for paging a human from inside a run. Needs a `pushover` credential. |
 
 ## How tools, credentials, and the network allowlist combine
 
@@ -137,7 +146,7 @@ The practical consequences:
 - **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
 - **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
 
-When the fleet tries to invoke a tool not in the fleet's resolved `tools:` set, the underlying fleet runtime returns a "no such tool" error to the fleet in-prompt — visible in the activity-stream entry, not as a wire response. The platform registers `UZ-TOOL-004` (Tool not attached) for this case but the v2 emission path stays inside the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
+When the fleet tries to invoke a tool not in its resolved `tools:` set, the underlying fleet runtime returns a "no such tool" error to the fleet in-prompt — visible in the activity-stream entry, not as a wire response. There is no dedicated wire code for this case; only `UZ-TOOL-005` (Unknown tool) exists, and it too stays in the activity stream. See [Error codes → Tool](/api-reference/error-codes#tool).
 
 ## See also
 

@@ -8,7 +8,7 @@ description: "The lifecycle commands — install, status, logs, events, steer, s
 A small set of verbs cover the live lifecycle: `install --from <path>` brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
 
 ```bash
-agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet install --from ./platform-ops
 agentsfleet status                               # every fleet in the workspace
 agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # tail one fleet's recent activity
 agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check"
@@ -22,7 +22,7 @@ agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                      # h
 Reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to the active workspace. **Install is the deploy** — there is no separate `up` step.
 
 ```bash
-agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet install --from ./platform-ops
 ```
 
 ```
@@ -32,15 +32,18 @@ agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
-One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. The host-agent install skill registers each URL on the upstream provider via your existing `gh` (or equivalent) CLI — there is no separate paste step. To rotate the workspace-level signing secret, see [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook).
+One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. Register each on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config and [Credentials](/fleets/credentials) to rotate the signing secret.
 
 Re-running `agentsfleet install --from <same-path>` against a workspace that already has the same fleet is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
 
 Exit codes:
 
 - `0` — installed (or updated).
-- `1` — no workspace selected, or API error.
-- `2` — missing `--from`, invalid path, or schema rejection.
+- `1` — not authenticated.
+- `2` — network error reaching the API.
+- `3` — the API rejected the bundle (schema validation, name clash, etc.).
+- `4` — missing or invalid argument (e.g. no `--from`/`--template`).
+- `5` — bad local bundle (path missing, no `SKILL.md`).
 
 ## `agentsfleet status`
 
@@ -134,7 +137,10 @@ State is checkpointed at every transition — nothing on the activity stream is 
 | Code | Meaning |
 |------|---------|
 | `0` | Success. |
-| `1` | Workspace not selected, network error, or server rejected the call. |
-| `2` | Invalid or missing argument (missing `--from`, missing `<fleet_id>`, etc.). |
+| `1` | Not authenticated. |
+| `2` | Network error reaching the API. |
+| `3` | The API rejected the call (e.g. invalid state transition). |
+| `4` | Missing or invalid argument (e.g. no `<fleet_id>`). |
+| `5` | Local config error. |
 
 See the [CLI reference](/cli/agentsfleet) for the full command matrix.

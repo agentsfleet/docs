@@ -25,21 +25,23 @@ description: "Install the agentsfleet CLI."
   </Step>
 </Steps>
 
-## Fleet Skills
+## Install a fleet
 
-The `agentsfleet-install-platform-ops` skill is the guided install UX driven from a host agent (Claude Code, Amp, Codex CLI, OpenCode). Add the skills with one command:
+With the CLI installed, sign in and install a fleet from the template catalogue:
 
 ```bash
-npx skills add agentsfleet/skills
+agentsfleet login                              # browser approval + verification code
+agentsfleet templates                          # browse the catalogue
+agentsfleet install --template github-pr-reviewer
 ```
 
-This symlinks the `/agentsfleet-*` slash commands from the public [`agentsfleet/skills`](https://github.com/agentsfleet/skills) repo into every supported host's skill directory it detects on your machine — invoke `/agentsfleet-install-platform-ops` in your agent and you’re set. Pass `--host=<claude|amp|codex|opencode>` to target a single host instead of every detected one.
+Or install a local bundle you authored with `agentsfleet install --from <path>` (see [Authoring a fleet](/fleets/authoring)).
 
 <Tip>
-  **No global install?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill together in one command (requires Node — it runs npm under the hood). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
+  **One-line bootstrap.** `curl -fsSL https://agentsfleet.dev | bash` installs the `agentsfleet` CLI (it runs npm under the hood — Node required). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
 </Tip>
 
-The skill drives `agentsfleet install --from`, `agentsfleet credential`, `agentsfleet steer`, `agentsfleet logs`, and the doctor preflight under the hood. See [Quickstart](/quickstart) for the end-to-end flow.
+See [Quickstart](/quickstart) for the end-to-end flow from a cold machine.
 
 ## Verify installation
 
@@ -63,4 +65,4 @@ agentsfleet doctor
 | `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `agentsfleet login` from your signup-provisioned default workspace; can also be set or replaced by `agentsfleet workspace add` / `workspace use`. |
 | `workspace_binding_valid` | The resolved auth token can read the selected workspace's fleets — i.e. it is bound to the right tenant. Reports a failed check (rather than aborting) when no token is present. |
 
-Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before any install — host-agent skills depend on this preflight. For the tenant's inference posture and free-trial window, use [`agentsfleet tenant provider show`](/cli/agentsfleet#tenant-provider).
+Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before installing a fleet to confirm connectivity and workspace selection. For the tenant's inference posture and free-trial window, use [`agentsfleet tenant provider show`](/cli/agentsfleet#tenant-provider).

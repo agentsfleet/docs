@@ -7,18 +7,18 @@ description: "agentsfleet is a fleet of prebuilt AI teammates for recurring engi
   agentsfleet is in early access. Join the waitlist to get in — or email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) to come on as a design partner.
 </Card>
 
-Each one wakes on an event — a pull request, an incident, a deploy — investigates across your code, telemetry, and live control-plane state, opens a scenario-backed fix, and waits for human approval before it ships. Every move lands in a durable, replayable log — evidenced answers, never chat.
+Each fleet is two markdown files — a `SKILL.md` that says what to investigate and a `TRIGGER.md` that says when it wakes and which tools it may call. Install one, wire a webhook, and it runs on every event — no servers to manage, every move in a replayable log.
 
 ## Get started
 
-Install `agentsfleet` and the host skills in one command:
+Install the `agentsfleet` CLI in one command:
 
 ```bash
 curl -fsSL https://agentsfleet.dev | bash
 ```
 
 <Card title="Start your first fleet →" icon="rocket" href="/quickstart" horizontal>
-  Sign in, install `platform-ops`, and trigger your first real diagnosis — step by step from a cold machine.
+  Sign in, install a fleet from the template catalogue, and trigger your first real run — step by step from a cold machine.
 </Card>
 
 ## Explore

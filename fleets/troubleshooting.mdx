@@ -18,7 +18,7 @@ A fleet that's misbehaving falls into one of six failure shapes. Find the sympto
 
 ## 1. Install rejected
 
-`agentsfleet install --from <path>` exited with code `2`. The platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
+`agentsfleet install --from <path>` exited with code `3` (the API rejected the bundle). The platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
 
 ```bash
 agentsfleet install --from ./my-fleet --json 2>&1 | tail -5
@@ -54,6 +54,7 @@ Three things to look for in the output:
 | Zero events in the window | Request never reached the platform (DNS, firewall, wrong URL on the upstream side). |
 | Events with rejection metadata, not run opens | Signature verification failed. |
 | Events but `actor: webhook:unknown` | Source label is missing or the `signature` block in `TRIGGER.md` doesn't match the upstream's actual headers. |
+| Upstream got `200 {"ignored": "fleet_paused"}` | The fleet is paused, stopped, or killed — so the event is accepted but no run opens. `agentsfleet status` shows the state; `agentsfleet resume <fleet_id>` if it should be running. |
 
 ### Wire codes returned to the upstream
 
@@ -63,8 +64,7 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 |---|---|---|
 | `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` — verify the ID matches `agentsfleet status`. |
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
-| `UZ-WH-003` | 403 | Fleet is paused or killed. `agentsfleet status` will show the state; re-install with `agentsfleet install --from <path>`. |
-| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Quickstart → Verify the registered webhook](/quickstart#verify-the-registered-webhook). |
+| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Credentials → Rotation](/fleets/credentials#rotation). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
 | `UZ-WH-020` | 401 | No webhook credential configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet credential list` to confirm; add with `agentsfleet credential add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |
@@ -97,12 +97,12 @@ agentsfleet events <fleet_id> --since 1h --json | jq 'select(.error)'
 | Wire code | Cause | Fix |
 |---|---|---|
 | `UZ-AGT-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet credential list` to confirm; `agentsfleet credential add <name> --data=@-` to add. |
-| `UZ-AGT-002` | Fleet timeout | The model didn't return within the per-event ceiling. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
+| `UZ-EXEC-003` | Execution timeout | The run exceeded its wall-clock ceiling and was killed. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
 | `UZ-MEM-003` | Memory backend unavailable | Transient. Re-trigger; if persistent, file an issue. |
-| `UZ-MEM-001` | Memory scope denied | The fleet tried to read another fleet's memory. Check the `key` derivation in `SKILL.md` — keys are fleet-scoped. |
+| `UZ-MEM-002` | Fleet not found for memory op | The `fleet_id` on the memory call doesn't exist in this workspace. Memory is fleet-scoped; confirm the fleet with `agentsfleet status`. |
 
 <Note>
-**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` at warn level and silently skips it. When the fleet tries to invoke a tool that isn't in its resolved set, NullClaw returns a "no such tool" message in the activity stream rather than emitting `UZ-TOOL-004` to a caller. Both `UZ-TOOL-*` codes exist in the registry (see [Error codes → Tool](/api-reference/error-codes#tool)) but in v2 today the diagnostic signal is the activity-stream entry, not a wire response. Audit `agentsfleet logs <fleet_id>` for the actual error text. See [Tools catalogue → Validation](/fleets/tools#validation).
+**Tool-related failures don't surface as wire codes.** When a `tools:` entry has a typo, the runner logs `UZ-TOOL-005` (Unknown tool) at warn level and silently skips it. When the fleet tries to invoke a tool that isn't in its resolved set, the runtime returns a "no such tool" message in the activity stream. Either way the diagnostic signal is the activity-stream entry, not a wire response — audit `agentsfleet logs <fleet_id>` for the actual error text. See [Tools catalogue → Validation](/fleets/tools#validation).
 </Note>
 
 ### Network allowlist drops
@@ -142,7 +142,7 @@ Edit `SKILL.md`, `agentsfleet install --from .`, re-steer. The next event uses t
 
 ## 5. Budget breach
 
-Run terminated with `UZ-AGT-001`. The `daily_dollars` or `monthly_dollars` ceiling in `TRIGGER.md` was hit.
+The run terminated on a budget breach — the `daily_dollars` or `monthly_dollars` ceiling in `TRIGGER.md` was hit. The activity stream records the terminated run (there's no separate wire code).
 
 ```bash
 agentsfleet status --json | jq '.[] | select(.fleet_id == "<id>") | {state, budget}'
