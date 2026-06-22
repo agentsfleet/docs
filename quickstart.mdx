@@ -59,7 +59,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
   zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
   ```
 
-  `github-pr-reviewer` needs a `github` credential. Add it to the workspace vault before installing (install rejects a bundle whose credentials are missing, `UZ-BUNDLE-003`). Pipe the JSON on stdin so it never lands in shell history:
+  `github-pr-reviewer` needs a `github` credential. Add it to the workspace vault before installing (install rejects a bundle whose credentials are missing, [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle)). Pipe the JSON on stdin so it never lands in shell history:
 
   ```bash
   agentsfleet credential add github --data=@- <<'JSON'
