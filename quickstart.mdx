@@ -1,36 +1,24 @@
 ---
 title: Quickstart
-description: "Install agentsfleet, run /agentsfleet-install-platform-ops, see a real diagnosis in Slack."
+description: "Install the agentsfleet CLI, install a fleet from the template catalogue, and watch it run."
 ---
 
-This walks through installing the flagship `platform-ops` fleet on one of your repositories. Total time: about ten minutes from a cold machine. At the end, a deploy failure on the repo lands an evidenced diagnosis in your Slack channel.
+This walks through installing a fleet from the first-party catalogue and seeing it run — about five minutes from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any template.
 
 <Steps>
 
-<Step title="Prerequisite: a host agent">
-  You'll drive the install via a markdown-skill host. Any of these work — the install skill ships identical prompts in each:
-
-  - **Claude Code** — `claude.ai/code`
-  - **Amp** — `ampcode.com`
-  - **Codex CLI** — `npm install -g @openai/codex`
-  - **OpenCode** — `opencode.ai`
-
-  Pick one. The rest of this page assumes you have a working session in front of you.
-</Step>
-
-<Step title="Install agentsfleet and skills">
+<Step title="Install the CLI">
   ```bash
-  npm install -g @agentsfleet/cli
-  npx skills add agentsfleet/skills
+  curl -fsSL https://agentsfleet.dev | bash
   ```
+
+  This installs the `agentsfleet` CLI (it runs npm under the hood, so Node.js is required). Prefer npm directly? `npm install -g @agentsfleet/cli`. Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read the script first.
 
   Verify:
 
   ```bash
   agentsfleet --version
   ```
-
-  `agentsfleet` is the only binary you install on your machine; it ships the skill samples under `~/.config/agentsfleet/samples/` so the install skill can drive `agentsfleet install --from` against a known-good source. `npx skills add agentsfleet/skills` then symlinks the `/agentsfleet-*` host skills from the public [`agentsfleet/skills`](https://github.com/agentsfleet/skills) repo into every supported agent it detects — so `/agentsfleet-install-platform-ops` is ready to invoke in the next step.
 </Step>
 
 <Step title="Sign in">
@@ -38,102 +26,97 @@ This walks through installing the flagship `platform-ops` fleet on one of your r
   agentsfleet login
   ```
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from. Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://agentsfleet.net/pricing) for the metered rates after the trial. You bring your provider and model — pay them directly. agentsfleet marks up zero on inference.
+  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from.
 
-  Login also fetches your tenant's workspaces and selects the first one as active locally. Signup auto-provisions a default workspace, so your CLI is ready to install fleets immediately — no `workspace add` required.
+  Login also fetches your tenant's workspaces and selects the first one as active. Signup auto-provisions a default workspace, so your CLI is ready to install a fleet immediately — no `workspace add` required.
 
-  <Tip>Pass `--token-name "your-device-label"` to label this install so it's easy to recognize on the approval page and in `agentsfleet auth status` later. Defaults to your platform family otherwise.</Tip>
+  Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://agentsfleet.net/pricing) for the metered rates after the trial. You bring your provider and model and pay them directly — agentsfleet marks up zero on inference.
 
   <Note>
-    **No terminal — CI, or an agent driving the CLI?** Skip the browser entirely: supply a token via the `--token <token>` flag or piped on stdin — resolved in that order (prefer stdin to keep it out of shell history). For ongoing machine auth, set the `AGENTSFLEET_API_KEY` environment variable instead of logging in — it is sent on every request and overrides a stored login. Add `--no-input` to fail fast instead of waiting for the code — a no-TTY shell with no token exits with an error. Full precedence in [`agentsfleet login`](/cli/agentsfleet#agentsfleet-login).
+    **No terminal — CI, or an agent driving the CLI?** Skip the browser: supply a token via `--token <token>` or piped on stdin (prefer stdin to keep it out of shell history). For ongoing machine auth, set the `AGENTSFLEET_API_KEY` environment variable instead of logging in — it's sent on every request and overrides a stored login. Add `--no-input` to fail fast instead of waiting for the code. Full precedence in [`agentsfleet login`](/cli/agentsfleet#agentsfleet-login).
   </Note>
 </Step>
 
 <Step title="(Optional) Create a named workspace">
   ```bash
-  agentsfleet workspace add platform-ops
+  agentsfleet workspace add pr-review
   ```
 
-  Skip this step if the signup-provisioned default workspace is fine. Run it only when you want a second workspace or a custom name. Workspaces are the boundary for credentials, access control, and webhook namespaces — every fleet lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
+  Skip this if the signup-provisioned default workspace is fine. Workspaces are the boundary for credentials, access control, and webhook namespaces — every fleet lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
 </Step>
 
-<Step title="Run the install skill">
-  The `npx skills add agentsfleet/skills` in Step 2 already added the `/agentsfleet-install-platform-ops` skill to your agent. Invoke it:
+<Step title="Browse the catalogue and add the credential">
+  List the first-party templates and the credentials each one needs:
+
+  ```bash
+  agentsfleet templates
+  ```
 
   ```
-  /agentsfleet-install-platform-ops
+  TEMPLATE                       NAME                            CREDENTIALS
+  github-pr-reviewer             GitHub Pull Request reviewer    github
+  security-reviewer              Security reviewer               github
+  zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
   ```
 
-  The skill drives `agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops` under the hood. Power users can run that directly; everyone else gets the guided flow.
+  `github-pr-reviewer` needs a `github` credential. Add it to the workspace vault before installing (install rejects a bundle whose credentials are missing, `UZ-BUNDLE-003`). Pipe the JSON on stdin so it never lands in shell history:
 
-  <Tip>
-    **Fresh machine?** `curl -fsSL https://agentsfleet.dev | bash` installs `agentsfleet` and the skill in one shot (it runs npm under the hood) — a one-command replacement for Step 2. You still need `agentsfleet login` (Step 3) before the skill works. Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
-  </Tip>
+  ```bash
+  agentsfleet credential add github --data=@- <<'JSON'
+  { "api_token": "ghp_...", "webhook_secret": "<32-byte hex>" }
+  JSON
+  ```
 
-  The skill asks three gating questions:
-
-  - **Slack channel** — where diagnoses post (e.g. `#platform-ops`).
-  - **Production branch glob** — which branches count as production (default `main`).
-  - **Cron schedule** (optional) — for periodic health checks (e.g. `*/30 * * * *`). Leave blank for webhook-only.
-
-  It writes `.agentsfleet/platform-ops/SKILL.md` and `.agentsfleet/platform-ops/TRIGGER.md` into the current repo. Re-running against the same workspace is idempotent; existing files are diffed and updated.
+  `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Credentials](/fleets/credentials) for the full vault model.
 </Step>
 
-<Step title="Verify the registered webhook">
-  The install skill registers the GitHub webhook automatically. It reads the `triggers[]` block in the generated `TRIGGER.md`, then calls `gh api repos/<owner>/<repo>/hooks` per webhook trigger — using the user's existing `gh` authentication and the `webhook_secret` field from the workspace `github` credential. There is no paste-into-GitHub step.
-
-  After install, the skill prints a summary line per registered hook:
-
-  ```
-  ✓ github · https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
-    hook_id=489182  events=[workflow_run]  active=true
-    HMAC self-verify: ok
+<Step title="Install the fleet">
+  ```bash
+  agentsfleet install --template github-pr-reviewer
   ```
 
-  The fleet filters incoming payloads for `conclusion=failure` on a production-branch workflow — the rule lives in the generated `.agentsfleet/platform-ops/SKILL.md` and is editable. See [Authoring](/fleets/authoring) to widen or narrow it.
+  agentsfleet fetches the template's pinned source, validates it server-side, prints a requirements preview (credentials, tools, network hosts), then creates the fleet and prints its webhook URL:
 
-  If `gh` is not authenticated for `admin:repo_hook` scope, the skill stops with the exact recovery command (`gh auth refresh -s admin:repo_hook`). If the hook already exists at the same URL, the skill matches on `config.url` and advances — re-running the install is idempotent.
+  ```
+  ✓ github-pr-reviewer is live.
+    Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
+    Webhook URLs (register on the upstream provider):
+      github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
+  ```
 
-  <Tip>
-    **One workspace credential, many repos.** The workspace's `github` credential carries the signing secret for every fleet in the workspace. Tradeoff: rotation is workspace-wide; rotating the workspace `github` credential affects every fleet that uses it.
-  </Tip>
-
-  <Warning>
-    **Rotating the webhook secret.** The signing secret lives in the workspace vault under the `github` credential — there is no user-visible copy printed at install. To rotate, replace the credential then update every registered hook with `gh`. Two steps:
-
-    **1. Rotate the workspace `github` credential.** Generate a new webhook secret (e.g. `openssl rand -hex 32`), store it in 1Password, then pipe the credential JSON through `op inject` so the secret never appears in shell history or argv. Run `op signin` first — if the 1Password session is stale, `op inject` fails before `agentsfleet` runs and the workspace vault is left untouched (don't proceed to step 2 in that case, or your GitHub webhooks will be set to a secret the server never stored):
-
-    ```bash
-    cat <<'JSON' | op inject | agentsfleet credential add github --data=@- --force
-    {
-      "api_token":      "{{ op://Personal/agentsfleet-github/api_token }}",
-      "webhook_secret": "{{ op://Personal/agentsfleet-github/webhook_secret }}"
-    }
-    JSON
-    ```
-
-    `op inject` substitutes each `{{ op://... }}` reference with the resolved secret and pipes the rendered JSON to `agentsfleet`. `--data=@-` reads from stdin; `--force` overwrites the existing credential. If you don't use 1Password, the literal-JSON form below works the same — just keep it on stdin, never inline:
-
-    ```bash
-    cat <<'JSON' | agentsfleet credential add github --data=@- --force
-    { "api_token": "ghp_...", "webhook_secret": "<new-secret>" }
-    JSON
-    ```
-
-    See [Credentials](/fleets/credentials) for the full schema.
-
-    **2. Update every registered hook.** Re-run `/agentsfleet-install-platform-ops` in each repo — the install skill detects the existing hook, calls `gh api -X PATCH repos/<owner>/<repo>/hooks/<hook_id>` with the new secret, and re-runs HMAC self-verify. The old secret stops working the moment step 1 completes, so do this immediately after.
-  </Warning>
+  Re-running is idempotent. Pass `--name <name>` to back several fleets with one template (e.g. one reviewer per repo). See [Templates](/fleets/templates).
 </Step>
 
-<Step title="Trigger a real diagnosis">
-  Cause a deploy failure on the production branch — push a known-broken commit, fail a test on purpose, whatever you have handy. Within seconds:
+<Step title="Register the webhook">
+  The CLI prints the webhook URL but does **not** register it for you. Add it to your repository on GitHub — **Settings → Webhooks → Add webhook**:
 
-  - GitHub fires `workflow_run.completed` with `conclusion: failure` to the webhook URL.
-  - The fleet wakes, calls the tools `TRIGGER.md` allow-lists (`http_request` against your hosting provider, `memory_store` for findings), gathers evidence from the failed workflow.
-  - An evidenced diagnosis posts to your Slack channel.
+  - **Payload URL** — the `github:` URL the install step printed.
+  - **Content type** — `application/json`.
+  - **Secret** — the same `webhook_secret` you stored in the `github` credential.
+  - **Which events** — "Let me select individual events" → **Pull requests**.
 
-  Tail it — replace `<fleet_id>` with the value the install step printed (e.g. `0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71`):
+  Or do it from the terminal with your existing `gh` auth:
+
+  ```bash
+  gh api repos/<owner>/<repo>/hooks --method POST \
+    -f "name=web" \
+    -f "config[url]=https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github" \
+    -f "config[content_type]=json" \
+    -f "config[secret]=<webhook_secret>" \
+    -f "events[]=pull_request" \
+    -F "active=true"
+  ```
+
+  See [Webhooks](/fleets/webhooks) for signature details and other providers.
+</Step>
+
+<Step title="Trigger a run">
+  Open a pull request on the repo. Within seconds:
+
+  - GitHub fires `pull_request` to the webhook URL.
+  - The fleet wakes, reads the PR, and posts a review comment.
+
+  Tail it — replace `<fleet_id>` with the value the install step printed:
 
   ```bash
   agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
@@ -146,21 +129,27 @@ This walks through installing the flagship `platform-ops` fleet on one of your r
 
 ## What just happened
 
-The platform-ops fleet installed `SKILL.md` (the prose system prompt — what to investigate, how to phrase a diagnosis) and `TRIGGER.md` (which tools the model can call) into your repo. From here, behaviour iterates on prose: edit the `.agentsfleet/platform-ops/SKILL.md` file, push, the next trigger runs the new behaviour. No redeploys, no DAG editor.
+A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which credentials it reads). The template shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
+
+```bash
+agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
+```
+
+No redeploys, no DAG editor — the next event runs the new prose.
 
 ## Next steps
 
 <Columns cols={2}>
   <Card title="Steer the fleet manually" icon="message" href="/cli/agentsfleet">
-    `agentsfleet steer <fleet_id> "morning health check"` — same reasoning loop, manual trigger. Useful before you have a webhook firing.
+    `agentsfleet steer <fleet_id> "review the latest PR"` — same reasoning loop, manual trigger. Useful before a webhook is firing.
   </Card>
-  <Card title="Read SKILL.md / TRIGGER.md" icon="file-pen" href="/concepts">
-    The two markdown files in `.agentsfleet/platform-ops/` are the entire behaviour. Edit them like any other source file.
+  <Card title="Author your own fleet" icon="file-pen" href="/fleets/authoring">
+    Write your own `SKILL.md` + `TRIGGER.md` and install it with `agentsfleet install --from .`.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
-    Why deep incidents keep reasoning past the model's context cap. Defaults work for 95% of cases.
+    Why deep runs keep reasoning past the model's context cap. Defaults work for 95% of cases.
   </Card>
-  <Card title="Authoring a fleet" icon="file-code" href="/fleets/authoring">
-    The `SKILL.md` + `TRIGGER.md` reference for writing your own.
+  <Card title="Browse templates" icon="grid-2" href="/fleets/templates">
+    The full first-party catalogue and how to install from it.
   </Card>
 </Columns>

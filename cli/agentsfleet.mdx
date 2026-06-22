@@ -67,7 +67,7 @@ Removes local credentials (`~/.config/agentsfleet/credentials.json`) and aborts 
 agentsfleet logout
 ```
 
-Does **NOT** revoke your active session token — JWTs are short-lived (~15 min) and expire on their own. Does **NOT** touch the `AGENTSFLEET_API_KEY` environment variable — if it's set, subsequent commands continue to authenticate with that key (it overrides a stored login) until you unset it.
+Does **NOT** revoke your active session token — JWTs are short-lived and expire on their own. Does **NOT** touch the `AGENTSFLEET_API_KEY` environment variable — if it's set, subsequent commands continue to authenticate with that key (it overrides a stored login) until you unset it.
 
 ### `agentsfleet auth status`
 
@@ -91,13 +91,13 @@ The probe result is one of `valid` (200 from the billing endpoint), `unauthorize
 
 ### `agentsfleet install --from <path>`
 
-Reads `SKILL.md` and `TRIGGER.md` from `<path>`, validates them, and uploads to the active workspace. The two markdown files are the configuration; the `agentsfleet-install-platform-ops` host-agent skill is what generates them under `.agentsfleet/<fleet>/` in your repo. The `--from` flag is required — there are no bare-name template aliases.
+Reads `SKILL.md` and `TRIGGER.md` from `<path>`, validates them server-side, and uploads to the active workspace. `SKILL.md` is required; `TRIGGER.md` is optional (a default API wake is generated when it's absent). `install` needs exactly one source — `--from <path>` or `--template <id>`; there are no bare-name aliases.
 
 ```bash
-agentsfleet install --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet install --from ./my-fleet
 ```
 
-The `samples/` directory ships with `agentsfleet` and contains the flagship `platform-ops` sample. The host-agent install skill (`/agentsfleet-install-platform-ops`) drives this command under the hood. See [Quickstart](/quickstart) and [Templates](/fleets/templates).
+For a curated, ready-to-run fleet, use `agentsfleet install --template <id>` instead (browse with `agentsfleet templates`). See [Quickstart](/quickstart) and [Templates](/fleets/templates).
 
 ### `agentsfleet install --template <id>`
 
@@ -132,7 +132,7 @@ Prints a table of template id, name, and required credentials. Pass `--json` for
 Re-parse `SKILL.md` and `TRIGGER.md` from a local bundle and `PATCH` them onto an existing fleet — the in-place counterpart to `install`. Use it to roll a configuration change onto an already-registered fleet without re-creating it.
 
 ```bash
-agentsfleet fleet update 01900000-0000-7000-8000-000000000001 --from ~/.config/agentsfleet/samples/platform-ops
+agentsfleet fleet update 01900000-0000-7000-8000-000000000001 --from ./my-fleet
 ```
 
 | Flag | Default | Purpose |

@@ -1,22 +1,22 @@
 ---
 title: "Memory"
-description: "How a fleet remembers across events — four categories, four tools, when to use each."
+description: "How a fleet remembers across events — the categories, the four tools, and when to use each."
 ---
 
 Memory is what a fleet *learned* from prior events that lets it behave like a teammate who's been here before, instead of one that showed up this morning. A fleet writes facts via `memory_store` and reads them back via `memory_recall` on the next event.
 
 Memory is always on — no setup, no flag.
 
-## The four categories
+## Categories
 
 | Category | Scope | Lifetime | Use for |
 |---|---|---|---|
 | `core` | fleet | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
 | `daily` | fleet | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
-| `conversation` | event | dies with the run | Within-run scratch — checkpoint findings during a long incident. |
-| `workspace` | workspace | durable | Facts shared across every fleet in the workspace. |
+| `conversation` | fleet | windowed; ages out fast | Within-run scratch — checkpoint findings during a long incident. |
+| *(custom)* | fleet | windowed by recency | Any other label you pick — treated as recency-windowed, never pinned. |
 
-Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for staging during a long run. Pick `workspace` only when multiple fleets need the same fact.
+All memory is scoped to one `fleet_id` — there is no cross-fleet or workspace-wide category. Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for run-scoped scratch. Any label the platform doesn't recognise is treated as a custom, recency-windowed category.
 
 ## The four tools
 
@@ -24,12 +24,12 @@ The fleet calls these from inside a run; the runtime wires them to the memory ba
 
 | Tool | Shape | Purpose |
 |---|---|---|
-| `memory_store(key, category, content, tags?)` | upsert | Write a distilled fact. |
-| `memory_recall(key)` | one entry or empty | Exact lookup by key. |
-| `memory_list(filter)` | matching entries | Filter by category / tags / recency. |
-| `memory_forget(key)` | delete | Remove or correct a fact. |
+| `memory_store(key, content, category?)` | upsert | Write a distilled fact under a stable key. |
+| `memory_recall(query, limit?)` | ranked matches | Search recent memory by free-text query (recency-ranked, not an exact-key lookup). |
+| `memory_list(filter)` | matching entries | Filter by category / recency. |
+| `memory_forget(key)` | delete | Remove or correct a fact by key. |
 
-There is no vector search. Pre-filter with tags + categories + recency, then let the model reason over the candidate set.
+There is no vector search — recall ranks by recency, not embedding similarity. Narrow with categories and recency, then let the model reason over the candidate set.
 
 ## Where memory fits in a run
 
@@ -62,20 +62,18 @@ Four habits make selection work for you instead of against you:
 
 ## Entry format
 
-Memory is stored in Postgres but exports as markdown for human review.
+Memory is stored in Postgres. Read it back with `agentsfleet memory list` / `agentsfleet memory search` — a table, or `--json` for the raw shape:
 
-```markdown
----
-key: customer_bob_chen_acme
-category: core
-tags: [customer, plan_pro]
----
-
-Bob Chen, Acme. Pro since Jan 15. API user (not dashboard), webhooks → Slack.
-Prefers technical responses. Prior: Feb 3 signature issue (NTP).
+```json
+{
+  "key": "customer_bob_chen_acme",
+  "category": "core",
+  "content": "Bob Chen, Acme. Pro since Jan 15. API user (not dashboard), webhooks → Slack. Prefers technical responses. Prior: Feb 3 signature issue (NTP).",
+  "updated_at": 1718900000000
+}
 ```
 
-Frontmatter is structured metadata; the body is the distilled prose the fleet wrote.
+`key` is the stable handle the fleet stores and forgets by; `content` is the distilled prose it wrote.
 
 ## Correcting what the fleet learned
 
@@ -89,7 +87,7 @@ The next event uses the corrected memory.
 
 ## Isolation
 
-Every memory operation is scoped by `fleet_id`. Fleet A cannot read Fleet B's memory. The memory store is a separate Postgres database, not a shared filesystem — even a fleet with shell or file tools can't reach it through the wrong protocol.
+Every memory operation is scoped by `fleet_id`. Fleet A cannot read Fleet B's memory. The memory store is a separate Postgres schema behind a dedicated database role with no grants on the core tables — not a shared filesystem, so even a fleet with shell or file tools can't reach it through the wrong protocol.
 
 ## Common questions
 
@@ -112,4 +110,4 @@ The underlying system changed but memory didn't. Steer the fleet to call `memory
 | Recall returns nothing on a known entity | Inconsistent key convention | Use a stable, deterministic key derivation in `SKILL.md` (e.g. `customer_<email-slug>`). |
 | Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the fleet to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
 | `UZ-MEM-003` on store | Memory backend unavailable | Re-run the trigger; if persistent, file an issue. |
-| `UZ-MEM-001` on store | Memory scope denied (cross-fleet access attempt) | Memory is per-fleet. Use `workspace`-category writes if you need to share facts across fleets. |
+| `UZ-MEM-002` on store | Fleet not found for memory op | The `fleet_id` doesn't exist in this workspace (a cross-workspace id returns the same 404, so existence isn't leaked). Confirm with `agentsfleet status`. |
