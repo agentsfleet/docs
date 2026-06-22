@@ -38,7 +38,7 @@ Cross-run durable state. See [Memory](/memory) for the category model and key co
 |---|---|---|
 | `memory_store` | Upsert a distilled fact under a stable key (`key` + `content`, optional `category`). | End of every run where the fleet learned something worth keeping. |
 | `memory_recall` | Return memory entries whose key matches the query (substring filter); the model judges relevance — no ranking or vector search. | Start of every run, before reasoning. |
-| `memory_list` | Filter entries by category, tags, recency. | When the fleet doesn't know the exact key (e.g. "show me all open tickets"). |
+| `memory_list` | Filter entries by category / recency. | When the fleet doesn't know the exact key (e.g. "show me all open tickets"). |
 | `memory_forget` | Delete an entry. | Correcting stale facts; fed by `agentsfleet steer` corrections. |
 
 ## Cron

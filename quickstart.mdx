@@ -100,7 +100,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
   ```bash
   gh api repos/<owner>/<repo>/hooks --method POST \
     -f "name=web" \
-    -f "config[url]=https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github" \
+    -f "config[url]=https://api.agentsfleet.net/v1/webhooks/<fleet_id>/github" \
     -f "config[content_type]=json" \
     -f "config[secret]=<webhook_secret>" \
     -f "events[]=pull_request" \
