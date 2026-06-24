@@ -262,6 +262,17 @@ JSON
 
 Default behaviour is skip-if-exists. Use `--force` to overwrite for rotation.
 
+For a **model-provider** credential (own-key model setup), use typed flags instead of `--data` — including any OpenAI-compatible endpoint:
+
+```bash
+agentsfleet credential add my-gateway \
+  --provider openai-compatible --base-url https://gateway.example.com/v1 \
+  --model my-model \
+  --api-key sk-...          # optional — omit for a keyless gateway
+```
+
+`--base-url` is required and `https`-only (rejected at parse, no network call); `--model` is required; `--api-key` is optional for a keyless gateway. The typed flags and `--data` are mutually exclusive.
+
 See [Workspace credentials](/fleets/credentials) for the full vault model.
 
 ### `agentsfleet credential show <name>`
@@ -447,7 +458,7 @@ For per-fleet spend breakdowns, use `agentsfleet logs <fleet_id> --json` and agg
 
 ## Tenant provider
 
-By default your tenant runs on **platform-managed** inference — agentsfleet holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot, OpenRouter) in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from agentsfleet — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
+By default your tenant runs on **platform-managed** inference — agentsfleet holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential — a named provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot) or [any **OpenAI-compatible** endpoint](/fleets/credentials#model-provider-credentials-own-key-model-setup) (a self-hosted vLLM server, a gateway, OpenRouter) — in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from agentsfleet — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
 
 ### `agentsfleet tenant provider show`
 
@@ -458,9 +469,9 @@ agentsfleet tenant provider show
 agentsfleet tenant provider show --json
 ```
 
-### `agentsfleet tenant provider add`
+### `agentsfleet tenant provider add --credential <name>`
 
-Activate a self-managed credential for the tenant. The credential must already exist in the workspace vault (`agentsfleet credential add <name>`). The command validates the credential structure, resolves the model's context cap from the `cap.json` endpoint, and pins both into the tenant's provider row.
+Activate a self-managed credential for the tenant. The credential must already exist in the workspace vault (`agentsfleet credential add <name>`). The command validates the credential structure and pins the model into the tenant's provider row. For a named provider it resolves the model's context cap from the `cap.json` endpoint; an **OpenAI-compatible** endpoint bypasses the caps catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` credential is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
 
 ```bash
 # 1. Store the provider credential
