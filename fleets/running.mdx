@@ -5,7 +5,7 @@ description: "The lifecycle commands — install, status, logs, events, steer, s
 
 ## Overview
 
-A small set of verbs cover the live lifecycle: `install --from <path>` brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
+A small set of verbs cover the live lifecycle: `install` (from a local `--from <path>` or a catalogue `--template`) brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
 
 ```bash
 agentsfleet install --from ./platform-ops
@@ -30,7 +30,7 @@ Re-running against a workspace that already has the same fleet is idempotent: th
 
 ## `agentsfleet status`
 
-Prints every fleet in the active workspace with its status, processed-event count, and budget consumed. It does **not** print fleet IDs — run `agentsfleet list` when you need an ID to pass to another command.
+Prints every fleet in the active workspace with its status, processed-event count, and budget consumed. It does **not** print fleet IDs — run [`agentsfleet list`](/cli/agentsfleet#agentsfleet-list) when you need an ID to pass to another command.
 
 ```bash
 agentsfleet status
@@ -97,7 +97,7 @@ agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check —
 
 The reply streams back live; the result is also persisted to the activity stream for replay.
 
-Run it **without** a message to open an interactive session: agentsfleet prompts with `> `, sends each line you type as a steer, and streams the reply inline. Ctrl-C exits (code `130`). Piping on stdin sends one message and exits — `echo "review the latest PR" | agentsfleet steer <fleet_id>`.
+Run it **without** a message to open an interactive session: `agentsfleet` prompts with `> `, sends each line you type as a steer, and streams the reply inline. Ctrl-C exits (code `130`). Piping on stdin sends one message and exits — `echo "review the latest PR" | agentsfleet steer <fleet_id>`.
 
 ## Lifecycle: `stop` / `resume` / `kill` / `delete`
 
