@@ -10,6 +10,10 @@ A **template** is a pre-built fleet you install in one command. There are two so
 
 `--template` and `--from` are mutually exclusive: every `install` takes exactly one source.
 
+<Tip>
+  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` template end to end — browse, add the credential, install, register the webhook, watch it react to a real pull request — in about five minutes.
+</Tip>
+
 ## Browse the catalogue
 
 `agentsfleet templates` lists the curated first-party templates — the same gallery the dashboard shows. It reads `GET /v1/fleets/bundles`; metadata only, no workspace required:
@@ -35,7 +39,7 @@ Install a catalogue template by its id:
 agentsfleet install --template github-pr-reviewer
 ```
 
-agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet. If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet. If the template ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
 
 ### Install the same template more than once
 

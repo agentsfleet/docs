@@ -11,25 +11,26 @@ Everything in this section of the docs is about working with fleets: how to inst
 
 ## Lifecycle
 
-A fleet moves through five observable states.
+A fleet's `status` field reports one of four values — `active`, `paused`, `stopped`, `killed` — followed by a hard `delete` that removes the row entirely. `agentsfleet status` and the API print this value verbatim.
 
 ```mermaid
 flowchart LR
-    Install[agentsfleet install --from path] --> Alive[Alive<br/>webhook live]
-    Alive -->|event arrives| Processing[Processing<br/>fleet reasoning]
-    Processing -->|run exits| Alive
-    Alive -->|agentsfleet stop| Stopped[Stopped<br/>paused]
-    Stopped -->|agentsfleet resume| Alive
-    Alive -->|agentsfleet kill| Killed[Killed<br/>terminal]
+    Install[agentsfleet install] --> Active[active<br/>webhook live]
+    Active -->|event: run then exit| Active
+    Active -->|rate limit / circuit breaker| Paused[paused<br/>server-set]
+    Paused -->|auto-resume or agentsfleet resume| Active
+    Active -->|agentsfleet stop| Stopped[stopped]
+    Stopped -->|agentsfleet resume| Active
+    Active -->|agentsfleet kill| Killed[killed<br/>terminal]
     Stopped -->|agentsfleet kill| Killed
-    Killed -->|agentsfleet delete| Deleted([deleted — hard-removed])
+    Killed -->|agentsfleet delete| Deleted([deleted])
 ```
 
-1. **Alive.** `agentsfleet install --from <path>` reads the local `SKILL.md` + `TRIGGER.md`, validates the schema, uploads to your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step.
-2. **Processing.** When a signed event arrives (webhook, cron, or steer), the platform opens a **run**: the fleet reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay any time with `agentsfleet logs <fleet_id>` (or `events --actor 'webhook:*'` for filtered history).
-3. **Stopped.** `agentsfleet stop <fleet_id>` halts the running session — new events stop dispatching, the in-flight run finishes cleanly. Reversible with `agentsfleet resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
-4. **Killed.** `agentsfleet kill <fleet_id>` marks the fleet terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-install with the same `SKILL.md` produces a **new** `fleet_id`.
-5. **Deleted.** `agentsfleet delete <fleet_id>` hard-removes the fleet. The row, its `fleet_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/agentsfleet#observability); replays after delete reference the prior `fleet_id` as a historical record only. You must `kill` the fleet before `delete` will accept it.
+1. **`active`.** `agentsfleet install` reads a local `SKILL.md` + `TRIGGER.md` (or a [catalogue template](/fleets/templates)), validates the schema, uploads to your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step. While active, each signed event (webhook, cron, or steer) opens a **run**: the fleet reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay with `agentsfleet logs <fleet_id>` (or `events --actor 'webhook:*'` for filtered history).
+2. **`paused`.** The platform pauses a fleet on its own when it trips a guardrail (rate limit or circuit breaker). While paused it refuses new work — a steer or API call returns `UZ-AGT-012`, and a webhook gets `200 {"ignored":"fleet_paused"}` so upstream senders don't retry. It returns to `active` once the condition clears, and `agentsfleet resume` forces it back early. The CLI cannot *set* `paused` — it is server-only.
+3. **`stopped`.** `agentsfleet stop <fleet_id>` halts the running session — new events stop dispatching, the in-flight run finishes cleanly. Reversible with `agentsfleet resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
+4. **`killed`.** `agentsfleet kill <fleet_id>` marks the fleet terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-installing with the same `SKILL.md` produces a **new** `fleet_id`.
+5. **Deleted.** `agentsfleet delete <fleet_id>` hard-removes the fleet — you must `kill` it first. The row, its `fleet_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/agentsfleet#observability); replays after delete reference the prior `fleet_id` as a historical record only.
 
 You can inspect state at any time:
 
@@ -54,6 +55,9 @@ Billing is **not** workspace-scoped — every workspace draws on the same tenant
 ## What's next
 
 <CardGroup cols={2}>
+  <Card title="Run your first fleet" icon="circle-play" href="/quickstart">
+    The guided five-minute path: install the `github-pr-reviewer` template and watch it react to a real pull request.
+  </Card>
   <Card title="Install a fleet" icon="download" href="/fleets/install">
     Install a fleet from the catalogue or a local bundle.
   </Card>
