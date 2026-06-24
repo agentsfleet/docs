@@ -30,11 +30,13 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   Metrics ride the same `GRAFANA_OTLP_*` environment the trace and log exporters use, so one credential triple now turns on all three signals. With it unset, the exporter stays off and says so in one startup log line. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
 
   ## What's new
+
   - **Three series** — credit drained (by posture and model), token throughput (by direction: input, cached, output), and a run-latency histogram, plus a `samples_dropped` counter that reports the exporter's own health.
   - **One credential triple** — `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` now enable traces, logs, and metrics together.
   - **Collector requirement** — metrics use OTLP delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir, or the panels read empty. The dashboard's deployment note spells this out.
 
   ## Bug fixes
+
   - **Traces and logs** — span names, attributes, and log bodies were emitted with a stray extra quote that produced invalid JSON Grafana could reject; both now send well-formed payloads, so Tempo and Loki receive the data reliably.
 </Update>
 
