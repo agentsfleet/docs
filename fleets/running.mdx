@@ -5,7 +5,7 @@ description: "The lifecycle commands — install, status, logs, events, steer, s
 
 ## Overview
 
-A small set of verbs cover the live lifecycle: `install --from <path>` brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
+A small set of verbs cover the live lifecycle: `install` (from a local `--from <path>` or a catalogue `--template`) brings a fleet up, `status` shows what's running, `logs` (or `events` for filtered history) replays the activity stream, `steer` triggers a manual run, and `stop` / `resume` / `kill` / `delete` walk the irreversibility ladder. Each operates on the current workspace; set it with `agentsfleet workspace use` or check with `agentsfleet workspace show`.
 
 ```bash
 agentsfleet install --from ./platform-ops
@@ -17,50 +17,35 @@ agentsfleet kill 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                        # t
 agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71                      # hard-delete (kill first)
 ```
 
-## `agentsfleet install --from <path>`
+## `agentsfleet install`
 
-Reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to the active workspace. **Install is the deploy** — there is no separate `up` step.
+Brings a fleet up from a local bundle (`--from`) or the catalogue (`--template`) — **install is the deploy**, there is no separate `up` step. The full flag set, output shape, and exit codes live in [Installing a fleet](/fleets/install).
 
 ```bash
-agentsfleet install --from ./platform-ops
+agentsfleet install --from ./platform-ops              # local bundle
+agentsfleet install --template github-pr-reviewer      # catalogue template
 ```
 
-```
-✓ platform-ops-fleet is live.
-  Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-  Webhook URLs (register on the upstream provider):
-    github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
-```
-
-One URL is printed per declared `webhook` trigger, keyed by `triggers[].source`. Register each on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config and [Credentials](/fleets/credentials) to rotate the signing secret.
-
-Re-running `agentsfleet install --from <same-path>` against a workspace that already has the same fleet is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
-
-Exit codes:
-
-- `0` — installed (or updated).
-- `1` — not authenticated.
-- `2` — network error reaching the API.
-- `3` — the API rejected the bundle (schema validation, name clash, etc.).
-- `4` — missing or invalid argument (e.g. no `--from`/`--template`).
-- `5` — bad local bundle (path missing, no `SKILL.md`).
+Re-running against a workspace that already has the same fleet is idempotent: the new `SKILL.md` / `TRIGGER.md` replace the previous version on the next event. One webhook URL is printed per declared `webhook` trigger — register each on its upstream provider (see [Webhooks](/fleets/webhooks)).
 
 ## `agentsfleet status`
 
-Lists every fleet in the active workspace with its state, last event, and budget consumed.
+Prints every fleet in the active workspace with its status, processed-event count, and budget consumed. It does **not** print fleet IDs — run [`agentsfleet list`](/cli/agentsfleet#agentsfleet-list) when you need an ID to pass to another command.
 
 ```bash
 agentsfleet status
 ```
 
 ```
-Fleets (workspace: 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50)
-────────────────────────────────────────────────────────────────────────────────
-ID                                    Name                  Status  Events  Budget
-0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71  platform-ops-fleet   alive   42      $1.23
+Fleets
+
+  Name    platform-ops-fleet
+  Status  active
+  Events  42
+  Budget  $1.23
 ```
 
-Pass `--json` for a machine-readable shape suitable for scripting:
+`Status` is the raw lifecycle value — `active`, `paused`, `stopped`, or `killed` (see [Lifecycle](/fleets/overview#lifecycle)). Pass `--json` for a machine-readable shape suitable for scripting:
 
 ```bash
 agentsfleet status --json
@@ -111,6 +96,8 @@ agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check —
 ```
 
 The reply streams back live; the result is also persisted to the activity stream for replay.
+
+Run it **without** a message to open an interactive session: `agentsfleet` prompts with `> `, sends each line you type as a steer, and streams the reply inline. Ctrl-C exits (code `130`). Piping on stdin sends one message and exits — `echo "review the latest PR" | agentsfleet steer <fleet_id>`.
 
 ## Lifecycle: `stop` / `resume` / `kill` / `delete`
 
