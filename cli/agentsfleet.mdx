@@ -262,6 +262,16 @@ JSON
 
 Default behaviour is skip-if-exists. Use `--force` to overwrite for rotation.
 
+For a **model-provider** credential (own-key model setup), use typed flags instead of `--data` — including any OpenAI-compatible endpoint:
+
+```bash
+agentsfleet credential add my-gateway \
+  --provider openai-compatible --base-url https://gateway.example.com/v1 \
+  --model my-model [--api-key sk-...]
+```
+
+`--base-url` is required and `https`-only (rejected at parse, no network call); `--model` is required; `--api-key` is optional for a keyless gateway. The typed flags and `--data` are mutually exclusive.
+
 See [Workspace credentials](/fleets/credentials) for the full vault model.
 
 ### `agentsfleet credential show <name>`
@@ -279,6 +289,24 @@ List credential names and creation timestamps in the current workspace. Values a
 ```bash
 agentsfleet credential list
 ```
+
+---
+
+## Tenant provider
+
+Choose which model your fleets run on. By default a workspace uses the platform model; these commands switch it to an own-key credential and back.
+
+### `agentsfleet tenant provider show`
+
+Print the active provider config — `mode` (`platform` or `self_managed`), the resolved `provider` and `model`, and the `credential_ref` when self-managed. The key is never shown.
+
+### `agentsfleet tenant provider add --credential <name>`
+
+Switch the tenant to `self_managed`, using the named vault credential as the model provider — a named provider or an OpenAI-compatible custom endpoint (see [Workspace credentials](/fleets/credentials#model-provider-credentials-own-key-model-setup)). Fails with a typed `UZ-PROVIDER-*` error if the credential is missing, malformed, or carries an invalid/unsafe `base_url` (see [Error codes](/api-reference/error-codes)).
+
+### `agentsfleet tenant provider delete`
+
+Reset the tenant to the platform default model.
 
 ---
 

@@ -22,6 +22,45 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 24, 2026" tags={["What's new", "Bug fixes", "UI", "CLI", "API", "Security"]}>
+  ## One terminal-native dashboard, and any OpenAI-compatible endpoint
+
+  The dashboard now reads as one product instead of several half-finished pages: a single underline tab style, one content width with an ambient glow on every page, a description under each page title, and an ink primary button in light mode — with Billing, Models, and Credentials rebuilt on it. And own-key model setup is no longer limited to the named providers: you can point a fleet at any OpenAI-compatible URL — self-hosted vLLM, a gateway, OpenRouter — from the CLI or the dashboard, with the endpoint validated before any run.
+
+  ## What's new
+
+  - **Billing** — a balance card with a full-width consumption meter and a terminal-style usage ledger (`date · amount · type · description`) with an empty state; the per-seat grid is gone, replaced by a single "Pay as you go" row.
+  - **Models and Credentials are now two destinations** — the sidebar lists `Models` (`/settings/models`) and `Credentials` (`/credentials`) separately; the Models screen collapses to two option cards, where the active one reads "Active — nothing to do" and the action lives only on the option you'd switch to.
+  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets a SKILL reads by name, and integrations. Provider keys stay write-only and masked (Replace, never reveal). GitHub, Zoho, and Slack render as **Planned**, with a hint to bridge them as a custom secret until first-class connectors land.
+  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it; the base URL rides inside the saved credential, so the activation request shape is unchanged.
+  - **One install flow** — the Dashboard and Fleets pages share a single minimal install experience (a template, an `owner/repo` GitHub source, or pasted `SKILL.md`). One click proceeds in place through live importing → creating → done states instead of a separate review page, and a fleet that is still installing shows its progress until it is ready, then opens into its steer/chat.
+
+  ## API reference
+
+  A self-managed credential may now carry an OpenAI-compatible endpoint in its stored JSON. The `PUT /v1/tenants/me/provider` body is unchanged — the URL lives in the referenced credential:
+
+  ```json
+  {
+    "provider": "openai-compatible",
+    "api_key":  "<optional — omit for a keyless gateway>",
+    "model":    "<model id>",
+    "base_url": "https://host/v1"
+  }
+  ```
+
+  - **`base_url` is validated before any run** — it must be `https` and resolve to a public host. A loopback, private, link-local, or cloud-metadata target is rejected with `UZ-PROVIDER-005` and never dialed, and a `base_url` set on a named (non-`openai-compatible`) provider is rejected too.
+
+  ## Bug fixes
+
+  - **Custom endpoints now activate** — selecting an OpenAI-compatible credential previously failed because its model is not in the platform rate catalogue. Self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
+  - **Account-modal email is readable in dark mode** — the secondary identifier in the account modal mapped to a too-dim token; it now uses a readable one in both themes.
+  - **Outbound model calls pin the validated address** — the non-streaming provider dial connects to the address checked at validation time instead of re-resolving at connect, closing a DNS-rebinding gap on custom endpoints. Requests still reach only the validated host.
+
+  ## CLI
+
+  - **`agentsfleet credential add`** accepts `--provider openai-compatible --base-url <url> --model <m> [--api-key <key>]` — the key is optional (a keyless gateway), the model is required, and a non-`https` `--base-url` is rejected at parse time with no network call. **`agentsfleet tenant provider add --credential <name>`** then activates that credential as the workspace's model. Tool secrets (a GitHub token, a Slack token) keep the existing `credential add <name> --data=@-` form.
+</Update>
+
 <Update label="Jun 23, 2026" tags={["What's new", "Bug fixes", "Observability"]}>
   ## Grafana dashboards for token throughput, credit drain, and run latency
 

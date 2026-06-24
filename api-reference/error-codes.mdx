@@ -106,8 +106,9 @@ Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) — how the runner
 |---|---|---|---|
 | `UZ-PROVIDER-001` | 400 | credential_ref required when mode=self_managed | PUT body must name a vault `credential_ref` when `mode` is `self_managed` |
 | `UZ-PROVIDER-002` | 400 | Credential row not found in vault | The named `credential_ref` has no vault row in the tenant's primary workspace |
-| `UZ-PROVIDER-003` | 400 | Credential JSON missing required field | Stored credential must include `provider`, `api_key`, and `model` (all non-empty) |
-| `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_caps`. Pick one from the model-caps endpoint. |
+| `UZ-PROVIDER-003` | 400 | Credential JSON missing required field | Stored credential must include `provider` and `model` (non-empty); `api_key` is required for a named provider, optional for an `openai-compatible` endpoint |
+| `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_caps` — named providers only. An `openai-compatible` endpoint bypasses the catalogue (it bills against your own provider). Pick a catalogued model from the model-caps endpoint. |
+| `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An `openai-compatible` credential's `base_url` must be `https` and must not target a loopback, private, link-local, or cloud-metadata host; a `base_url` set on a named (non-`openai-compatible`) provider is rejected too |
 
 ## API limits
 
