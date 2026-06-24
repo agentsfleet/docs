@@ -109,6 +109,9 @@ Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) — how the runner
 | `UZ-PROVIDER-003` | 400 | Credential JSON missing required field | Stored credential must include `provider` and `model` (non-empty); `api_key` is required for a named provider, optional for an `openai-compatible` endpoint |
 | `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_caps` — named providers only. An `openai-compatible` endpoint bypasses the catalogue (it bills against your own provider). Pick a catalogued model from the model-caps endpoint. |
 | `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An `openai-compatible` credential's `base_url` must be `https` and must not target a loopback, private, link-local, or cloud-metadata host; a `base_url` set on a named (non-`openai-compatible`) provider is rejected too |
+| `UZ-PROVIDER-006` | 404 | No catalogue model matches this uid | `PATCH`/`DELETE /v1/admin/models/{uid}` addressed a catalogue row that does not exist |
+| `UZ-PROVIDER-007` | 409 | Model is the active platform default | `DELETE /v1/admin/models/{uid}` was blocked because the active platform default resolves to this model — repoint the default (`PUT /v1/admin/platform-keys`) before deleting it |
+| `UZ-PROVIDER-008` | 409 | Catalogue row already exists | `POST /v1/admin/models` used a `(provider, model_id)` pair that is already catalogued — `PATCH` the existing row to change its caps/rates |
 
 ## API limits
 
