@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 25, 2026" tags={["Security", "Breaking"]}>
+  ## The sandboxed agent runner is hardened for general availability
+
+  We closed two ways a sandboxed run could expose data and made the runner's failure modes bounded and provable. Secrets are now redacted from every live progress frame — including a secret value split across two streaming chunks — and the durable record was already scrubbed. Network egress fails closed by default, and a tenant-supplied host that resolves to a private or link-local address is rejected before any connection opens. The kernel sandbox is now proven by real-process tests that run against a live Linux kernel in continuous integration on every change.
+
+  ## Upgrading
+
+  - **Egress now fails closed by default.** A runner with `RUNNER_NETWORK_POLICY` unset no longer shares the host network. If you relied on the previous open-by-default posture, set `RUNNER_NETWORK_POLICY=allow_all` explicitly; typos and unrecognized values also fail closed.
+
+  ## What's new
+
+  - **Complete secret redaction on the live tail** — the model API key and every custom secret field are replaced with their `${secrets.NAME.FIELD}` placeholder before any progress frame leaves the run, even when a secret is tokenized across two streaming chunks; on a memory failure the frame is dropped, never sent raw.
+  - **Server-Side Request Forgery (SSRF) protection for tenant hosts** — a tool dialing a tenant-configured host resolves and pins the address and rejects private, loopback, and link-local targets, including the cloud metadata endpoint.
+  - **Bounded retries and call deadlines** — runner backoff is capped with jitter, and a call whose watchdog cannot start fails fast instead of running unbounded.
+  - **Proven kernel enforcement** — seccomp syscall traps, Landlock filesystem denial, and cgroup process and memory limits are verified against a real kernel, not compiled and skipped.
+</Update>
+
 <Update label="Jun 25, 2026" tags={["What's new", "API", "UI"]}>
   ## Build the model catalogue and set the priced default from the dashboard
 
