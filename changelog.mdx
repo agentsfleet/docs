@@ -22,6 +22,46 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 25, 2026" tags={["What's new", "API", "UI"]}>
+  ## Build the model catalogue and set the priced default from the dashboard
+
+  Platform operators now build the priced model catalogue and choose the one active default model and key entirely in the dashboard. A new environment no longer needs a SQL seed or a manual onboarding step to serve teammates: add a model with its rates, activate it as the default, and the next platform-mode run uses it — no redeploy.
+
+  ## What's new
+
+  - **Model catalogue** — `/admin/models` lists every priced model and adds one through a dialog (provider, model id, context cap, and per-million-token input / cached-input / output rates). Edits and deletes apply live — each change repopulates the in-process rate cache with no restart.
+  - **Platform default** — a Platform Default card activates one model as the default, pairing it with the key's source workspace and an optional OpenAI-compatible base URL. Exactly one default is active at a time, and changing it reaches every platform-mode teammate on their next run.
+  - **Catalogue-curated onboarding** — the catalogue ships empty and admins populate it, so standing up a fresh environment no longer means hand-seeding a model row and wiring the default by hand.
+
+  ## API reference
+
+  A new platform-admin surface manages the catalogue and the default. Every route requires the `platform_admin` claim — a per-tenant admin role returns `UZ-AUTH-021`.
+
+  ```
+  GET    /v1/admin/models          list the catalogue (each row carries its uid)
+  POST   /v1/admin/models          add a priced row
+  PATCH  /v1/admin/models/{uid}    update a row's caps/rates
+  DELETE /v1/admin/models/{uid}    remove a row
+  PUT    /v1/admin/platform-keys   set the one active default
+  ```
+
+  Catalogue rows are keyed by `uid` in the URL, not `provider/model_id` — a model id can contain `/`. A create body:
+
+  ```json
+  {
+    "provider": "fireworks",
+    "model_id": "accounts/fireworks/models/kimi-k2.6",
+    "context_cap_tokens": 256000,
+    "input_nanos_per_mtok": 950000000,
+    "cached_input_nanos_per_mtok": 100000000,
+    "output_nanos_per_mtok": 4000000000
+  }
+  ```
+
+  `PUT /v1/admin/platform-keys` now takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row (authoritative — never the body), and the default's `(provider, model)` must already be a priced catalogue row (an uncatalogued pair is rejected with `UZ-PROVIDER-004`). New error codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
+
+</Update>
+
 <Update label="Jun 24, 2026" tags={["What's new", "Bug fixes", "UI", "CLI", "API", "Security"]}>
   ## One terminal-native dashboard, and any OpenAI-compatible endpoint
 
