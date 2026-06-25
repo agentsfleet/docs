@@ -58,7 +58,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   }
   ```
 
-  `PUT /v1/admin/platform-keys` now takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row (authoritative — never the body), and the default's `(provider, model)` must already be a priced catalogue row. New error codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
+  `PUT /v1/admin/platform-keys` now takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row (authoritative — never the body), and the default's `(provider, model)` must already be a priced catalogue row (an uncatalogued pair is rejected with `UZ-PROVIDER-004`). New error codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
 
 </Update>
 
