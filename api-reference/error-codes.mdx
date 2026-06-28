@@ -176,6 +176,16 @@ Import + snapshot of a Fleet Bundle (the SKILL.md/TRIGGER.md package behind a Fl
 | `UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Request one with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests`. |
 | `UZ-GRANT-002` | 404 | Integration grant not found | No grant with that id exists for this fleet, or it was already revoked. List current grants with `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-grants`. |
 
+## Integration connect & token mint
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-CONN-001` | 503 | Connector not configured | GitHub connect is unavailable on this deployment — the platform App slug or signing secret is unset. An operator must register the GitHub App and populate the admin vault before fleets can connect. |
+| `UZ-CONN-002` | 400 | Invalid connect state | The connect callback's `state` was missing, forged, expired, or already used. Start the connect again from the dashboard — each attempt issues a fresh single-use state. |
+| `UZ-CRED-001` | 404 | Integration not connected | No connected integration matches this id for the fleet's workspace. Connect it first (e.g. GitHub via the dashboard **Connect** flow) before a fleet can mint a token for it. |
+| `UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. |
+| `UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). Transient — retry shortly; if it persists, check GitHub status and the App configuration. |
+
 ## Approval gate
 
 | Code | HTTP | Title | Common Causes |
