@@ -125,7 +125,7 @@ agentsfleet templates
 agentsfleet templates --json
 ```
 
-Prints a table of template id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts). Install one with `agentsfleet install --template <id>`. See [Templates](/fleets/templates).
+Prints a table of template id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts, and `required_credentials_reasons` when the template declares per-credential purpose copy). The table output is unchanged. Install one with `agentsfleet install --template <id>`. See [Templates](/fleets/templates).
 
 ### `agentsfleet fleet update <fleet_id> --from <path>`
 

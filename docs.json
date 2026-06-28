@@ -31,7 +31,8 @@
   },
   "favicon": "/favicon.svg",
   "redirects": [
-    { "source": "/agents/:slug", "destination": "/fleets/:slug" }
+    { "source": "/agents/:slug", "destination": "/fleets/:slug" },
+    { "source": "/secrets", "destination": "/fleets/credentials" }
   ],
   "navigation": {
     "tabs": [

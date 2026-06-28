@@ -22,6 +22,37 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 28, 2026" tags={["What's new", "UI", "API", "Bug fixes"]}>
+  ## Template installs now explain why a credential is needed
+
+  When you install a fleet template and a required credential is missing, the dashboard now tells you *why* the fleet needs it — "this fleet needs github to review your pull requests" — instead of a bare "connect github". The reason copy travels with each template in the catalogue, and the first-run Fleets page now opens straight into the real template gallery.
+
+  ## What's new
+
+  - **Purpose-driven connect step** — the install gate reads a per-credential reason from the template and shows it when a required credential is missing; templates without reason copy fall back to the generic connect prompt.
+  - **No skippable installs** — the dashboard no longer offers a way past a missing credential. A fleet that can't reach its tool can't run, so connecting the credential is the only path forward; this removes the route that created un-runnable fleets.
+  - **Fleets empty state is the gallery** — the first-run Fleets page now shows the same full-width template gallery as the install screen, not abstract step cards.
+  - **Custom secrets copy** — the secrets section states plainly that values are encrypted and write-only once saved: replaceable, never viewable.
+
+  ## API reference
+
+  ```
+  GET /v1/fleets/bundles   each template row now carries required_credentials_reasons
+  ```
+
+  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only "why" copy for the install gate. It does **not** replace `required_credentials`: install validation still reads that array, so a strict client should treat the new field as optional.
+  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list — unchanged on the API, but now surfaced directly in the dashboard instead of letting you proceed to a broken fleet.
+
+  ## Bug fixes
+
+  - **Billing empty state** now reads "No charges yet" instead of "No billable events yet", matching the rest of the billing surface.
+  - **Dashboard loading states** keep each route's real title while data loads, so navigating no longer flashes a wrong header.
+
+  ## CLI
+
+  - No command or flag changed. `agentsfleet templates --json` passes the new `required_credentials_reasons` field straight through; the default table still shows id, name, and credentials.
+</Update>
+
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API"]}>
   ## Models and Keys is one page, and credentials say what they are
 

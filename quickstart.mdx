@@ -3,7 +3,7 @@ title: Quickstart
 description: "Install the agentsfleet CLI, install a fleet from the template catalogue, and watch it run."
 ---
 
-This walks through installing a fleet from the first-party catalogue and seeing it run — about five minutes from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any template.
+This walks through installing a fleet from the first-party catalogue and seeing it run, starting from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any template.
 
 <Steps>
 
@@ -68,6 +68,8 @@ This walks through installing a fleet from the first-party catalogue and seeing 
   ```
 
   `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Credentials](/fleets/credentials) for the full vault model.
+
+  Installing from the dashboard instead? The install gallery spells out why each credential is needed — "this fleet needs github to review your pull requests" — and blocks until it's connected, so you can't create a fleet that can't run.
 </Step>
 
 <Step title="Install the fleet">
