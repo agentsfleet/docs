@@ -291,6 +291,8 @@ List credential names and creation timestamps in the current workspace. Values a
 agentsfleet credential list
 ```
 
+`--json` additionally carries each credential's server-derived `kind` (`provider_key`, `custom_endpoint`, or `custom_secret`) and its non-secret `provider` / `model` / `base_url` — the `api_key` is never among them.
+
 ---
 
 ## Workspaces
