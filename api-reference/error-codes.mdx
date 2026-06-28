@@ -164,7 +164,7 @@ Import + snapshot of a Fleet Bundle (the SKILL.md/TRIGGER.md package behind a Fl
 |---|---|---|---|
 | `UZ-BUNDLE-001` | 400 | Invalid Fleet Bundle | The supplied bundle is missing `SKILL.md` or contains unsafe, oversized, or malformed files. |
 | `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No Fleet Bundle snapshot matches the supplied `bundle_id` in this workspace. |
-| `UZ-BUNDLE-003` | 424 | Fleet Bundle credentials missing | Add the missing workspace credentials before installing this bundle. |
+| `UZ-BUNDLE-003` | 424 | Fleet Bundle credentials missing | Add the workspace credentials named in `missing_credentials` before installing this bundle. |
 | `UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | The bundle source could not be fetched from GitHub — the repository may be missing or private, or GitHub may be unreachable. Verify the source reference and retry. |
 | `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Snapshot storage is not configured or is unavailable, so the validated bundle could not be stored. Retry later or contact the operator. |
 | `UZ-BUNDLE-006` | 429 | Too many Fleet Bundle imports in flight | This instance is at its concurrent import ceiling. Honor the `Retry-After` header and retry with backoff. |

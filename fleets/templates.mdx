@@ -11,7 +11,7 @@ A **template** is a pre-built fleet you install in one command. There are two so
 `--template` and `--from` are mutually exclusive: every `install` takes exactly one source.
 
 <Tip>
-  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` template end to end — browse, add the credential, install, register the webhook, watch it react to a real pull request — in about five minutes.
+  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` template end to end — browse, add the credential, install, register the webhook, and watch it react to a real pull request.
 </Tip>
 
 ## Browse the catalogue
@@ -29,7 +29,7 @@ security-reviewer              Security reviewer               github
 zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
 ```
 
-Each row shows the template id, its name, and the credentials it needs. Wire those into the workspace vault (see [Credentials](/fleets/credentials)) before or after install. Pass `--json` for the full metadata, including declared tools and network hosts.
+Each row shows the template id, its name, and the credentials it needs. Wire those into the workspace vault (see [Credentials](/fleets/credentials)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
 
 ## Install from the catalogue
 
@@ -40,6 +40,8 @@ agentsfleet install --template github-pr-reviewer
 ```
 
 agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet. If the template ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
+
+Install needs every declared credential in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_credentials` list names what's absent. Add the credential, then install.
 
 ### Install the same template more than once
 
