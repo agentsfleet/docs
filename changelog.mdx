@@ -22,6 +22,29 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 28, 2026" tags={["What's new", "UI", "API"]}>
+  ## Models and Keys is one page, and credentials say what they are
+
+  Model and key management is now a single **Models & Keys** page. The active model reads as a hero you can take in at a glance, every stored provider key is one click from live, and the credentials list now tells the dashboard what each credential *is* instead of guessing from its name. The standalone Credentials page is gone — `/credentials` redirects here.
+
+  ## What's new
+
+  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`) with every stored provider key one click away on a switch list; switching sets that credential's saved model with no key re-entry. This replaces the separate Models and Credentials destinations and the two-option-card screen.
+  - **Credentials are classified server-side** — the list carries each credential's `kind` (provider key, custom endpoint, or custom secret) plus its non-secret provider, model, and base URL, so a stored-but-inactive provider key no longer misfiles as a custom secret. The API key is still never returned.
+  - **Replace a key in place** — rotating a provider key now updates only the secret and keeps the model, provider, and endpoint, so a custom-endpoint key rotation can't corrupt the saved base URL.
+  - **Custom secrets keep their own section** — `NAME=value` secrets a SKILL reads by name stay listed apart from model-provider keys on the same page.
+
+  ## API reference
+
+  ```
+  GET   /v1/workspaces/{ws}/credentials          each row carries kind + non-secret provider/model/base_url; never api_key
+  PATCH /v1/workspaces/{ws}/credentials/{name}   body {api_key} — rotate the key only, preserving provider/model/base_url
+  ```
+
+  - **`kind` is derived server-side** from the stored provider field — `provider_key`, `custom_endpoint`, or `custom_secret` — never from the user-chosen name. An unreadable legacy body lists as a custom secret and the call still returns 200.
+  - **Rotate errors** — a missing credential returns `UZ-VAULT-003` (404); an empty key returns `UZ-REQ-001` (400). The list stays operator-gated and the API key is never in the response.
+</Update>
+
 <Update label="Jun 25, 2026" tags={["Security", "Breaking"]}>
   ## The sandboxed agent runner is hardened for general availability
 
