@@ -193,6 +193,7 @@ Import + snapshot of a Fleet Bundle (the SKILL.md/TRIGGER.md package behind a Fl
 |---|---|---|---|
 | `UZ-VAULT-001` | 400 | Credential data must be a non-empty JSON object | `POST /credentials` body must include a `data` field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
 | `UZ-VAULT-002` | 400 | Credential data too large | Stringified credential data exceeds 4 KB. Compose the secret from fewer or shorter fields. |
+| `UZ-VAULT-003` | 404 | Credential not found | No credential matches this name in the workspace. Returned by `PATCH /credentials/{name}` (key rotation) and other by-name credential lookups; list the workspace credentials to find a valid name, or create it first. |
 
 ## Memory
 
