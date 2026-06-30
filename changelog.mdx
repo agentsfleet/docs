@@ -22,6 +22,20 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 30, 2026" tags={["What's new", "API"]}>
+  ## Authorization is now scope-based
+
+  Every capability a token holds is now an explicit `resource:action` scope, read directly off the token — replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-provisioned principal sees no change: every route that worked before still works, and tenant isolation and workspace ownership are enforced exactly as before. What changes is that "what can this token do?" is now enumerable, and a denial tells you precisely which scope is missing.
+
+  ## API reference
+
+  - **`scopes` claim** — the session token and tenant API key now carry an explicit space-delimited `scopes` list (e.g. `fleet:admin credential:write workspace:admin`). It is provisioned automatically for a workspace owner at signup; a strict client needs no change.
+  - **`403 UZ-AUTH-022` "Insufficient scope"** — a capability denial now names the required scope in the error detail (`Requires scope fleet:admin`), instead of an opaque role rejection.
+  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`, so a `fleet:admin` holder passes any `fleet:read` route. A destructive route (e.g. `DELETE`) can require the top rung.
+
+  See the [error-codes reference](/api-reference/error-codes) for `UZ-AUTH-022` and the full authorization code registry.
+</Update>
+
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API", "Bug fixes"]}>
   ## Template installs now explain why a credential is needed
 
