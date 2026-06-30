@@ -76,8 +76,8 @@ agentsfleet fleet update <fleet_id> --from .
 
 ## Sharing
 
-Templates are markdown — commit `my-fleet/` to git, clone it on a new machine, and push it to an installed fleet with `agentsfleet fleet update <fleet_id> --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
+Templates are markdown — commit `my-fleet/` to git, clone it on a new machine, onboard it as a template (dashboard or API), then install it with `agentsfleet install --template <id>`. Once installed, iterate on it with `agentsfleet fleet update <fleet_id> --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
 
 <Note>
-  A hosted template marketplace (community-contributed templates, one-click install) is on the roadmap. The first-party catalogue above is the curated starting set; git remains the distribution mechanism for your own templates.
+  A hosted template marketplace (community-contributed templates, one-click install) is on the roadmap. The platform catalogue above is the curated starting set; git remains the distribution mechanism for your own templates.
 </Note>

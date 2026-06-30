@@ -167,7 +167,7 @@ Onboarding a Fleet template (the SKILL.md/TRIGGER.md package behind a Fleet) and
 | `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No installable template or stored snapshot matches the request in this workspace. The `platform_template_id`/`tenant_template_id` is unknown, or the template has not been onboarded yet. |
 | `UZ-BUNDLE-003` | 424 | Fleet Bundle credentials missing | Add the workspace credentials named in `missing_credentials` before installing this template. |
 | `UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | The bundle source could not be fetched from GitHub — the repository may be missing or private, or GitHub may be unreachable. Verify the source reference and retry. |
-| `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Snapshot storage is not configured or is unavailable, so the validated bundle could not be stored. Retry later or contact the operator. |
+| `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Template object storage is not configured or is unavailable, so the onboarded bundle could not be stored. Retry later or contact the operator. |
 | `UZ-BUNDLE-006` | 429 | Too many Fleet Bundle imports in flight | This instance is at its concurrent import ceiling. Honor the `Retry-After` header and retry with backoff. |
 
 ## Integration grants
