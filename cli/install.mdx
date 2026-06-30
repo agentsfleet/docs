@@ -35,7 +35,7 @@ agentsfleet templates                          # browse the catalogue
 agentsfleet install --template github-pr-reviewer
 ```
 
-Or install a local bundle you authored with `agentsfleet install --from <path>` (see [Authoring a fleet](/fleets/authoring)).
+Authored your own `SKILL.md` + `TRIGGER.md`? Onboard it as a template (via the dashboard or the API), then install it by id with `agentsfleet install --template <id>`. To push local edits onto an already-installed fleet, use `agentsfleet fleet update <fleet_id> --from <path>`. See [Authoring a fleet](/fleets/authoring).
 
 <Tip>
   **One-line bootstrap.** `curl -fsSL https://agentsfleet.dev | bash` installs the `agentsfleet` CLI (it runs npm under the hood — Node required). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.

@@ -22,6 +22,36 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
+  ## Bring your own Fleet templates
+
+  You can now onboard your own Fleet templates into your workspace, alongside the curated platform catalogue. The install gallery shows both — the platform templates and your workspace's own — and you install any of them by id. Templates are stored once, content-addressed, and shared across the fleets you spin up from them. Installing a fleet is now always "pick a template, install it"; the old "paste a local `SKILL.md`" and "import a GitHub repo at install" paths are gone.
+
+  ## Upgrading
+
+  - **Install is template-only.** `agentsfleet install --from <path>` (installing a new fleet from a local directory) has been removed. Install by id instead: `agentsfleet install --template <id>`. To run a fleet you authored yourself, onboard its `SKILL.md`/`TRIGGER.md` as a template first — through the dashboard or the onboarding API — then install it by id. To push local edits onto an **already-installed** fleet, use `agentsfleet fleet update <fleet_id> --from <path>` (unchanged). Upgrade the CLI and server together.
+  - **Fleet-create takes a template id, not a bundle.** `POST /v1/workspaces/{workspace_id}/fleets` now accepts exactly one of `{platform_template_id}` or `{tenant_template_id}` (plus an optional `name`). Raw `source_markdown`, the per-workspace `bundle_id`, and the github-import-at-create body are rejected. Onboard a template, then install it by id.
+  - **Bundle import/snapshot endpoints removed.** `POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots` and the snapshot-detail read no longer exist. Use the onboarding routes below.
+
+  ## What's new
+
+  - **Onboard templates into two tiers.** Onboard a template into the global platform catalogue or into your own workspace; workspace templates are visible only to your workspace.
+  - **One gallery, both tiers.** The dashboard install gallery unions the platform catalogue with your workspace's own templates, and never shows another workspace's templates.
+  - **Templates explain their credentials.** Gallery entries carry a description and per-credential "why this is needed" copy, so the install gate can tell you what each credential is for before you connect it.
+
+  ## API reference
+
+  - **`GET /v1/workspaces/{workspace_id}/fleet-templates`** — the workspace gallery: the platform catalogue plus this workspace's own templates. Each entry carries `id`, `name`, `description`, `visibility` (`"platform"` or `"tenant"`), `source_ref`, `requirements`, `required_credentials_reasons`, and support-file summaries — never an object-store key.
+  - **`POST /v1/admin/fleet-templates`** (scope `platform-template:write`) and **`POST /v1/workspaces/{workspace_id}/fleet-templates`** (scope `template:write` + workspace ownership) — onboard a template from a GitHub source into the platform or workspace tier. The canonical bundle is written to object storage keyed by content hash; the response is metadata only.
+  - **`POST /v1/workspaces/{workspace_id}/fleets`** — install body is now `{platform_template_id}` **or** `{tenant_template_id}`, plus an optional `name` so one template can back several fleets.
+  - **`UZ-BUNDLE-002`** now reads "No installable template or stored snapshot matches the request in this workspace."
+
+  ## CLI
+
+  - **`agentsfleet install --template <id>`** resolves the template in your workspace gallery and installs it by tier. The `--from <path>` option has been removed from `install`.
+  - **`agentsfleet fleet update <fleet_id> --from <path>`** (live-editing an installed fleet's instructions from a local directory) is unchanged.
+</Update>
+
 <Update label="Jun 30, 2026" tags={["What's new", "API"]}>
   ## Authorization is now scope-based
 

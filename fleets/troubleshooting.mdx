@@ -9,32 +9,32 @@ A fleet that's misbehaving falls into one of six failure shapes. Find the sympto
 
 | Symptom | Most likely cause | Start here |
 |---|---|---|
-| `agentsfleet install --from` exits non-zero | Frontmatter validation failed | [§1 Install rejected](#1-install-rejected) |
+| Onboarding or `agentsfleet fleet update --from` exits non-zero | Frontmatter validation failed | [§1 Frontmatter rejected](#1-frontmatter-rejected) |
 | Upstream says it sent the webhook, fleet didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but fleet silent](#2-webhook-delivered-but-fleet-silent) |
 | Fleet woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
 | Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
 | Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `agentsfleet` itself is broken (auth, network) | Local config or platform reachability | [§6 agentsfleet can't reach the platform](#6-agentsfleet-cant-reach-the-platform) |
 
-## 1. Install rejected
+## 1. Frontmatter rejected
 
-`agentsfleet install --from <path>` exited with code `3` (the API rejected the bundle). The platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
+Frontmatter is parsed at two points: when you **onboard** a template (dashboard or API), and when you push edits to a running fleet with `agentsfleet fleet update <fleet_id> --from <path>`. Either can fail with code `3` (the API rejected the bundle) — the platform parsed your `SKILL.md` + `TRIGGER.md` and rejected them.
 
 ```bash
-agentsfleet install --from ./my-fleet --json 2>&1 | tail -5
+agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet --json 2>&1 | tail -5
 ```
 
-The `--json` output carries the wire error code:
+The `--json` output (and the onboarding API response) carries the wire error code:
 
 | Wire code | Cause | Fix |
 |---|---|---|
 | `UZ-AGT-008` | `TRIGGER.md` config_json fails schema validation | Re-read [Authoring](/fleets/authoring) §`x-agentsfleet:` subkeys. Common: a runtime key (`tools`, `credentials`, `network`) at the top level instead of nested under `x-agentsfleet:`. |
 | `UZ-AGT-011` | `SKILL.md` and `TRIGGER.md` disagree on top-level `name:` | Make both files' `name:` value identical. |
-| `UZ-VAULT-001` | Credential `data` body is empty / not a JSON object | The error is from a prior `credential add` call, not from `install` itself. Re-run `agentsfleet credential add <name> --data=@-` with a non-empty JSON object. |
+| `UZ-VAULT-001` | Credential `data` body is empty / not a JSON object | The error is from a prior `credential add` call, not from onboarding itself. Re-run `agentsfleet credential add <name> --data=@-` with a non-empty JSON object. |
 
 For other codes, check [Error codes](/api-reference/error-codes) and grep for the `UZ-` prefix.
 
-**Local validation tip:** the parser the platform uses is the same one `agentsfleet install --from` runs — there's no separate lint command. To catch schema errors before committing, run `agentsfleet install --from <path> --json` and read the structured error output. Note the call still uploads on success; there is no `--validate-only` flag.
+**Local validation tip:** the parser the platform uses on onboard is the same one `agentsfleet fleet update --from` runs against a live fleet — there's no separate lint command. To catch schema errors on an installed fleet before relying on it, run `agentsfleet fleet update <fleet_id> --from <path> --json` and read the structured error output. There is no `--validate-only` flag.
 
 ## 2. Webhook delivered but fleet silent
 
@@ -138,7 +138,7 @@ The model's tool-call trail tells you what it actually did. Compare against what
 agentsfleet steer <fleet_id> "<the same input that triggered the bug>"
 ```
 
-Edit `SKILL.md`, `agentsfleet install --from .`, re-steer. The next event uses the new prose — no redeploy.
+Edit `SKILL.md`, `agentsfleet fleet update <fleet_id> --from .`, re-steer. The next event uses the new prose — no redeploy.
 
 ## 5. Budget breach
 
@@ -150,7 +150,7 @@ agentsfleet status --json | jq '.[] | select(.fleet_id == "<id>") | {state, budg
 
 Two layers of cap exist independently:
 
-1. **Per-fleet** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this fleet's runs until the rolling window resets. Raise the value, re-install.
+1. **Per-fleet** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this fleet's runs until the rolling window resets. Raise the value in `TRIGGER.md`, then push it with `agentsfleet fleet update <fleet_id> --from .`.
 2. **Tenant wallet** — every workspace's runs debit the same pool. When it hits zero, all runs across all workspaces stop. Top up at `app.agentsfleet.net/billing`. See [Billing → Budgets](/billing/budgets).
 
 If you're hitting the per-fleet cap repeatedly on legitimate traffic, the fleet's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller fleets.

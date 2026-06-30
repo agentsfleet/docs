@@ -138,11 +138,11 @@ Drop any one and the call fails: missing tool → fleet can't even try; missing 
 
 ## Validation
 
-`agentsfleet install --from <path>` accepts the `tools:` list as-is — there's no catalogue check at install time. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The fleet runs with the remaining tools.
+Onboarding a template (and `agentsfleet fleet update --from`) accepts the `tools:` list as-is — there's no catalogue check when the `SKILL.md` is parsed. Unknown names surface later, when the runner builds tools for a run: each unrecognized name gets logged as `UZ-TOOL-005` (Unknown tool) and silently skipped. The fleet runs with the remaining tools.
 
 The practical consequences:
 
-- **Typos pass install.** Declaring `http_requesst:` (typo) won't fail `agentsfleet install --from`. Catch this by tailing `agentsfleet logs <fleet_id>` after the first event and looking for the skip warning, or by spotting tool calls in the activity stream that don't match what your `SKILL.md` prose expects.
+- **Typos pass parsing.** Declaring `http_requesst:` (typo) won't fail onboarding or `agentsfleet fleet update --from`. Catch this by tailing `agentsfleet logs <fleet_id>` after the first event and looking for the skip warning, or by spotting tool calls in the activity stream that don't match what your `SKILL.md` prose expects.
 - **Disabled tools are also silently dropped.** Setting `enabled: false` on a tool entry skips it without a warning.
 - **`UZ-TOOL-005` is a log warning, not a wire response.** It won't appear as an HTTP error to a webhook caller; it's a server-side observability signal.
 
