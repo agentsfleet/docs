@@ -8,7 +8,7 @@ description: "Complete agentsfleet command reference."
 | Group | Commands |
 |-------|----------|
 | Authentication | `login`, `logout`, `auth status` |
-| Fleets (top-level) | `install --from`, `install --template`, `templates`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
+| Fleets (top-level) | `install --template`, `templates`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
 | Fleets (in-place update) | `fleet update --from` |
 | Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
 | Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
@@ -89,32 +89,23 @@ The probe result is one of `valid` (200 from the billing endpoint), `unauthorize
 
 ## Fleets
 
-### `agentsfleet install --from <path>`
-
-Reads `SKILL.md` and `TRIGGER.md` from `<path>`, validates them server-side, and uploads to the active workspace. `SKILL.md` is required; `TRIGGER.md` is optional (a default API wake is generated when it's absent). `install` needs exactly one source — `--from <path>` or `--template <id>`; there are no bare-name aliases.
-
-```bash
-agentsfleet install --from ./my-fleet
-```
-
-For a curated, ready-to-run fleet, use `agentsfleet install --template <id>` instead (browse with `agentsfleet templates`). See [Quickstart](/quickstart) and [Templates](/fleets/templates).
-
 ### `agentsfleet install --template <id>`
 
-Install a fleet from the first-party template catalogue (browse it with `agentsfleet templates`) instead of a local directory. agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet.
+Install a fleet from your workspace gallery — the first-party platform catalogue plus your workspace's own onboarded templates. agentsfleet resolves the template by id, fetches its pinned `SKILL.md` + `TRIGGER.md`, prints a requirements preview (credentials, tools, network hosts), then creates the fleet in the active workspace. `install` takes exactly one source, `--template <id>`; there are no bare-name aliases and no local-directory install.
 
 ```bash
 agentsfleet install --template github-pr-reviewer
 agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
 ```
 
-`--from` and `--template` are mutually exclusive — exactly one source per install. If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+
+To run a fleet you wrote yourself, onboard its `SKILL.md` + `TRIGGER.md` as a template first — via the dashboard or the API (`POST /v1/admin/fleet-templates` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-templates` for a workspace template) — then install it by id. Frontmatter is validated at onboard time. There is no CLI onboard command. See [Authoring a fleet](/fleets/authoring) and [Templates](/fleets/templates).
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--from <path>` | *(one source required)* | Install from a local directory containing `SKILL.md` + `TRIGGER.md`. |
-| `--template <id>` | *(one source required)* | Install from a catalogue template by id (see `agentsfleet templates`). |
-| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one bundle or template can back several fleets in a workspace. Without it, a second install of the same source collides with `UZ-AGT-006`. |
+| `--template <id>` | *(required)* | Install from a workspace-gallery template by id (browse the platform tier with `agentsfleet templates`). |
+| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one template can back several fleets in a workspace. Without it, a second install of the same template collides with `UZ-AGT-006`. |
 
 ### `agentsfleet templates`
 

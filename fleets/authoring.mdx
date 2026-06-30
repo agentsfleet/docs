@@ -13,7 +13,7 @@ my-fleet/
 └── TRIGGER.md    # machine-readable config + deployment metadata
 ```
 
-`agentsfleet install <template>` scaffolds both. This page is the reference for authoring your own.
+Installing a [template](/fleets/templates) with `agentsfleet install --template <id>` gives you a fleet backed by both files. This page is the reference for authoring your own — which you then onboard as a template (dashboard or API) before installing by id.
 
 ## `SKILL.md` — fleet instructions
 
@@ -35,12 +35,12 @@ model: claude-sonnet-4-6           # optional, hint
 
 | Field | Required | Purpose |
 |---|---|---|
-| `name` | yes | Identity. Must equal `TRIGGER.md` `name:` (install rejects mismatch). |
+| `name` | yes | Identity. Must equal `TRIGGER.md` `name:` (onboarding rejects mismatch). |
 | `description` | yes | One-line summary. |
 | `version` | yes | Semver string. |
 | `when_to_use`, `tags`, `author`, `model` | no | Pass-through metadata. |
 
-Unknown top-level keys are accepted silently — drop in vendor-specific extras (`x-amp:`, etc.) without breaking install.
+Unknown top-level keys are accepted silently — drop in vendor-specific extras (`x-amp:`, etc.) without breaking onboarding.
 
 ### Body
 
@@ -130,7 +130,7 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 
 | Subkey | Required | Purpose |
 |---|---|---|
-| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at install with `UZ-AGT-008` (invalid fleet config). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
+| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at onboard time with `UZ-AGT-008` (invalid fleet config). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
 | `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
 | `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{fleet_id}/{source}` — see [Webhooks](/fleets/webhooks). |
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
@@ -186,15 +186,17 @@ A breach terminates the in-flight event cleanly and records a `budget_breach` en
 
 ## Validation
 
-`agentsfleet install --from <dir>` reads both files and posts them to the server, which runs the same parser the runtime uses — there is no separate local lint step. Errors come back as a `UZ-AGT-*` wire code with a suggestion.
-
-```bash
-agentsfleet install --from ./my-fleet
-```
+Authoring produces a template you **onboard** — through the dashboard or the API (`POST /v1/admin/fleet-templates` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-templates` for a workspace template). Onboarding posts both files to the server, which runs the same parser the runtime uses — there is no separate local lint step. Errors come back as a `UZ-AGT-*` wire code with a suggestion:
 
 ```
 UZ-AGT-011  SKILL.md and TRIGGER.md disagree on `name:`
   Suggestion: make the top-level name: identical in both files
+```
+
+Once onboarded, install the template by id with `agentsfleet install --template <id>`. To re-parse and validate edits against an already-installed fleet, push them with `agentsfleet fleet update <fleet_id> --from <dir>` — the same parser runs and returns the same `UZ-AGT-*` codes.
+
+```bash
+agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
 ```
 
 ## Next

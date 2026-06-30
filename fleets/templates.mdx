@@ -1,14 +1,14 @@
 ---
 title: "Templates"
-description: "The first-party template catalogue and local bundles — pre-built fleets you install with one command."
+description: "The platform template catalogue and your workspace's own templates — pre-built fleets you install with one command."
 ---
 
-A **template** is a pre-built fleet you install in one command. There are two sources:
+A **template** is a pre-built fleet you install in one command, `agentsfleet install --template <id>`. Two tiers share that one install path:
 
-- The **first-party catalogue** — curated templates hosted by agentsfleet, browsable with `agentsfleet templates` and installed by id.
-- A **local directory** — any folder with a valid `SKILL.md` and `TRIGGER.md`, installed with `--from`.
+- The **platform catalogue** — curated templates hosted by agentsfleet, browsable with `agentsfleet templates` and installed by id.
+- Your **workspace's own templates** — tenant templates onboarded into your workspace; once they appear in your gallery they install by the same `--template <id>`.
 
-`--template` and `--from` are mutually exclusive: every `install` takes exactly one source.
+There is no `install --from <dir>` — installing a fleet is always by template id. To run a fleet you authored, onboard it as a template first (via the dashboard or API), then `install --template <id>`. To push local edits to an *already-installed* fleet, use `agentsfleet fleet update <id> --from <dir>` (see [below](#editing-an-installed-fleet-from-a-local-directory)).
 
 <Tip>
   New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` template end to end — browse, add the credential, install, register the webhook, and watch it react to a real pull request.
@@ -16,7 +16,7 @@ A **template** is a pre-built fleet you install in one command. There are two so
 
 ## Browse the catalogue
 
-`agentsfleet templates` lists the curated first-party templates — the same gallery the dashboard shows. It reads `GET /v1/fleets/bundles`; metadata only, no workspace required:
+`agentsfleet templates` lists the curated platform catalogue. It reads `GET /v1/fleets/bundles`; metadata only, no workspace required. (The dashboard install gallery shows the same platform templates **plus** any tenant templates onboarded into your workspace.)
 
 ```bash
 agentsfleet templates
@@ -39,7 +39,7 @@ Install a catalogue template by its id:
 agentsfleet install --template github-pr-reviewer
 ```
 
-agentsfleet fetches the template's pinned source, validates it, prints a requirements preview (credentials, tools, network hosts), then creates the fleet. If the template ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
+agentsfleet resolves the template in your workspace gallery, prints a requirements preview (credentials, tools, network hosts), then creates the fleet from the onboarded template — the SKILL.md/TRIGGER.md was fetched and content-addressed when the template was onboarded, so no fetch happens at install. If the template ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
 
 Install needs every declared credential in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_credentials` list names what's absent. Add the credential, then install.
 
@@ -54,28 +54,30 @@ agentsfleet install --template github-pr-reviewer --name pr-reviewer-backend
 
 Without `--name`, the fleet takes the template's own `name:`. Installing the same template twice without it collides with `UZ-AGT-006` (fleet name already exists) — see [Error codes](/api-reference/error-codes).
 
-## Install from a local directory
+## Editing an installed fleet from a local directory
 
-Any directory with a valid `SKILL.md` and `TRIGGER.md` installs with `--from`:
+There is no `agentsfleet install --from <path>` — installing a *new* fleet is always by template id (`--template <id>`), resolved from your workspace gallery. To run a fleet you authored locally, onboard it as a template (dashboard or API), then install it from the [catalogue](#install-from-the-catalogue).
+
+You can still push local `SKILL.md`/`TRIGGER.md` edits to an **already-installed** fleet:
 
 ```bash
-agentsfleet install --from <path>
+agentsfleet fleet update <fleet_id> --from <path>
 ```
 
-Point `--from` at any local bundle — one you authored (see [Authoring a fleet](/fleets/authoring)) or a template you cloned from git. The directory needs a `SKILL.md`; `TRIGGER.md` is optional (a default API wake is generated when it's absent). For a curated, ready-to-run fleet, install from the [catalogue](#install-from-the-catalogue) instead.
+This overrides the live fleet's instructions from the directory (a `SKILL.md` is required; `TRIGGER.md` is optional). See [Authoring a fleet](/fleets/authoring) for the file references.
 
 ## Writing your own
 
-A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring a fleet](/fleets/authoring) for the file references; install with:
+A template is just a directory with `SKILL.md` and `TRIGGER.md`. See [Authoring a fleet](/fleets/authoring) for the file references. To iterate on an installed fleet from your working directory:
 
 ```bash
-agentsfleet install --from .
+agentsfleet fleet update <fleet_id> --from .
 ```
 
 ## Sharing
 
-Templates are markdown — commit `my-fleet/` to git, clone it on a new machine, `agentsfleet install --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
+Templates are markdown — commit `my-fleet/` to git, clone it on a new machine, onboard it as a template (dashboard or API), then install it with `agentsfleet install --template <id>`. Once installed, iterate on it with `agentsfleet fleet update <fleet_id> --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
 
 <Note>
-  A hosted template marketplace (community-contributed templates, one-click install) is on the roadmap. The first-party catalogue above is the curated starting set; git remains the distribution mechanism for your own templates.
+  A hosted template marketplace (community-contributed templates, one-click install) is on the roadmap. The platform catalogue above is the curated starting set; git remains the distribution mechanism for your own templates.
 </Note>

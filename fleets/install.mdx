@@ -1,12 +1,13 @@
 ---
 title: "Installing a fleet"
-description: "What `agentsfleet install --from <path>` does and how to invoke it."
+description: "What `agentsfleet install --template <id>` does and how to invoke it."
 ---
 
-`agentsfleet install --from <path>` is how you bring a fleet up. It reads `SKILL.md` and `TRIGGER.md` from the directory you point at, validates them, and uploads to your active workspace. **Install is the deploy** — there's no separate `up` step.
+`agentsfleet install --template <id>` is how you bring a fleet up. It resolves the template from your workspace gallery — the platform catalogue plus your workspace's own onboarded templates — reads the template's already-onboarded `SKILL.md` and `TRIGGER.md`, prints a requirements preview, then creates the fleet in your active workspace. **Install is the deploy** — there's no separate `up` step.
 
 ```bash
-agentsfleet install --from ./platform-ops
+agentsfleet templates                          # browse the platform catalogue
+agentsfleet install --template github-pr-reviewer
 ```
 
 ```
@@ -16,20 +17,36 @@ agentsfleet install --from ./platform-ops
     github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
 ```
 
-One URL is printed per declared `webhook` trigger in `TRIGGER.md`, keyed by `triggers[].source`. Register each URL on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config the platform expects.
+One URL is printed per declared `webhook` trigger in the template's `TRIGGER.md`, keyed by `triggers[].source`. Register each URL on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config the platform expects.
 
-Re-running against the same workspace is safe — running it twice has the same effect as running it once. Your edits to `SKILL.md` / `TRIGGER.md` replace the previous version on the next event.
-
-## Install from the catalogue instead
-
-To start from a curated, ready-to-run fleet rather than a local directory, install a [template](/fleets/templates) by id:
+Pass `--name <name>` to override the fleet name so one template can back several fleets in a workspace. Without it, a second install of the same template collides with `UZ-AGT-006`.
 
 ```bash
-agentsfleet templates                          # browse the catalogue
-agentsfleet install --template github-pr-reviewer
+agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
 ```
 
-`--from` and `--template` are mutually exclusive — exactly one source per install. See [Quickstart](/quickstart) for the end-to-end walkthrough from a cold machine.
+## Authoring your own fleet
+
+There is no local-directory install. To run a fleet you wrote yourself, **onboard** its `SKILL.md` + `TRIGGER.md` as a template first, then install it by id. Onboarding happens through the dashboard or the API — there is no CLI onboard command:
+
+- **Platform tier** (visible to every workspace) — `POST /v1/admin/fleet-templates`.
+- **Workspace tier** (visible only to your workspace) — `POST /v1/workspaces/{workspace_id}/fleet-templates`.
+
+Onboarding is where the platform parses and validates your frontmatter; a malformed `SKILL.md` / `TRIGGER.md` is rejected there with a `UZ-AGT-*` wire code. Once onboarded, the template shows up in `agentsfleet templates` (platform tier) or your workspace gallery, and you install it the same way as any catalogue template:
+
+```bash
+agentsfleet install --template my-onboarded-fleet
+```
+
+See [Authoring a fleet](/fleets/authoring) for the `SKILL.md` / `TRIGGER.md` reference and the onboarding flow.
+
+## Iterating on a running fleet
+
+To roll local `SKILL.md` / `TRIGGER.md` edits onto an already-installed fleet without re-onboarding, use [`agentsfleet fleet update <fleet_id> --from <path>`](/cli/agentsfleet#agentsfleet-fleet-update-fleet-id-from-path) — it re-parses the bundle and `PATCH`es it onto the live fleet. The next event runs the new prose.
+
+```bash
+agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
+```
 
 For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/agentsfleet#tenant-provider).
 
@@ -40,12 +57,12 @@ For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/
 | `0` | Installed (or updated). |
 | `1` | Not authenticated. |
 | `2` | Network error reaching the API. |
-| `3` | The API rejected the bundle (schema validation, name clash, etc.). |
-| `4` | Missing or invalid argument (e.g. no `--from`/`--template`). |
-| `5` | Bad local bundle (path missing, no `SKILL.md`). |
+| `3` | The API rejected the install (name clash, etc.). |
+| `4` | Missing or invalid argument (e.g. no `--template`). |
+| `5` | Template not found in the workspace gallery. |
 
 ## See also
 
 - [Templates](/fleets/templates) — the catalogue of pre-built fleets you can install.
-- [Authoring a fleet](/fleets/authoring) — the `SKILL.md` and `TRIGGER.md` reference for writing your own.
+- [Authoring a fleet](/fleets/authoring) — the `SKILL.md` and `TRIGGER.md` reference, plus how to onboard your own template.
 - [Starting, observing, and stopping](/fleets/running) — what to do after install.

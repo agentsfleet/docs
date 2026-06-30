@@ -146,7 +146,7 @@ No redeploys, no DAG editor — the next event runs the new prose.
     `agentsfleet steer <fleet_id> "review the latest PR"` — same reasoning loop, manual trigger. Useful before a webhook is firing.
   </Card>
   <Card title="Author your own fleet" icon="file-pen" href="/fleets/authoring">
-    Write your own `SKILL.md` + `TRIGGER.md` and install it with `agentsfleet install --from .`.
+    Write your own `SKILL.md` + `TRIGGER.md`, onboard it as a template (dashboard or API), then `agentsfleet install --template <id>`. Iterate on a running fleet with `agentsfleet fleet update <fleet_id> --from .`.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Why deep runs keep reasoning past the model's context cap. Defaults work for 95% of cases.
