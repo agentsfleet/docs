@@ -196,6 +196,15 @@
             ]
           },
           {
+            "group": "Connectors",
+            "pages": [
+              "POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect",
+              "GET /v1/workspaces/{workspace_id}/connectors/{provider}",
+              "GET /v1/connectors/{provider}/callback",
+              "POST /v1/connectors/slack/events"
+            ]
+          },
+          {
             "group": "Approvals",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/approvals",
