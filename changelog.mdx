@@ -22,6 +22,26 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 02, 2026" tags={["What's new", "API", "UI", "Integrations"]}>
+  ## Slack: mention @agentsfleet in a channel, get an answer in the thread
+
+  agentsfleet is now Slack-resident. Connect Slack from the dashboard Integrations page — a browser OAuth round-trip, no token to paste — invite `@agentsfleet` to a channel, and mention it. The first mention materializes a fleet that lives in that channel; it answers in the thread it was mentioned in, and what it learns in one thread it remembers across the channel's other threads. It is reactive and read-only: it speaks only when mentioned, and only in the thread that asked.
+
+  ## What's new
+
+  - **Connect Slack from Integrations.** A Slack row sits next to GitHub: **Connect** redirects to Slack's authorize page and the callback stores the bot token server-side in the workspace vault. The row shows the connected workspace ("Slack connected: {team}") and offers **Reconnect** if the install is revoked.
+  - **One fleet per channel.** The first `@agentsfleet` mention in a channel creates that channel's resident fleet; later mentions in any thread reuse it. Memory is channel-scoped — tell it a fact in one thread and it recalls it in another.
+  - **Answers land in-thread.** Replies post to the thread that mentioned the bot — never to the channel top level, never to another channel.
+  - **Recent thread context.** Each mention re-reads up to 20 recent messages in its thread, so a follow-up mention sees the conversation so far even where the bot wasn't mentioned in between. Best-effort: if Slack throttles the read, the mention still processes without it.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/connectors/slack/connect`** (scope `connector:write`) — returns the Slack authorize URL carrying a signed single-use `state`; **`GET /v1/connectors/slack/callback`** finishes the round-trip and vaults the bot token.
+  - **`GET /v1/workspaces/{workspace_id}/connectors/slack`** (scope `connector:read`) — connector status as `{status, team}`, where `status` is `connected`, `reconnect_required`, or `not_connected`; never a secret.
+  - **`POST /v1/connectors/slack/events`** — the signed events ingress. Authenticated by Slack's request signature (HMAC over the raw body, 5-minute replay window), not a Bearer token.
+  - **New error codes:** `UZ-SLK-010` (401, invalid Slack signature), `UZ-SLK-011` (401, stale timestamp), `UZ-SLK-020` (200 — an event from a team with no install is acknowledged and ignored), `UZ-SLK-022` (502, OAuth token exchange failed), `UZ-SLK-030` (502, answer delivery to Slack failed — logged and retried; the run itself never fails). `UZ-CONN-001`/`UZ-CONN-002` now cover the Slack connect flow as well as GitHub.
+</Update>
+
 <Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
   ## Bring your own Fleet templates
 

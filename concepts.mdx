@@ -77,9 +77,10 @@ A trigger lands on the event stream. A run opens. The fleet calls tools allow-li
   </Accordion>
 
   <Accordion title="Trigger">
-    What wakes a fleet. Three sources, all feeding the same reasoning loop:
+    What wakes a fleet. Four sources, all feeding the same reasoning loop:
 
     - **Webhook** — an external system (GitHub, Slack, your monitoring) POSTs to `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` (one URL per declared trigger source).
+    - **Slack mention** — with Slack connected, mentioning `@agentsfleet` in a channel wakes that channel's resident fleet, which answers in the thread (see the Jul 02, 2026 changelog entry).
     - **Cron** — the fleet schedules its own future runs via the `cron_add` tool.
     - **Steer** — a human invokes `agentsfleet steer <fleet_id> "..."` for a manual run.
 
