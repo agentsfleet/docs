@@ -179,6 +179,8 @@ Onboarding a Fleet template (the SKILL.md/TRIGGER.md package behind a Fleet) and
 
 ## Integration connect & token mint
 
+Codes here are the externally-observable subset of the server registry; a gap in a numbering sequence is a code that was superseded before release (`UZ-SLK-021` was superseded by the generic `UZ-CONN-002`, so the registry — and this table — skips it).
+
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-CONN-001` | 503 | Connector not configured | Connect is unavailable for this provider on this deployment — the platform app credentials (GitHub App slug / Slack app secrets) are unset. An operator must register the provider app and populate the admin vault before workspaces can connect. |
@@ -186,10 +188,17 @@ Onboarding a Fleet template (the SKILL.md/TRIGGER.md package behind a Fleet) and
 | `UZ-CRED-001` | 404 | Integration not connected | No connected integration matches this id for the fleet's workspace. Connect it first (e.g. GitHub via the dashboard **Connect** flow) before a fleet can mint a token for it. |
 | `UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. |
 | `UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). Transient — retry shortly; if it persists, check GitHub status and the App configuration. |
+| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app credentials. |
+
+### Slack event handling
+
+Runtime codes for the channel bot's inbound mentions and outbound answers — distinct from the OAuth connect and token-mint flow above.
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
 | `UZ-SLK-010` | 401 | Invalid Slack signature | The Slack request signature on `POST /v1/connectors/slack/events` did not verify. Confirm the platform Slack app's signing secret matches the one vaulted by the operator. |
 | `UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack request timestamp is outside the 5-minute drift window — a replay attempt or a skewed clock. |
 | `UZ-SLK-020` | 200 | Slack team not installed | The Slack team that sent this event has no connector install; the event is acknowledged (200) and ignored so Slack does not retry. Re-run **Connect Slack** in the dashboard to (re)install. |
-| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app credentials. |
 | `UZ-SLK-030` | 502 | Slack answer post failed | The channel bot's answer could not be delivered to Slack (missing `chat:write`, a 429, or a Slack outage). Logged and retried with backoff; the run itself never fails. |
 
 ## Approval gate
