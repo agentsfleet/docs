@@ -42,6 +42,19 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **New error codes:** `UZ-SLK-010` (401, invalid Slack signature), `UZ-SLK-011` (401, stale timestamp), `UZ-SLK-020` (200 — an event from a team with no install is acknowledged and ignored), `UZ-SLK-022` (502, OAuth token exchange failed), `UZ-SLK-030` (502, answer delivery to Slack failed — logged and retried; the run itself never fails). `UZ-CONN-001`/`UZ-CONN-002` now cover the Slack connect flow as well as GitHub.
 </Update>
 
+<Update label="Jul 02, 2026" tags={["What's new", "API", "Integrations"]}>
+  ## Connector platform: one uniform API, bounded vendor calls
+
+  Connecting a third-party service (Slack, GitHub, and the providers landing next) now runs through one uniform, documented route set instead of a per-provider one. The URLs you already use are unchanged; what's new is that the connector surface is in the public API reference, an unknown provider returns a clear `404` instead of a generic not-found, and every outbound call agentsfleet makes to a connector's vendor is now time-bounded — a vendor that accepts a connection and then stalls degrades that one connect or mention instead of tying up the platform.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect`** and **`GET /v1/workspaces/{workspace_id}/connectors/{provider}`** — start a connect and read connector status for any registered provider (`slack`, `github`), Bearer-authed with the `connector:write` / `connector:read` scopes.
+  - **`GET /v1/connectors/{provider}/callback`** — the vendor redirect target; Bearer-less, authenticated by the signed single-use state minted at connect.
+  - **`UZ-CONN-003`** (502) — an outbound call to a connector's vendor hit its enforced deadline, could not be time-bounded, or the vendor was unreachable; the call never runs unbounded. Transient — retry.
+  - **`UZ-CONN-004`** (404) — the `{provider}` in a connector URL matches no provider on this deployment; the body names the unknown provider.
+</Update>
+
 <Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
   ## Bring your own Fleet templates
 
