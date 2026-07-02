@@ -214,11 +214,12 @@
             ]
           },
           {
-            "group": "Fleet bundles",
+            "group": "Fleet templates",
             "pages": [
               "GET /v1/fleets/bundles",
-              "POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots",
-              "GET /v1/workspaces/{workspace_id}/fleets/bundles/snapshots/{bundle_id}"
+              "GET /v1/workspaces/{workspace_id}/fleet-templates",
+              "POST /v1/admin/fleet-templates",
+              "POST /v1/workspaces/{workspace_id}/fleet-templates"
             ]
           },
           {
