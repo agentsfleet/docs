@@ -62,8 +62,6 @@ Every code on this page is one `agentsfleetd` can actually emit — the list is 
 | `UZ-AUTH-004` | 503 | Authentication service unavailable | OIDC provider unreachable |
 | `UZ-AUTH-005` | 404 | Session not found | Auth session ID not found or already expired |
 | `UZ-AUTH-006` | 401 | Session expired | Auth session timed out before completion |
-| `UZ-AUTH-009` | 403 | Insufficient role | Token role is too low for this endpoint |
-| `UZ-AUTH-010` | 403 | Unsupported role | Token contains an unrecognized role claim |
 | `UZ-AUTH-022` | 403 | Insufficient scope | Token lacks the required `resource:action` scope for this endpoint. The `detail` field names the required scope (e.g. `Requires scope fleet:admin`). |
 
 ## CLI login
