@@ -33,6 +33,17 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Empty states** — empty Fleets and Events views now use simple "No ... found" copy, with direct links to install or create the next template.
   - **Models navigation** — the dashboard nav now labels the page **Models**, and **Bring your own key** uses the same primary button style as **Install fleet**.
   - **Route motion** — dashboard route changes no longer wobble; loading states rely on the spinner.
+  </Update>
+
+<Update label="Jul 03, 2026" tags={["Improvements", "API"]}>
+  ## Operator dashboard access follows the same scopes as the API
+
+  The platform-operator surfaces — the runner fleet and the model catalogue — are now gated on the operator's explicit `resource:action` scopes, the same capabilities the API enforces on those routes, instead of a separate platform-admin flag that had to be set independently. A correctly-scoped operator reaches the dashboard surface, and there is no longer a second place for that access to drift out of sync with the API.
+
+  - **Error code** — a request missing an operator capability now returns `UZ-AUTH-022` (Insufficient scope), whose `detail` names the scope required; the former `UZ-AUTH-021` ("platform-admin privileges required") is retired.
+  - **Scope hierarchy** — a held higher scope satisfies a lower one on the dashboard exactly as it does at the API (`model:admin` covers `model:read`, `runner:write` covers `runner:read`), so an operator granted the write rung sees the read-gated view without a second grant.
+
+  Marketing-site analytics also recovers from a transient load failure now instead of staying dark for the rest of the visit. The route method-check consolidation behind these changes is internal and has no visible effect.
 </Update>
 
 <Update label="Jul 02, 2026" tags={["What's new", "API", "UI", "Integrations"]}>
