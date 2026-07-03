@@ -25,8 +25,6 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Jul 03, 2026" tags={["Fixes", "CLI"]}>
   ## Reliability fixes for logs, credential help, and approval enforcement
 
-  ## Fixes
-
   - **`agentsfleet fleet logs`** — a malformed event timestamp no longer throws `RangeError` and aborts the command; that row renders `—` and the log stream continues.
   - **`agentsfleet workspace credentials`** — the redirect now points at the real `agentsfleet credential` command group instead of a non-existent `agentsfleet agent credential`.
   - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write. The durable database row is consulted as a fallback, so enforcement can no longer diverge from the approval audit trail.
