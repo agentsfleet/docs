@@ -22,6 +22,19 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 03, 2026" tags={["What's new", "UI"]}>
+  ## Add a workspace template from the dashboard
+
+  The Fleets install gallery now has **Add template**, so workspace owners can onboard a GitHub-hosted template without leaving the dashboard. Enter `owner/repo`; the dashboard validates the required `SKILL.md`, adds the workspace template, and returns you to the gallery where it installs like any other template.
+
+  ## What's new
+
+  - **Dashboard onboarding** — **Add template** accepts a GitHub repository, calls the workspace template onboarding API, and refreshes the gallery after the template is accepted.
+  - **Empty states** — empty Fleets and Events views now use simple "No ... found" copy, with direct links to install or create the next template.
+  - **Models navigation** — the dashboard nav now labels the page **Models**, and **Bring your own key** uses the same primary button style as **Install fleet**.
+  - **Route motion** — dashboard route changes no longer wobble; loading states rely on the spinner.
+</Update>
+
 <Update label="Jul 02, 2026" tags={["What's new", "API", "UI", "Integrations"]}>
   ## Slack: mention @agentsfleet in a channel, get an answer in the thread
 

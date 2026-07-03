@@ -27,10 +27,11 @@ agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
 
 ## Authoring your own fleet
 
-There is no local-directory install. To run a fleet you wrote yourself, **onboard** its `SKILL.md` + `TRIGGER.md` as a template first, then install it by id. Onboarding happens through the dashboard or the API — there is no CLI onboard command:
+There is no local-directory install. To run a fleet you wrote yourself, **onboard** its `SKILL.md` as a template first, then install it by id. `TRIGGER.md` is optional. Onboarding happens through **Add template** in the dashboard or the API — there is no CLI onboard command:
 
-- **Platform tier** (visible to every workspace) — `POST /v1/admin/fleet-templates`.
+- **Dashboard** — open **Fleets → Install fleet**, click **Add template**, and enter the GitHub repository as `owner/repo`.
 - **Workspace tier** (visible only to your workspace) — `POST /v1/workspaces/{workspace_id}/fleet-templates`.
+- **Platform tier** (visible to every workspace) — `POST /v1/admin/fleet-templates`.
 
 Onboarding is where the platform parses and validates your frontmatter; a malformed `SKILL.md` / `TRIGGER.md` is rejected there with a `UZ-AGT-*` wire code. Once onboarded, the template shows up in `agentsfleet templates` (platform tier) or your workspace gallery, and you install it the same way as any catalogue template:
 
