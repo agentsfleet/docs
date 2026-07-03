@@ -30,6 +30,17 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write. The durable database row is consulted as a fallback, so enforcement can no longer diverge from the approval audit trail.
   </Update>
 
+<Update label="Jul 03, 2026" tags={["Fixes", "API"]}>
+  ## Error reference matches the server, and provider-credential guidance is accurate
+
+  The error-code reference no longer lists codes the server cannot emit, and the `UZ-PROVIDER-003` hint now describes what a self-managed credential actually requires.
+
+  ## Fixes
+
+  - **`UZ-PROVIDER-003` hint** — now states that `provider` and `model` are required and `api_key` is required only for a named provider (optional for an `openai-compatible` endpoint), matching the credential validator. A client following the old wording would send an unnecessary `api_key`, or misread an unrelated failure as a missing key.
+  - **Error-code reference** — removed the `UZ-AUTH-009` and `UZ-AUTH-010` rows, which have no producer in the server registry (both superseded by `UZ-AUTH-022`). The retired `UZ-AUTH-021` stays as a struck-through historical entry.
+  </Update>
+
 <Update label="Jul 03, 2026" tags={["What's new", "UI"]}>
   ## Add a workspace template from the dashboard
 
