@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 03, 2026" tags={["What's new", "API"]}>
+  ## Connect Grafana, Zoho Desk, Jira, Linear, Fly, and Datadog
+
+  Six connectors join GitHub and Slack on the connector platform. Each connect lands a vaulted credential the platform mints short-lived tokens from, and every vendor call runs under an enforced deadline. Open **Connectors** in the dashboard and the cards render from the live registry — there is no hard-coded provider list.
+
+  ## What's new
+
+  - **OAuth connectors** — Zoho Desk, Jira, and Linear connect with a browser OAuth round-trip and store a refresh token; the credential broker mints fresh access tokens on demand, so a workspace stays connected without re-authorizing. Jira resolves its Atlassian cloud instance during connect.
+  - **API-key connectors** — Datadog, Grafana, and Fly take an operator-supplied key, checked by a live validation probe before it is vaulted; a rejected key returns `UZ-CONN-005` and nothing is stored.
+  - **Connector catalog** — `GET /v1/connectors` lists every provider with its archetype and whether it is configured (platform side) and connected (for the workspace). The dashboard cards read from it.
+
+  ## Fixes
+
+  - **Bounded broker calls** — the credential broker's token exchanges are now deadline-armed and fail closed, so a hung vendor token endpoint can no longer stall a mint.
+  </Update>
+
 <Update label="Jul 03, 2026" tags={["What's new", "UI"]}>
   ## Add a workspace template from the dashboard
 
