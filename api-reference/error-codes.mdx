@@ -82,7 +82,7 @@ The device-style flow behind `agentsfleet login` (verification code + dashboard 
 | `UZ-AUTH-018` | 400 | Invalid verification code shape | `verification_code` must be exactly 6 ASCII digits |
 | `UZ-AUTH-019` | 400 | Invalid ciphertext | `ciphertext` missing or empty — expect base64url-encoded AES-256-GCM output |
 | `UZ-AUTH-020` | 400 | Invalid nonce | `nonce` missing, empty, or wrong length — expect a base64url-encoded 12-byte value |
-| `UZ-AUTH-021` | 403 | Platform-admin privileges required | Action restricted to agentsfleet platform operators |
+| ~~`UZ-AUTH-021`~~ | 403 | ~~Platform-admin privileges required~~ | Historical: this code was used before `UZ-AUTH-022` was introduced. Operator checks now return `UZ-AUTH-022` (Insufficient scope) with `detail` naming the required scope. |
 
 ## API keys
 
