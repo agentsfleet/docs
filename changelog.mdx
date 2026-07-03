@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 04, 2026" tags={["Fixes", "UI"]}>
+  ## Readable account settings, a copyable workspace ID, and consistent dashboard labels
+
+  The account settings dialog now renders its text and controls correctly on the dark theme, the workspace ID copies with one click, and section labels read at one size across every dashboard page.
+
+  ## What's new
+
+  - **Copy the workspace ID** — the **Workspace** page lists the workspace name and ID as labelled rows, each with a copy button. The ID is the value the `agentsfleet` command line and the API expect.
+  - **One label size** — eyebrow labels (section headers, table columns, sidebar groups) now share a single type size across the dashboard instead of two near-identical ones.
+  - **Clearer first-run screens** — the Dashboard, Fleets, and Models empty states lead with **Learn more** plus one primary action, and **API Keys** states that keys authenticate with the agentsfleet API.
+
+  ## Fixes
+
+  - **Account settings dialog** — headings, your email address, and the close (×) button rendered dark-on-dark and were effectively invisible on the dark theme; they now use readable colors. The dialog picks up the app theme correctly after a Clerk appearance fix.
+</Update>
+
 <Update label="Jul 03, 2026" tags={["What's new", "API", "UI"]}>
   ## Connect Grafana, Zoho Desk, Jira, Linear, Fly, and Datadog
 
