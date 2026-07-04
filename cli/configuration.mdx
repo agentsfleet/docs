@@ -14,7 +14,7 @@ description: "Configuration precedence and environment variables."
 Every **other command** then resolves which bearer to send:
 
 - **`AGENTSFLEET_API_KEY`** (a service API key) wins whenever it is set — an exported key overrides whatever `agentsfleet login` stored, so machines and CI authenticate as that key.
-- Otherwise the **stored credentials** written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json` are used.
+- Otherwise the **stored token** written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json` is used.
 
 `--token` is not accepted on commands other than `login`; set `AGENTSFLEET_API_KEY` for non-interactive script and CI auth.
 
@@ -32,7 +32,7 @@ Every **other command** then resolves which bearer to send:
 | `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
 | `AGENTSFLEET_DASHBOARD_URL` | Dashboard base URL — used for the login verification page. | `https://app.agentsfleet.net` |
 | `AGENTSFLEET_API_KEY` | Service auth (machine-bound). Sent as the bearer and **overrides a stored `login` session**. Use this for CI, service-to-service calls, and external agents (LangGraph, CrewAI, Composio, your own code). | — |
-| `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (credentials, telemetry, session). | `~/.config/agentsfleet` |
+| `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (login token, telemetry, session). | `~/.config/agentsfleet` |
 | `NO_COLOR` | Set to `1` to disable color output. | — |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
 | `DO_NOT_TRACK` | Set to `1` to opt out via the industry-standard signal ([consoledonottrack.com](https://consoledonottrack.com/)). | unset |
@@ -42,7 +42,7 @@ Every **other command** then resolves which bearer to send:
 
 ## Telemetry
 
-`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or credentials are ever sent.
+`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or tokens are ever sent.
 
 Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
 

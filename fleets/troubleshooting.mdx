@@ -11,7 +11,7 @@ A fleet that's misbehaving falls into one of six failure shapes. Find the sympto
 |---|---|---|
 | Onboarding or `agentsfleet fleet update --from` exits non-zero | Frontmatter validation failed | [§1 Frontmatter rejected](#1-frontmatter-rejected) |
 | Upstream says it sent the webhook, fleet didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but fleet silent](#2-webhook-delivered-but-fleet-silent) |
-| Fleet woke, run failed before producing output | Credential, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
+| Fleet woke, run failed before producing output | Secret, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
 | Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
 | Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `agentsfleet` itself is broken (auth, network) | Local config or platform reachability | [§6 agentsfleet can't reach the platform](#6-agentsfleet-cant-reach-the-platform) |
@@ -66,7 +66,7 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
 | `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Secrets & ENVs → Rotation](/fleets/secrets#rotation). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
-| `UZ-WH-020` | 401 | No webhook credential configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet secret list` to confirm; add with `agentsfleet secret add <source> --data=@-`. |
+| `UZ-WH-020` | 401 | No webhook secret configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet secret list` to confirm; add with `agentsfleet secret add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |
 
 ### Common signature config mistakes
@@ -96,7 +96,7 @@ agentsfleet events <fleet_id> --since 1h --json | jq 'select(.error)'
 
 | Wire code | Cause | Fix |
 |---|---|---|
-| `UZ-AGT-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet secret list` to confirm; `agentsfleet secret add <name> --data=@-` to add. |
+| `UZ-AGT-003` | A required vault secret is absent | The secret name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet secret list` to confirm; `agentsfleet secret add <name> --data=@-` to add. |
 | `UZ-EXEC-003` | Execution timeout | The run exceeded its wall-clock ceiling and was killed. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
 | `UZ-MEM-003` | Memory backend unavailable | Transient. Re-trigger; if persistent, file an issue. |
 | `UZ-MEM-002` | Fleet not found for memory op | The `fleet_id` on the memory call doesn't exist in this workspace. Memory is fleet-scoped; confirm the fleet with `agentsfleet status`. |
@@ -125,7 +125,7 @@ The model's tool-call trail tells you what it actually did. Compare against what
 | Symptom | Likely cause |
 |---|---|
 | Fleet skipped a step you specified | Step is unclear, ambiguous, or buried mid-paragraph. Move it to a numbered list at the top. |
-| Fleet called the wrong endpoint | `SKILL.md` named the endpoint without context. Add the full URL or the credential name explicitly. |
+| Fleet called the wrong endpoint | `SKILL.md` named the endpoint without context. Add the full URL or the secret name explicitly. |
 | Fleet hallucinated a value | Source data wasn't in the event payload or a memory recall. Don't ask the fleet to invent — surface every input explicitly. |
 | Fleet re-asked for info you already gave it | `memory_recall` isn't being called at the start of the run. Audit your `SKILL.md` — recall must happen before reasoning. See [Memory](/memory). |
 | Fleet posted twice | Webhook delivery is at-least-once. Add a dedupe step using the upstream `event_id` in `memory_recall`/`memory_store`. |
@@ -180,7 +180,7 @@ Pass `--json` for the structured envelope: `{ ok: bool, api_url: string, checks:
 If `agentsfleet` keeps acting unauthenticated, your bearer might be coming from somewhere unexpected. Resolution order, highest priority first:
 
 1. `AGENTSFLEET_API_KEY` environment variable (a service API key)
-2. Stored credentials at `~/.config/agentsfleet/credentials.json` (written by `agentsfleet login`)
+2. Stored token at `~/.config/agentsfleet/credentials.json` (written by `agentsfleet login`)
 
 Unset `AGENTSFLEET_API_KEY` if you've been running CI scripts that exported it; otherwise it overrides whatever `agentsfleet login` wrote.
 

@@ -11,7 +11,7 @@ A **library entry** is a pre-built fleet you install in one command, `agentsflee
 There is no `install --from <dir>` — installing a fleet is always by library id. To run a fleet you authored, onboard it as a template first (via **Add template** in the dashboard or the API), then `install --library <id>`. To push local edits to an *already-installed* fleet, use `agentsfleet fleet update <id> --from <dir>` (see [below](#editing-an-installed-fleet-from-a-local-directory)).
 
 <Tip>
-  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` entry end to end — browse, add the credential, install, register the webhook, and watch it react to a real pull request.
+  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` entry end to end — browse, add the secret, install, register the webhook, and watch it react to a real pull request.
 </Tip>
 
 ## Browse the catalogue
@@ -29,7 +29,7 @@ security-reviewer              Security reviewer               github
 zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
 ```
 
-Each row shows the entry id, its name, and the credentials it needs. Wire those into the workspace vault (see [Secrets & ENVs](/fleets/secrets)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
+Each row shows the entry id, its name, and the secrets it needs. Wire those into the workspace vault (see [Secrets & ENVs](/fleets/secrets)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
 
 ## Add a workspace template from the dashboard
 
@@ -49,7 +49,7 @@ agentsfleet install --library github-pr-reviewer
 
 agentsfleet resolves the entry in your workspace gallery, prints a requirements preview (credentials, tools, network hosts), then creates the fleet from the onboarded entry — the SKILL.md/TRIGGER.md was fetched and content-addressed when the entry was onboarded, so no fetch happens at install. If the entry ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
 
-Install needs every declared credential in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_secrets` list names what's absent. Add the credential, then install.
+Install needs every declared secret in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_secrets` list names what's absent. Add the secret, then install.
 
 ### Install the same entry more than once
 
@@ -84,7 +84,7 @@ agentsfleet fleet update <fleet_id> --from .
 
 ## Sharing
 
-A template is markdown — commit `my-fleet/` to git, clone it on a new machine, onboard it as a library entry (dashboard or API), then install it with `agentsfleet install --library <id>`. Once installed, iterate on it with `agentsfleet fleet update <fleet_id> --from .`. Credentials never live in the template; they live in the workspace vault. The template is safe to share publicly; credentials are not.
+A template is markdown — commit `my-fleet/` to git, clone it on a new machine, onboard it as a library entry (dashboard or API), then install it with `agentsfleet install --library <id>`. Once installed, iterate on it with `agentsfleet fleet update <fleet_id> --from .`. Secrets never live in the template; they live in the workspace vault. The template is safe to share publicly; secrets are not.
 
 <Note>
   A hosted marketplace for the Fleet library (community-contributed entries, one-click install) is on the roadmap. The platform catalogue above is the curated starting set; git remains the distribution mechanism for your own entries.

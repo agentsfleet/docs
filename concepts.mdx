@@ -16,10 +16,10 @@ agentsfleet has four primary objects. Everything else is infrastructure.
     Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://agentsfleet.net/pricing).
   </Card>
   <Card title="Workspace" icon="folder-tree">
-    A container for fleets and credentials. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
+    A container for fleets and secrets. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
   </Card>
   <Card title="Fleet" icon="ghost">
-    A persistent, durable fleet process scoped to one operational outcome. One fleet has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace credentials it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
+    A persistent, durable fleet process scoped to one operational outcome. One fleet has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace secrets it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
   </Card>
   <Card title="Tool" icon="plug">
     A named primitive the fleet can invoke — `http_request`, `memory_store`, `cron_add`. Tools are declared in `TRIGGER.md` and **enforced** by the runner sandbox; the fleet literally cannot call a tool that isn't on the list. The companion file `SKILL.md` is **advisory** — natural-language prose the model reads as its system prompt to decide *when* to reach for which tool and what counts as "done." Enforcement comes from `TRIGGER.md`; behavior comes from `SKILL.md`.
@@ -37,7 +37,7 @@ Tenant  (billing + identity, provider: anthropic)
 │   │   ├── Tools:    http_request, memory_store, cron_add
 │   │   └── Triggers: webhook (GitHub Actions), cron, steer
 │   │
-│   └── Credential: github        (workspace-scoped, shared)
+│   └── Secret: github            (workspace-scoped, shared)
 │
 └── Workspace: "support"
     │
@@ -50,7 +50,7 @@ Tenant  (billing + identity, provider: anthropic)
 
 Hosted execution — every event receipt and run — is **free until July 31, 2026**. No credit card to start.
 
-**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — agentsfleet marks up zero on inference. The runner resolves your credential at the tool bridge, so the fleet never sees the raw key.
+**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — agentsfleet marks up zero on inference. The runner resolves your secret at the tool bridge, so the fleet never sees the raw key.
 
 For the metered rates that apply after the trial, see [pricing on agentsfleet.net](https://agentsfleet.net/pricing).
 

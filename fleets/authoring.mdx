@@ -79,7 +79,7 @@ always frame as "leading hypothesis" and let the human decide.
 
 ## `TRIGGER.md` — machine-readable config
 
-`TRIGGER.md` carries the runtime contract: trigger source, allowed tools, vault credential references, network allowlist, and budget caps. Everything that controls security, cost, or scheduling lives here. The body below the frontmatter is operator-facing prose (credential shapes, budget rationale, etc.) — the runtime does not parse it.
+`TRIGGER.md` carries the runtime contract: trigger source, allowed tools, vault secret references, network allowlist, and budget caps. Everything that controls security, cost, or scheduling lives here. The body below the frontmatter is operator-facing prose (secret shapes, budget rationale, etc.) — the runtime does not parse it.
 
 ### Shape
 
@@ -111,7 +111,7 @@ x-agentsfleet:                # all runtime config nests under this key
     monthly_dollars: 8.00
 ---
 
-# Operator commentary about credential shapes, budget reasoning,
+# Operator commentary about secret shapes, budget reasoning,
 # firewall behavior — readable by humans, ignored by the runtime.
 ```
 

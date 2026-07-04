@@ -42,11 +42,11 @@ This walks through installing a fleet from the first-party catalogue and seeing 
   agentsfleet workspace add pr-review
   ```
 
-  Skip this if the signup-provisioned default workspace is fine. Workspaces are the boundary for credentials, access control, and webhook namespaces — every fleet lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
+  Skip this if the signup-provisioned default workspace is fine. Workspaces are the boundary for secrets, access control, and webhook namespaces — every fleet lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
 </Step>
 
-<Step title="Browse the catalogue and add the credential">
-  List the first-party library catalogue and the credentials each one needs:
+<Step title="Browse the catalogue and add the secret">
+  List the first-party library catalogue and the secrets each one needs:
 
   ```bash
   agentsfleet library
@@ -69,7 +69,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
 
   `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Secrets & ENVs](/fleets/secrets) for the full vault model.
 
-  Installing from the dashboard instead? The install gallery spells out why each credential is needed — "this fleet needs github to review your pull requests" — and blocks until it's connected, so you can't create a fleet that can't run.
+  Installing from the dashboard instead? The install gallery spells out why each secret is needed — "this fleet needs github to review your pull requests" — and blocks until it's connected, so you can't create a fleet that can't run.
 </Step>
 
 <Step title="Install the fleet">
@@ -94,7 +94,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
 
   - **Payload URL** — the `github:` URL the install step printed.
   - **Content type** — `application/json`.
-  - **Secret** — the same `webhook_secret` you stored in the `github` credential.
+  - **Secret** — the same `webhook_secret` you stored in the `github` secret.
   - **Which events** — "Let me select individual events" → **Pull requests**.
 
   Or do it from the terminal with your existing `gh` auth:
@@ -131,7 +131,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
 
 ## What just happened
 
-A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which credentials it reads). The library entry shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
+A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which secrets it reads). The library entry shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
 
 ```bash
 agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
