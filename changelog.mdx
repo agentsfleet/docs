@@ -1451,7 +1451,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   2. **SKILL.md** — frontmatter needs `name:`, `description:`, `version:`. Match `name:` to TRIGGER.md.
   3. **`zombiectl install --from <dir>`** — re-run until field-level errors clear.
 
-  See [Authoring skills](/agents/authoring) for the canonical shape.
+  See [Authoring skills](/fleets/authoring) for the canonical shape.
 
   ## What's new
 
@@ -1778,15 +1778,15 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Apr 19, 2026" tags={["Improvements", "CLI"]}>
   ## Agent lifecycle is the unified product model
 
-  The CLI and API now speak one language: `zombiectl install → up → status → logs → kill`. `zombiectl --help` is shorter, the API surface is tighter, and the docs, product, and code all describe the same thing. See [Agents](/agents/overview).
+  The CLI and API now speak one language: `zombiectl install → up → status → logs → kill`. `zombiectl --help` is shorter, the API surface is tighter, and the docs, product, and code all describe the same thing. See [Agents](/fleets/overview).
 </Update>
 
 <Update label="Apr 18, 2026" tags={["Docs"]}>
   ## Docs reshaped around the agent lifecycle
 
-  A new [Agents](/agents/overview) section walks through installing a template, adding credentials, running, observing, and killing an agent. Pages describing the legacy v1 pipeline have been retired; the old `/specs/*` and `/runs/*` URLs now 404.
+  A new [Agents](/fleets/overview) section walks through installing a template, adding credentials, running, observing, and killing an agent. Pages describing the legacy v1 pipeline have been retired; the old `/specs/*` and `/runs/*` URLs now 404.
 
-  New pages: [overview](/agents/overview), [install](/agents/install), [running](/agents/running), [credentials](/agents/credentials), [webhooks](/agents/webhooks), [skills](/agents/authoring), [templates](/agents/templates).
+  New pages: [overview](/fleets/overview), [install](/fleets/install), [running](/fleets/running), [credentials](/fleets/secrets), [webhooks](/fleets/webhooks), [skills](/fleets/authoring), [templates](/fleets/library).
 </Update>
 
 <Update label="Apr 18, 2026" tags={["New", "API", "Security"]}>
@@ -1802,7 +1802,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   Every per-agent webhook flows through one fail-closed middleware that handles URL-embedded secrets, Bearer tokens, HMAC signatures, and Svix multi-signature rotation with constant-time comparisons.
 
-  Seven providers ship first-class: **agentmail**, **Grafana**, **Slack**, **GitHub**, **Linear**, **Jira**, and **Clerk** (via Svix). Onboarding takes one field in `TRIGGER.md`; secrets are workspace-vaulted and rotate without an agent redeploy. See [Webhooks](/agents/webhooks).
+  Seven providers ship first-class: **agentmail**, **Grafana**, **Slack**, **GitHub**, **Linear**, **Jira**, and **Clerk** (via Svix). Onboarding takes one field in `TRIGGER.md`; secrets are workspace-vaulted and rotate without an agent redeploy. See [Webhooks](/fleets/webhooks).
 </Update>
 
 <Update label="Apr 16, 2026" tags={["New", "API", "UI"]}>
