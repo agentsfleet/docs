@@ -129,7 +129,7 @@ Load-shedding on a saturated API instance — back off and retry.
 | `UZ-WH-002` | 400 | Malformed webhook | Webhook body is missing required fields |
 | `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
-| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this fleet's source. Run `agentsfleet credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the fleet's workspace, then resend. |
+| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this fleet's source. Run `agentsfleet secret add <source> --data=@-` with `{ "webhook_secret": "..." }` in the fleet's workspace, then resend. |
 | `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload at the source or filter fields before forwarding. |
 
 ## Tool
@@ -146,7 +146,7 @@ Load-shedding on a saturated API instance — back off and retry.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGT-003` | 424 | Fleet credential missing | A required vault credential is absent. Add it with `agentsfleet credential add <name>`. |
+| `UZ-AGT-003` | 424 | Fleet credential missing | A required vault credential is absent. Add it with `agentsfleet secret add <name>`. |
 | `UZ-AGT-004` | 500 | Fleet claim failed | Fleet could not be claimed from the database. Verify the `fleet_id` exists and status is `active`. |
 | `UZ-AGT-006` | 409 | Fleet name already exists | Name taken. Kill the existing fleet first, then re-install. |
 | `UZ-AGT-008` | 400 | Invalid fleet config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
@@ -157,7 +157,7 @@ Load-shedding on a saturated API instance — back off and retry.
 
 ## Fleet Bundle
 
-Onboarding a Fleet template (the SKILL.md/TRIGGER.md package behind a Fleet) and installing it. Onboard a template via `POST /v1/admin/fleet-templates` (platform tier) or `POST /v1/workspaces/{workspace_id}/fleet-templates` (your workspace's tenant tier); install one via `POST /v1/workspaces/{workspace_id}/fleets`.
+Onboarding a Fleet library entry (the SKILL.md/TRIGGER.md package behind a Fleet) and installing it. Onboard an entry via `POST /v1/admin/fleet-libraries` (platform tier) or `POST /v1/workspaces/{workspace_id}/fleet-libraries` (your workspace's tenant tier); install one via `POST /v1/workspaces/{workspace_id}/fleets`.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|

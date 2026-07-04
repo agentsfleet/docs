@@ -9,7 +9,7 @@ Every webhook trigger declared in `TRIGGER.md` gets a unique, stable URL keyed b
 https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
 ```
 
-External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --template` prints the full set of URLs (one per declared webhook trigger) at install time.
+External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --library` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
   **`agentsfleet install` prints the webhook URL(s) to register.** Add each printed URL to its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). The reference below covers the signature config the platform expects.
@@ -79,7 +79,7 @@ triggers:
 
 The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
 
-`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/fleets/credentials).
+`secret_ref` always names a secret in the workspace vault carrying the upstream's signing secret. See [Secrets & ENVs](/fleets/secrets).
 
 <Note>
   **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{fleet_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the fleet sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{fleet_id}`, to accommodate Svix's multi-signature rotation scheme.

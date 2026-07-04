@@ -30,7 +30,7 @@ The `--json` output (and the onboarding API response) carries the wire error cod
 |---|---|---|
 | `UZ-AGT-008` | `TRIGGER.md` config_json fails schema validation | Re-read [Authoring](/fleets/authoring) §`x-agentsfleet:` subkeys. Common: a runtime key (`tools`, `credentials`, `network`) at the top level instead of nested under `x-agentsfleet:`. |
 | `UZ-AGT-011` | `SKILL.md` and `TRIGGER.md` disagree on top-level `name:` | Make both files' `name:` value identical. |
-| `UZ-VAULT-001` | Credential `data` body is empty / not a JSON object | The error is from a prior `credential add` call, not from onboarding itself. Re-run `agentsfleet credential add <name> --data=@-` with a non-empty JSON object. |
+| `UZ-VAULT-001` | Secret `data` body is empty / not a JSON object | The error is from a prior `secret add` call, not from onboarding itself. Re-run `agentsfleet secret add <name> --data=@-` with a non-empty JSON object. |
 
 For other codes, check [Error codes](/api-reference/error-codes) and grep for the `UZ-` prefix.
 
@@ -64,9 +64,9 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 |---|---|---|
 | `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` — verify the ID matches `agentsfleet status`. |
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
-| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Credentials → Rotation](/fleets/credentials#rotation). |
+| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Secrets & ENVs → Rotation](/fleets/secrets#rotation). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
-| `UZ-WH-020` | 401 | No webhook credential configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet credential list` to confirm; add with `agentsfleet credential add <source> --data=@-`. |
+| `UZ-WH-020` | 401 | No webhook credential configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet secret list` to confirm; add with `agentsfleet secret add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |
 
 ### Common signature config mistakes
@@ -74,7 +74,7 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 ```yaml
 # WRONG — secret_ref references a vault key that doesn't exist
 signature:
-  secret_ref: github_secret    # but you ran: agentsfleet credential add github
+  secret_ref: github_secret    # but you ran: agentsfleet secret add github
                                #              ^^^^^^ — name is "github", not "github_secret"
 
 # RIGHT
@@ -96,7 +96,7 @@ agentsfleet events <fleet_id> --since 1h --json | jq 'select(.error)'
 
 | Wire code | Cause | Fix |
 |---|---|---|
-| `UZ-AGT-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet credential list` to confirm; `agentsfleet credential add <name> --data=@-` to add. |
+| `UZ-AGT-003` | A required vault credential is absent | The credential name in `TRIGGER.md` `credentials:` doesn't exist in the workspace vault. `agentsfleet secret list` to confirm; `agentsfleet secret add <name> --data=@-` to add. |
 | `UZ-EXEC-003` | Execution timeout | The run exceeded its wall-clock ceiling and was killed. Often a sign the prompt is too large or the model is overwhelmed. Tighten `SKILL.md` or check `tool_window` in [Context lifecycle](/concepts/context-lifecycle). |
 | `UZ-MEM-003` | Memory backend unavailable | Transient. Re-trigger; if persistent, file an issue. |
 | `UZ-MEM-002` | Fleet not found for memory op | The `fleet_id` on the memory call doesn't exist in this workspace. Memory is fleet-scoped; confirm the fleet with `agentsfleet status`. |

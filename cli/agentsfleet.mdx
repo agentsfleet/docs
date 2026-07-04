@@ -8,10 +8,10 @@ description: "Complete agentsfleet command reference."
 | Group | Commands |
 |-------|----------|
 | Authentication | `login`, `logout`, `auth status` |
-| Fleets (top-level) | `install --template`, `templates`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
+| Fleets (top-level) | `install --library`, `library`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
 | Fleets (in-place update) | `fleet update --from` |
-| Credentials | `credential add`, `credential show`, `credential list`, `credential delete` |
-| Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace credentials`, `workspace delete` |
+| Secrets | `secret add`, `secret show`, `secret list`, `secret delete` |
+| Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace secrets`, `workspace delete` |
 | Memory | `memory list`, `memory search` |
 | Fleet keys (external access) | `fleet-key add`, `fleet-key list`, `fleet-key delete` |
 | Integration grants | `grant list`, `grant delete` |
@@ -89,34 +89,34 @@ The probe result is one of `valid` (200 from the billing endpoint), `unauthorize
 
 ## Fleets
 
-### `agentsfleet install --template <id>`
+### `agentsfleet install --library <id>`
 
-Install a fleet from your workspace gallery — the first-party platform catalogue plus your workspace's own onboarded templates. agentsfleet resolves the template by id, fetches its pinned `SKILL.md` + `TRIGGER.md`, prints a requirements preview (credentials, tools, network hosts), then creates the fleet in the active workspace. `install` takes exactly one source, `--template <id>`; there are no bare-name aliases and no local-directory install.
+Install a fleet from your workspace gallery — the first-party platform catalogue plus your workspace's own onboarded library entries. agentsfleet resolves the entry by id, fetches its pinned `SKILL.md` + `TRIGGER.md`, prints a requirements preview (credentials, tools, network hosts), then creates the fleet in the active workspace. `install` takes exactly one source, `--library <id>`; there are no bare-name aliases and no local-directory install.
 
 ```bash
-agentsfleet install --template github-pr-reviewer
-agentsfleet install --template github-pr-reviewer --name pr-reviewer-frontend
+agentsfleet install --library github-pr-reviewer
+agentsfleet install --library github-pr-reviewer --name pr-reviewer-frontend
 ```
 
-If the template ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
+If the entry ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
 
-To run a fleet you wrote yourself, onboard its `SKILL.md` + `TRIGGER.md` as a template first — via the dashboard or the API (`POST /v1/admin/fleet-templates` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-templates` for a workspace template) — then install it by id. Frontmatter is validated at onboard time. There is no CLI onboard command. See [Authoring a fleet](/fleets/authoring) and [Templates](/fleets/templates).
+To run a fleet you wrote yourself, onboard its `SKILL.md` + `TRIGGER.md` as a template first — via the dashboard or the API (`POST /v1/admin/fleet-libraries` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-libraries` for a workspace entry) — then install it by id. Frontmatter is validated at onboard time. There is no CLI onboard command. See [Authoring a fleet](/fleets/authoring) and [Fleet library](/fleets/library).
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--template <id>` | *(required)* | Install from a workspace-gallery template by id (browse the platform tier with `agentsfleet templates`). |
-| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one template can back several fleets in a workspace. Without it, a second install of the same template collides with `UZ-AGT-006`. |
+| `--library <id>` | *(required)* | Install from a workspace-gallery entry by id (browse the platform tier with `agentsfleet library`). |
+| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one library entry can back several fleets in a workspace. Without it, a second install of the same entry collides with `UZ-AGT-006`. |
 
-### `agentsfleet templates`
+### `agentsfleet library`
 
-List the first-party template catalogue — the same gallery the dashboard shows. Reads `GET /v1/fleets/bundles`; metadata only, no workspace required.
+List the first-party library catalogue — the same gallery the dashboard shows. Reads `GET /v1/fleets/bundles`; metadata only, no workspace required.
 
 ```bash
-agentsfleet templates
-agentsfleet templates --json
+agentsfleet library
+agentsfleet library --json
 ```
 
-Prints a table of template id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts, and `required_credentials_reasons` when the template declares per-credential purpose copy). The table output is unchanged. Install one with `agentsfleet install --template <id>`. See [Templates](/fleets/templates).
+Prints a table of entry id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts, and `required_credentials_reasons` when the entry declares per-credential purpose copy). The table output is unchanged. Install one with `agentsfleet install --library <id>`. See [Fleet library](/fleets/library).
 
 ### `agentsfleet fleet update <fleet_id> --from <path>`
 
@@ -237,26 +237,26 @@ The reply streams back live; the result also persists to the activity stream for
 
 ---
 
-## Credentials
+## Secrets
 
-### `agentsfleet credential add <name> --data=@-`
+### `agentsfleet secret add <name> --data=@-`
 
 Store a JSON-shaped secret in the current workspace vault. The fleet references it by name from `TRIGGER.md`.
 
 Always pipe JSON on stdin via `--data=@-`. Never pass it inline as `--data='{...}'` — that puts the secret in shell history and process argv:
 
 ```bash
-agentsfleet credential add github --data=@- <<'JSON'
+agentsfleet secret add github --data=@- <<'JSON'
 { "api_token": "ghp_...", "webhook_secret": "<32-byte hex>" }
 JSON
 ```
 
 Default behaviour is skip-if-exists. Use `--force` to overwrite for rotation.
 
-For a **model-provider** credential (own-key model setup), use typed flags instead of `--data` — including any OpenAI-compatible endpoint:
+For a **model-provider** secret (own-key model setup), use typed flags instead of `--data` — including any OpenAI-compatible endpoint:
 
 ```bash
-agentsfleet credential add my-gateway \
+agentsfleet secret add my-gateway \
   --provider openai-compatible --base-url https://gateway.example.com/v1 \
   --model my-model \
   --api-key sk-...          # optional — omit for a keyless gateway
@@ -264,25 +264,25 @@ agentsfleet credential add my-gateway \
 
 `--base-url` is required and `https`-only (rejected at parse, no network call); `--model` is required; `--api-key` is optional for a keyless gateway. The typed flags and `--data` are mutually exclusive.
 
-See [Workspace credentials](/fleets/credentials) for the full vault model.
+See [Secrets & ENVs](/fleets/secrets) for the full vault model.
 
-### `agentsfleet credential show <name>`
+### `agentsfleet secret show <name>`
 
 Print metadata (created, last-rotated). **Values are never returned.**
 
-### `agentsfleet credential delete <name>`
+### `agentsfleet secret delete <name>`
 
-Remove a credential from the workspace vault. Any fleet still referencing it will fail with `UZ-AGT-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
+Remove a secret from the workspace vault. Any fleet still referencing it will fail with `UZ-AGT-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
 
-### `agentsfleet credential list`
+### `agentsfleet secret list`
 
-List credential names and creation timestamps in the current workspace. Values are never returned.
+List secret names and creation timestamps in the current workspace. Values are never returned.
 
 ```bash
-agentsfleet credential list
+agentsfleet secret list
 ```
 
-`--json` additionally carries each credential's server-derived `kind` (`provider_key`, `custom_endpoint`, or `custom_secret`) and its non-secret `provider` / `model` / `base_url` — the `api_key` is never among them.
+`--json` additionally carries each secret's server-derived `kind` (`provider_key`, `custom_endpoint`, or `custom_secret`) and its non-secret `provider` / `model` / `base_url` — the `api_key` is never among them.
 
 ---
 
@@ -451,27 +451,27 @@ For per-fleet spend breakdowns, use `agentsfleet logs <fleet_id> --json` and agg
 
 ## Tenant provider
 
-By default your tenant runs on **platform-managed** inference — agentsfleet holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider credential — a named provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot) or [any **OpenAI-compatible** endpoint](/fleets/credentials#model-provider-credentials-own-key-model-setup) (a self-hosted vLLM server, a gateway, OpenRouter) — in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from agentsfleet — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
+By default your tenant runs on **platform-managed** inference — agentsfleet holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider secret — a named provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot) or [any **OpenAI-compatible** endpoint](/fleets/secrets#model-provider-secrets-own-key-model-setup) (a self-hosted vLLM server, a gateway, OpenRouter) — in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from agentsfleet — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
 
 ### `agentsfleet tenant provider show`
 
-Print the active posture, model, context-cap, and (for self-managed) the credential name. `--json` for the structured shape.
+Print the active posture, model, context-cap, and (for self-managed) the secret name. `--json` for the structured shape.
 
 ```bash
 agentsfleet tenant provider show
 agentsfleet tenant provider show --json
 ```
 
-### `agentsfleet tenant provider add --credential <name>`
+### `agentsfleet tenant provider add --secret <name>`
 
-Activate a self-managed credential for the tenant. The credential must already exist in the workspace vault (`agentsfleet credential add <name>`). The command validates the credential structure and pins the model into the tenant's provider row. For a named provider it resolves the model's context cap from the `cap.json` endpoint; an **OpenAI-compatible** endpoint bypasses the caps catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` credential is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
+Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider it resolves the model's context cap from the `cap.json` endpoint; an **OpenAI-compatible** endpoint bypasses the caps catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
 
 ```bash
-# 1. Store the provider credential
-agentsfleet credential add account-fireworks --data='{"provider":"fireworks","api_key":"fw_…","model":"accounts/fireworks/models/kimi-k2.6"}'
+# 1. Store the provider secret
+agentsfleet secret add account-fireworks --data='{"provider":"fireworks","api_key":"fw_…","model":"accounts/fireworks/models/kimi-k2.6"}'
 
 # 2. Activate it for the tenant
-agentsfleet tenant provider add --credential account-fireworks
+agentsfleet tenant provider add --secret account-fireworks
 ```
 
 In-flight events finish under the snapshot they were claimed under; the next event's debits use the new posture.

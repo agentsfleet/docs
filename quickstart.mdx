@@ -1,9 +1,9 @@
 ---
 title: Quickstart
-description: "Install the agentsfleet CLI, install a fleet from the template catalogue, and watch it run."
+description: "Install the agentsfleet CLI, install a fleet from the library catalogue, and watch it run."
 ---
 
-This walks through installing a fleet from the first-party catalogue and seeing it run, starting from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any template.
+This walks through installing a fleet from the first-party catalogue and seeing it run, starting from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any library entry.
 
 <Steps>
 
@@ -46,38 +46,38 @@ This walks through installing a fleet from the first-party catalogue and seeing 
 </Step>
 
 <Step title="Browse the catalogue and add the credential">
-  List the first-party templates and the credentials each one needs:
+  List the first-party library catalogue and the credentials each one needs:
 
   ```bash
-  agentsfleet templates
+  agentsfleet library
   ```
 
   ```
-  TEMPLATE                       NAME                            CREDENTIALS
+  LIBRARY                        NAME                            CREDENTIALS
   github-pr-reviewer             GitHub Pull Request reviewer    github
   security-reviewer              Security reviewer               github
   zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
   ```
 
-  `github-pr-reviewer` needs a `github` credential. Add it to the workspace vault before installing (install rejects a bundle whose credentials are missing, [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle)). Pipe the JSON on stdin so it never lands in shell history:
+  `github-pr-reviewer` needs a `github` secret. Add it to the workspace vault before installing (install rejects a bundle whose secrets are missing, [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle)). Pipe the JSON on stdin so it never lands in shell history:
 
   ```bash
-  agentsfleet credential add github --data=@- <<'JSON'
+  agentsfleet secret add github --data=@- <<'JSON'
   { "api_token": "ghp_...", "webhook_secret": "<32-byte hex>" }
   JSON
   ```
 
-  `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Credentials](/fleets/credentials) for the full vault model.
+  `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Secrets & ENVs](/fleets/secrets) for the full vault model.
 
   Installing from the dashboard instead? The install gallery spells out why each credential is needed — "this fleet needs github to review your pull requests" — and blocks until it's connected, so you can't create a fleet that can't run.
 </Step>
 
 <Step title="Install the fleet">
   ```bash
-  agentsfleet install --template github-pr-reviewer
+  agentsfleet install --library github-pr-reviewer
   ```
 
-  agentsfleet fetches the template's pinned source, validates it server-side, prints a requirements preview (credentials, tools, network hosts), then creates the fleet and prints its webhook URL:
+  agentsfleet fetches the entry's pinned source, validates it server-side, prints a requirements preview (credentials, tools, network hosts), then creates the fleet and prints its webhook URL:
 
   ```
   ✓ github-pr-reviewer is live.
@@ -86,7 +86,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
       github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
   ```
 
-  Re-running is idempotent. Pass `--name <name>` to back several fleets with one template (e.g. one reviewer per repo). See [Templates](/fleets/templates).
+  Re-running is idempotent. Pass `--name <name>` to back several fleets with one library entry (e.g. one reviewer per repo). See [Fleet library](/fleets/library).
 </Step>
 
 <Step title="Register the webhook">
@@ -131,7 +131,7 @@ This walks through installing a fleet from the first-party catalogue and seeing 
 
 ## What just happened
 
-A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which credentials it reads). The template shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
+A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which credentials it reads). The library entry shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
 
 ```bash
 agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
@@ -146,12 +146,12 @@ No redeploys, no DAG editor — the next event runs the new prose.
     `agentsfleet steer <fleet_id> "review the latest PR"` — same reasoning loop, manual trigger. Useful before a webhook is firing.
   </Card>
   <Card title="Author your own fleet" icon="file-pen" href="/fleets/authoring">
-    Write your own `SKILL.md` + `TRIGGER.md`, onboard it as a template (dashboard or API), then `agentsfleet install --template <id>`. Iterate on a running fleet with `agentsfleet fleet update <fleet_id> --from .`.
+    Write your own `SKILL.md` + `TRIGGER.md`, onboard it as a template (dashboard or API), then `agentsfleet install --library <id>`. Iterate on a running fleet with `agentsfleet fleet update <fleet_id> --from .`.
   </Card>
   <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
     Why deep runs keep reasoning past the model's context cap. Defaults work for 95% of cases.
   </Card>
-  <Card title="Browse templates" icon="grid-2" href="/fleets/templates">
+  <Card title="Browse the Fleet library" icon="grid-2" href="/fleets/library">
     The full first-party catalogue and how to install from it.
   </Card>
 </Columns>
