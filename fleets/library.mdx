@@ -33,7 +33,7 @@ Each row shows the entry id, its name, and the secrets it needs. Wire those into
 
 ## Add a workspace template from the dashboard
 
-Use **Add template** when you have a GitHub repository you want to install from your workspace gallery. In the dashboard, open **Fleets → Install fleet**, click **Add template**, and enter the repository as `owner/repo`.
+Use **Add library entry** when you have a GitHub repository you want to install from your workspace gallery. In the dashboard, open **Fleets → Install fleet**, click **Add library entry**, and enter the repository as `owner/repo`.
 
 The repository root must contain `SKILL.md`; `TRIGGER.md` is optional. agentsfleet fetches the files, validates the frontmatter described in [Authoring a fleet](/fleets/authoring), and adds the result to your workspace gallery. After the dialog closes, the entry appears next to the platform catalogue and installs by id.
 
@@ -47,7 +47,7 @@ Install a catalogue entry by its id:
 agentsfleet install --library github-pr-reviewer
 ```
 
-agentsfleet resolves the entry in your workspace gallery, prints a requirements preview (credentials, tools, network hosts), then creates the fleet from the onboarded entry — the SKILL.md/TRIGGER.md was fetched and content-addressed when the entry was onboarded, so no fetch happens at install. If the entry ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
+agentsfleet resolves the entry in your workspace gallery, prints a requirements preview (secrets, tools, network hosts), then creates the fleet from the onboarded entry — the SKILL.md/TRIGGER.md was fetched and content-addressed when the entry was onboarded, so no fetch happens at install. If the entry ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
 
 Install needs every declared secret in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_secrets` list names what's absent. Add the secret, then install.
 
