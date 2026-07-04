@@ -9,7 +9,7 @@ description: "Create, list, and remove workspaces."
 agentsfleet workspace add [name]
 ```
 
-The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are tenant-scoped containers for credentials, fleets, and webhook namespaces. Repos enter the picture later, when you configure per-fleet webhooks (see [Quickstart](/quickstart)).
+The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are tenant-scoped containers for secrets, fleets, and webhook namespaces. Repos enter the picture later, when you configure per-fleet webhooks (see [Quickstart](/quickstart)).
 
 For example:
 
@@ -42,7 +42,7 @@ The leading `*` marks the active workspace (the one set by `agentsfleet workspac
 agentsfleet workspace use <workspace-id>
 ```
 
-Makes the workspace active for subsequent CLI commands — `agentsfleet install --template`, `agentsfleet list`, `agentsfleet status`, `agentsfleet logs`, `agentsfleet events`, `agentsfleet steer`, and anything else that accepts a `--workspace-id` flag defaults to this value when the flag is omitted.
+Makes the workspace active for subsequent CLI commands — `agentsfleet install --library`, `agentsfleet list`, `agentsfleet status`, `agentsfleet logs`, `agentsfleet events`, `agentsfleet steer`, and anything else that accepts a `--workspace-id` flag defaults to this value when the flag is omitted.
 
 The choice is persisted to `~/.config/agentsfleet/workspaces.json` (`current_workspace_id` field), so it survives across shells and sessions.
 
@@ -75,5 +75,5 @@ Deleting a workspace:
 - Retains run history for 30 days.
 
 <Warning>
-  This action cannot be undone. You'll need to recreate the workspace, re-add its credentials, and re-install its fleets. Webhook URLs change because each new fleet gets a fresh `fleet_id`, so any upstream webhook configurations will need to be updated too.
+  This action cannot be undone. You'll need to recreate the workspace, re-add its secrets, and re-install its fleets. Webhook URLs change because each new fleet gets a fresh `fleet_id`, so any upstream webhook configurations will need to be updated too.
 </Warning>

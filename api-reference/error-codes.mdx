@@ -103,11 +103,11 @@ Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) and platform-admin
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-PROVIDER-001` | 400 | credential_ref required when mode=self_managed | PUT body must name a vault `credential_ref` when `mode` is `self_managed` |
-| `UZ-PROVIDER-002` | 400 | Credential row not found in vault | The named `credential_ref` has no vault row in the tenant's primary workspace |
-| `UZ-PROVIDER-003` | 400 | Credential JSON missing required field | Stored credential must include `provider` and `model` (non-empty); `api_key` is required for a named provider, optional for an `openai-compatible` endpoint |
+| `UZ-PROVIDER-001` | 400 | secret_ref required when mode=self_managed | PUT body must name a vault `secret_ref` when `mode` is `self_managed` |
+| `UZ-PROVIDER-002` | 400 | Secret row not found in vault | The named `secret_ref` has no vault row in the tenant's primary workspace |
+| `UZ-PROVIDER-003` | 400 | Secret JSON missing required field | Stored secret must include `provider` and `model` (non-empty); `api_key` is required for a named provider, optional for an `openai-compatible` endpoint |
 | `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_caps` — named providers only. An `openai-compatible` endpoint bypasses the catalogue (it bills against your own provider). Pick a catalogued model from the model-caps endpoint. Also returned by `PUT /v1/admin/platform-keys` when the chosen default's `(provider, model)` is not a priced catalogue row — add it via `POST /v1/admin/models` first. |
-| `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An `openai-compatible` credential's `base_url` must be `https` and must not target a loopback, private, link-local, or cloud-metadata host; a `base_url` set on a named (non-`openai-compatible`) provider is rejected too |
+| `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An `openai-compatible` secret's `base_url` must be `https` and must not target a loopback, private, link-local, or cloud-metadata host; a `base_url` set on a named (non-`openai-compatible`) provider is rejected too |
 | `UZ-PROVIDER-006` | 404 | No catalogue model matches this uid | `PATCH`/`DELETE /v1/admin/models/{uid}` addressed a catalogue row that does not exist |
 | `UZ-PROVIDER-007` | 409 | Model is the active platform default | `DELETE /v1/admin/models/{uid}` was blocked because the active platform default resolves to this model — repoint the default (`PUT /v1/admin/platform-keys`) before deleting it |
 | `UZ-PROVIDER-008` | 409 | Catalogue row already exists | `POST /v1/admin/models` used a `(provider, model_id)` pair that is already catalogued — `PATCH` the existing row to change its caps/rates |
@@ -129,7 +129,7 @@ Load-shedding on a saturated API instance — back off and retry.
 | `UZ-WH-002` | 400 | Malformed webhook | Webhook body is missing required fields |
 | `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
-| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this fleet's source. Run `agentsfleet credential add <source> --data=@-` with `{ "webhook_secret": "..." }` in the fleet's workspace, then resend. |
+| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook secret is configured for this fleet's source. Run `agentsfleet secret add <source> --data=@-` with `{ "webhook_secret": "..." }` in the fleet's workspace, then resend. |
 | `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload at the source or filter fields before forwarding. |
 
 ## Tool
@@ -146,7 +146,7 @@ Load-shedding on a saturated API instance — back off and retry.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGT-003` | 424 | Fleet credential missing | A required vault credential is absent. Add it with `agentsfleet credential add <name>`. |
+| `UZ-AGT-003` | 424 | Fleet credential missing | A required vault secret is absent. Add it with `agentsfleet secret add <name>`. |
 | `UZ-AGT-004` | 500 | Fleet claim failed | Fleet could not be claimed from the database. Verify the `fleet_id` exists and status is `active`. |
 | `UZ-AGT-006` | 409 | Fleet name already exists | Name taken. Kill the existing fleet first, then re-install. |
 | `UZ-AGT-008` | 400 | Invalid fleet config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
@@ -157,15 +157,15 @@ Load-shedding on a saturated API instance — back off and retry.
 
 ## Fleet Bundle
 
-Onboarding a Fleet template (the SKILL.md/TRIGGER.md package behind a Fleet) and installing it. Onboard a template via `POST /v1/admin/fleet-templates` (platform tier) or `POST /v1/workspaces/{workspace_id}/fleet-templates` (your workspace's tenant tier); install one via `POST /v1/workspaces/{workspace_id}/fleets`.
+Onboarding a Fleet library entry (the SKILL.md/TRIGGER.md package behind a Fleet) and installing it. Onboard an entry via `POST /v1/admin/fleet-libraries` (platform tier) or `POST /v1/workspaces/{workspace_id}/fleet-libraries` (your workspace's tenant tier); install one via `POST /v1/workspaces/{workspace_id}/fleets`.
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
 | `UZ-BUNDLE-001` | 400 | Invalid Fleet Bundle | The supplied bundle is missing `SKILL.md` or contains unsafe, oversized, or malformed files. |
-| `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No installable template or stored snapshot matches the request in this workspace. The `platform_template_id`/`tenant_template_id` is unknown, or the template has not been onboarded yet. |
-| `UZ-BUNDLE-003` | 424 | Fleet Bundle credentials missing | Add the workspace credentials named in `missing_credentials` before installing this template. |
+| `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No installable template or stored snapshot matches the request in this workspace. The `platform_library_id`/`tenant_library_id` is unknown, or the entry has not been onboarded yet. |
+| `UZ-BUNDLE-003` | 424 | Fleet Bundle secrets missing | Add the workspace secrets named in `missing_secrets` before installing this Fleet Bundle. |
 | `UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | The bundle source could not be fetched from GitHub — the repository may be missing or private, or GitHub may be unreachable. Verify the source reference and retry. |
-| `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Template object storage is not configured or is unavailable, so the onboarded bundle could not be stored. Retry later or contact the operator. |
+| `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Snapshot storage is not configured or is unavailable, so the validated bundle could not be stored. Retry later or contact the operator. |
 | `UZ-BUNDLE-006` | 429 | Too many Fleet Bundle imports in flight | This instance is at its concurrent import ceiling. Honor the `Retry-After` header and retry with backoff. |
 
 ## Integration grants
@@ -181,14 +181,14 @@ Codes here are the externally-observable subset of the server registry; a gap in
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-CONN-001` | 503 | Connector not configured | Connect is unavailable for this provider on this deployment — the platform app credentials (GitHub App slug / Slack app secrets) are unset. An operator must register the provider app and populate the admin vault before workspaces can connect. |
+| `UZ-CONN-001` | 503 | Connector not configured | Connect is unavailable for this provider on this deployment — the platform app's secrets (GitHub App slug / Slack app secrets) are unset. An operator must register the provider app and populate the admin vault before workspaces can connect. |
 | `UZ-CONN-002` | 400 | Invalid connect state | The connect callback's `state` was missing, forged, expired, or already used. Start the connect again from the dashboard — each attempt issues a fresh single-use state. |
 | `UZ-CONN-003` | 502 | Connector vendor call exceeded its deadline | An outbound call to the connector's vendor hit its enforced deadline (the vendor accepted the connection, then stalled), could not be deadline-armed, or the vendor was unreachable — the call never runs unbounded. Transient — retry; if it persists, check the vendor's status page and this deployment's egress. |
 | `UZ-CONN-004` | 404 | Unknown connector provider | The `{provider}` in the connector URL does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page. |
 | `UZ-CRED-001` | 404 | Integration not connected | No connected integration matches this id for the fleet's workspace. Connect it first (e.g. GitHub via the dashboard **Connect** flow) before a fleet can mint a token for it. |
 | `UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. |
 | `UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). Transient — retry shortly; if it persists, check GitHub status and the App configuration. |
-| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app credentials. |
+| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app's secrets. |
 
 ### Slack event handling
 
@@ -216,9 +216,9 @@ Runtime codes for the channel bot's inbound mentions and outbound answers — di
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-VAULT-001` | 400 | Credential data must be a non-empty JSON object | `POST /credentials` body must include a `data` field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
-| `UZ-VAULT-002` | 400 | Credential data too large | Stringified credential data exceeds 4 KB. Compose the secret from fewer or shorter fields. |
-| `UZ-VAULT-003` | 404 | Credential not found | No credential matches this name in the workspace. Returned by `PATCH /v1/workspaces/{workspace_id}/credentials/{name}` (key rotation); list the workspace credentials to find a valid name, or create it first. |
+| `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | `POST /v1/workspaces/{workspace_id}/secrets` body must include a `data` field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
+| `UZ-VAULT-002` | 400 | Secret data too large | Stringified secret data exceeds 4 KB. Compose the secret from fewer or shorter fields. |
+| `UZ-VAULT-003` | 404 | Secret not found | No secret matches this name in the workspace. Returned by `PATCH /v1/workspaces/{workspace_id}/secrets/{name}` (key rotation); list the workspace secrets to find a valid name, or create it first. |
 
 ## Memory
 

@@ -115,11 +115,11 @@ Pure-function helpers — no side effects, no network, no state.
 | Tool | What it does |
 |---|---|
 | `message` | Send a message to a channel. If `channel`/`chat_id` are omitted, posts to the current conversation. Supports attachment markers (`[FILE:...]`, `[DOCUMENT:...]`, `[IMAGE:...]`) on marker-aware channels. |
-| `pushover` | Send a push notification to your devices via [Pushover](https://pushover.net) — for paging a human from inside a run. Needs a `pushover` credential. |
+| `pushover` | Send a push notification to your devices via [Pushover](https://pushover.net) — for paging a human from inside a run. Needs a `pushover` secret. |
 
-## How tools, credentials, and the network allowlist combine
+## How tools, secrets, and the network allowlist combine
 
-Tools are the *what* (verbs the fleet may invoke). Credentials are the *what-with* (named secrets the tool bridge substitutes into outbound calls — see [Credentials](/fleets/credentials)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
+Tools are the *what* (verbs the fleet may invoke). Secrets are the *what-with* (named secrets the tool bridge substitutes into outbound calls, referenced by the `credentials:` list in `TRIGGER.md` — see [Secrets & ENVs](/fleets/secrets)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
 
 A working `http_request` to Slack needs all three:
 
@@ -134,7 +134,7 @@ x-agentsfleet:
       - slack.com                     # the destination
 ```
 
-Drop any one and the call fails: missing tool → fleet can't even try; missing credential → tool bridge has nothing to substitute; missing host → firewall drops the request.
+Drop any one and the call fails: missing tool → fleet can't even try; missing secret → tool bridge has nothing to substitute; missing host → firewall drops the request.
 
 ## Validation
 
@@ -152,5 +152,5 @@ When the fleet tries to invoke a tool not in its resolved `tools:` set, the unde
 
 - [Authoring a fleet](/fleets/authoring) — full `TRIGGER.md` schema.
 - [Memory](/memory) — the four memory categories and how recall/store fit a run.
-- [Credentials](/fleets/credentials) — adding the secrets the tool bridge substitutes.
+- [Secrets & ENVs](/fleets/secrets) — adding the secrets the tool bridge substitutes.
 - [Webhooks](/fleets/webhooks) — wiring an external system to your fleet.

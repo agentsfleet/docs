@@ -30,11 +30,6 @@
     }
   },
   "favicon": "/favicon.svg",
-  "redirects": [
-    { "source": "/agents/:slug", "destination": "/fleets/:slug" },
-    { "source": "/secrets", "destination": "/fleets/credentials" },
-    { "source": "/secrets/", "destination": "/fleets/credentials" }
-  ],
   "navigation": {
     "tabs": [
       {
@@ -56,11 +51,11 @@
               "fleets/overview",
               "fleets/install",
               "fleets/running",
-              "fleets/credentials",
+              "fleets/secrets",
               "fleets/webhooks",
               "fleets/authoring",
               "fleets/tools",
-              "fleets/templates",
+              "fleets/library",
               "fleets/troubleshooting"
             ]
           },
@@ -188,11 +183,12 @@
             ]
           },
           {
-            "group": "Credentials",
+            "group": "Secrets",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/credentials",
-              "POST /v1/workspaces/{workspace_id}/credentials",
-              "DELETE /v1/workspaces/{workspace_id}/credentials/{credential_name}"
+              "GET /v1/workspaces/{workspace_id}/secrets",
+              "POST /v1/workspaces/{workspace_id}/secrets",
+              "PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}",
+              "DELETE /v1/workspaces/{workspace_id}/secrets/{secret_name}"
             ]
           },
           {
@@ -223,12 +219,12 @@
             ]
           },
           {
-            "group": "Fleet templates",
+            "group": "Fleet library",
             "pages": [
               "GET /v1/fleets/bundles",
-              "GET /v1/workspaces/{workspace_id}/fleet-templates",
-              "POST /v1/admin/fleet-templates",
-              "POST /v1/workspaces/{workspace_id}/fleet-templates"
+              "GET /v1/workspaces/{workspace_id}/fleet-libraries",
+              "POST /v1/admin/fleet-libraries",
+              "POST /v1/workspaces/{workspace_id}/fleet-libraries"
             ]
           },
           {

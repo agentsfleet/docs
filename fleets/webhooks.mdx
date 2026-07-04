@@ -9,7 +9,7 @@ Every webhook trigger declared in `TRIGGER.md` gets a unique, stable URL keyed b
 https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
 ```
 
-External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --template` prints the full set of URLs (one per declared webhook trigger) at install time.
+External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --library` prints the full set of URLs (one per declared webhook trigger) at install time.
 
 <Tip>
   **`agentsfleet install` prints the webhook URL(s) to register.** Add each printed URL to its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). The reference below covers the signature config the platform expects.
@@ -79,7 +79,7 @@ triggers:
 
 The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
 
-`secret_ref` always names a credential in the workspace vault carrying the upstream's signing secret. See [Credentials](/fleets/credentials).
+`secret_ref` always names a secret in the workspace vault carrying the upstream's signing secret. See [Secrets & ENVs](/fleets/secrets).
 
 <Note>
   **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{fleet_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the fleet sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{fleet_id}`, to accommodate Svix's multi-signature rotation scheme.
@@ -114,7 +114,7 @@ Delivery is **at-least-once** — your provider may retry on transient failure, 
 |--------|------|---------|
 | `202` | `{ "status": "accepted", "event_id": "…" }` | Signature verified; event enqueued. |
 | `200` | `{ "ignored": "fleet_paused" }` (or a filter reason) | Fleet is paused, stopped, or killed — or the event was filtered out. Accepted without opening a run; retry queues add no value, so this is `200`, not `4xx`. |
-| `401` | `UZ-WH-010` / `UZ-WH-011` / `UZ-WH-020` | Missing, malformed, mis-signed, or stale signature; or no webhook credential configured. |
+| `401` | `UZ-WH-010` / `UZ-WH-011` / `UZ-WH-020` | Missing, malformed, mis-signed, or stale signature; or no webhook secret configured. |
 | `404` | `UZ-WH-001` | No fleet at this URL — wrong `fleet_id`, or the fleet was deleted. |
 | `413` | `UZ-WH-030` | Payload exceeds the 1 MiB ingest limit. |
 | `429` | — | Rate limit hit; back off per `Retry-After`. |

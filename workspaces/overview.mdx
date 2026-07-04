@@ -3,14 +3,14 @@ title: "Workspaces"
 description: "What a workspace is and how it relates to your tenant."
 ---
 
-A **workspace** is a tenant-scoped container for fleets, their credentials, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-fleet, when you wire an upstream webhook to a `fleet_id` (see [Webhooks](/fleets/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
+A **workspace** is a tenant-scoped container for fleets, their secrets, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-fleet, when you wire an upstream webhook to a `fleet_id` (see [Webhooks](/fleets/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
 
 ## What a workspace contains
 
 Each workspace has its own:
 
 - **Fleets** — the configured fleets that live and run here.
-- **Credentials** — the vault keys fleets in this workspace can read. Workspace-scoped on purpose: credentials do not leak across workspaces.
+- **Secrets** — the vault keys fleets in this workspace can read. Workspace-scoped on purpose: secrets do not leak across workspaces.
 - **Webhook namespace** — every fleet in a workspace gets its own unique URL under `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`.
 - **Access control** — teammates invited to a workspace can see, start, and kill its fleets; they cannot see fleets in other workspaces.
 
