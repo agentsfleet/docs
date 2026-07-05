@@ -20,7 +20,7 @@ curl https://api.agentsfleet.net/v1/workspaces/0198a7b0-3c2d-7f14-9a08-1b6e4d2f8
 
 Two kinds of bearer token are accepted:
 
-- **Tenant API key (`agt_t…`)** — long-lived, for programmatic and service-to-service callers (CI, cron, integrations, scripts). Create one in the dashboard under **Settings → API keys**; the raw value is shown once. This is the right token for calling the API directly.
+- **Tenant API key (`agt_t…`)** — long-lived, for programmatic and service-to-service callers (CI, cron, integrations, scripts). Create one in the dashboard from the **API Keys** page (in the sidebar); the raw value is shown once. This is the right token for calling the API directly.
 - **User JWT** — short-lived, for an interactive human. Mint one with `agentsfleet login`, a browser device flow with terminal-side verification. It can't be obtained by a bare API client — the flow needs the dashboard's browser leg — so for unattended access use a tenant API key.
 
 ## Errors

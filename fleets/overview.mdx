@@ -44,7 +44,7 @@ agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check"   
 
 Every fleet belongs to exactly one **workspace**. The workspace is the boundary for:
 
-- **Secrets** — the vault that fleets read from when they invoke tools. See [Secrets & ENVs](/fleets/secrets).
+- **Secrets** — the vault that fleets read from when they invoke tools. See [Secrets](/fleets/secrets).
 - **Access control** — teammates invited to a workspace can see, start, and kill its fleets; they cannot see fleets in other workspaces.
 - **Webhook namespace** — every fleet in a workspace gets one unique URL per declared trigger under `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
 
@@ -64,7 +64,7 @@ Billing is **not** workspace-scoped — every workspace draws on the same tenant
   <Card title="Start, stop, observe" icon="circle-play" href="/fleets/running">
     The `install`, `status`, `events`, `steer`, and `kill` commands.
   </Card>
-  <Card title="Secrets & ENVs" icon="key" href="/fleets/secrets">
+  <Card title="Secrets" icon="key" href="/fleets/secrets">
     Add secrets to the vault without the fleet ever seeing them.
   </Card>
   <Card title="Authoring a fleet" icon="file-code" href="/fleets/authoring">

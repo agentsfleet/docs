@@ -64,7 +64,7 @@ If the upstream itself shows a non-2xx response, the body carries one of:
 |---|---|---|
 | `UZ-WH-001` | 404 | URL is wrong. The path is `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` — verify the ID matches `agentsfleet status`. |
 | `UZ-WH-002` | 400 | Request body is malformed JSON or empty. |
-| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Secrets & ENVs → Rotation](/fleets/secrets#rotation). |
+| `UZ-WH-010` | 401 | HMAC signature verification failed. The shared secret in your vault doesn't match the one configured at the upstream. Rotate per [Secrets → Rotation](/fleets/secrets#rotation). |
 | `UZ-WH-011` | 401 | Replay-window violation — request timestamp is older than 5 minutes. Sender clock skew is the usual culprit. |
 | `UZ-WH-020` | 401 | No webhook secret configured for this fleet's source. The `secret_ref` in `TRIGGER.md` either isn't set or points at a vault key that doesn't exist. Run `agentsfleet secret list` to confirm; add with `agentsfleet secret add <source> --data=@-`. |
 | `UZ-WH-030` | 413 | Payload exceeds the 1 MiB ingest limit. The upstream is sending too much; filter or trim the event body before forwarding. |

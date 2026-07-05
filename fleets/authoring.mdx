@@ -161,7 +161,7 @@ The runner exposes 32 built-in tools — network (`http_request`, `web_search`, 
 
 ### Credentials
 
-Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are secret references — **not** tool names. The tool bridge resolves the named secret at `http_request` time and substitutes its fields into outbound calls; the fleet sees the response, never the raw secret. Add and rotate via [Secrets & ENVs](/fleets/secrets).
+Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are secret references — **not** tool names. The tool bridge resolves the named secret at `http_request` time and substitutes its fields into outbound calls; the fleet sees the response, never the raw secret. Add and rotate via [Secrets](/fleets/secrets).
 
 ### Network allowlist
 

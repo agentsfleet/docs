@@ -79,7 +79,7 @@ triggers:
 
 The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
 
-`secret_ref` always names a secret in the workspace vault carrying the upstream's signing secret. See [Secrets & ENVs](/fleets/secrets).
+`secret_ref` always names a secret in the workspace vault carrying the upstream's signing secret. See [Secrets](/fleets/secrets).
 
 <Note>
   **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{fleet_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the fleet sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{fleet_id}`, to accommodate Svix's multi-signature rotation scheme.
