@@ -1,0 +1,48 @@
+---
+title: "Connectors"
+description: "How agentsfleet connects to GitHub, Slack, Zoho Desk, Jira, and Linear — the browser round-trip that vaults a provider token without you ever pasting it."
+---
+
+## Overview
+
+A **connector** is how a workspace authorizes agentsfleet to act as a specific third-party account — your GitHub org, your Slack workspace, your Zoho Desk/Jira/Linear instance. The dashboard labels this surface **Integrations**; this guide uses "connector," the term the platform's own architecture docs use for the same thing.
+
+Connectors are a different mechanism from [Secrets](/fleets/secrets). A secret is a static value you paste in yourself — a vendor API key referenced from `TRIGGER.md` as `${secrets.<name>.<field>}`. A connector is a live OAuth relationship: you click **Connect**, your browser leaves for the provider, and you come back with nothing to type in — the provider-issued token is vaulted server-side. If a provider only needs a pasted API key (no browser round-trip), it's a secret, not a connector.
+
+## The connect round-trip
+
+Every connector follows the same shape, regardless of provider:
+
+1. You click **Connect** on the dashboard's Integrations page. The platform mints a single-use, signed request and redirects your browser to the provider.
+2. You authorize on the provider's own site — GitHub, Slack, or the OAuth consent screen for Zoho/Jira/Linear.
+3. The provider redirects back to agentsfleet with proof of the authorization. The platform verifies it, exchanges it for a real credential where the provider requires an exchange, and **vaults the token server-side** — it is never shown to you, never emailed, and never pasted into any form.
+
+You never see or handle the raw token at any point. That's the whole point of a connector versus a hand-pasted secret: there's no string to leak, copy into the wrong Slack channel, or accidentally commit.
+
+### The grant gate
+
+Connecting a provider only proves the *workspace* is authorized — it does not automatically hand that credential to every fleet. A fleet must request access to a connected integration, and a human approves or denies the request from the dashboard as an **integration grant** before the fleet's runs can use the credential. Connect once per provider; grant per fleet.
+
+## The five providers
+
+agentsfleet ships five connectors. Four are OAuth 2.0; GitHub is the exception — it's a GitHub App installation, not a code exchange, so its round-trip looks slightly different.
+
+| Provider | Shape | Notes |
+|----------|-------|-------|
+| **GitHub** | App install | No OAuth code exchange — you install the agentsfleet GitHub App on your account/org and the callback carries an `installation_id`. The broker mints short-lived installation tokens from the App's private key on demand. |
+| **Slack** | OAuth 2.0 (no refresh) | Standard authorization-code exchange for a long-lived bot token — Slack doesn't issue a refresh token for this grant type, so there's nothing to refresh later. |
+| **Zoho Desk** | OAuth 2.0 + refresh | Zoho is multi-region: the authorize step always starts at Zoho's US accounts server, but the callback tells the platform which data center actually issued the code (US, EU, India, Australia, China, Japan, or Canada), and every later token refresh must hit that same regional accounts server. |
+| **Jira** | OAuth 2.0 + refresh | Atlassian's 3LO flow. The Jira **cloud id** for your site is *not* something you provide — it's resolved automatically from Atlassian's accessible-resources endpoint at callback time. |
+| **Linear** | OAuth 2.0 + refresh | Standard authorization-code exchange with a refresh token. |
+
+For the three refresh-token providers (Zoho, Jira, Linear), agentsfleet automatically re-mints a fresh access token from the stored refresh token as needed — you never have to reconnect just because a token expired. A refresh failing because you revoked access on the provider's side is the one case that does ask you to reconnect.
+
+## Disconnecting
+
+Revoking access on the provider's side (uninstalling the GitHub App, removing the Slack app from your workspace, revoking the OAuth grant in Zoho/Jira/Linear) invalidates the vaulted credential. The next run that needs it surfaces a reconnect prompt in the dashboard rather than failing silently.
+
+## See also
+
+- [Secrets](/fleets/secrets) — static vendor keys and model-provider credentials, the non-connector half of the vault.
+- [Webhooks](/fleets/webhooks) — how external events reach a fleet once you're connected (or, for non-connector sources, once a secret is configured).
+- [Error codes](/api-reference/error-codes) — the `UZ-CONN-*` and `UZ-SLK-*` codes a failed or misconfigured connector can return.
