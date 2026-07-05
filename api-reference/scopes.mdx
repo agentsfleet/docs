@@ -1,0 +1,42 @@
+---
+title: 'Scopes'
+description: 'The capability vocabulary every agentsfleet token (dashboard session or API key) carries as its `scopes` claim — what each scope grants, and what to do when a request is rejected for lacking one.'
+---
+
+## How scopes work
+
+Every request is authorized against an explicit `scopes` claim on the caller's token — not a role name. A scope like `fleet:write` grants exactly what it says; there is no hidden bundle of extra capabilities behind it.
+
+Related scopes ladder: holding the higher one satisfies a check for the lower one. `fleet:admin` holder passes a `fleet:read` gate; `apikey:write` passes an `apikey:read` gate. Discrete-verb scopes (`billing:read`, `workspace:admin`, `library:write`, `approval:read`/`approval:resolve`) don't ladder — each is its own, separately grantable capability.
+
+<Note>
+If a request returns [`UZ-AUTH-022`](/api-reference/error-codes#UZ-AUTH-022) (Insufficient scope), the response's `detail` field names the exact scope your token is missing. Ask a workspace admin to grant it — see [API keys](/api-reference/introduction) for how a tenant API key's scopes are set.
+</Note>
+
+## Fleets & workspace resources
+
+Laddered `read < write < admin`:
+
+| Scope | Grants |
+|---|---|
+| `fleet:read` / `fleet:write` / `fleet:admin` | view fleets, their events, and memories / create, update, and message fleets / delete a fleet |
+| `secret:read` / `secret:write` | list workspace secrets / store, rotate, or delete them, including your tenant LLM provider config |
+| `apikey:read` / `apikey:write` / `apikey:admin` | list tenant API keys / create and rotate them / delete (revoke) one |
+| `fleetkey:read` / `fleetkey:write` | list fleet-scoped keys / create and delete them |
+| `grant:read` / `grant:write` | list integration grants / revoke them |
+| `connector:read` / `connector:write` | read a connector's status / start a connector connect flow |
+
+## Discrete capabilities
+
+Each of these is its own capability — no ladder:
+
+| Scope | Grants |
+|---|---|
+| `billing:read` | read your tenant's billing snapshot, charges, and metering periods |
+| `workspace:admin` | create workspaces; list your tenant's workspaces |
+| `library:write` | onboard an entry into your workspace's Fleet library |
+| `approval:read` / `approval:resolve` | view the approval inbox / approve or deny a gate |
+
+## Platform-operator scopes
+
+A smaller set of scopes (`runner:*`, `platform-key:*`, `model:*`, `workspace:any`) gates platform-administration surfaces — enrolling runners, setting the platform-default model, and cross-tenant operator tooling. These aren't relevant to a typical tenant API integration; they're documented for platform operators alongside the deployment's own admin runbook, not here.

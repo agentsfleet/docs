@@ -62,7 +62,7 @@ Every code on this page is one `agentsfleetd` can actually emit — the list is 
 | `UZ-AUTH-004` | 503 | Authentication service unavailable | OIDC provider unreachable |
 | `UZ-AUTH-005` | 404 | Session not found | Auth session ID not found or already expired |
 | `UZ-AUTH-006` | 401 | Session expired | Auth session timed out before completion |
-| `UZ-AUTH-022` | 403 | Insufficient scope | Token lacks the required `resource:action` scope for this endpoint. The `detail` field names the required scope (e.g. `Requires scope fleet:admin`). |
+| `UZ-AUTH-022` | 403 | Insufficient scope | Token lacks the required `resource:action` scope for this endpoint. The `detail` field names the required scope (e.g. `Requires scope fleet:admin`) — see the [Scopes](/api-reference/scopes) reference for what each one grants. |
 
 ## CLI login
 
@@ -111,6 +111,7 @@ Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) and platform-admin
 | `UZ-PROVIDER-006` | 404 | No catalogue model matches this uid | `PATCH`/`DELETE /v1/admin/models/{uid}` addressed a catalogue row that does not exist |
 | `UZ-PROVIDER-007` | 409 | Model is the active platform default | `DELETE /v1/admin/models/{uid}` was blocked because the active platform default resolves to this model — repoint the default (`PUT /v1/admin/platform-keys`) before deleting it |
 | `UZ-PROVIDER-008` | 409 | Catalogue row already exists | `POST /v1/admin/models` used a `(provider, model_id)` pair that is already catalogued — `PATCH` the existing row to change its caps/rates |
+| `UZ-PROVIDER-009` | 500 | Platform LLM key not configured | `DELETE /v1/tenants/me/provider` (switch to platform defaults) was called but no platform default is configured on this deployment yet. An operator must set one via `PUT /v1/admin/platform-keys` first. |
 
 ## API limits
 

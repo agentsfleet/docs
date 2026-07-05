@@ -22,6 +22,25 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 05, 2026" tags={["Bug fixes", "UI", "API"]}>
+  ## Follow-up — API Keys stands alone, Buy credits works, library copy stops saying "template"
+
+  The Workspace tab folds into a standalone API Keys page, Billing's credit-purchase button becomes a working `mailto:` link instead of a disabled placeholder, and dashboard copy that still said "template" now says "fleet library" consistently.
+
+  ## What's new
+
+  - **API Keys page** — the sidebar's "Workspace" entry is now "API Keys"; the page shows your workspace name and ID alongside your keys. `/settings` redirects here. The Workspace tab and its "Manage workspace" menu item are gone — switching and creating a workspace stay in the top-right workspace switcher, which now reads "Create workspace".
+  - **Buy credits** — "Purchase credits" is renamed "Buy credits" and is now a live `mailto:` link instead of a permanently disabled button.
+  - **"Create fleet library"** replaces "Add library entry" across the dashboard and CLI empty-state text; the Dashboard and install-picker empty states no longer say "template".
+  - **Left-nav active indicator** — the selected sidebar item now shows a left accent bar in addition to its background fill.
+  - **[Scopes reference](/api-reference/scopes)** — a new page lists every scope a tenant token can carry, linked from `UZ-AUTH-022`.
+
+  ## Bug fixes
+
+  - **Models page** — the active-model row no longer glows permanently (a `[data-live]` CSS selector matched the "not live" state too); its redundant "Switch to platform defaults" button is removed — the equivalent row in the provider list below it is the one switch path.
+  - **`UZ-PROVIDER-009`** — switching back to platform defaults when none is configured now returns a plain-English message instead of leaking "operator action required" into the dashboard toast.
+</Update>
+
 <Update label="Jul 05, 2026" tags={["What's new", "Breaking", "UI", "CLI", "API"]}>
   ## Fleet library replaces Templates, Secrets & ENVs gets its own page
 
