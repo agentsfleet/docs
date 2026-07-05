@@ -10,7 +10,7 @@ Every request is authorized against an explicit `scopes` claim on the caller's t
 Related scopes ladder: holding the higher one satisfies a check for the lower one. `fleet:admin` holder passes a `fleet:read` gate; `apikey:write` passes an `apikey:read` gate. Discrete-verb scopes (`billing:read`, `workspace:admin`, `library:write`, `approval:read`/`approval:resolve`) don't ladder — each is its own, separately grantable capability.
 
 <Note>
-If a request returns [`UZ-AUTH-022`](/api-reference/error-codes#UZ-AUTH-022) (Insufficient scope), the response's `detail` field names the exact scope your token is missing. Ask a workspace admin to grant it — see [API keys](/api-reference/introduction) for how a tenant API key's scopes are set.
+If a request returns [`UZ-AUTH-022`](/api-reference/error-codes#authentication--authorization) (Insufficient scope), the response's `detail` field names the exact scope your token is missing. Ask a workspace admin to grant it — see [API keys](/api-reference/introduction) for how a tenant API key's scopes are set.
 </Note>
 
 ## Fleets & workspace resources
