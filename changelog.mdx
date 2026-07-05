@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 05, 2026" tags={["UI", "Bug fixes"]}>
+  ## Runners, Model library, and Secrets adopt the standard table layout
+
+  The operator Runners, Model rates, and Secrets pages now share one table layout and plainer labels. Runners gains a "Create runner" flow, "Model rates" becomes "Model library", and the "Secrets & ENVs" page is now just "Secrets".
+
+  ## What's new
+
+  - **Runners page** — adopts the "Manage runners" layout and renders in the same table as API keys and secrets. Enrolling a runner is now the "Create runner" dialog, which shows the install token once with a notice that it won't be shown again.
+  - **Runner labels** — "Host id" is now "Host name" (a display label, not a key), and "Sandbox tier" is now "Isolation mode" with plain-language options: Linux · Landlock, Nested container, macOS · Seatbelt, and None.
+  - **Model library** — the "Model rates" page is renamed "Model library" across the nav, the page, and the "Create model library" dialog; the catalogue renders as the standard table.
+  - **Secrets** — the "Secrets & ENVs" page and sidebar entry are now just "Secrets". Renaming a secret is its own dialog, opened from the Name column.
+
+  ## Bug fixes
+
+  - **Model library token counts** — large token counts on the Model library page rendered inconsistently between server and client (a hydration and locale mismatch); they now render the same on both.
+</Update>
+
 <Update label="Jul 05, 2026" tags={["Bug fixes", "UI", "API"]}>
   ## Follow-up — API Keys stands alone, Buy credits works, library copy stops saying "template"
 

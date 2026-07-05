@@ -97,7 +97,7 @@ A trigger lands on the event stream. A run opens. The fleet calls tools allow-li
   </Accordion>
 
   <Accordion title="Tool bridge">
-    The boundary between your secrets and the model. Secrets are stored encrypted in the workspace vault; the model itself only sees `${secrets.NAME.FIELD}` placeholders. When the fleet invokes a tool, the **tool bridge** substitutes the real secret value outside the sandbox, makes the outbound call, and returns the response — never the secret. A prompt-injection attack recovers only the placeholder string. See [Secrets & ENVs](/fleets/secrets).
+    The boundary between your secrets and the model. Secrets are stored encrypted in the workspace vault; the model itself only sees `${secrets.NAME.FIELD}` placeholders. When the fleet invokes a tool, the **tool bridge** substitutes the real secret value outside the sandbox, makes the outbound call, and returns the response — never the secret. A prompt-injection attack recovers only the placeholder string. See [Secrets](/fleets/secrets).
   </Accordion>
 
   <Accordion title="Budget">

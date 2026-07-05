@@ -119,7 +119,7 @@ Pure-function helpers — no side effects, no network, no state.
 
 ## How tools, secrets, and the network allowlist combine
 
-Tools are the *what* (verbs the fleet may invoke). Secrets are the *what-with* (named secrets the tool bridge substitutes into outbound calls, referenced by the `credentials:` list in `TRIGGER.md` — see [Secrets & ENVs](/fleets/secrets)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
+Tools are the *what* (verbs the fleet may invoke). Secrets are the *what-with* (named secrets the tool bridge substitutes into outbound calls, referenced by the `credentials:` list in `TRIGGER.md` — see [Secrets](/fleets/secrets)). The network allowlist is the *to-where* (hostnames the sandbox firewall lets traffic reach).
 
 A working `http_request` to Slack needs all three:
 
@@ -152,5 +152,5 @@ When the fleet tries to invoke a tool not in its resolved `tools:` set, the unde
 
 - [Authoring a fleet](/fleets/authoring) — full `TRIGGER.md` schema.
 - [Memory](/memory) — the four memory categories and how recall/store fit a run.
-- [Secrets & ENVs](/fleets/secrets) — adding the secrets the tool bridge substitutes.
+- [Secrets](/fleets/secrets) — adding the secrets the tool bridge substitutes.
 - [Webhooks](/fleets/webhooks) — wiring an external system to your fleet.

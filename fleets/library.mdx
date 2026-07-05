@@ -29,7 +29,7 @@ security-reviewer              Security reviewer               github
 zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
 ```
 
-Each row shows the entry id, its name, and the secrets it needs. Wire those into the workspace vault (see [Secrets & ENVs](/fleets/secrets)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
+Each row shows the entry id, its name, and the secrets it needs. Wire those into the workspace vault (see [Secrets](/fleets/secrets)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
 
 ## Add a workspace template from the dashboard
 
