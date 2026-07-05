@@ -22,6 +22,17 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 06, 2026" tags={["What's new", "Integrations"]}>
+  ## A guide to connecting GitHub, Slack, Zoho Desk, Jira, and Linear
+
+  The docs now cover the connector flow end to end: what a connector is, the browser round-trip that vaults your provider token (you never paste one in), and the exact OAuth shape for each of the five supported providers.
+
+  ## What's new
+
+  - **[Connectors guide](/fleets/connectors)** — new page explaining the connect round-trip, the GitHub App-install exception, and which providers issue a refresh token.
+  - **Secrets page** now links to the Connectors guide and calls out the difference between a pasted vendor key (`${secrets.<name>.<field>}`) and a connector.
+</Update>
+
 <Update label="Jul 05, 2026" tags={["UI", "Bug fixes"]}>
   ## Runners, Model library, and Secrets adopt the standard table layout
 
