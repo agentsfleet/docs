@@ -25,12 +25,12 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Jul 06, 2026" tags={["Breaking", "Security", "API"]}>
   ## Fleets now need an approved integration grant before minting provider tokens
 
-  Connecting a provider (GitHub, Zoho Desk, Jira, Linear) authorizes your workspace — it no longer automatically authorizes every fleet in it. A fleet must hold a human-approved integration grant before the platform will mint a provider token for it, checked both when a run is leased and again on every token request, so revoking a grant takes effect on the fleet's very next call.
+  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, but no longer automatically authorizes every fleet in it. Such a fleet must hold a human-approved integration grant before the platform will mint a provider token for it, checked both when a run is leased and again on every token request, so revoking a grant takes effect on the fleet's very next call. **Slack is not affected** — its bot token is long-lived and delivered directly, not minted through this path, so Slack fleets keep working with no grant.
 
   ## Upgrading
 
-  - **Existing connected fleets without a grant will stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body: `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
-  - Static secrets you pasted yourself (`${secrets.<name>.<field>}`) are not gated and keep working unchanged.
+  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant will stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body: `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
+  - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated and keep working unchanged.
 
   ## What's new
 
