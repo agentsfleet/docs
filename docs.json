@@ -52,6 +52,7 @@
               "fleets/install",
               "fleets/running",
               "fleets/secrets",
+              "fleets/connectors",
               "fleets/webhooks",
               "fleets/authoring",
               "fleets/tools",
