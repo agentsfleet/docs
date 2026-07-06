@@ -36,7 +36,34 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ## API reference
 
   - The [error codes reference](/api-reference/error-codes) is now generated directly from the backend error registry on every release, so it can no longer drift from the codes the API actually returns.
+</Update>
 
+<Update label="Jul 06, 2026" tags={["Breaking", "Security", "API"]}>
+  ## Fleets now need an approved integration grant before minting provider tokens
+
+  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, but no longer automatically authorizes every fleet in it. Such a fleet must hold a human-approved integration grant before the platform will mint a provider token for it, checked both when a run is leased and again on every token request, so revoking a grant takes effect on the fleet's very next call. **Slack is not affected** — its bot token is long-lived and delivered directly, not minted through this path, so Slack fleets keep working with no grant.
+
+  ## Upgrading
+
+  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant will stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body: `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
+  - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated and keep working unchanged.
+
+  ## What's new
+
+  - **Grants are now requestable for `github`, `zoho`, `jira`, and `linear`** — previously the grant endpoint rejected these services, so connector access could not be scoped per fleet at all.
+  - **A refused mint returns [`UZ-GRANT-001`](/api-reference/error-codes)** (403, "No integration grant for service") with the request-grant endpoint in the hint — never a silent failure.
+  - **Revoke works mid-run** — revoking a grant refuses the fleet's next token request even if its current run is still leased; re-approving restores minting with no reconnect.
+</Update>
+
+<Update label="Jul 05, 2026" tags={["What's new", "Integrations"]}>
+  ## A guide to connecting GitHub, Slack, Zoho Desk, Jira, and Linear
+
+  The docs now cover the connector flow end to end: what a connector is, the browser round-trip that vaults your provider token (you never paste one in), and the exact OAuth shape for each of the five supported providers.
+
+  ## What's new
+
+  - **[Connectors guide](/fleets/connectors)** — new page explaining the connect round-trip, the GitHub App-install exception, and which providers issue a refresh token.
+  - **Secrets page** now links to the Connectors guide and calls out the difference between a pasted vendor key (`${secrets.<name>.<field>}`) and a connector.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["UI", "Bug fixes"]}>
