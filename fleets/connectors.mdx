@@ -13,9 +13,17 @@ Connectors are a different mechanism from [Secrets](/fleets/secrets). A secret i
 
 Every connector follows the same shape, regardless of provider:
 
-1. You click **Connect** on the dashboard's Integrations page. The platform mints a single-use, signed request and redirects your browser to the provider.
-2. You authorize on the provider's own site — GitHub, Slack, or the OAuth consent screen for Zoho/Jira/Linear.
-3. The provider redirects back to agentsfleet with proof of the authorization. The platform verifies it, exchanges it for a real credential where the provider requires an exchange, and **vaults the token server-side** — it is never shown to you, never emailed, and never pasted into any form.
+<Steps>
+  <Step title="Initiate">
+    You click **Connect** on the dashboard's Integrations page. The platform mints a single-use, signed request and redirects your browser to the provider.
+  </Step>
+  <Step title="Authorize">
+    You authorize on the provider's own site — GitHub, Slack, or the OAuth consent screen for Zoho/Jira/Linear.
+  </Step>
+  <Step title="Vault">
+    The provider redirects back to agentsfleet with proof of the authorization. The platform verifies it, exchanges it for a real credential where the provider requires an exchange, and **vaults the token server-side** — it is never shown to you, never emailed, and never pasted into any form.
+  </Step>
+</Steps>
 
 You never see or handle the raw token at any point. That's the whole point of a connector versus a hand-pasted secret: there's no string to leak, copy into the wrong Slack channel, or accidentally commit.
 
