@@ -140,7 +140,7 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | POST /secrets body must include a 'data' field that is a JSON object with at least one key. Bare strings, arrays, scalars, and {} are rejected. |
+| `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | POST /secrets body must include a 'data' field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
 | `UZ-VAULT-002` | 400 | Secret data too large | Stringified secret data exceeds 4KB. Compose the secret from fewer or shorter fields. |
 | `UZ-VAULT-003` | 404 | Secret not found | No secret matches this name in the workspace. List the workspace secrets to find a valid name, or create it first. |
 
@@ -223,20 +223,20 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-APIKEY-001` | 401 | Invalid API key | API key is invalid or revoked. Mint a replacement with: POST /v1/workspaces/{ws}/fleet-keys |
+| `UZ-APIKEY-001` | 401 | Invalid API key | API key is invalid or revoked. Mint a replacement with: `POST /v1/workspaces/{ws}/fleet-keys` |
 | `UZ-APIKEY-003` | 404 | API key not found | No API key matches the supplied id for this tenant. Verify the id with: GET /v1/api-keys |
 | `UZ-APIKEY-004` | 401 | API key has been revoked | This key was revoked and can no longer authenticate. Mint a replacement with: POST /v1/api-keys |
 | `UZ-APIKEY-005` | 409 | Key name already exists in this tenant | key_name must be unique per tenant. Pick a different name or revoke the existing key first. |
 | `UZ-APIKEY-006` | 409 | API key is already revoked | This key is already revoked. No further action is required. |
 | `UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | Re-activation is not supported. Create a new key via POST /v1/api-keys and revoke the old one. |
-| `UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke the key first with PATCH /v1/api-keys/{id} body {"active": false}, then retry DELETE. |
+| `UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke the key first with `PATCH /v1/api-keys/{id}` body `{"active": false}`, then retry DELETE. |
 
 ## Integration Grants
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Request one with: POST /v1/fleets/{id}/integration-requests |
-| `UZ-GRANT-002` | 404 | Integration grant not found | No grant with that id exists for this fleet, or it was already revoked. List current grants with: GET /v1/workspaces/{ws}/fleets/{id}/integration-grants |
+| `UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Request one with: `POST /v1/fleets/{id}/integration-requests` |
+| `UZ-GRANT-002` | 404 | Integration grant not found | No grant with that id exists for this fleet, or it was already revoked. List current grants with: `GET /v1/workspaces/{ws}/fleets/{id}/integration-grants` |
 | `UZ-GRANT-003` | 409 | Grant already resolved | This grant was already approved or denied — by an earlier click, the dashboard, or an auto-timeout. The original decision stands; this request changed nothing. |
 
 ## Credentials
@@ -260,6 +260,6 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-CONN-001` | 503 | Connector not configured | This connector's platform app is not provisioned on this deployment (its admin-vault secret bag, App slug, or signing secret is unset). An operator must register the provider app and populate the admin vault before workspaces can connect. |
 | `UZ-CONN-002` | 400 | Invalid connect state | The connect callback's state was missing, forged, expired, or already used. Start the connect again from the dashboard — each attempt issues a fresh single-use state. |
 | `UZ-CONN-003` | 502 | Connector vendor call exceeded its deadline | An outbound call to the connector's vendor hit its enforced deadline (the vendor accepted the connection, then stalled), could not be deadline-armed and was refused (watchdog unavailable), or the vendor was unreachable (dial/transport failure) — the call never runs unbounded. Transient — retry; if it persists, check the vendor's status page and this deployment's egress. |
-| `UZ-CONN-004` | 404 | Unknown connector provider | The {provider} segment does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page (or the catalog endpoint once it ships). |
+| `UZ-CONN-004` | 404 | Unknown connector provider | The `{provider}` segment does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page (or the catalog endpoint once it ships). |
 | `UZ-CONN-006` | 502 | Connector OAuth exchange failed | The connector's OAuth code exchange or provider callback body was rejected. Start the connect again from the dashboard; if it repeats, verify the provider app credentials and redirect URL. |
 | `UZ-CONN-007` | 500 | Connector catalog lookup failed | The vault existence check for connector app/fleet keys failed (a Postgres error). Retry; if it persists, check DB connectivity and the vault schema state. |
