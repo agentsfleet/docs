@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 06, 2026" tags={["Bug fixes", "API"]}>
+  ## Error responses stop leaking internal names; model-provider copy says "library"
+
+  Backend failures returned an internal Zig error name or engineering jargon in the error response's `detail` field on some paths; both are now stable, plain-English text, and the error-codes reference page is generated straight from the backend registry instead of hand-maintained.
+
+  ## Bug fixes
+
+  - **No more raw internal error names** — an authentication-middleware failure previously returned the caller a raw internal error identifier (e.g. `error.TokenExpired`) in the response `detail`; it now returns a stable, curated message, with the raw identifier logged server-side only.
+  - **Plainer failure messages** — around three dozen internal-failure responses that surfaced backend jargon (allocation/serialization internals, component names) now return plain-English text instead; several previously-generic connector and provider failures (including the connector catalog lookup behind "Couldn't load connectors") now return distinct, diagnosable error codes.
+  - **Model-provider errors say "library"** — model-provider setup and activation error messages now say "library" everywhere, matching the Model library page; they previously said "catalogue."
+
+  ## API reference
+
+  - The [error codes reference](/api-reference/error-codes) is now generated directly from the backend error registry on every release, so it can no longer drift from the codes the API actually returns.
+
+</Update>
+
 <Update label="Jul 05, 2026" tags={["UI", "Bug fixes"]}>
   ## Runners, Model library, and Secrets adopt the standard table layout
 
