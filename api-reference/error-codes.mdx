@@ -117,14 +117,14 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: agentsfleet secret add <name> |
+| `UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secret add <name>` |
 | `UZ-AGT-004` | 500 | Fleet claim failed | Fleet could not be claimed from the database. Check that the fleet_id exists and status is 'active'. |
-| `UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Use 'agentsfleet kill <name>' first, then deploy again. |
+| `UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Use `agentsfleet kill <name>` first, then deploy again. |
 | `UZ-AGT-008` | 400 | Invalid fleet config | Config JSON is malformed. Verify trigger, tools, credentials, and budget fields in your TRIGGER.md frontmatter. See tests/fixtures/fleetbundle/platform-ops/TRIGGER.md for a working example. |
 | `UZ-AGT-009` | 404 | Fleet not found | Fleet not found. Verify the fleet_id and that it has not been killed. |
 | `UZ-AGT-010` | 409 | Fleet state transition not allowed | The requested lifecycle action is not valid from the fleet's current state. The response detail names the specific transition that was refused. |
 | `UZ-AGT-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` in SKILL.md must match `name:` in TRIGGER.md. One identity per Fleet Bundle. |
-| `UZ-AGT-012` | 409 | Fleet is paused | This fleet is not active and refuses new work. Resume it with: agentsfleet resume <fleet>, then retry. |
+| `UZ-AGT-012` | 409 | Fleet is paused | This fleet is not active and refuses new work. Resume it with: `agentsfleet resume <fleet>`, then retry. |
 | `UZ-AGT-013` | 500 | Fleet install rolled back | Event-stream setup failed during create; the fleet row was rolled back so the caller can retry cleanly. If this persists, check queue connectivity. |
 
 ## Bundle
