@@ -32,6 +32,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **No more raw internal error names** — an authentication-middleware failure previously returned the caller a raw internal error identifier (e.g. `error.TokenExpired`) in the response `detail`; it now returns a stable, curated message, with the raw identifier logged server-side only.
   - **Plainer failure messages** — around three dozen internal-failure responses that surfaced backend jargon (allocation/serialization internals, component names) now return plain-English text instead; several previously-generic connector and provider failures (including the connector catalog lookup behind "Couldn't load connectors") now return distinct, diagnosable error codes.
   - **Model-provider errors say "library"** — model-provider setup and activation error messages now say "library" everywhere, matching the Model library page; they previously said "catalogue."
+  - **`UZ-AUTH-014` is now 409 Conflict** — submitting a login verification code before approving the session in the dashboard previously returned 410 (Gone) even though the session was still open and approvable; it now returns 409 with the same approve-then-retry guidance.
 
   ## API reference
 
