@@ -22,6 +22,23 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 06, 2026" tags={["Breaking", "Security", "API"]}>
+  ## Fleets now need an approved integration grant before minting provider tokens
+
+  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, but no longer automatically authorizes every fleet in it. Such a fleet must hold a human-approved integration grant before the platform will mint a provider token for it, checked both when a run is leased and again on every token request, so revoking a grant takes effect on the fleet's very next call. **Slack is not affected** — its bot token is long-lived and delivered directly, not minted through this path, so Slack fleets keep working with no grant.
+
+  ## Upgrading
+
+  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant will stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body: `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
+  - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated and keep working unchanged.
+
+  ## What's new
+
+  - **Grants are now requestable for `github`, `zoho`, `jira`, and `linear`** — previously the grant endpoint rejected these services, so connector access could not be scoped per fleet at all.
+  - **A refused mint returns [`UZ-GRANT-001`](/api-reference/error-codes)** (403, "No integration grant for service") with the request-grant endpoint in the hint — never a silent failure.
+  - **Revoke works mid-run** — revoking a grant refuses the fleet's next token request even if its current run is still leased; re-approving restores minting with no reconnect.
+</Update>
+
 <Update label="Jul 05, 2026" tags={["What's new", "Integrations"]}>
   ## A guide to connecting GitHub, Slack, Zoho Desk, Jira, and Linear
 
