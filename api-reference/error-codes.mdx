@@ -26,259 +26,240 @@ Every `4xx` and `5xx` response uses `Content-Type: application/problem+json`:
 | `request_id` | Correlation ID for support and log tracing |
 
 <Note>
-Every code on this page is one `agentsfleetd` can actually emit — the list is generated from the server's error registry. Codes that no longer have a producer have been removed; if you have an old `docs_uri` anchor that 404s here, the code was retired.
+This page is generated from agentsfleetd's error registry (`make gen-error-codes`) — every code below is one the server can actually emit. A retired code disappears from this page entirely; an old `docs_uri` anchor that 404s here means the code was removed.
 </Note>
 
----
-
-## UUID validation
+## Uuidv7
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-UUIDV7-009` | 400 | Invalid ID shape | Path or body ID does not match UUIDv7 format |
+| `UZ-UUIDV7-009` | 400 | Invalid ID shape | The supplied ID does not match the expected UUIDv7 shape. |
 
-## Internal errors
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-INTERNAL-001` | 503 | Database unavailable | Database server unreachable. Check `DATABASE_URL`. |
-| `UZ-INTERNAL-002` | 500 | Database error | Query failed. Check DB logs. |
-| `UZ-INTERNAL-003` | 500 | Internal operation failed | Unexpected internal failure. Check `err=` in logs. |
-
-## Request validation
+## Internal
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-REQ-001` | 400 | Invalid request | Missing or malformed field in request body or query |
-| `UZ-REQ-002` | 413 | Payload too large | Request body exceeds 2MB limit |
+| `UZ-INTERNAL-001` | 503 | Database unavailable | Check that DATABASE_URL is set and the database server is reachable. Run 'agentsfleetd doctor' to verify. |
+| `UZ-INTERNAL-002` | 500 | Database error | A database query failed. Check the err= field and database logs. |
+| `UZ-INTERNAL-003` | 500 | Internal operation failed | An internal operation failed. Check the err= field for details. If persistent, check service connectivity and run 'agentsfleetd doctor'. |
 
-## Authentication / authorization
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-AUTH-001` | 403 | Forbidden | Token valid but lacks permission for this resource |
-| `UZ-AUTH-002` | 401 | Unauthorized | Missing or invalid Bearer token |
-| `UZ-AUTH-003` | 401 | Token expired | JWT has passed its expiry time. Re-authenticate. |
-| `UZ-AUTH-004` | 503 | Authentication service unavailable | OIDC provider unreachable |
-| `UZ-AUTH-005` | 404 | Session not found | Auth session ID not found or already expired |
-| `UZ-AUTH-006` | 401 | Session expired | Auth session timed out before completion |
-| `UZ-AUTH-022` | 403 | Insufficient scope | Token lacks the required `resource:action` scope for this endpoint. The `detail` field names the required scope (e.g. `Requires scope fleet:admin`) — see the [Scopes](/api-reference/scopes) reference for what each one grants. |
-
-## CLI login
-
-The device-style flow behind `agentsfleet login` (verification code + dashboard approval, then an encrypted token hand-off).
+## Req
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit code did not match what the dashboard issued |
-| `UZ-AUTH-012` | 410 | Login session already consumed | Session already used — re-run `agentsfleet login` |
-| `UZ-AUTH-013` | 410 | Login session aborted | Too many wrong codes, explicit cancel, or replaced by a newer session |
-| `UZ-AUTH-014` | 410 | Login session not approved | Session window closed before dashboard approval — re-run `agentsfleet login` to start a new session |
-| `UZ-AUTH-015` | 409 | Login session already approved | `/approve` was called a second time |
-| `UZ-AUTH-016` | 400 | Invalid CLI public key | `public_key` malformed — expect base64url-encoded P-256 SubjectPublicKeyInfo |
-| `UZ-AUTH-017` | 400 | Invalid token name | `token_name` must be 1–64 characters of printable ASCII |
-| `UZ-AUTH-018` | 400 | Invalid verification code shape | `verification_code` must be exactly 6 ASCII digits |
-| `UZ-AUTH-019` | 400 | Invalid ciphertext | `ciphertext` missing or empty — expect base64url-encoded AES-256-GCM output |
-| `UZ-AUTH-020` | 400 | Invalid nonce | `nonce` missing, empty, or wrong length — expect a base64url-encoded 12-byte value |
-| ~~`UZ-AUTH-021`~~ | 403 | ~~Platform-admin privileges required~~ | Historical: this code was used before `UZ-AUTH-022` was introduced. Operator checks now return `UZ-AUTH-022` (Insufficient scope) with `detail` naming the required scope. |
+| `UZ-REQ-001` | 400 | Invalid request | The request body or parameters are invalid. Check the API documentation. |
+| `UZ-REQ-002` | 413 | Payload too large | Request body exceeds the maximum allowed size. |
 
-## API keys
-
-Tenant- and workspace-scoped API keys (`agt_t` / `agt_a` prefixes) managed via `/v1/api-keys`.
+## Auth
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-FLEETKEY-001` | 404 | Fleet key not found | Fleet key (`agt_a`) lookup — verify the `fleet_key_id`. Distinct namespace from the tenant `UZ-APIKEY-*` codes below. |
-| `UZ-APIKEY-001` | 401 | Invalid API key | Key is invalid or revoked |
-| `UZ-APIKEY-003` | 404 | API key not found | No key matches the supplied id for this tenant. Verify with `GET /v1/api-keys`. |
-| `UZ-APIKEY-004` | 401 | API key has been revoked | Revoked key can no longer authenticate. Mint a replacement with `POST /v1/api-keys`. |
-| `UZ-APIKEY-005` | 409 | Key name already exists in this tenant | `key_name` must be unique per tenant |
-| `UZ-APIKEY-006` | 409 | API key is already revoked | No further action required |
-| `UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | Re-activation is not supported. Create a new key, then revoke the old one. |
-| `UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke the key first (PATCH `active: false`), then DELETE |
+| `UZ-AUTH-001` | 403 | Forbidden | Access denied. Check that your API key has the required role. |
+| `UZ-AUTH-002` | 401 | Unauthorized | Authentication required. Provide a valid Bearer token. |
+| `UZ-AUTH-003` | 401 | Token expired | Your authentication token has expired. Re-authenticate. |
+| `UZ-AUTH-004` | 503 | Authentication service unavailable | Authentication service is temporarily unavailable. Retry shortly. |
+| `UZ-AUTH-005` | 404 | Session not found | Session was not found. It may have expired or been invalidated. |
+| `UZ-AUTH-006` | 401 | Session expired | Your session has expired. Please sign in again. |
+| `UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit verification code did not match what the dashboard issued. Double-check the code shown in your browser and try again. |
+| `UZ-AUTH-012` | 410 | Login session already consumed | This login session has already been consumed. Start over with `agentsfleet login`. |
+| `UZ-AUTH-013` | 410 | Login session aborted | This login session was aborted (too many wrong codes, explicit cancel, or replaced by a newer session). Start over with `agentsfleet login`. |
+| `UZ-AUTH-014` | 410 | Login session not approved | This login session has not been approved in the dashboard yet. Approve it in your browser before submitting a verification code. |
+| `UZ-AUTH-015` | 409 | Login session already approved | This login session has already been approved. Do not call /approve a second time. |
+| `UZ-AUTH-016` | 400 | Invalid CLI public key | The supplied public_key is malformed. Expect base64url-encoded P-256 SubjectPublicKeyInfo. |
+| `UZ-AUTH-017` | 400 | Invalid token name | token_name must be 1-64 characters of printable ASCII. |
+| `UZ-AUTH-018` | 400 | Invalid verification code shape | verification_code must be exactly 6 ASCII digits. |
+| `UZ-AUTH-019` | 400 | Invalid ciphertext | ciphertext is missing or empty. Expect a base64url-encoded AES-256-GCM output. |
+| `UZ-AUTH-020` | 400 | Invalid nonce | nonce is missing, empty, or the wrong length. Expect a base64url-encoded 12-byte value. |
+| `UZ-AUTH-022` | 403 | Insufficient scope | Your token does not carry a scope required for this action. The required scope is named in the error detail; see docs/AUTH.md for the scope catalogue. |
+| `UZ-AUTH-023` | 503 | Clerk webhook secret not configured | CLERK_WEBHOOK_SECRET is unset or empty on this deployment. An operator must set it before Clerk identity events can be verified. |
 
-## LLM provider
-
-Tenant-scoped provider config (`PUT /v1/tenants/me/provider`) and platform-admin catalogue management (`POST/PATCH/DELETE /v1/admin/models`, `PUT /v1/admin/platform-keys`) — how the runner resolves a model API key, and how the priced catalogue is curated.
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-PROVIDER-001` | 400 | secret_ref required when mode=self_managed | PUT body must name a vault `secret_ref` when `mode` is `self_managed` |
-| `UZ-PROVIDER-002` | 400 | Secret row not found in vault | The named `secret_ref` has no vault row in the tenant's primary workspace |
-| `UZ-PROVIDER-003` | 400 | Secret JSON missing required field | Stored secret must include `provider` and `model` (non-empty); `api_key` is required for a named provider, optional for an `openai-compatible` endpoint |
-| `UZ-PROVIDER-004` | 400 | Model not in cached caps catalogue | Effective model is absent from `core.model_library` — named providers only. An `openai-compatible` endpoint bypasses the catalogue (it bills against your own provider). Pick a catalogued model from the model-caps endpoint. Also returned by `PUT /v1/admin/platform-keys` when the chosen default's `(provider, model)` is not a priced catalogue row — add it via `POST /v1/admin/models` first. |
-| `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An `openai-compatible` secret's `base_url` must be `https` and must not target a loopback, private, link-local, or cloud-metadata host; a `base_url` set on a named (non-`openai-compatible`) provider is rejected too |
-| `UZ-PROVIDER-006` | 404 | No catalogue model matches this uid | `PATCH`/`DELETE /v1/admin/models/{uid}` addressed a catalogue row that does not exist |
-| `UZ-PROVIDER-007` | 409 | Model is the active platform default | `DELETE /v1/admin/models/{uid}` was blocked because the active platform default resolves to this model — repoint the default (`PUT /v1/admin/platform-keys`) before deleting it |
-| `UZ-PROVIDER-008` | 409 | Catalogue row already exists | `POST /v1/admin/models` used a `(provider, model_id)` pair that is already catalogued — `PATCH` the existing row to change its caps/rates |
-| `UZ-PROVIDER-009` | 500 | Platform LLM key not configured | `DELETE /v1/tenants/me/provider` (switch to platform defaults) was called but no platform default is configured on this deployment yet. An operator must set one via `PUT /v1/admin/platform-keys` first. |
-
-## API limits
-
-Load-shedding on a saturated API instance — back off and retry.
+## Api
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-API-001` | 429 | Too many in-flight requests | Instance is at its in-flight request ceiling and is shedding load |
-| `UZ-API-002` | 503 | Event-stream capacity reached | Instance is serving its maximum number of concurrent event streams |
+| `UZ-API-001` | 429 | Too many in-flight requests | This API instance is at its in-flight request ceiling and is shedding load. Honor the Retry-After header and retry with backoff. Operators: raise API_MAX_IN_FLIGHT_REQUESTS or add replicas. |
+| `UZ-API-002` | 503 | Event-stream capacity reached | This instance is serving its maximum number of concurrent event streams. Close unused dashboard tabs or retry shortly. Operators: raise SSE_MAX_STREAMS or add replicas. |
 
-## Webhook
+## Fleetkey
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-WH-001` | 404 | Fleet not found for webhook | Webhook routing found no matching fleet |
-| `UZ-WH-002` | 400 | Malformed webhook | Webhook body is missing required fields |
-| `UZ-WH-010` | 401 | Invalid webhook signature | HMAC or Svix signature verification failed. Verify the `secret_ref` vault entry matches the signing secret configured with the provider. |
-| `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook timestamp is older than 5 minutes (replay protection). Ensure the sender clock is not skewed. |
-| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook secret is configured for this fleet's source. Run `agentsfleet secret add <source> --data=@-` with `{ "webhook_secret": "..." }` in the fleet's workspace, then resend. |
-| `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload at the source or filter fields before forwarding. |
+| `UZ-FLEETKEY-001` | 404 | Fleet key not found | Fleet key not found. Verify the fleet_key_id. |
+
+## Wh
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-WH-001` | 404 | Fleet not found for webhook | No fleet is registered for this webhook endpoint. |
+| `UZ-WH-002` | 400 | Malformed webhook | Webhook payload could not be parsed. Check Content-Type and body. |
+| `UZ-WH-010` | 401 | Invalid webhook signature | Webhook signature verification failed. Confirm the signing secret stored for this provider (Slack/Clerk/other) matches the one configured upstream. |
+| `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook request timestamp is outside the allowed 5-minute drift window. This may indicate a replay attack or clock skew. |
+| `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this fleet's source. Run `agentsfleet secret add <source> --data='{"webhook_secret":"..."}'` in the fleet's workspace, then resend. |
+| `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload size or filter at the source. |
+
+## Slk
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-SLK-010` | 401 | Invalid Slack signature | The Slack request signature did not verify. Confirm the platform Slack app signing secret matches the one vaulted at slack-app/signing_secret. |
+| `UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack request timestamp is outside the allowed 5-minute drift window — a replay attempt or a skewed server clock. |
+| `UZ-SLK-020` | 200 | Slack team not installed | The Slack team that sent this event has no connector install, so the event is acknowledged (200) and ignored. Re-run Connect Slack in the dashboard to (re)install. |
+| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app credentials. |
+| `UZ-SLK-030` | 502 | Slack answer post failed | The channel bot's answer could not be delivered to Slack (missing chat:write, a 429, or a Slack outage). It is logged and retried with backoff; the run itself never fails. |
 
 ## Tool
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-TOOL-005` | 400 | Unknown tool | Tool name not recognized — typo against the [Tools catalogue](/fleets/tools) is the usual cause. |
+| `UZ-TOOL-005` | 400 | Unknown tool | Unknown tool name. Check spelling against the known tools list. |
 
-<Note>
-**Registered, not always emitted.** `UZ-TOOL-005` is registered, but in v2 today a missing or misspelled tool usually surfaces as a NullClaw-level "no such tool" message in the activity stream rather than this wire code. Treat the code as authoritative for *meaning* if you see it, but audit `agentsfleet logs <fleet_id>` for the actual error text.
-</Note>
-
-## Fleet
+## Agt
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-AGT-003` | 424 | Fleet credential missing | A required vault secret is absent. Add it with `agentsfleet secret add <name>`. |
-| `UZ-AGT-004` | 500 | Fleet claim failed | Fleet could not be claimed from the database. Verify the `fleet_id` exists and status is `active`. |
-| `UZ-AGT-006` | 409 | Fleet name already exists | Name taken. Kill the existing fleet first, then re-install. |
-| `UZ-AGT-008` | 400 | Invalid fleet config | `TRIGGER.md` config_json fails schema validation. Verify trigger, tools, credentials, and budget fields. |
-| `UZ-AGT-009` | 404 | Fleet not found | No fleet with this ID in the workspace. |
+| `UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: agentsfleet secret add <name> |
+| `UZ-AGT-004` | 500 | Fleet claim failed | Fleet could not be claimed from the database. Check that the fleet_id exists and status is 'active'. |
+| `UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Use 'agentsfleet kill <name>' first, then deploy again. |
+| `UZ-AGT-008` | 400 | Invalid fleet config | Config JSON is malformed. Verify trigger, tools, credentials, and budget fields in your TRIGGER.md frontmatter. See tests/fixtures/fleetbundle/platform-ops/TRIGGER.md for a working example. |
+| `UZ-AGT-009` | 404 | Fleet not found | Fleet not found. Verify the fleet_id and that it has not been killed. |
 | `UZ-AGT-010` | 409 | Fleet state transition not allowed | The requested lifecycle action is not valid from the fleet's current state. The response detail names the specific transition that was refused. |
-| `UZ-AGT-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` must match across both files. One identity per fleet bundle. |
-| `UZ-AGT-012` | 409 | Fleet is paused | Fleet is not active and refuses new work. Resume with `agentsfleet resume <fleet>`, then retry. |
+| `UZ-AGT-011` | 400 | SKILL.md and TRIGGER.md disagree on `name:` | Top-level `name:` in SKILL.md must match `name:` in TRIGGER.md. One identity per Fleet Bundle. |
+| `UZ-AGT-012` | 409 | Fleet is paused | This fleet is not active and refuses new work. Resume it with: agentsfleet resume <fleet>, then retry. |
+| `UZ-AGT-013` | 500 | Fleet install rolled back | Event-stream setup failed during create; the fleet row was rolled back so the caller can retry cleanly. If this persists, check queue connectivity. |
 
-## Fleet Bundle
-
-Onboarding a Fleet library entry (the SKILL.md/TRIGGER.md package behind a Fleet) and installing it. Onboard an entry via `POST /v1/admin/fleet-libraries` (platform tier) or `POST /v1/workspaces/{workspace_id}/fleet-libraries` (your workspace's tenant tier); install one via `POST /v1/workspaces/{workspace_id}/fleets`.
+## Bundle
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-BUNDLE-001` | 400 | Invalid Fleet Bundle | The supplied bundle is missing `SKILL.md` or contains unsafe, oversized, or malformed files. |
-| `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No installable template or stored snapshot matches the request in this workspace. The `platform_library_id`/`tenant_library_id` is unknown, or the entry has not been onboarded yet. |
-| `UZ-BUNDLE-003` | 424 | Fleet Bundle secrets missing | Add the workspace secrets named in `missing_secrets` before installing this Fleet Bundle. |
-| `UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | The bundle source could not be fetched from GitHub — the repository may be missing or private, or GitHub may be unreachable. Verify the source reference and retry. |
+| `UZ-BUNDLE-001` | 400 | Invalid Fleet Bundle | The supplied Fleet Bundle is missing SKILL.md or contains unsafe, oversized, or malformed files. |
+| `UZ-BUNDLE-002` | 404 | Fleet Bundle not found | No installable library entry or stored snapshot matches the request in this workspace. |
+| `UZ-BUNDLE-003` | 424 | Fleet Bundle secrets missing | Add the missing workspace secrets before installing this Fleet Bundle. |
+| `UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | The Fleet Bundle source could not be fetched from GitHub. The repository may be missing or private, or GitHub may be unreachable. Verify the source reference and retry. |
 | `UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | Snapshot storage is not configured or is unavailable, so the validated bundle could not be stored. Retry later or contact the operator. |
-| `UZ-BUNDLE-006` | 429 | Too many Fleet Bundle imports in flight | This instance is at its concurrent import ceiling. Honor the `Retry-After` header and retry with backoff. |
-
-## Integration grants
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Request one with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests`. |
-| `UZ-GRANT-002` | 404 | Integration grant not found | No grant with that id exists for this fleet, or it was already revoked. List current grants with `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-grants`. |
-
-## Integration connect & token mint
-
-Codes here are the externally-observable subset of the server registry; a gap in a numbering sequence is a code that was superseded before release (`UZ-SLK-021` was superseded by the generic `UZ-CONN-002`, so the registry — and this table — skips it).
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-CONN-001` | 503 | Connector not configured | Connect is unavailable for this provider on this deployment — the platform app's secrets (GitHub App slug / Slack app secrets) are unset. An operator must register the provider app and populate the admin vault before workspaces can connect. |
-| `UZ-CONN-002` | 400 | Invalid connect state | The connect callback's `state` was missing, forged, expired, or already used. Start the connect again from the dashboard — each attempt issues a fresh single-use state. |
-| `UZ-CONN-003` | 502 | Connector vendor call exceeded its deadline | An outbound call to the connector's vendor hit its enforced deadline (the vendor accepted the connection, then stalled), could not be deadline-armed, or the vendor was unreachable — the call never runs unbounded. Transient — retry; if it persists, check the vendor's status page and this deployment's egress. |
-| `UZ-CONN-004` | 404 | Unknown connector provider | The `{provider}` in the connector URL does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page. |
-| `UZ-CRED-001` | 404 | Integration not connected | No connected integration matches this id for the fleet's workspace. Connect it first (e.g. GitHub via the dashboard **Connect** flow) before a fleet can mint a token for it. |
-| `UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. |
-| `UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). Transient — retry shortly; if it persists, check GitHub status and the App configuration. |
-| `UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it persists, verify the platform Slack app's secrets. |
-
-### Slack event handling
-
-Runtime codes for the channel bot's inbound mentions and outbound answers — distinct from the OAuth connect and token-mint flow above.
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-SLK-010` | 401 | Invalid Slack signature | The Slack request signature on `POST /v1/connectors/slack/events` did not verify. Confirm the platform Slack app's signing secret matches the one vaulted by the operator. |
-| `UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack request timestamp is outside the 5-minute drift window — a replay attempt or a skewed clock. |
-| `UZ-SLK-020` | 200 | Slack team not installed | The Slack team that sent this event has no connector install; the event is acknowledged (200) and ignored so Slack does not retry. Re-run **Connect Slack** in the dashboard to (re)install. |
-| `UZ-SLK-030` | 502 | Slack answer post failed | The channel bot's answer could not be delivered to Slack (missing `chat:write`, a 429, or a Slack outage). Logged and retried with backoff; the run itself never fails. |
-
-## Approval gate
-
-| Code | HTTP | Title | Common Causes |
-|---|---|---|---|
-| `UZ-APPROVAL-001` | 400 | Approval parse failed | `gates` in TRIGGER.md config_json has invalid JSON |
-| `UZ-APPROVAL-002` | 404 | Approval not found | Approval action not found or already resolved |
-| `UZ-APPROVAL-003` | 401 | Approval invalid signature | Slack signature or timestamp verification failed |
-| `UZ-APPROVAL-004` | 503 | Approval Redis unavailable | Gate service down; default-deny applied |
-| `UZ-APPROVAL-005` | 400 | Approval condition invalid | Gate condition is invalid. Use `field == 'value'` or `field != 'value'` (single-quoted). |
-| `UZ-APPROVAL-006` | 409 | Approval already resolved | Resolved earlier by Slack, dashboard, or auto-timeout. Original outcome + resolver in body. |
 
 ## Vault
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | `POST /v1/workspaces/{workspace_id}/secrets` body must include a `data` field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
-| `UZ-VAULT-002` | 400 | Secret data too large | Stringified secret data exceeds 4 KB. Compose the secret from fewer or shorter fields. |
-| `UZ-VAULT-003` | 404 | Secret not found | No secret matches this name in the workspace. Returned by `PATCH /v1/workspaces/{workspace_id}/secrets/{name}` (key rotation); list the workspace secrets to find a valid name, or create it first. |
+| `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | POST /secrets body must include a 'data' field that is a JSON object with at least one key. Bare strings, arrays, scalars, and {} are rejected. |
+| `UZ-VAULT-002` | 400 | Secret data too large | Stringified secret data exceeds 4KB. Compose the secret from fewer or shorter fields. |
+| `UZ-VAULT-003` | 404 | Secret not found | No secret matches this name in the workspace. List the workspace secrets to find a valid name, or create it first. |
 
-## Memory
+## Provider
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-MEM-002` | 404 | Fleet not found for memory op | The `fleet_id` on the memory call does not exist in the workspace. A cross-workspace `fleet_id` also returns this 404 (not a 403) so existence is not leaked. |
-| `UZ-MEM-003` | 503 | Memory backend unavailable | Memory store is unreachable. Retry the trigger; if persistent, file an issue. |
+| `UZ-PROVIDER-001` | 400 | secret_ref required when mode=self_managed | PUT body must include `secret_ref` naming a vault credential when `mode` is self_managed. |
+| `UZ-PROVIDER-002` | 400 | Secret row not found in vault | The named secret_ref has no vault row in the tenant's primary workspace. Run `agentsfleet secret add <name> --data=@-` to create it. |
+| `UZ-PROVIDER-003` | 400 | Secret JSON missing required field | Stored secret JSON must include `provider` and `model` (non-empty strings); `api_key` is required for a named provider but optional for an `openai-compatible` endpoint. Re-run `agentsfleet secret add` with the required fields. |
+| `UZ-PROVIDER-004` | 400 | Model not in library | The effective model is not present in core.model_library. Pick a model from the model-caps endpoint or request the library be extended. |
+| `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An openai-compatible credential needs a valid `base_url`: it must use https and must not target a loopback, private, link-local, or cloud-metadata host. A non-openai-compatible provider must not carry a `base_url`. |
+| `UZ-PROVIDER-006` | 404 | Library model not found | No core.model_library row matches this id. List the library to find a valid id, or add the model first. |
+| `UZ-PROVIDER-007` | 409 | Library model is the active platform default | This model is the active platform default. Point the default at another library model before deleting it. |
+| `UZ-PROVIDER-008` | 409 | Library model already exists | A library row for this provider and model already exists. Edit the existing row instead of adding a duplicate. |
+| `UZ-PROVIDER-009` | 500 | Platform LLM key not configured | No active row in core.platform_llm_keys. An operator must set one via PUT /admin/platform-keys before tenants can switch to platform defaults. |
+| `UZ-PROVIDER-010` | 500 | Tenant has no primary workspace | The tenant row has no primary workspace — an onboarding invariant that should always hold. Contact support with the request id. |
 
 ## Startup
 
-`agentsfleetd` refuses to start when these fail — they surface in the process log, not over the API.
-
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run `agentsfleetd doctor` to see which ones. |
-| `UZ-STARTUP-002` | 500 | Config load failed | Configuration failed to load. Check that all required env vars are set. |
-| `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that `DATABASE_URL` is set and the database accepts connections. |
-| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that `REDIS_URL_API` is set. |
+| `UZ-STARTUP-001` | 500 | Environment check failed | Required environment variables are missing. Run 'agentsfleetd doctor' to see which ones. |
+| `UZ-STARTUP-002` | 500 | Config load failed | Configuration failed to load. Check that all required env vars are set. Run 'agentsfleetd doctor' to verify. |
+| `UZ-STARTUP-003` | 500 | Database connect failed | Database is unreachable. Check that DATABASE_URL is set and the database accepts connections. |
+| `UZ-STARTUP-004` | 500 | Redis connect failed | Redis is unreachable. Check that REDIS_URL_API is set and the Redis server accepts connections. Run 'agentsfleetd doctor' to verify. |
 | `UZ-STARTUP-005` | 500 | Migration check failed | Database migration state could not be verified. Check DB connectivity. |
-| `UZ-STARTUP-006` | 500 | Startup env allocation failed | An environment variable could not be allocated at startup (out of memory). |
+| `UZ-STARTUP-006` | 500 | Startup env allocation failed | An environment variable could not be allocated at startup (out of memory). A required secret fails the boot closed; optional config falls back to its default — check host memory pressure. |
 
-## Runner engine
-
-Execution-path failures from the sandboxed runner engine.
+## Run
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-EXEC-001` | 500 | Execution session create failed | Execution session creation failed. Check runner availability. |
-| `UZ-EXEC-002` | 500 | Run start failed | Run failed to start. Check runner configuration. |
-| `UZ-EXEC-003` | 500 | Execution timeout kill | Execution exceeded the wall-clock timeout and was killed. |
-| `UZ-EXEC-004` | 500 | Execution OOM kill | Execution exceeded its memory limit and was killed. |
-| `UZ-EXEC-005` | 500 | Execution resource kill | Execution exceeded a resource limit (e.g. cgroup PID cap) and was killed. |
-| `UZ-EXEC-006` | 500 | Execution transport loss | Connection to the execution transport was lost. |
+| `UZ-RUN-001` | 401 | Invalid runner token | The Bearer runner_token is missing, malformed, or not recognized. Re-register the runner. |
+| `UZ-RUN-005` | 409 | Stale fencing token | The lease was reclaimed by a newer holder. This report is rejected; the current holder's result wins. |
+| `UZ-RUN-006` | 404 | Lease not found | No active lease matches this lease_id for the presenting runner; it may have expired, been reclaimed, or never existed. |
+| `UZ-RUN-009` | 401 | Runner admin state blocks access | This runner is cordoned, draining, drained, or revoked and cannot call the runner plane. Re-enroll the host to mint a fresh runner token. |
+| `UZ-RUN-010` | 409 | Lease exceeded max runtime | The lease reached the hard maximum runtime and may not be renewed further; the run is terminated. The child is killed and the result, if any, is reported. |
+| `UZ-RUN-011` | 409 | Lease lost | The lease was reassigned to another runner before this renewal; it can no longer be renewed. The presenting runner must terminate its child. |
+| `UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant's balance can no longer cover continued execution; the lease may not be renewed and the run terminates gracefully. |
+| `UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed; cumulative token counts default to zero and the slice meters its run-time fee only (never a negative charge). The lease is still renewed. |
+| `UZ-RUN-014` | 404 | Runner not found | No runner matches this runner_id. Verify the platform admin minted the runner before mutating it. |
+
+## Exec
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-EXEC-003` | 500 | Execution timeout kill | Execution exceeded the timeout limit and was killed. |
+| `UZ-EXEC-004` | 500 | Execution OOM kill | Execution exceeded memory limit and was killed. |
+| `UZ-EXEC-005` | 500 | Execution resource kill | Execution exceeded resource limits and was killed. |
+| `UZ-EXEC-006` | 500 | Execution transport loss | Connection to execution transport was lost. |
 | `UZ-EXEC-007` | 500 | Execution lease expired | Execution lease expired. The task took too long to complete. |
-| `UZ-EXEC-008` | 500 | Execution renewal-terminated | The control plane stopped the lease mid-run (lease lost, max-runtime cap, or no credits) — a policy stop, kept distinct from a wall-clock timeout (`UZ-EXEC-003`). |
+| `UZ-EXEC-008` | 500 | Execution renewal-terminated | The control plane stopped the lease mid-run (lease lost, max-runtime cap, or no credits). A policy stop, kept distinct from a wall-clock timeout (UZ-EXEC-003) for triage and billing. |
 | `UZ-EXEC-009` | 500 | Execution startup posture failure | Execution startup posture check failed. Verify runner security config. |
 | `UZ-EXEC-010` | 500 | Execution crash | The execution process crashed. Check logs for details. |
-| `UZ-EXEC-011` | 403 | Landlock policy deny | A Landlock (or seccomp) policy denied a filesystem or syscall operation. |
+| `UZ-EXEC-011` | 403 | Landlock policy deny | Landlock policy denied the filesystem operation. |
 | `UZ-EXEC-012` | 500 | Runner fleet init failed | Runner fleet initialization failed. Check configuration. |
 | `UZ-EXEC-013` | 500 | Runner fleet run failed | Runner fleet execution failed. Check logs for details. |
-| `UZ-EXEC-014` | 400 | Runner invalid config | Runner configuration is invalid. Check `config_json` fields. |
+| `UZ-EXEC-014` | 400 | Runner invalid config | Runner configuration is invalid. Check config_json fields. |
 
-## Runner control plane
-
-The runner ↔ control-plane lease protocol (`/v1/runner/*`). Codes a runner host sees while claiming, renewing, or reporting a lease.
+## Approval
 
 | Code | HTTP | Title | Common Causes |
 |---|---|---|---|
-| `UZ-RUN-001` | 401 | Invalid runner token | The Bearer `runner_token` is missing, malformed, or unrecognized. Re-register the runner. |
-| `UZ-RUN-005` | 409 | Stale fencing token | The lease was reclaimed by a newer holder; this report is rejected and the current holder's result wins. |
-| `UZ-RUN-006` | 404 | Lease not found | No active lease matches this `lease_id` for the presenting runner — expired, reclaimed, or never existed. |
-| `UZ-RUN-007` | 500 | Sandbox establishment failed | The runner could not establish the required sandbox (Landlock/cgroup/netns); the lease was refused fail-closed rather than run unconfined. |
-| `UZ-RUN-009` | 401 | Runner admin state blocks access | This runner is cordoned, draining, drained, or revoked. Re-enroll the host to mint a fresh runner token. |
-| `UZ-RUN-010` | 409 | Lease exceeded max runtime | The lease reached the hard maximum runtime and may not be renewed further; the run is terminated. |
-| `UZ-RUN-011` | 409 | Lease lost | The lease was reassigned to another runner before this renewal; the presenting runner must terminate its child. |
-| `UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant's balance can no longer cover continued execution; the lease may not be renewed and the run terminates gracefully. |
-| `UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed; token counts default to zero (the lease is still renewed). |
-| `UZ-RUN-014` | 404 | Runner not found | No runner matches this `runner_id`. Verify the platform admin minted the runner before mutating it. |
+| `UZ-APPROVAL-001` | 400 | Approval parse failed | Gate policy in TRIGGER.md config_json has invalid syntax. Check the 'gates' section. |
+| `UZ-APPROVAL-002` | 404 | Approval not found | Approval action not found or already resolved. The action may have timed out or been handled by another click. |
+| `UZ-APPROVAL-003` | 401 | Approval invalid signature | The approval callback signature is invalid. Check the signing secret. |
+| `UZ-APPROVAL-004` | 503 | Approval Redis unavailable | Gate service unavailable — default-deny applied. Check Redis connectivity. |
+| `UZ-APPROVAL-005` | 400 | Approval condition invalid | Gate condition expression is invalid. Supported operators: == and != with single-quoted values. |
+| `UZ-APPROVAL-006` | 409 | Approval already resolved | Resolved earlier by Slack, dashboard, or auto-timeout. Original outcome + resolver in body. |
 
-## Removed surfaces
+## Mem
 
-Pipeline v1 (`/v1/runs/*`, `/v1/specs`) was permanently removed — those endpoints now return **404** (the pre-2.0 convention), not a dedicated code. Use the fleet event model instead. Webhook delivery to a paused fleet, cross-fleet memory scope, and the legacy CLI login error-map no longer have dedicated codes either; the live equivalents are `UZ-AGT-012` (paused), `UZ-MEM-002` (memory scope → 404), and the typed CLI login codes above.
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-MEM-002` | 404 | Fleet not found for memory op | The fleet_id does not exist or does not belong to the requesting workspace. Verify the fleet_id and workspace scope. |
+| `UZ-MEM-003` | 503 | Memory backend unavailable | The memory backend (Postgres memory schema) is unreachable. The fleet falls back to ephemeral workspace memory. Check MEMORY_RUNTIME_URL. |
+
+## Apikey
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-APIKEY-001` | 401 | Invalid API key | API key is invalid or revoked. Create one with: agentsfleet fleet create --workspace {ws} --name my-fleet |
+| `UZ-APIKEY-003` | 404 | API key not found | No API key matches the supplied id for this tenant. Verify the id with: GET /v1/api-keys |
+| `UZ-APIKEY-004` | 401 | API key has been revoked | This key was revoked and can no longer authenticate. Mint a replacement with: POST /v1/api-keys |
+| `UZ-APIKEY-005` | 409 | Key name already exists in this tenant | key_name must be unique per tenant. Pick a different name or revoke the existing key first. |
+| `UZ-APIKEY-006` | 409 | API key is already revoked | This key is already revoked. No further action is required. |
+| `UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | Re-activation is not supported. Create a new key via POST /v1/api-keys and revoke the old one. |
+| `UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke the key first with PATCH /v1/api-keys/{id} body {"active": false}, then retry DELETE. |
+
+## Grant
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-GRANT-002` | 404 | Integration grant not found | No grant with that id exists for this fleet, or it was already revoked. List current grants with: GET /v1/workspaces/{ws}/fleets/{id}/integration-grants |
+| `UZ-GRANT-003` | 409 | Grant already resolved | This grant was already approved or denied — by an earlier click, the dashboard, or an auto-timeout. The original decision stands; this request changed nothing. |
+
+## Cred
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-CRED-001` | 404 | Integration not connected | No connected integration matches this id for the fleet's workspace. Connect it first (e.g. GitHub via the dashboard “Connect” flow) before a fleet can mint a token for it. |
+| `UZ-CRED-002` | 503 | Credential broker not configured | The on-demand credential broker is not wired on this deployment (a boot-time misconfiguration, not a client error). An operator must configure it before runners can mint credentials. |
+
+## Gh
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. |
+| `UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). This is transient — retry shortly; if it persists, check GitHub status and the App configuration. |
+
+## Conn
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-CONN-001` | 503 | Connector not configured | This connector's platform app is not provisioned on this deployment (its admin-vault secret bag, App slug, or signing secret is unset). An operator must register the provider app and populate the admin vault before workspaces can connect. |
+| `UZ-CONN-002` | 400 | Invalid connect state | The connect callback's state was missing, forged, expired, or already used. Start the connect again from the dashboard — each attempt issues a fresh single-use state. |
+| `UZ-CONN-003` | 502 | Connector vendor call exceeded its deadline | An outbound call to the connector's vendor hit its enforced deadline (the vendor accepted the connection, then stalled), could not be deadline-armed and was refused (watchdog unavailable), or the vendor was unreachable (dial/transport failure) — the call never runs unbounded. Transient — retry; if it persists, check the vendor's status page and this deployment's egress. |
+| `UZ-CONN-004` | 404 | Unknown connector provider | The {provider} segment does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page (or the catalog endpoint once it ships). |
+| `UZ-CONN-006` | 502 | Connector OAuth exchange failed | The connector's OAuth code exchange or provider callback body was rejected. Start the connect again from the dashboard; if it repeats, verify the provider app credentials and redirect URL. |
+| `UZ-CONN-007` | 500 | Connector catalog lookup failed | The vault existence check for connector app/fleet keys failed (a Postgres error). Retry; if it persists, check DB connectivity and the vault schema state. |
