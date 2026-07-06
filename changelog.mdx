@@ -23,14 +23,16 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 </Tip>
 
 <Update label="Jul 07, 2026" tags={["UI"]}>
-  ## Dashboard cards read crisper, and the Billing usage table keeps its header in view
+  ## Dashboard cards read crisper, isolation mode is easier to pick, and every account gets its own avatar
 
-  Cards and tables across the dashboard now have a slightly more defined edge at rest instead of only on hover, and the Billing usage history table pins its column headers while you scroll a long list.
+  Cards and tables across the dashboard now have a slightly more defined edge at rest instead of only on hover, the Billing usage history table pins its column headers while you scroll a long list, enrolling a runner picks its isolation mode from clear cards instead of a dropdown, and your account avatar is now a pattern unique to you instead of the same grey circle everyone sees.
 
   ## What's new
 
   - **Sharper cards and tables** — resting-state borders and card backgrounds are a touch brighter across the dashboard, so panels read as distinct surfaces immediately instead of only once you hover over them.
   - **Pinned table header on Billing usage** — the Billing page's usage-history table keeps its "Date / Amount / Type / Description" header visible while you scroll through a long charge history.
+  - **Isolation mode as option cards** — enrolling a runner (Settings → Runners → Create runner) now picks its isolation mode from four cards with a one-line description each, instead of a plain dropdown.
+  - **A distinct account avatar** — if you haven't uploaded a profile photo, your account avatar is now a pattern generated from your account, so it looks different from every other signed-in user's.
 </Update>
 
 <Update label="Jul 06, 2026" tags={["Bug fixes", "API"]}>
