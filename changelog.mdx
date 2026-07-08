@@ -22,6 +22,28 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 08, 2026" tags={["UI", "API"]}>
+  ## Models page becomes a registry — every configured model in one table, keys shared across models
+
+  The Models page held four fixed slots (Default, Anthropic, one bucket for every other provider, one custom endpoint), which hid every Anthropic key past the first and couldn't tell apart the same model running on two different hosts. It's now a sortable table with one row per model you've configured — add three Anthropic models on a single key, or the same model on two different hosts, and see all of them at once.
+
+  ## What's new
+
+  - **One row per configured model** — the Models table lists every model you've registered, sorted by model or provider, with the platform default pinned as the first row.
+  - **Add a model without re-pasting a key** — the "Add model" dialog's Known-provider tab offers "use existing key" alongside pasting a new one, so a second or third model on the same provider account reuses the stored key.
+  - **Custom endpoints can go keyless** — the Custom-endpoint tab's API key field is now optional; an endpoint that needs no key registers and activates without one.
+  - **Per-row actions** — each row's `⋯` menu offers View details (provider, endpoint, key name, created date — never the key itself), Edit (change the model, or paste a new key to rotate it), and Remove (blocked with a reason on the row currently powering inference).
+  - **Switch with one click** — an inactive row's Switch button activates it immediately; no key field, no confirmation.
+
+  ## API reference
+
+  - `GET /v1/tenants/me/models` — lists the tenant's registered model entries, each joined to its key's provider/kind/endpoint and an `active` flag; also returns `platform_default_available`.
+  - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `404 UZ-MODELS-002` when `secret_ref` names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
+  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours.
+  - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the entry currently active.
+  - Deleting a stored key that's still referenced by a model entry now returns `409` naming how many entries reference it, instead of deleting silently out from under them.
+</Update>
+
 <Update label="Jul 07, 2026" tags={["UI"]}>
   ## Dashboard cards read crisper, isolation mode is easier to pick, and every account gets its own avatar
 
