@@ -30,7 +30,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ## What's new
 
   - **One row per configured model** — the Models table lists every model you've registered, sorted by model or provider, with the platform default pinned as the first row.
-  - **Add a model without re-pasting a key** — the "Add model" dialog's Known-provider tab offers "use existing key" alongside pasting a new one, so a second or third model on the same provider account reuses the stored key.
+  - **Key names are identities** — the "Add model" dialog is always one paste-a-key form; adding a model under a key name you've already stored (same provider) updates that stored key in place and points the new model at it, so several models share one credential without a separate "use existing key" step. A name that belongs to a different provider's key is rejected instead of overwritten.
   - **Custom endpoints can go keyless** — the Custom-endpoint tab's API key field is now optional; an endpoint that needs no key registers and activates without one.
   - **Per-row actions** — each row's `⋯` menu offers View details (provider, endpoint, key name, created date — never the key itself), Edit (change the model, or paste a new key to rotate it), and Remove (blocked with a reason on the row currently powering inference).
   - **Switch with one click** — an inactive row's Switch button activates it immediately; no key field, no confirmation.
@@ -41,6 +41,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `404 UZ-MODELS-002` when `secret_ref` names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
   - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours.
   - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the entry currently active.
+  - `PUT /v1/tenants/me/provider` (existing) now also registers the matching model entry when none exists, so an activation is always visible as a row in `GET /v1/tenants/me/models`.
   - Deleting a stored key that's still referenced by a model entry now returns `409` naming how many entries reference it, instead of deleting silently out from under them.
 </Update>
 
