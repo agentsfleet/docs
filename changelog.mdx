@@ -38,8 +38,8 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ## API reference
 
   - `GET /v1/tenants/me/models` — lists the tenant's registered model entries, each joined to its key's provider/kind/endpoint and an `active` flag; also returns `platform_default_available`.
-  - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `404 UZ-MODELS-002` when `secret_ref` names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
-  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours.
+  - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `secret_ref` is required and names the stored provider key or keyless custom-endpoint record; omit the API key when creating that stored record for a keyless endpoint. `404 UZ-MODELS-002` when `secret_ref` names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
+  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. Key rotation stays on the stored secret, so editing a row can rotate the key without changing this registry endpoint's body. `404 UZ-MODELS-004` when the id isn't yours.
   - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the entry currently active.
   - `PUT /v1/tenants/me/provider` (existing) now also registers the matching model entry when none exists, so an activation is always visible as a row in `GET /v1/tenants/me/models`.
   - Activating a self-managed model takes the model from the `PUT` body (or the registry entry), never the stored key — so a key holds `{provider, api_key}` with no `model` and backs many models. An activation that resolves no model returns `400 UZ-PROVIDER-004`.
