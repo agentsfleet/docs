@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 09, 2026" tags={["UI", "API"]}>
+  ## Admin model library: edit a model's rates and set the platform default from its row
+
+  The platform-admin model library made you delete and recreate a catalogue entry just to correct a rate, and set the platform default through a separate form below the table. Every catalogue row now carries its own actions — edit its rates in place, make it the platform default, or remove it — and the row currently serving as the default is marked on the row itself.
+
+  ## What's new
+
+  - **Edit rates in place** — the pencil on a catalogue row opens a dialog to change the context cap and per-token rates; the provider and model id stay fixed. No more delete-and-recreate to fix a price.
+  - **Make any model the default from its row** — a star action sets that model as the platform default (you enter the provider API key, stored in your vault), replacing the separate Platform Default form. The active row shows a "Default" badge.
+  - **Consistent action icons across settings** — every Create button (API keys, runners, secrets, model library) now shows a plus icon, and the fleet Install button a download icon, matching the Secrets page.
+
+  ## API reference
+
+  - `GET /v1/admin/platform-keys` — each returned row now includes `model`, the priced `(provider, model_id)` the default resolves to (`null` for a provider that has been stood down).
+</Update>
+
 <Update label="Jul 07, 2026" tags={["UI"]}>
   ## Dashboard cards read crisper, isolation mode is easier to pick, and every account gets its own avatar
 
