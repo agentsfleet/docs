@@ -35,6 +35,18 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   No API shapes, endpoints, or error codes changed.
 </Update>
 
+<Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
+  ## Fleet timeline recovers frames lost to a connection blip
+
+  The live fleet timeline silently dropped every frame published while its stream connection was down — a network blip or an idle proxy kill left a gap in the tail that only a page reload repaired. The dashboard now recovers the missed window on every reconnect, without a reload.
+
+  ## Bug fixes
+
+  - **Reconnect gap-recovery** — on every stream reconnect the timeline re-fetches the events published during the outage from the durable event history and merges them by event id, so a frame delivered both live and via recovery renders once.
+  - **Honest tail on failure** — a failed recovery fetch changes nothing on screen; live frames resume immediately and the next reconnect retries. Nothing is fabricated to fill a gap.
+  - **Conflicting style classes resolve last-wins** — dashboard components previously kept both of two conflicting utility classes stacked on one element; every component now merges classes through one Tailwind-aware implementation, so the later class wins.
+</Update>
+
 <Update label="Jul 09, 2026" tags={["UI", "API"]}>
   ## Admin model library: edit a model's rates and set the platform default from its row
 
