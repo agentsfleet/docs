@@ -205,7 +205,7 @@ agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.err
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--actor <glob>` | *(none)* | Filter by actor — `webhook:*`, `cron:*`, `steer:*`, `continuation:*`. |
+| `--actor <glob>` | *(none)* | Filter by actor — `webhook:*`, `cron:*`, `steer:*`. |
 | `--since <duration>` | `24h` | Time window — Go-style duration (`2h`, `7d`) or RFC 3339 timestamp. |
 | `--cursor <cursor>` | *(none)* | Pagination cursor from a previous response. |
 | `--limit <n>` | `50` | Max events per page. |

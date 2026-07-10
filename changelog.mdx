@@ -22,6 +22,28 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 10, 2026" tags={["API", "Bug fixes"]}>
+  ## Per-fleet spend ceilings are enforced
+
+  `daily_dollars` is required in every `TRIGGER.md` and has been documented as a hard spend ceiling since it shipped. It was read by nothing: a fleet stuck in a tool-call loop drew on the tenant credit pool until the pool emptied or the lease's runtime cap fired. The ceiling now holds.
+
+  ## What changed
+
+  - **`daily_dollars` and `monthly_dollars` now stop a fleet** — a fleet that has spent its allowance is refused before its next run opens, recording `gate_blocked` with a `budget_breach` label. The refused event is **not** charged. A fleet that crosses its ceiling mid-run is stopped at its next lease renewal (`UZ-RUN-015`) and records `fleet_error` with the same label.
+  - **`budget_breach` is a distinct label** — previously every mid-run stop reported `renewal_terminate`, so a fleet hitting its own ceiling looked identical to a tenant running out of credit. The two are now distinguishable on the event row.
+  - **Spend windows** — `daily_dollars` is a rolling 24 hours, `monthly_dollars` the UTC calendar month. Spend counts what you were actually charged. `monthly_dollars` remains optional; omit it and only the daily ceiling applies.
+  - **Lowering a ceiling takes effect immediately**, including on a run already in flight. A fleet declaring no budget at all is unaffected.
+  - **`/v1/admin/models` is documented** — the platform-admin model catalogue routes (`GET`/`POST` on the collection, `PATCH`/`DELETE` on `{uid}`) have been served for a milestone without appearing in the API reference. A continuous-integration gate now fails whenever a served route is missing from the specification.
+
+  ## Documentation corrections
+
+  - **Continuation chains never existed.** The context-lifecycle page described the runtime re-queuing an exhausted run as a continuation, a chain capping at 10, and an 11th attempt labelled `chunk_chain_escalate_human`. None of that was ever built. The runtime observes how full the context window is and writes a log line; it cannot interrupt a fleet mid-loop. A fleet that runs out of context wraps up, the run ends `processed`, and nothing re-queues it. To carry work forward, trigger the fleet again — it recovers its state from memory.
+  - **`actor=continuation:<original_actor>` is not a value the runtime writes.** It has been removed from the activity-stream and `--actor` filter documentation.
+  - **`budget_breach` was documented before it existed.** It exists now, and the pages describing it are accurate.
+
+  <Note>Every run is charged `$0` during the free-trial window, so no fleet accrues spend and no budget can be reached. The per-fleet ceiling and the tenant credit gate both begin to bite when the window closes.</Note>
+</Update>
+
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 

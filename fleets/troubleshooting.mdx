@@ -13,7 +13,7 @@ A fleet that's misbehaving falls into one of six failure shapes. Find the sympto
 | Upstream says it sent the webhook, fleet didn't wake | Signature mismatch or wrong URL | [§2 Webhook delivered but fleet silent](#2-webhook-delivered-but-fleet-silent) |
 | Fleet woke, run failed before producing output | Secret, network, or tool error | [§3 Run opens then fails](#3-run-opens-then-fails) |
 | Run produces a result but it's wrong | `SKILL.md` prose or memory issue | [§4 Run completes but output is wrong](#4-run-completes-but-output-is-wrong) |
-| Run terminates with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
+| Run refused or terminated with `budget_breach` | `daily_dollars` / `monthly_dollars` ceiling hit | [§5 Budget breach](#5-budget-breach) |
 | `agentsfleet` itself is broken (auth, network) | Local config or platform reachability | [§6 agentsfleet can't reach the platform](#6-agentsfleet-cant-reach-the-platform) |
 
 ## 1. Frontmatter rejected
@@ -142,16 +142,23 @@ Edit `SKILL.md`, `agentsfleet fleet update <fleet_id> --from .`, re-steer. The n
 
 ## 5. Budget breach
 
-The run terminated on a budget breach — the `daily_dollars` or `monthly_dollars` ceiling in `TRIGGER.md` was hit. The activity stream records the terminated run (there's no separate wire code).
+The fleet hit the `daily_dollars` or `monthly_dollars` ceiling in its `TRIGGER.md`. The event carries a `budget_breach` label, in one of two shapes:
+
+| Event status | What happened |
+|---|---|
+| `gate_blocked` | The fleet had already spent its allowance, so the run never started. **The event was not charged.** |
+| `fleet_error` | The fleet crossed its ceiling mid-run; the run was stopped at its next lease renewal (wire code `UZ-RUN-015`). |
 
 ```bash
 agentsfleet status --json | jq '.[] | select(.fleet_id == "<id>") | {state, budget}'
 ```
 
-Two layers of cap exist independently:
+Two caps exist independently, and both must pass:
 
-1. **Per-fleet** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — terminates this fleet's runs until the rolling window resets. Raise the value in `TRIGGER.md`, then push it with `agentsfleet fleet update <fleet_id> --from .`.
-2. **Tenant wallet** — every workspace's runs debit the same pool. When it hits zero, all runs across all workspaces stop. Top up at `app.agentsfleet.net/billing`. See [Billing → Budgets](/billing/budgets).
+1. **Per-fleet** (`TRIGGER.md` `budget.daily_dollars` / `monthly_dollars`) — refuses this fleet's runs until the rolling 24-hour window slides past the spend, or until the UTC calendar month turns over. Raise the value in `TRIGGER.md`, then push it with `agentsfleet fleet update <fleet_id> --from .`. A lowered ceiling takes effect immediately, including on a run already in flight.
+2. **Tenant wallet** — every workspace's runs debit the same pool. When it hits zero, all runs across all workspaces stop, labelled `balance_exhausted` (before a run) or `renewal_terminate` (mid-run). Top up at `app.agentsfleet.net/billing`. See [Billing → Budgets](/billing/budgets).
+
+The labels are distinct on purpose: `budget_breach` means your own ceiling held, `balance_exhausted` and `renewal_terminate` mean the tenant ran out of credit.
 
 If you're hitting the per-fleet cap repeatedly on legitimate traffic, the fleet's per-run cost is higher than you sized for. Audit the activity stream for unusually long runs (high `tokens` or `wall_ms` fields), and consider tightening `SKILL.md` or splitting the work across multiple smaller fleets.
 
