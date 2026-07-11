@@ -404,6 +404,41 @@ agentsfleet fleet-key delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 01
 
 ---
 
+## Connectors
+
+Connector commands are read-only. They show whether the platform has configured each provider and whether the active workspace has connected it.
+
+### `agentsfleet connector list`
+
+List GitHub, Slack, Zoho Desk, Jira, and Linear with a stable state and next action.
+
+```bash
+agentsfleet connector list
+agentsfleet connector list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
+agentsfleet connector list --json
+```
+
+| State | Meaning |
+|---|---|
+| `connected` | The workspace connection is ready. |
+| `not_connected` | The provider is available, but this workspace has not connected it. |
+| `reconnect_required` | The saved provider authorization must be renewed. |
+| `unconfigured` | The platform administrator has not configured the provider App keys. |
+
+### `agentsfleet connector status <provider>`
+
+Show the stable state plus provider-specific details for one connector.
+
+```bash
+agentsfleet connector status github
+agentsfleet connector status slack --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
+agentsfleet connector status github --json
+```
+
+An unknown provider fails before an API request and points you to `agentsfleet connector list`. A server or network failure returns a non-zero exit code. A valid disconnected or unconfigured state is a successful inspection and returns zero.
+
+---
+
 ## Integration grants
 
 Integration grants are per-fleet permissions to reach a third-party service (Slack workspace, GitHub repo) that the fleet requested interactively.
@@ -464,7 +499,7 @@ agentsfleet tenant provider show --json
 
 ### `agentsfleet tenant provider add --secret <name>`
 
-Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider it resolves the model's context cap from the `cap.json` endpoint; an **OpenAI-compatible** endpoint bypasses the caps catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
+Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider the server resolves the model's context cap from the model library (`core.model_library`); an **OpenAI-compatible** endpoint bypasses the catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
 
 ```bash
 # 1. Store the provider secret

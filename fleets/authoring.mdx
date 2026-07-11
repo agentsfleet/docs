@@ -134,6 +134,7 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 | `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
 | `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{fleet_id}/{source}` — see [Webhooks](/fleets/webhooks). |
 | `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
+| `triggers[].repositories` | optional | GitHub App repository subscription (1–64 exact `owner/repository` names, each ≤255 chars). Omission receives no managed App traffic; the manual per-fleet GitHub URL remains valid without it. |
 | `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
 | `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/fleets/tools). |
 | `credentials` | optional | Vault key names the fleet reads at event time. |
@@ -150,6 +151,18 @@ Validation under this block is rigid: an unknown subkey is rejected with a typo 
 | `api` | A `agentsfleet steer` invocation or a `POST /v1/.../fleets/{id}/messages` API call. | Steerable, operator-driven fleets — manual investigation, on-demand workflows, the install-time smoke test. | None. |
 
 A fleet can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any fleet can also be steered via `agentsfleet steer` regardless of declared triggers — steer always works. The `api` type is for fleets whose *primary* surface is steer (no inbound webhook).
+
+For a fleet receiving events from the shared GitHub App, bind both the event and repository explicitly:
+
+```yaml
+triggers:
+  - type: webhook
+    source: github
+    events: [pull_request]
+    repositories: [acme/payments]
+```
+
+The App installation belongs to the workspace. The `repositories` list belongs to this fleet. It narrows the repositories selected during App installation and prevents unrelated fleets in the same workspace from waking.
 
 <Note>**A run is never continued automatically.** When a fleet runs out of context it wraps up and the run ends; nothing re-queues it. To carry long work forward, trigger the fleet again — the next run recovers its state from [memory](/memory). See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
