@@ -22,6 +22,19 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 10, 2026" tags={["Bug fixes", "API", "Integrations", "Security"]}>
+  ## Reconnecting an integration takes effect immediately, and Jira stays connected
+
+  Two credential fixes land for fleets using connected integrations. Reconnecting a workspace's GitHub App to a different installation (or re-storing a static token) now takes effect on the very next tool call — previously the platform could keep serving a token minted from the old connection for up to an hour. And connectors whose providers rotate refresh tokens on every renewal (Atlassian's Jira OAuth does this by default) now stay connected indefinitely — previously Jira users were forced to reconnect from the dashboard roughly every hour.
+
+  ## Bug fixes
+
+  - **Stale token after reconnect** — the credential cache now recognizes when a connected integration's identity changed (a different GitHub installation, a rotated personal access token) and mints a fresh token instead of serving the cached one. An operator's intentional privilege reduction no longer lags behind the reconnect.
+  - **Jira hourly reconnect loop** — the platform now stores the rotated refresh token a provider returns during token renewal, so the next renewal uses the current token instead of a revoked one. Applies automatically to any provider that rotates refresh tokens; providers with permanent refresh tokens (such as Zoho Desk) are unaffected. If storing the rotated token fails, the in-flight request still succeeds and at most one reconnect prompt can follow.
+
+  No API shapes, endpoints, or error codes changed.
+</Update>
+
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 
