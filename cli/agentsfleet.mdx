@@ -499,7 +499,7 @@ agentsfleet tenant provider show --json
 
 ### `agentsfleet tenant provider add --secret <name>`
 
-Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider it resolves the model's context cap from the `cap.json` endpoint; an **OpenAI-compatible** endpoint bypasses the caps catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
+Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider the server resolves the model's context cap from the model library (`core.model_library`); an **OpenAI-compatible** endpoint bypasses the catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
 
 ```bash
 # 1. Store the provider secret
