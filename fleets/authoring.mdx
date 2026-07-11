@@ -164,7 +164,7 @@ triggers:
 
 The App installation belongs to the workspace. The `repositories` list belongs to this fleet. It narrows the repositories selected during App installation and prevents unrelated fleets in the same workspace from waking.
 
-<Note>**Long-run continuations are not a trigger type.** When a run exhausts its context, the runtime re-enqueues the same event with `actor=continuation:<original_actor>` automatically. You don't declare this in `TRIGGER.md`; it happens regardless of which trigger type woke the original run. See [Context lifecycle](/concepts/context-lifecycle).</Note>
+<Note>**A run is never continued automatically.** When a fleet runs out of context it wraps up and the run ends; nothing re-queues it. To carry long work forward, trigger the fleet again — the next run recovers its state from [memory](/memory). See [Context lifecycle](/concepts/context-lifecycle).</Note>
 
 ### Tools
 
@@ -184,10 +184,16 @@ Each entry under `credentials:` is a **bare vault key name** referencing a JSON-
 
 | Field | Purpose |
 |---|---|
-| `daily_dollars` | Rolling 24-hour dollar ceiling for this fleet. |
-| `monthly_dollars` | Calendar-month dollar ceiling. |
+| `daily_dollars` | Rolling 24-hour dollar ceiling for this fleet. Required; must be greater than `0` and at most `1000`. |
+| `monthly_dollars` | Calendar-month (UTC) dollar ceiling. Optional — omit it and only the daily ceiling applies. At most `10000`. |
 
-A breach terminates the in-flight event cleanly and records a `budget_breach` entry. Subsequent events in a later billing window are unaffected. Workspace-wide budgets live in [Billing](/billing/budgets).
+This is your fleet's blast-radius guard, and it is separate from your tenant's credit balance: a runaway fleet stops at its own `daily_dollars` long before it can drain the pool every other fleet is drawing from.
+
+The ceiling is checked twice. Before a run starts, a fleet that has already spent its allowance is refused — the event is recorded `gate_blocked` with a `budget_breach` label, and it is **not** charged. If a fleet crosses its ceiling while a run is in flight, the run is stopped at its next renewal and the event is recorded `fleet_error` with the same `budget_breach` label. Spend counts what you were actually charged, over a rolling 24 hours for `daily_dollars` and over the current UTC calendar month for `monthly_dollars`.
+
+<Note>During the free-trial window every run is charged `$0`, so no fleet accrues spend and no budget can be reached. Both this ceiling and the tenant credit gate begin to bite when the window closes.</Note>
+
+Workspace-wide budgets live in [Billing](/billing/budgets).
 
 ## Common authoring mistakes
 

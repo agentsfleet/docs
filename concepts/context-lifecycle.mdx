@@ -1,25 +1,31 @@
 ---
 title: "How long does a run take?"
-description: "When a run opens, when it stops, and the three knobs you'd ever tune."
+description: "When a run opens, when it stops, and the knobs you'd ever tune."
 ---
 
-A single trigger — a webhook, a cron fire, a `steer` message — opens one **run**. The fleet reasons, calls tools, and the run closes when it's done or when it would otherwise overflow the model's context window.
+A single trigger — a webhook, a cron fire, a `steer` message — opens one **run**. The fleet reasons, calls tools, and the run closes when it's done or when something stops it.
 
 Most fleets finish a run in seconds to a couple of minutes and never need any of the controls on this page. Read on if you have a long incident that issues dozens of tool calls and want to understand what stops it.
 
-## The three things that end a run
+## The three ways a run ends
 
-| What | When it fires | What happens |
+| What | When it fires | What the event records |
 |---|---|---|
-| **Run finished** | Fleet decides it's done | Run closes cleanly. Diagnosis posted, state checkpointed. |
-| **Context full** | Prompt approaches the model's context cap | Fleet ends the run with a checkpoint, the runtime opens a fresh run on the same chain, the new run `memory_recall`s where it left off. |
-| **Budget breach** | Daily or monthly dollar cap hit | Run terminates, `budget_breach` recorded. Future runs in the next billing window are unaffected. |
+| **Run finished** | Fleet decides it's done | `processed`. Diagnosis posted, session state checkpointed. |
+| **The fleet is stopped** | Wall-clock deadline, sandbox limits, or a control-plane policy stop | `fleet_error`, with a label naming the cause. |
+| **Refused before it starts** | A gate — budget, credit, or approval — says no | `gate_blocked`, with a label naming the gate. |
 
-## Continuation chains — when one run isn't enough
+## What happens when the context fills up
 
-If the fleet can't finish in one run (a forty-tool-call incident on a 200K-token model, for example), it ends the current run with `exit_ok: false` and a `checkpoint_id`. The runtime re-enqueues the same event as a continuation; the next run opens with a fresh prompt and pulls the prior findings via `memory_recall(checkpoint_id)`.
+The runtime watches how full the model's context window is. After every model round-trip it compares the prompt size against `context_cap_tokens`, and once the ratio crosses `stage_chunk_threshold` it writes a `chunk_threshold_breached` line to the run log.
 
-A chain caps at **10 continuations**. The 11th attempt is refused, the originating event is labelled `chunk_chain_escalate_human`, and an operator picks it up. The fleet itself stays alive — only that one chain forfeits.
+**That is all it does.** The runtime cannot interrupt a fleet mid-loop, so it cannot force one to wrap up — it can only tell you the window is filling. The fleet itself decides what to do, guided by your `SKILL.md` prose: consolidate the findings into memory, then finish the run.
+
+When the fleet does that, the run ends normally: the event is recorded `processed` and the session state is checkpointed. **Nothing is automatically re-queued.** There is no continuation chain, no chunk counter, and no cap on how many times a fleet may pick a problem back up. To continue the work, send another trigger — a fresh `steer`, a webhook, or a cron fire — and the next run pulls the prior findings out of [memory](/memory).
+
+<Note>
+Because the runtime only observes, a fleet that ignores its `SKILL.md` guidance and keeps calling tools will run until one of the real ceilings below stops it. The context threshold is a signal, not a brake.
+</Note>
 
 ## Knobs you can tune
 
@@ -27,11 +33,23 @@ Set these under `x-agentsfleet.context` in `TRIGGER.md`. Defaults work for almos
 
 | Knob | Default | When to touch it |
 |---|---|---|
-| `tool_window` | 20 | Raise if your fleet routinely runs 30+ tool calls and you want fewer continuations. Lower if you want it to compact its findings sooner. |
+| `tool_window` | 20 | Raise if your fleet routinely runs 30+ tool calls before consolidating. Lower to make it compact its findings sooner. |
 | `memory_checkpoint_every` | 5 | Cadence at which the fleet is prompted to write a memory snapshot during a long run. Rarely worth changing. |
-| `context_cap_tokens` | model-dependent | Set explicitly if your model has no published context cap or differs from the default. |
+| `stage_chunk_threshold` | disabled | Fraction of the context cap (`0.0`–`1.0`) at which the fleet is told to snapshot and wrap up. `0` turns the check off. |
+| `context_cap_tokens` | model-dependent | Set explicitly if your model has no published context cap, or differs from the default. |
 
-If you've never seen a `chunk_chain_escalate_human` failure label, you don't need to change any of these.
+## What actually stops a run
+
+Every ceiling below is enforced by the platform, not by the fleet's own good behaviour.
+
+| Ceiling | Where it comes from | What the event records |
+|---|---|---|
+| **Wall-clock deadline** | the run's lease | `fleet_error` / `timeout_kill` |
+| **Per-fleet budget** | `daily_dollars` / `monthly_dollars` in `TRIGGER.md` | `gate_blocked` / `budget_breach` before the run; `fleet_error` / `budget_breach` when a running fleet crosses its ceiling |
+| **Tenant credit** | your credit balance | `gate_blocked` / `balance_exhausted` before the run; `fleet_error` / `renewal_terminate` mid-run |
+| **Memory and process limits** | the sandbox | `fleet_error` / `oom_kill` or `resource_kill` |
+
+A crash or a dropped connection also ends a run, labelled `runner_crash` or `transport_loss`.
 
 ## Common questions
 
@@ -41,7 +59,11 @@ Yes. Runs can be seconds (a single webhook → Slack post) to a few minutes (a m
 
 **Will it run forever?**
 
-No. Three independent ceilings stop it: the run's own context cap (the fleet voluntarily ends and continues), the continuation cap (10 chunks max), and the budget cap (`daily_dollars` / `monthly_dollars` in `TRIGGER.md`).
+No. The wall-clock deadline ends it regardless of what it is doing, and the sandbox's memory and process limits kill it before it can exhaust the host. Independently, your fleet's `daily_dollars` bounds what it can spend in a rolling day — see [Budgets](/billing/budgets).
+
+**Will it re-run itself?**
+
+No. A run ends and stays ended. Only a new trigger opens a new run. Long work is picked back up by triggering the fleet again; it recovers what it learned from [memory](/memory).
 
 **Do I need to tune anything?**
 
