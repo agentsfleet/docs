@@ -29,7 +29,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## Upgrading
 
-  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** If you read the public catalogue directly, switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. If you only use the dashboard or the `agentsfleet` CLI, there is nothing to do — the dashboard now reads the authenticated route, and the CLI resolves caps server-side.
+  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** If you read the public catalogue directly, switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. The old `?model=` filter is not ported — the read returns the full catalogue; filter client-side. If you only use the dashboard or the `agentsfleet` CLI, there is nothing to do — the dashboard now reads the authenticated route, and the CLI resolves caps server-side.
   - **The global `rates`/`billing` block is gone with the document** — `GET /v1/models` carries the catalogue only. Current rates stay published at [agentsfleet.net/#pricing](https://agentsfleet.net/#pricing).
 
   ## API reference
