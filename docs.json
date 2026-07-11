@@ -164,9 +164,9 @@
             ]
           },
           {
-            "group": "Model Catalogue",
+            "group": "Model Library",
             "pages": [
-              "GET /_um/da5b6b3810543fe108d816ee972e4ff8/cap.json"
+              "GET /v1/models"
             ]
           },
           {
