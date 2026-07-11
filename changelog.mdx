@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 11, 2026" tags={["Breaking", "API", "Security"]}>
+  ## The model library is now an authenticated read
+
+  The model catalogue moved off its public URL. `GET /v1/models` (Bearer) returns the same per-model rows the public document carried — context caps and per-token rates — and per-model pricing is no longer world-readable.
+
+  ## Upgrading
+
+  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** If you read the public catalogue directly, switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. If you only use the dashboard or the `agentsfleet` CLI, there is nothing to do — the dashboard now reads the authenticated route, and the CLI resolves caps server-side.
+  - **The global `rates`/`billing` block is gone with the document** — `GET /v1/models` carries the catalogue only. Current rates stay published at [agentsfleet.net/#pricing](https://agentsfleet.net/#pricing).
+
+  ## API reference
+
+  - **`GET /v1/models`** — Bearer-authed; any tenant, no capability scope. Returns `{ "version": "YYYY-MM-DD", "models": [...] }`; an empty catalogue is `200` with `models: []`; a missing or invalid token is `401`. Documented under **Model Library** in the API reference (formerly the Model Catalogue page).
+  - **`UZ-PROVIDER-004`** — the "Model not in library" guidance now points at the model library (`GET /v1/models`) instead of the retired document.
+</Update>
+
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 
