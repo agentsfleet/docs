@@ -94,6 +94,8 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-WH-010` | 401 | Invalid webhook signature | Webhook signature verification failed. Confirm the signing secret stored for this provider (Slack/Clerk/other) matches the one configured upstream. |
 | `UZ-WH-011` | 401 | Stale webhook timestamp | Webhook request timestamp is outside the allowed 5-minute drift window. This may indicate a replay attack or clock skew. |
 | `UZ-WH-020` | 401 | Webhook credential not configured | No webhook credential is configured for this fleet's source. Run `agentsfleet secret add <source> --data='{"webhook_secret":"..."}'` in the fleet's workspace, then resend. |
+| `UZ-WH-021` | 404 | Connector installation is not mapped | Reconnect the provider App to the intended workspace before redelivering the event. |
+| `UZ-WH-022` | 404 | No fleet subscription matched | Bind the repository and event to an active fleet with an approved integration grant. |
 | `UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload size or filter at the source. |
 
 ## Slack
@@ -143,6 +145,7 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-VAULT-001` | 400 | Secret data must be a non-empty JSON object | POST /secrets body must include a 'data' field that is a JSON object with at least one key. Bare strings, arrays, scalars, and `{}` are rejected. |
 | `UZ-VAULT-002` | 400 | Secret data too large | Stringified secret data exceeds 4KB. Compose the secret from fewer or shorter fields. |
 | `UZ-VAULT-003` | 404 | Secret not found | No secret matches this name in the workspace. List the workspace secrets to find a valid name, or create it first. |
+| `UZ-VAULT-004` | 409 | Secret still referenced by model entries | One or more core.tenant_model_entries rows reference this secret_ref (M121). Remove those entries first, then delete the secret. The response detail names the exact count. |
 
 ## Model Providers
 
@@ -150,14 +153,23 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 |---|---|---|---|
 | `UZ-PROVIDER-001` | 400 | secret_ref required when mode=self_managed | PUT body must include `secret_ref` naming a vault credential when `mode` is self_managed. |
 | `UZ-PROVIDER-002` | 400 | Secret row not found in vault | The named secret_ref has no vault row in the tenant's primary workspace. Run `agentsfleet secret add <name> --data=@-` to create it. |
-| `UZ-PROVIDER-003` | 400 | Secret JSON missing required field | Stored secret JSON must include `provider` and `model` (non-empty strings); `api_key` is required for a named provider but optional for an `openai-compatible` endpoint. Re-run `agentsfleet secret add` with the required fields. |
+| `UZ-PROVIDER-003` | 400 | Secret JSON missing required field | Stored secret JSON must include `provider` (a non-empty string); `api_key` is required for a named provider but optional for an `openai-compatible` endpoint. `model` is optional — the model registry entry carries it, not the credential. Re-run `agentsfleet secret add` with the required fields. |
 | `UZ-PROVIDER-004` | 400 | Model not in library | The effective model is not present in core.model_library. Pick a model from the model library (`GET /v1/models`, or the admin list) or request the library be extended. |
 | `UZ-PROVIDER-005` | 400 | Custom endpoint base_url invalid or unsafe | An openai-compatible credential needs a valid `base_url`: it must use https and must not target a loopback, private, link-local, or cloud-metadata host. A non-openai-compatible provider must not carry a `base_url`. |
 | `UZ-PROVIDER-006` | 404 | Library model not found | No core.model_library row matches this id. List the library to find a valid id, or add the model first. |
 | `UZ-PROVIDER-007` | 409 | Library model is the active platform default | This model is the active platform default. Point the default at another library model before deleting it. |
 | `UZ-PROVIDER-008` | 409 | Library model already exists | A library row for this provider and model already exists. Edit the existing row instead of adding a duplicate. |
-| `UZ-PROVIDER-009` | 500 | Platform LLM key not configured | No active row in core.platform_llm_keys. An operator must set one via PUT /admin/platform-keys before tenants can switch to platform defaults. |
+| `UZ-PROVIDER-009` | 500 | Platform LLM key not configured | No active row in core.platform_provider_defaults. An operator must set one via PUT /admin/platform-keys before tenants can switch to platform defaults. |
 | `UZ-PROVIDER-010` | 500 | Tenant has no primary workspace | The tenant row has no primary workspace — an onboarding invariant that should always hold. Contact support with the request id. |
+
+## MODELS
+
+| Code | HTTP | Title | Common Causes |
+|---|---|---|---|
+| `UZ-MODELS-001` | 409 | Cannot delete the active model entry | This entry is the tenant's current active selection. Switch to a different entry first, then delete this one. |
+| `UZ-MODELS-002` | 404 | Referenced secret not found | POST/PATCH secret_ref does not name a vault secret in the tenant's primary workspace. Store the secret first, or pick an existing one. |
+| `UZ-MODELS-003` | 409 | Model entry already exists | An entry with this exact (model_id, secret_ref) pair already exists for this tenant. Edit the existing entry instead of adding a duplicate. |
+| `UZ-MODELS-004` | 404 | Model entry not found | No core.tenant_model_entries row matches this id for the calling tenant. It may have already been deleted — refresh the list. |
 
 ## Startup
 
@@ -183,6 +195,7 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant's balance can no longer cover continued execution; the lease may not be renewed and the run terminates gracefully. |
 | `UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed; cumulative token counts default to zero and the slice meters its run-time fee only (never a negative charge). The lease is still renewed. |
 | `UZ-RUN-014` | 404 | Runner not found | No runner matches this runner_id. Verify the platform admin minted the runner before mutating it. |
+| `UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its own daily_dollars or monthly_dollars ceiling declared in TRIGGER.md; the lease may not be renewed and the run terminates. Distinct from UZ-RUN-012 (the tenant's credit pool), so an operator can tell the fleet author's own limit from a billing failure. |
 
 ## Execution
 
@@ -200,6 +213,7 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-EXEC-012` | 500 | Runner fleet init failed | Runner fleet initialization failed. Check configuration. |
 | `UZ-EXEC-013` | 500 | Runner fleet run failed | Runner fleet execution failed. Check logs for details. |
 | `UZ-EXEC-014` | 400 | Runner invalid config | Runner configuration is invalid. Check config_json fields. |
+| `UZ-EXEC-015` | 402 | Execution stopped: fleet budget exhausted | The control plane refused the lease renewal because the fleet reached its own daily_dollars or monthly_dollars ceiling (UZ-RUN-015). A fleet-scoped spend stop, kept distinct from a renewal-terminate (UZ-EXEC-008) so triage can tell the fleet author's own limit from a platform or billing stop. |
 
 ## Approvals
 
@@ -263,3 +277,4 @@ This page is generated from agentsfleetd's error registry (`make gen-error-codes
 | `UZ-CONN-004` | 404 | Unknown connector provider | The `{provider}` segment does not match any provider in this deployment's connector registry. List the available providers from the dashboard connectors page (or the catalog endpoint once it ships). |
 | `UZ-CONN-006` | 502 | Connector OAuth exchange failed | The connector's OAuth code exchange or provider callback body was rejected. Start the connect again from the dashboard; if it repeats, verify the provider app credentials and redirect URL. |
 | `UZ-CONN-007` | 500 | Connector catalog lookup failed | The vault existence check for connector app/fleet keys failed (a Postgres error). Retry; if it persists, check DB connectivity and the vault schema state. |
+| `UZ-CONN-008` | 403 | Connector installation ownership not verified | GitHub did not confirm that the authorizing user can access the submitted App installation, or that installation is already connected to another workspace. Start the connection again while signed in to the GitHub account that owns the installation. |
