@@ -22,6 +22,29 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 11, 2026" tags={["What's new", "API", "CLI", "Integrations"]}>
+  ## GitHub App events route to repository-bound fleets
+
+  A connected GitHub App can now route Pull Request and failed workflow-run events to active fleets that explicitly subscribe to the repository and event and hold an approved GitHub grant. Connector inspection is also available from the `agentsfleet` command-line interface (CLI).
+
+  ## What's new
+
+  - **Repository-bound GitHub triggers** — add `repositories: [owner/repository]` beside `source: github` and `events` in `TRIGGER.md`; omission receives no managed App traffic.
+  - **Scoped fan-out** — one App delivery may wake several matching fleets in its connected workspace, while wrong-repository, wrong-event, inactive, and unapproved fleets receive nothing.
+  - **Verified installation ownership** — the GitHub callback exchanges a one-time user-authorization code, verifies access to the claimed installation, and refuses to move an installation already connected to another workspace.
+  - **Replay recovery** — replay protection uses the signed payload body per fleet, so changing the unsigned delivery header cannot bypass it and a retry fills a failed queue write without duplicating successful fleet events.
+
+  ## API reference
+
+  - `POST /v1/ingress/github` verifies the platform GitHub App signature, acknowledges signed `ping` checks, maps `installation.id` to a workspace, normalizes supported events, and returns `202` after routing matching fleets.
+  - `pull_request` events are accepted. `workflow_run` is accepted only for completed failed runs; successful runs are ignored.
+
+  ## CLI
+
+  - **Connector list** — `agentsfleet connector list [--workspace <id>] [--json]` reports `connected`, `not_connected`, `reconnect_required`, or `unconfigured` for every provider.
+  - **Connector status** — `agentsfleet connector status <provider> [--workspace <id>] [--json]` shows one provider's stable state and details without treating a valid disconnected state as an error.
+</Update>
+
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 

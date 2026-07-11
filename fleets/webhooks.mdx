@@ -3,16 +3,19 @@ title: "Webhooks"
 description: "How external systems deliver events to your fleet, and how the platform authenticates them."
 ---
 
-Every webhook trigger declared in `TRIGGER.md` gets a unique, stable URL keyed by `source`:
+Webhook triggers have two delivery paths:
+
+- **Managed App ingress** — GitHub App events arrive at `POST /v1/ingress/github`. The platform maps the App installation to a workspace, then selects fleets by repository, event, and approved grant.
+- **Manual per-fleet webhook** — an operator registers a stable URL keyed by `fleet_id` and `source`:
 
 ```
 https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
 ```
 
-External systems POST to this URL. The platform verifies the signature and delivers the event to the fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --library` prints the full set of URLs (one per declared webhook trigger) at install time.
+External systems POST to the manual URL. The platform verifies the signature and delivers the event to that fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --library` prints the full set of manual URLs at install time.
 
 <Tip>
-  **`agentsfleet install` prints the webhook URL(s) to register.** Add each printed URL to its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). The reference below covers the signature config the platform expects.
+  **`agentsfleet install` prints manual webhook URLs.** Register those URLs when you manage the upstream webhook yourself. A workspace connected to the shared GitHub App uses `/v1/ingress/github`; do not create a second repository webhook for the same event path.
 </Tip>
 
 ## Declaring a webhook trigger
@@ -37,11 +40,33 @@ x-agentsfleet:
 
 `source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
 
+For managed GitHub App traffic, add `repositories` with 1–64 exact `owner/repository` names. This list is required for App routing and fail-closed when omitted. It is optional for the manual per-fleet GitHub URL because that URL already identifies its target fleet.
+
+```yaml
+triggers:
+  - type: webhook
+    source: github
+    events: [pull_request, workflow_run]
+    repositories:
+      - acme/payments
+```
+
+GitHub App ingress accepts Pull Request events and completed workflow runs whose conclusion is a failure. Successful workflow runs are ignored.
+
+```mermaid
+flowchart LR
+    GH[GitHub App delivery] --> SIG[Verify App signature]
+    SIG --> WS[Installation → workspace]
+    WS --> SUB[Repository + event + approved grant]
+    SUB --> F1[Fleet A event stream]
+    SUB --> F2[Fleet B event stream]
+```
+
 The singular `trigger:` shape is rejected at install with `UZ-AGT-008` (invalid fleet config); always declare the array form, even for a single webhook.
 
 ## Authentication
 
-Every inbound webhook is authenticated before the fleet is woken. The platform supports **HMAC** signature verification — Hash-based Message Authentication Code, a standard scheme where the sender signs the payload with a shared secret and the receiver re-computes the signature to verify it. GitHub, Slack, Linear, Jira, Grafana, and most SaaS providers use HMAC.
+Every inbound webhook is authenticated before the fleet is woken. The platform supports **Hash-based Message Authentication Code (HMAC)** signature verification, a standard scheme where the sender signs the payload with a shared secret and the receiver re-computes the signature to verify it. GitHub, Slack, Linear, Jira, Grafana, and most software-as-a-service providers use HMAC.
 
 ### Natively normalized providers
 
@@ -108,6 +133,8 @@ The platform verifies the signature, enqueues the event, and returns `202 Accept
 
 Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the fleet can dedupe.
 
+GitHub App deliveries derive replay identity from the signature-covered request body, independently for each matching fleet. The delivery header is diagnostic and cannot bypass replay protection. If one queue write fails, a GitHub retry fills only that missing fleet and does not duplicate fleets that already received the payload.
+
 ## Responses
 
 | Status | Body | Meaning |
@@ -122,7 +149,7 @@ Delivery is **at-least-once** — your provider may retry on transient failure, 
 
 ## Approval gate webhooks
 
-Some fleet actions — sending money, merging a PR, posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a fleet pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
+Some fleet actions — sending money, merging a Pull Request (PR), posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a fleet pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
 
 For programmatic decisions (e.g. an internal tool calling back into agentsfleet), POST the decision to:
 

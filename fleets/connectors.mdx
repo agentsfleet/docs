@@ -7,7 +7,7 @@ description: "How agentsfleet connects to GitHub, Slack, Zoho Desk, Jira, and Li
 
 A **connector** is how a workspace authorizes agentsfleet to act as a specific third-party account — your GitHub org, your Slack workspace, your Zoho Desk/Jira/Linear instance. The dashboard labels this surface **Integrations**; this guide uses "connector," the term the platform's own architecture docs use for the same thing.
 
-Connectors are a different mechanism from [Secrets](/fleets/secrets). A secret is a static value you paste in yourself — a vendor API key referenced from `TRIGGER.md` as `${secrets.<name>.<field>}`. A connector is a live OAuth relationship: you click **Connect**, your browser leaves for the provider, and you come back with nothing to type in — the provider-issued token is vaulted server-side. If a provider only needs a pasted API key (no browser round-trip), it's a secret, not a connector.
+Connectors are a different mechanism from [Secrets](/fleets/secrets). A secret is a static value you paste in yourself — a vendor API key referenced from `TRIGGER.md` as `${secrets.<name>.<field>}`. A connector is a live Open Authorization (OAuth) relationship: you click **Connect**, your browser leaves for the provider, and you come back with nothing to type in — the provider-issued token is vaulted server-side. If a provider only needs a pasted API key (no browser round-trip), it's a secret, not a connector.
 
 ## The connect round-trip
 
@@ -33,17 +33,101 @@ Connecting a provider only proves the *workspace* is authorized — it does not 
 
 ## The five providers
 
-agentsfleet ships five connectors. Four are OAuth 2.0; GitHub is the exception — it's a GitHub App installation, not a code exchange, so its round-trip looks slightly different.
+agentsfleet ships five connectors. Four use OAuth 2.0 to obtain their runtime credential. GitHub uses a short authorization-code exchange only to prove the returning user may access the claimed App installation; runtime access still uses short-lived installation tokens minted from the App private key.
 
 | Provider | Shape | Notes |
 |----------|-------|-------|
-| **GitHub** | App install | No OAuth code exchange — you install the agentsfleet GitHub App on your account/org and the callback carries an `installation_id`. The broker mints short-lived installation tokens from the App's private key on demand. |
+| **GitHub** | App install + ownership proof | You install the agentsfleet GitHub App on your account or organisation. The callback carries `installation_id`, one-time `code`, and signed `state`; agentsfleet verifies installation access before saving the route. The broker later mints short-lived installation tokens from the App private key on demand. |
 | **Slack** | OAuth 2.0 (no refresh) | Standard authorization-code exchange for a long-lived bot token — Slack doesn't issue a refresh token for this grant type, so there's nothing to refresh later. |
 | **Zoho Desk** | OAuth 2.0 + refresh | Zoho is multi-region: the authorize step always starts at Zoho's US accounts server, but the callback tells the platform which data center actually issued the code (US, EU, India, Australia, China, Japan, or Canada), and every later token refresh must hit that same regional accounts server. |
 | **Jira** | OAuth 2.0 + refresh | Atlassian's 3LO flow. The Jira **cloud id** for your site is *not* something you provide — it's resolved automatically from Atlassian's accessible-resources endpoint at callback time. |
 | **Linear** | OAuth 2.0 + refresh | Standard authorization-code exchange with a refresh token. |
 
 For the three refresh-token providers (Zoho, Jira, Linear), agentsfleet automatically re-mints a fresh access token from the stored refresh token as needed — you never have to reconnect just because a token expired. A refresh failing because you revoked access on the provider's side is the one case that does ask you to reconnect.
+
+## GitHub App setup and event routing
+
+The hosted deployment uses one GitHub App for every workspace. A platform administrator configures it once:
+
+1. Set the callback URL to `https://api.agentsfleet.net/v1/connectors/github/callback`.
+2. Enable **Request user authorization during installation** so the callback receives a one-time authorization code.
+3. Set the webhook URL to `https://api.agentsfleet.net/v1/ingress/github` and keep the webhook active.
+4. Grant **Metadata: Read-only** and **Pull requests: Read & write**. Add **Contents** or other permissions only when a fleet needs them.
+5. Subscribe to **Pull request** and **Workflow run** events.
+6. Store the App identifier, public slug, private key, webhook secret, client identifier, and client secret through the platform-admin setup flow. These values are never entered in a customer workspace.
+
+The callback and webhook URLs have different jobs. The callback finishes a person's browser setup. The webhook URL receives signed machine events after setup.
+
+```mermaid
+sequenceDiagram
+    participant PA as Platform administrator
+    participant GH as GitHub App
+    participant AF as agentsfleet
+    participant U as Workspace administrator
+    participant F as Fleet
+
+    PA->>GH: Create App, set callback, webhook, permissions, events
+    PA->>AF: Store App identity, client credentials, and webhook secret
+    U->>AF: Sign up and create or select workspace W
+    U->>AF: Connect GitHub in workspace W
+    AF-->>U: Signed, single-use install URL
+    U->>GH: Install App on selected repositories
+    GH->>AF: Callback with installation_id, code, and state
+    AF->>GH: Exchange code and verify installation access
+    GH-->>AF: User may access installation
+    AF->>AF: Bind installation_id to workspace W if unowned or same-workspace
+    Note over AF: Another workspace owns it → 403, no changes
+    U->>AF: Install fleet and approve its GitHub grant
+    U->>F: Configure repository and event subscriptions
+    GH->>AF: Signed repository event
+    AF->>AF: Resolve installation → workspace → matching fleets
+    AF->>F: Queue one normalized event
+```
+
+### What a GitHub event is connected to
+
+GitHub sends an installation identifier, a repository name, an event name, and a diagnostic delivery identifier. It does not know your `workspace_id`, `fleet_id`, or signed-in user.
+
+agentsfleet derives those values in two steps:
+
+```mermaid
+flowchart TD
+    E[GitHub delivery<br/>installation + repository + event] --> V{Valid App signature?}
+    V -- no --> R[Reject]
+    V -- yes --> W[Installation maps to one workspace]
+    W --> S[Find active fleets in that workspace]
+    S --> M{Repository and event match?<br/>GitHub grant approved?}
+    M -- no --> I[Ignore for that fleet]
+    M -- yes --> D[Hash signed body<br/>claim digest slot for that fleet]
+    D --> Q[Queue one fleet event]
+```
+
+The App installation defines the largest set of repositories GitHub will expose. Each fleet narrows that set in `TRIGGER.md`:
+
+```yaml
+triggers:
+  - type: webhook
+    source: github
+    events: [pull_request]
+    repositories: [acme/payments]
+```
+
+Two fleets may subscribe to the same repository and event. Each receives one event. A fleet with the wrong repository, the wrong event, no repository list, or no approved GitHub grant receives nothing.
+
+The browser-provided installation identifier is never trusted alone. Signed state proves which `agentsfleet` workspace initiated the connection, GitHub user authorization proves access to the installation, and the datastore refuses to move an existing installation to another workspace. For events, the signature-covered request body supplies the replay identity; changing the unsigned delivery header cannot create a second event.
+
+<Warning>
+  The `github-pr-reviewer` repository walkthrough is not yet an end-to-end proof. Keep it in testing until a real repository-bound Pull Request reaches exactly one expected fleet, the fleet posts its review with a short-lived installation token, and replaying the same delivery creates no duplicate event or review.
+</Warning>
+
+### Inspect connector state from the command line
+
+```bash
+agentsfleet connector list
+agentsfleet connector status github
+```
+
+Use `--workspace <id>` to inspect a workspace other than your active one. Use `--json` for automation. The state is one of `connected`, `not_connected`, `reconnect_required`, or `unconfigured`; the last state means the platform administrator has not configured that provider's App keys.
 
 ## Disconnecting
 
