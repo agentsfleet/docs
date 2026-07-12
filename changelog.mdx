@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 12, 2026" tags={["What's new", "API"]}>
+  ## Platform operators onboard fleets from the dashboard, and four prebuilt fleets are ready to install
+
+  A platform operator can now fill the fleet library from **Fleet libraries**, under Configuration in the dashboard. Enter a GitHub repository as `owner/repo`; `agentsfleet` fetches it, validates the bundle, and adds it to the catalog, where every workspace can install it. The page is visible only to an operator holding the `platform-library:write` scope.
+
+  ## What's new
+
+  - **Onboard a platform fleet without leaving the dashboard** — the operation previously had no interface at all and could only be performed with a hand-built API request. Onboarding the same repository twice updates the existing entry rather than creating a second one.
+  - **Four prebuilt fleets** — `github-pr-reviewer`, `platform-ops` (Fly.io and Upstash evidence correlated into a Slack diagnosis), `zoho-sprint-daily-summarizer`, and `zoho-recruiter-daily-summarizer`. Each is a public repository under `agentsfleet` and installs by its identifier once an operator has onboarded it.
+  - **A fleet's library identifier comes from its bundle** — `agentsfleet` reads the identifier from the `name` in `SKILL.md`, not from the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical.
+
+  ## API reference
+
+  - **`security-reviewer` removed from the prebuilt catalog** — it named a repository that was never published, so it could never be installed. It may return as a real bundle later.
+</Update>
+
 <Update label="Jul 12, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
   ## Removed CLI commands stop appearing in hints, and workspace delete stops implying remote deletion
 
