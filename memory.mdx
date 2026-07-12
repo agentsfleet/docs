@@ -1,113 +1,59 @@
 ---
-title: "Memory"
-description: "How a fleet remembers across events — the categories, the four tools, and when to use each."
+title: Memory
+description: Learn what a fleet can remember between events.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-Memory is what a fleet *learned* from prior events that lets it behave like a teammate who's been here before, instead of one that showed up this morning. A fleet writes facts via `memory_store` and reads them back via `memory_recall` on the next event.
+# Memory
 
-Memory is always on — no setup, no flag.
+## What it is
 
-## Categories
+Memory stores short facts for one fleet. A later run can recall those facts by key or text.
 
-| Category | Scope | Lifetime | Use for |
-|---|---|---|---|
-| `core` | fleet | durable; evicted last at the entry cap | Learned facts about durable entities — customers, accounts, preferences. |
-| `daily` | fleet | 72h auto-prune | Time-bounded follow-ups, open tickets, scheduled reminders. |
-| `conversation` | fleet | windowed; ages out fast | Within-run scratch — checkpoint findings during a long incident. |
-| *(custom)* | fleet | windowed by recency | Any other label you pick — treated as recency-windowed, never pinned. |
+The fleet creates, owns, updates, and removes its memory entries. Workspace members can inspect entries through the client or API.
 
-All memory is scoped to one `fleet_id` — there is no cross-fleet or workspace-wide category. Pick `core` for "would I want a future event to know this?" Pick `daily` for "this should expire on its own." Pick `conversation` only for run-scoped scratch. Any label the platform doesn't recognise is treated as a custom, recency-windowed category.
+## Why it exists
 
-## The four tools
+Memory lets a fleet keep useful conclusions between events. Store conclusions instead of full transcripts.
 
-The fleet calls these from inside a run; the runtime wires them to the memory backend.
+## How it behaves
 
-| Tool | Shape | Purpose |
+| Category | Use | Retention |
 |---|---|---|
-| `memory_store(key, content, category?)` | upsert | Write a distilled fact under a stable key. |
-| `memory_recall(query, limit?)` | matching entries | Return entries whose key matches the query (substring filter) for the model to judge — no ranking, no vector search. |
-| `memory_list(filter)` | matching entries | Filter by category / recency. |
-| `memory_forget(key)` | delete | Remove or correct a fact by key. |
+| `core` | Facts that future runs should keep. | Until removal or limit eviction |
+| `daily` | Short follow-ups and reminders. | 72 hours |
+| `conversation` | Temporary findings from one investigation. | Recent-window selection |
+| Custom | A named category for your fleet. | Recent-window selection |
 
-There is no vector search and no scoring — `memory_recall` returns the raw entries whose key matches (a substring filter is the ceiling), and the model decides relevance. Narrow by category and recency with `memory_list`, then let the model reason over the candidate set.
+`memory_store` writes or replaces a stable key. `memory_recall` searches keys and content by substring.
 
-## Where memory fits in a run
+`memory_list` filters entries. `memory_forget` deletes one key.
 
-The two memory touchpoints are at the **start** of a run (`memory_recall` before deciding) and at the **end** (`memory_store` after deciding what was learned). Anything writing to memory in the middle is probably scratch — that belongs in `conversation`.
-
-```mermaid
-flowchart LR
-    Start([run opens]) --> Recall["memory_recall<br/>pull prior context"]
-    Recall --> Reason[fleet reasons + acts]
-    Reason --> Store["memory_store<br/>write what was learned"]
-    Store --> End([run closes])
-```
-
-## What survives — selection and eviction
-
-Hydration (what a fleet sees at run start) and eviction (what the platform deletes at the per-fleet entry cap) are both **category-pinned**: `core` wins.
-
-- **Hydration** fills a fixed byte budget: every `core` entry that fits loads first (newest first), then the newest non-core entries fill the remainder. A `core` fact written once — an owner, a deploy target, a customer's plan — is still in context at entry 1001, even after a noisy month of `daily` writes.
-- **Eviction** at the entry cap deletes the coldest non-core entries first. A `core` entry is deleted only when nothing else remains.
-- **Custom categories** (and anything the platform doesn't recognise) are windowed by recency — never silently pinned.
-
-Selection is deterministic — same entries, same budget, same result — so "why does my fleet remember X but not Y?" always has a checkable answer: X was `core`; Y was windowed, or too big for the budget.
-
-Four habits make selection work for you instead of against you:
-
-1. **Store load-bearing facts as `core`.** If a future event must know it, it's `core`. Everything windowed ages out of hydration.
-2. **Reuse stable keys.** Re-storing a key refreshes the entry instead of duplicating it — `deploy_target`, not `deploy_target_jun12`.
-3. **Forget what's stale.** `memory_forget` beats letting eviction pick the victim. Hoarding everything as `core` defeats the pinning: an all-`core` set over the cap evicts your coldest `core` facts.
-4. **Keep entries small.** The hydration budget is bytes, not entries — snapshot conclusions, not transcripts.
-
-## Entry format
-
-Memory is stored in Postgres. Read it back with `agentsfleet memory list` / `agentsfleet memory search` — a table, or `--json` for the raw shape:
-
-```json
-{
-  "key": "customer_bob_chen_acme",
-  "category": "core",
-  "content": "Bob Chen, Acme. Pro since Jan 15. API user (not dashboard), webhooks → Slack. Prefers technical responses. Prior: Feb 3 signature issue (NTP).",
-  "updated_at": 1718900000000
-}
-```
-
-`key` is the stable handle the fleet stores and forgets by; `content` is the distilled prose it wrote.
-
-## Correcting what the fleet learned
-
-To remove or fix a fact, the fleet itself calls `memory_forget(key)` followed by `memory_store(...)` with the corrected entry — typically driven from a steer message:
+`<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
-agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "forget customer_bob_chen_acme; Bob is now on the Enterprise plan"
+agentsfleet memory list --fleet <FLEET_ID>
 ```
 
-The next event uses the corrected memory.
+```text
+KEY          CATEGORY    UPDATED
+<varies>     <varies>    <varies>
+```
 
-## Isolation
+## Limits
 
-Every memory operation is scoped by `fleet_id`. Fleet A cannot read Fleet B's memory. The memory store is a separate Postgres schema behind a dedicated database role with no grants on the core tables — not a shared filesystem, so even a fleet with shell or file tools can't reach it through the wrong protocol.
+One fleet can keep 1,000 entries. At the limit, `agentsfleet` removes the oldest non-core entry first.
 
-## Common questions
+One entry can contain 16 KiB. One memory update can contain 256 KiB across all changed entries.
 
-**My fleet keeps re-asking the user for the same info.**
+`daily` entries older than 72 hours are removed during the fleet's next memory update. Explicitly forgotten entries cannot be recovered.
 
-Either `memory_store` isn't being called at the end of the previous event, or `memory_recall` isn't being called at the start of the next one. Audit your `SKILL.md` — recall must happen *before* the reasoning step.
+## Related pages
 
-**My fleet remembers something stale.**
-
-The underlying system changed but memory didn't. Steer the fleet to call `memory_forget(key)` and re-store the corrected entry. For systems-of-record that change frequently, build a sync job into the fleet's prose.
-
-**Should I use `core` or `conversation` for this?**
-
-`conversation` only for run-scoped scratch (e.g. checkpointing tool-call findings during a long incident — see [How long does a run take?](/concepts/context-lifecycle)). Everything else is `core` or `daily`.
-
-## Troubleshooting
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| Recall returns nothing on a known entity | Inconsistent key convention | Use a stable, deterministic key derivation in `SKILL.md` (e.g. `customer_<email-slug>`). |
-| Memory grows forever | `core` has no time-based pruning; at the entry cap, coldest `core` entries are evicted when no non-core entries remain | Steer the fleet to call `memory_forget` on stale keys, or move time-bounded entries to `daily`. |
-| `UZ-MEM-003` on store | Memory backend unavailable | Re-run the trigger; if persistent, file an issue. |
-| `UZ-MEM-002` on store | Fleet not found for memory op | The `fleet_id` doesn't exist in this workspace (a cross-workspace id returns the same 404, so existence isn't leaked). Confirm with `agentsfleet status`. |
+- [Run context](/concepts/context-lifecycle)
+- [Command index](/cli/agentsfleet)
+- [Fleet overview](/fleets/overview)

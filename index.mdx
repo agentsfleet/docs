@@ -1,39 +1,42 @@
 ---
-title: "A fleet, ready to run."
-description: "agentsfleet is a fleet of prebuilt AI teammates for recurring engineering work — each one wakes on an event, gathers evidence from your own systems, opens a scenario-backed fix, and holds at human approval. Every move is a replayable log."
+title: agentsfleet documentation
+description: Create and run event-driven fleets.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-<Card title="Get early access →" icon="rocket" href="https://accounts.agentsfleet.net/waitlist" horizontal>
-  agentsfleet is in early access. Join the waitlist to get in — or email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) to come on as a design partner.
-</Card>
+# agentsfleet documentation
 
-Each fleet is two markdown files — a `SKILL.md` that says what to investigate and a `TRIGGER.md` that says when it wakes and which tools it may call. Install one, wire a webhook, and it runs on every event — no servers to manage, every move in a replayable log.
+## What it is
 
-## Get started
+`agentsfleet` runs fleets that respond to events. A fleet can inspect data, call allowed tools, and return a result.
 
-Install the `agentsfleet` CLI in one command:
+Each fleet uses a `SKILL.md` file and an optional `TRIGGER.md` file. The first file defines its task; the second defines its access.
 
-```bash
-curl -fsSL https://agentsfleet.dev | bash
-```
+## Why it exists
 
-<Card title="Start your first fleet →" icon="rocket" href="/quickstart" horizontal>
-  Sign in, install a fleet from the library catalogue, and trigger your first real run — step by step from a cold machine.
-</Card>
+Use a fleet for repeated work that starts from a webhook, schedule, or message. You keep approval over sensitive actions.
 
-## Explore
+## How it behaves
 
-<Columns cols={2}>
-  <Card title="Concepts" icon="book" href="/concepts">
-    Tenants, workspaces, fleets, tools — the four nouns.
-  </Card>
-  <Card title="Authoring a fleet" icon="file-code" href="/fleets/authoring">
-    Write your own `SKILL.md` + `TRIGGER.md`.
-  </Card>
-  <Card title="CLI reference" icon="rectangle-terminal" href="/cli/agentsfleet">
-    Every `agentsfleet` command, with examples.
-  </Card>
-  <Card title="GitHub" icon="github" href="https://github.com/agentsfleet/agentsfleet">
-    Source, issues, design partners welcome.
-  </Card>
-</Columns>
+Create a workspace, save the required secrets, and install a fleet. Then connect the trigger source shown by the install output.
+
+Every event creates one run. You can inspect the run through the activity stream.
+
+Start with the [quickstart](/quickstart). It shows the shortest complete path from installation to a GitHub event.
+
+## Limits
+
+A fleet can use only the tools, secrets, and network hosts declared in its files. Budget and account limits can stop new runs.
+
+The service is in early access. Public behavior may change before version 2.0.0.
+
+## Related pages
+
+- [Quickstart](/quickstart)
+- [Key concepts](/concepts)
+- [Author a fleet](/fleets/authoring)
+- [Command index](/cli/agentsfleet)

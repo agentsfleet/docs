@@ -1,157 +1,128 @@
 ---
 title: Quickstart
-description: "Install the agentsfleet CLI, install a fleet from the library catalogue, and watch it run."
+description: Install your first fleet and send it a GitHub event.
+type: tutorial
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-This walks through installing a fleet from the first-party catalogue and seeing it run, starting from a cold machine. We'll use `github-pr-reviewer`, which wakes on a pull request and posts a review comment; the same steps work for any library entry.
+# Quickstart
 
-<Steps>
+## What you will build
 
-<Step title="Install the CLI">
-  ```bash
-  curl -fsSL https://agentsfleet.dev | bash
-  ```
+You will install a GitHub pull request reviewer fleet. The fleet will receive pull request events and post review comments.
 
-  This installs the `agentsfleet` CLI (it runs npm under the hood, so Node.js is required). Prefer npm directly? `npm install -g @agentsfleet/cli`. Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read the script first.
+## Before you begin
 
-  Verify:
+You need Node.js 24 or later. You also need an `agentsfleet` account and a GitHub repository that you can manage.
 
-  ```bash
-  agentsfleet --version
-  ```
-</Step>
+Create a GitHub token that can read the repository and post comments. Keep the token ready for step 4.
 
-<Step title="Sign in">
-  ```bash
-  agentsfleet login
-  ```
+## Steps
 
-  Opens a Clerk-backed approval page in your browser. After you click **Approve**, the page shows a 6-digit verification code — type it back into the CLI to complete login. The code binds the browser approver to the terminal you're typing from.
+1. Install the `agentsfleet` command-line interface.
 
-  Login also fetches your tenant's workspaces and selects the first one as active. Signup auto-provisions a default workspace, so your CLI is ready to install a fleet immediately — no `workspace add` required.
+   ```bash
+   npm install --global @agentsfleet/cli
+   ```
 
-  Hosted execution (event receipts + runs) is **free until July 31, 2026** — no credit card to start; see [pricing](https://agentsfleet.net/pricing) for the metered rates after the trial. You bring your provider and model and pay them directly — agentsfleet marks up zero on inference.
+   ```text
+   added <varies> packages in <varies>
+   ```
 
-  <Note>
-    **No terminal — CI, or an agent driving the CLI?** Skip the browser: supply a token via `--token <token>` or piped on stdin (prefer stdin to keep it out of shell history). For ongoing machine auth, set the `AGENTSFLEET_API_KEY` environment variable instead of logging in — it's sent on every request and overrides a stored login. Add `--no-input` to fail fast instead of waiting for the code. Full precedence in [`agentsfleet login`](/cli/agentsfleet#agentsfleet-login).
-  </Note>
-</Step>
+2. Check the installed version.
 
-<Step title="(Optional) Create a named workspace">
-  ```bash
-  agentsfleet workspace add pr-review
-  ```
+   ```bash
+   agentsfleet --version
+   ```
 
-  Skip this if the signup-provisioned default workspace is fine. Workspaces are the boundary for secrets, access control, and webhook namespaces — every fleet lives in exactly one. Switch later with `agentsfleet workspace use <id>`. See [Command reference → workspaces](/cli/agentsfleet#workspaces).
-</Step>
+   ```text
+   <varies>
+   ```
 
-<Step title="Browse the catalogue and add the secret">
-  List the first-party library catalogue and the secrets each one needs:
+3. Sign in through your browser.
 
-  ```bash
-  agentsfleet library
-  ```
+   ```bash
+   agentsfleet login
+   ```
 
-  ```
-  LIBRARY                        NAME                            CREDENTIALS
-  github-pr-reviewer             GitHub Pull Request reviewer    github
-  security-reviewer              Security reviewer               github
-  zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
-  ```
+   ```text
+   Login session
+   session_id: <varies>
+   login_url: <varies>
+   browser: opened
+   login complete
+   ```
 
-  `github-pr-reviewer` needs a `github` secret. Add it to the workspace vault before installing (install rejects a bundle whose secrets are missing, [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle)). Pipe the JSON on stdin so it never lands in shell history:
+   Approve the request in your browser. Enter the six-digit code in your terminal when prompted.
 
-  ```bash
-  agentsfleet secret add github --data=@- <<'JSON'
-  { "api_token": "ghp_...", "webhook_secret": "<32-byte hex>" }
-  JSON
-  ```
+4. Save the GitHub secret in your active workspace.
 
-  `api_token` lets the fleet post review comments; `webhook_secret` verifies inbound webhook signatures. See [Secrets](/fleets/secrets) for the full vault model.
+   ```bash
+   agentsfleet secret create github --data='{"token":"<GITHUB_TOKEN>","webhook_secret":"<GITHUB_WEBHOOK_SECRET>"}'
+   ```
 
-  Installing from the dashboard instead? The install gallery spells out why each secret is needed — "this fleet needs github to review your pull requests" — and blocks until it's connected, so you can't create a fleet that can't run.
-</Step>
+   ```text
+   ✓ Secret 'github' stored in vault.
+   ```
 
-<Step title="Install the fleet">
-  ```bash
-  agentsfleet install --library github-pr-reviewer
-  ```
+   GitHub gives you `<GITHUB_TOKEN>` after you create the repository token.
 
-  agentsfleet fetches the entry's pinned source, validates it server-side, prints a requirements preview (credentials, tools, network hosts), then creates the fleet and prints its webhook URL:
+   Create `<GITHUB_WEBHOOK_SECRET>` as a random value with at least 32 characters. Enter the same value in GitHub during step 6.
 
-  ```
-  ✓ github-pr-reviewer is live.
-    Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-    Webhook URLs (register on the upstream provider):
-      github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
-  ```
+   The client sends both values to your workspace vault. The client does not print the values again.
 
-  Re-running is idempotent. Pass `--name <name>` to back several fleets with one library entry (e.g. one reviewer per repo). See [Fleet library](/fleets/library).
-</Step>
+5. Install the review fleet.
 
-<Step title="Register the webhook">
-  The CLI prints the webhook URL but does **not** register it for you. Add it to your repository on GitHub — **Settings → Webhooks → Add webhook**:
+   ```bash
+   agentsfleet install --library github-pr-reviewer
+   ```
 
-  - **Payload URL** — the `github:` URL the install step printed.
-  - **Content type** — `application/json`.
-  - **Secret** — the same `webhook_secret` you stored in the `github` secret.
-  - **Which events** — "Let me select individual events" → **Pull requests**.
+   ```text
+   ✓ github-pr-reviewer is live.
+     Fleet ID: <varies>
+     Webhook URLs (register on the upstream provider):
+       github: <varies>
+   ```
 
-  Or do it from the terminal with your existing `gh` auth:
+   Save the fleet identifier and webhook URL from this output. You will use both values below.
 
-  ```bash
-  gh api repos/<owner>/<repo>/hooks --method POST \
-    -f "name=web" \
-    -f "config[url]=https://api.agentsfleet.net/v1/webhooks/<fleet_id>/github" \
-    -f "config[content_type]=json" \
-    -f "config[secret]=<webhook_secret>" \
-    -f "events[]=pull_request" \
-    -F "active=true"
-  ```
+6. Add the webhook in GitHub.
 
-  See [Webhooks](/fleets/webhooks) for signature details and other providers.
-</Step>
+   Open **Repository settings → Webhooks → Add webhook**. Use the webhook URL from step 5 as the payload URL.
 
-<Step title="Trigger a run">
-  Open a pull request on the repo. Within seconds:
+   Choose `application/json` as the content type. Use the same webhook secret from step 4.
 
-  - GitHub fires `pull_request` to the webhook URL.
-  - The fleet wakes, reads the PR, and posts a review comment.
+   Select **Pull requests** as the event. GitHub now sends pull request events to your fleet.
 
-  Tail it — replace `<fleet_id>` with the value the install step printed:
+7. Open a pull request in the repository.
 
-  ```bash
-  agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-  ```
+   GitHub sends the event after you open the pull request. The fleet then posts a review comment.
 
-  Need to slice by source or time window? `agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 30m`. Lost track of the ID? `agentsfleet list` prints every fleet in the active workspace. Or watch the same stream in the dashboard at `app.agentsfleet.net`.
-</Step>
+## Verify it works
 
-</Steps>
-
-## What just happened
-
-A fleet is two markdown files: `SKILL.md` (the prose system prompt — what to do, how to phrase a result) and `TRIGGER.md` (the runtime config — when it wakes, which tools it may call, which secrets it reads). The library entry shipped both; the platform stores them server-side. To change behaviour, edit a local bundle and roll it onto the live fleet:
+`<FLEET_ID>` comes from the install output in step 5.
 
 ```bash
-agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
+agentsfleet logs <FLEET_ID>
 ```
 
-No redeploys, no DAG editor — the next event runs the new prose.
+```text
+Event Stream
+  <varies>  webhook:github  <varies>
+```
 
-## Next steps
+The activity stream should show a GitHub event. Check the pull request for the fleet's review comment.
 
-<Columns cols={2}>
-  <Card title="Steer the fleet manually" icon="message" href="/cli/agentsfleet">
-    `agentsfleet steer <fleet_id> "review the latest PR"` — same reasoning loop, manual trigger. Useful before a webhook is firing.
-  </Card>
-  <Card title="Author your own fleet" icon="file-pen" href="/fleets/authoring">
-    Write your own `SKILL.md` + `TRIGGER.md`, onboard it as a template (dashboard or API), then `agentsfleet install --library <id>`. Iterate on a running fleet with `agentsfleet fleet update <fleet_id> --from .`.
-  </Card>
-  <Card title="Context lifecycle" icon="layer-group" href="/concepts/context-lifecycle">
-    Why deep runs keep reasoning past the model's context cap. Defaults work for 95% of cases.
-  </Card>
-  <Card title="Browse the Fleet library" icon="grid-2" href="/fleets/library">
-    The full first-party catalogue and how to install from it.
-  </Card>
-</Columns>
+## What you learned
+
+You installed the client, signed in, saved a secret, and created a fleet. You also connected GitHub to the fleet.
+
+## Related pages
+
+- [Install the client](/cli/install)
+- [Manage secrets](/fleets/secrets)
+- [Use webhooks](/fleets/webhooks)
+- [Troubleshoot a fleet](/fleets/troubleshooting)

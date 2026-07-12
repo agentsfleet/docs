@@ -1,106 +1,51 @@
 ---
-title: "Key concepts"
-description: "The four nouns, the tool bridge, and how a run works."
+title: Key concepts
+description: Understand tenants, workspaces, fleets, tools, events, and runs.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-<Tip>
-  This page introduces the operator-facing model. For the canonical technical reference — system topology, data flow, billing internals, security boundary, post-ship reflection — read [`docs/architecture/`](https://github.com/agentsfleet/agentsfleet/tree/main/docs/architecture) on GitHub.
-</Tip>
+# Key concepts
 
-## The four nouns
+## What it is
 
-agentsfleet has four primary objects. Everything else is infrastructure.
+`agentsfleet` groups your account into four main resources.
 
-<CardGroup cols={2}>
-  <Card title="Tenant" icon="building">
-    Your top-level billing and identity boundary. Created automatically on first Clerk sign-in. Carries your default Stripe customer — hosted execution is [free until July 31, 2026](https://agentsfleet.net/pricing).
-  </Card>
-  <Card title="Workspace" icon="folder-tree">
-    A container for fleets and secrets. One tenant can have many workspaces (team, project, environment). Billing and identity live at the tenant — a workspace is purely an organizational boundary.
-  </Card>
-  <Card title="Fleet" icon="ghost">
-    A persistent, durable fleet process scoped to one operational outcome. One fleet has one `SKILL.md` + `TRIGGER.md`, a set of triggers (webhook, cron, steer), and a set of workspace secrets it uses but never sees raw bytes for. Lives inside a workspace; crashes and restarts are transparent — the platform survives them.
-  </Card>
-  <Card title="Tool" icon="plug">
-    A named primitive the fleet can invoke — `http_request`, `memory_store`, `cron_add`. Tools are declared in `TRIGGER.md` and **enforced** by the runner sandbox; the fleet literally cannot call a tool that isn't on the list. The companion file `SKILL.md` is **advisory** — natural-language prose the model reads as its system prompt to decide *when* to reach for which tool and what counts as "done." Enforcement comes from `TRIGGER.md`; behavior comes from `SKILL.md`.
-  </Card>
-</CardGroup>
+| Resource | Purpose |
+|---|---|
+| Tenant | Owns identity, billing, provider settings, and workspaces. |
+| Workspace | Groups fleets, secrets, connectors, and access. |
+| Fleet | Handles one recurring outcome from one or more triggers. |
+| Tool | Gives a fleet one named action, such as an HTTP request. |
 
-### How they relate
+An event is one incoming delivery. A run is the fleet's work on one event.
 
-```
-Tenant  (billing + identity, provider: anthropic)
-│
-├── Workspace: "platform-ops"
-│   │
-│   ├── Fleet: platform-ops      (0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71)
-│   │   ├── Tools:    http_request, memory_store, cron_add
-│   │   └── Triggers: webhook (GitHub Actions), cron, steer
-│   │
-│   └── Secret: github            (workspace-scoped, shared)
-│
-└── Workspace: "support"
-    │
-    └── Fleet: ticket-triage     (0198a7b3-1a4d-7b62-a3f9-5c8e2d1b7a04)
-        ├── Tools:    http_request, memory_store
-        └── Triggers: webhook (Zendesk), steer
-```
+## Why it exists
 
-## Cost: free during the trial, bring your own model
+The hierarchy keeps billing, access, and secrets separate from each fleet's task. A workspace can hold several fleets that share approved secrets.
 
-Hosted execution — every event receipt and run — is **free until July 31, 2026**. No credit card to start.
+## How it behaves
 
-**You bring your provider and model.** Pick the provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot), attach the key, and pay them directly — agentsfleet marks up zero on inference. The runner resolves your secret at the tool bridge, so the fleet never sees the raw key.
+You create a workspace. The tenant owns the workspace until an account administrator removes the account data.
 
-For the metered rates that apply after the trial, see [pricing on agentsfleet.net](https://agentsfleet.net/pricing).
+You install a fleet in one workspace. The workspace owns the fleet, and an authorized member can stop or delete it.
 
-## How a run works
+A trigger creates an event. The fleet opens one run, calls allowed tools, and records results in the activity stream.
 
-```mermaid
-flowchart LR
-    Trigger[trigger arrives<br/>webhook · cron · steer] --> Event[event recorded<br/>on the activity stream]
-    Event --> Run[run opens]
-    Run --> Tool[tool calls<br/>placeholders only]
-    Tool --> Bridge[tool bridge<br/>substitutes secret<br/>outside sandbox]
-    Bridge --> Result[result returned<br/>added to context]
-    Result --> Tool
-    Tool --> Done[run exits<br/>diagnosis posts<br/>state checkpointed]
-```
+The fleet sees secret references. The credential firewall adds secret values only when an allowed network call leaves the sandbox.
 
-A trigger lands on the event stream. A run opens. The fleet calls tools allow-listed by `TRIGGER.md`; each tool result lands in the model's context. The fleet never sees raw secret bytes — placeholders substitute at the sandbox boundary. The run exits when the fleet is done or hits a [context boundary](/concepts/context-lifecycle); state checkpoints, the next trigger picks up.
+## Limits
 
-## Core terminology
+A fleet cannot call an undeclared tool. A fleet also cannot contact a host outside its network list.
 
-<AccordionGroup>
-  <Accordion title="Run">
-    One end-to-end execution of the fleet on one trigger: webhook arrives → fleet reasons → tool calls → result. Most fleets finish a run in a few seconds. See [How long does a run take?](/concepts/context-lifecycle).
-  </Accordion>
+Daily and monthly fleet budgets can block work. Provider and account limits can also block a run.
 
-  <Accordion title="Trigger">
-    What wakes a fleet. Four sources, all feeding the same reasoning loop:
+## Related pages
 
-    - **Webhook** — an external system (GitHub, your monitoring) POSTs to `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` (one URL per declared trigger source). A Slack mention does **not** use this path — it has its own trigger below.
-    - **Slack mention** — with Slack connected, mentioning `@agentsfleet` in a channel wakes that channel's resident fleet, which answers in the thread (see the Jul 02, 2026 changelog entry).
-    - **Cron** — the fleet schedules its own future runs via the `cron_add` tool.
-    - **Steer** — a human invokes `agentsfleet steer <fleet_id> "..."` for a manual run.
-
-    `SKILL.md` decides what to do based on the event payload.
-  </Accordion>
-
-  <Accordion title="Tool catalog">
-    The named verbs a fleet can invoke, declared in `TRIGGER.md`:
-    - `http_request` — outbound HTTP. Slack posts, GitHub calls, your provider — all go through this.
-    - `memory_store` / `memory_recall` / `memory_list` / `memory_forget` — durable cross-event learning. See [Memory](/memory).
-    - `cron_add` / `cron_list` / `cron_remove` — schedule future runs.
-
-    The fleet can only call tools that are explicitly listed. A jailbroken fleet cannot reach outside the list.
-  </Accordion>
-
-  <Accordion title="Tool bridge">
-    The boundary between your secrets and the model. Secrets are stored encrypted in the workspace vault; the model itself only sees `${secrets.NAME.FIELD}` placeholders. When the fleet invokes a tool, the **tool bridge** substitutes the real secret value outside the sandbox, makes the outbound call, and returns the response — never the secret. A prompt-injection attack recovers only the placeholder string. See [Secrets](/fleets/secrets).
-  </Accordion>
-
-  <Accordion title="Budget">
-    Dollar ceilings on hosted execution (the platform compute that runs your fleet — separate from your model provider's bill) declared in `TRIGGER.md`. `daily_dollars` caps spend over a rolling 24-hour window; `monthly_dollars` caps the calendar month. Hitting either ceiling stops new runs from opening. During the launch free trial (through July 31, 2026) hosted-execution runs are billed at **$0**, so a budget ceiling won't stop a fleet for trial usage — these caps apply to the metered rate after the trial (see [pricing](https://agentsfleet.net/pricing)). Inference is on your model provider's bill, not on your agentsfleet invoice — your provider's own caps apply there.
-  </Accordion>
-</AccordionGroup>
+- [Fleet overview](/fleets/overview)
+- [Workspace overview](/workspaces/overview)
+- [Secrets](/fleets/secrets)
+- [Run context](/concepts/context-lifecycle)

@@ -1,37 +1,40 @@
 ---
-title: "Workspaces"
-description: "What a workspace is and how it relates to your tenant."
+title: Workspace overview
+description: Understand what a workspace owns and separates.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-A **workspace** is a tenant-scoped container for fleets, their secrets, and their webhooks. Workspaces are not bound to a GitHub repo — repos enter the picture per-fleet, when you wire an upstream webhook to a `fleet_id` (see [Webhooks](/fleets/webhooks)). Multiple workspaces under one tenant let you separate environments (staging vs. production) or domains (platform-ops vs. customer-success) without splitting billing, which stays at the tenant level.
+# Workspace overview
 
-## What a workspace contains
+## What it is
 
-Each workspace has its own:
+A workspace groups fleets, secrets, connectors, and access. Each workspace belongs to one tenant.
 
-- **Fleets** — the configured fleets that live and run here.
-- **Secrets** — the vault keys fleets in this workspace can read. Workspace-scoped on purpose: secrets do not leak across workspaces.
-- **Webhook namespace** — every fleet in a workspace gets its own unique URL under `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`.
-- **Access control** — teammates invited to a workspace can see, start, and kill its fleets; they cannot see fleets in other workspaces.
+A workspace is not tied to one source repository. Each fleet declares its own trigger source.
 
-## What a workspace does NOT contain
+## Why it exists
 
-- **Billing.** Plan tier and Stripe subscription all live on the **tenant**, not the workspace. Creating a second workspace does not change billing — every run in every workspace draws on the same tenant account. See [Billing and cost control](/billing/plans).
-- **Per-workspace spend caps.** Monthly spend caps live at the tenant level in v2.
+Use separate workspaces when teams or environments need different fleets and secrets. Billing and provider settings remain at the tenant level.
+
+## How it behaves
+
+You create a workspace through the client or API. The tenant owns the workspace and its members control access.
+
+A fleet belongs to exactly one workspace. Secrets and connectors do not cross workspace boundaries.
+
+The service creates a default workspace during account setup. The client selects the first available workspace after login.
 
 ## Limits
 
-A tenant gets unlimited workspaces and unlimited fleets per workspace — there are no count caps to clear. Usage is bounded by your credit wallet, not by workspace or fleet limits.
+`agentsfleet` does not publish a workspace count limit. Service limits still apply to work inside each workspace.
 
-| Feature | Details |
-|---------|---------|
-| Workspaces | Unlimited |
-| Fleets per workspace | Unlimited |
-| Support | Community (Discord, GitHub) |
+The client has no remote workspace removal call. `workspace delete` only removes one workspace from local client state.
 
-## Workspace lifecycle
+## Related pages
 
-1. **Create** — `agentsfleet workspace add [name]` provisions a new workspace under your tenant and sets it active. Workspaces are not bound to a specific GitHub repo at creation time — repo bindings happen later via per-fleet webhook configuration (see [Quickstart](/quickstart)).
-2. **Active** — fleets can be installed, deployed, and triggered.
-3. **Paused** — `POST /v1/workspaces/{workspace_id}/pause` via the API (no CLI subcommand yet). New runs rejected; in-flight runs complete.
-4. **Deleted** — `agentsfleet workspace delete <workspace-id>`. Run history retained 30 days. Webhook URLs are gone — any upstream pointing at a fleet in this workspace starts hitting `UZ-WH-001` (fleet not found).
+- [Manage workspaces](/workspaces/managing)
+- [Secrets](/fleets/secrets)

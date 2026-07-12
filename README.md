@@ -20,11 +20,36 @@ Each one wakes on an event — a pull request, an incident, a deploy — investi
 
 ## Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview documentation changes locally:
+Before editing a page or API text, read `~/Projects/dotfiles/docs/DOCUMENTATION_RULES.md`.
+
+1. Install the [Mintlify CLI](https://www.npmjs.com/package/mint).
 
 ```bash
 npm i -g mint
+```
+
+```text
+added <varies> packages in <varies>
+```
+
+2. Enable the repository's pre-commit checks.
+
+```bash
+make install-hooks
+```
+
+```text
+Git hooks enabled from .githooks
+```
+
+3. Start the local preview.
+
+```bash
 mint dev
+```
+
+```text
+Local: http://localhost:3000
 ```
 
 View your local preview at `http://localhost:3000`.

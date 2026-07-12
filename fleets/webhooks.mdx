@@ -1,175 +1,96 @@
 ---
-title: "Webhooks"
-description: "How external systems deliver events to your fleet, and how the platform authenticates them."
+title: Configure a webhook
+description: Send signed provider events to a fleet.
+type: how-to
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-Webhook triggers have two delivery paths:
+# Configure a webhook
 
-- **Managed App ingress** — GitHub App events arrive at `POST /v1/ingress/github`. The platform maps the App installation to a workspace, then selects fleets by repository, event, and approved grant.
-- **Manual per-fleet webhook** — an operator registers a stable URL keyed by `fleet_id` and `source`:
+## What this does
 
-```
-https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}
-```
+A webhook sends provider events to one fleet. `agentsfleet` verifies the request before creating an event.
 
-External systems POST to the manual URL. The platform verifies the signature and delivers the event to that fleet. No tunneling, no ngrok, no custom servers on your side. `agentsfleet install --library` prints the full set of manual URLs at install time.
+GitHub App events can use managed ingress. Other providers can use the fleet URL printed during installation.
 
-<Tip>
-  **`agentsfleet install` prints manual webhook URLs.** Register those URLs when you manage the upstream webhook yourself. A workspace connected to the shared GitHub App uses `/v1/ingress/github`; do not create a second repository webhook for the same event path.
-</Tip>
+## Before you begin
 
-## Declaring a webhook trigger
-
-A fleet declares its webhooks in `TRIGGER.md` under the `triggers:` array (1–8 entries). One fleet can wake on multiple webhook sources plus a `cron`:
+Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to `TRIGGER.md`.
 
 ```yaml
----
-name: my-fleet
-
 x-agentsfleet:
   triggers:
     - type: webhook
       source: github
-      events: [workflow_run]
-      signature:
-        secret_ref: github_secret
-        header: x-hub-signature-256
-        prefix: "sha256="
----
+      events:
+        - pull_request
+      credential_name: github
 ```
 
-`source` is a label that appears in the activity stream (`github`, `slack`, `linear`, etc.) and selects the per-trigger inbound URL — `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}`. `events` is an optional whitelist of upstream event names (1–16 entries, ≤64 chars each); omit it to accept every event the source delivers. The `signature` block tells the platform how to verify the request.
+## Steps
 
-For managed GitHub App traffic, add `repositories` with 1–64 exact `owner/repository` names. This list is required for App routing and fail-closed when omitted. It is optional for the manual per-fleet GitHub URL because that URL already identifies its target fleet.
+1. Install or update the fleet.
 
-```yaml
-triggers:
-  - type: webhook
-    source: github
-    events: [pull_request, workflow_run]
-    repositories:
-      - acme/payments
-```
+   ```bash
+   agentsfleet install --library github-pr-reviewer
+   ```
 
-GitHub App ingress accepts Pull Request events and completed workflow runs whose conclusion is a failure. Successful workflow runs are ignored.
+   ```text
+   ✓ github-pr-reviewer is live.
+     Fleet ID: <varies>
+     Webhook URLs (register on the upstream provider):
+       github: <varies>
+   ```
 
-```mermaid
-flowchart LR
-    GH[GitHub App delivery] --> SIG[Verify App signature]
-    SIG --> WS[Installation → workspace]
-    WS --> SUB[Repository + event + approved grant]
-    SUB --> F1[Fleet A event stream]
-    SUB --> F2[Fleet B event stream]
-```
+2. Copy the URL printed for the matching source.
 
-The singular `trigger:` shape is rejected at install with `UZ-AGT-008` (invalid fleet config); always declare the array form, even for a single webhook.
+3. Register the URL and signing secret with the provider.
 
-## Authentication
+   For GitHub, open **Repository settings → Webhooks → Add webhook**. Choose the required event names.
 
-Every inbound webhook is authenticated before the fleet is woken. The platform supports **Hash-based Message Authentication Code (HMAC)** signature verification, a standard scheme where the sender signs the payload with a shared secret and the receiver re-computes the signature to verify it. GitHub, Slack, Linear, Jira, Grafana, and most software-as-a-service providers use HMAC.
+4. Send a provider test event.
 
-### Natively normalized providers
+   The provider owns delivery and retries. `agentsfleet` owns the URL until the fleet is deleted.
 
-Three sources have built-in defaults — set `triggers[].source` to one of them and the platform fills in the signature header and prefix automatically. You only supply `secret_ref`:
+## Verify it works
 
-| `triggers[].source` | Sig header (auto) | Prefix (auto) | Timestamp header (auto) |
-|---|---|---|---|
-| `slack` | `x-slack-signature` | `v0=` | `x-slack-request-timestamp` (replay-protected) |
-| `github` | `x-hub-signature-256` | `sha256=` | — |
-| `linear` | `linear-signature` | *(empty)* | — |
-
-```yaml
-# Minimal — registry fills the rest
-triggers:
-  - type: webhook
-    source: github
-    signature:
-      secret_ref: github
-```
-
-### Other providers (generic HMAC)
-
-For any other source — Jira, AgentMail, an internal service of your own — declare the signature header and prefix yourself (or omit the `signature` block entirely if the upstream doesn't sign payloads, as some lightweight providers don't):
-
-```yaml
-triggers:
-  - type: webhook
-    source: my_provider
-    signature:
-      secret_ref: my_provider          # vault key holding the shared secret
-      header: x-provider-signature     # the header your provider sets
-      prefix: "sha256="                # leave "" if no prefix
-      ts_header: x-provider-timestamp  # optional — enables replay protection
-```
-
-The parser rejects an unknown `source` that supplies only `secret_ref` with no `header` — explicit configuration is required outside the registry.
-
-`secret_ref` always names a secret in the workspace vault carrying the upstream's signing secret. See [Secrets](/fleets/secrets).
-
-<Note>
-  **Payload normalization is automatic for named sources.** When `source` is `github`, `slack`, or `linear`, `POST /v1/webhooks/{fleet_id}/{source}` runs the provider-specific normalizer (event-type extraction, payload shape coercion) before the fleet sees the event — no flag, no separate URL. Pick a different `source` label (e.g. `source: github_raw`) with an explicit `signature` block to bypass normalization and receive the raw payload. Clerk-shaped (Svix) webhooks are the one exception: they use a distinct route, `POST /v1/webhooks/svix/{fleet_id}`, to accommodate Svix's multi-signature rotation scheme.
-</Note>
-
-## Sending an event
-
-Once the fleet is installed, your provider POSTs to its URL with a signed body:
+`<FLEET_ID>` comes from the install output.
 
 ```bash
-curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github \
-  -H "x-hub-signature-256: sha256=<computed-hmac>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event_id": "evt-001",
-    "type": "email.received",
-    "data": { "from": "alice@example.com", "subject": "Demo request" }
-  }'
+agentsfleet events <FLEET_ID> --actor 'webhook:*' --since 1h
 ```
 
-The platform verifies the signature, enqueues the event, and returns `202 Accepted`:
-
-```json
-{ "status": "accepted", "event_id": "0198a7b7-4e9c-7a18-b3d6-5f2c8a4e1b73" }
+```text
+<varies>
 ```
 
-Delivery is **at-least-once** — your provider may retry on transient failure, so the same event can arrive twice. Include a unique `event_id` in the body so the fleet can dedupe.
+A successful request returns HTTP `202`. A filtered or inactive event returns HTTP `200` without opening a run.
 
-GitHub App deliveries derive replay identity from the signature-covered request body, independently for each matching fleet. The delivery header is diagnostic and cannot bypass replay protection. If one queue write fails, a GitHub retry fills only that missing fleet and does not duplicate fleets that already received the payload.
+## Common problems
 
-## Responses
+| Error | Why it happened | Fix |
+|---|---|---|
+| `UZ-WH-001` | The fleet URL is wrong or deleted. | Copy the current URL from the fleet. |
+| `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
+| `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
+| `UZ-WH-020` | The workspace lacks the named secret. | Create the `secret_ref` name. |
+| `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
-| Status | Body | Meaning |
-|--------|------|---------|
-| `202` | `{ "status": "accepted", "event_id": "…" }` | Signature verified; event enqueued. |
-| `200` | `{ "ignored": "fleet_paused" }` (or a filter reason) | Fleet is paused, stopped, or killed — or the event was filtered out. Accepted without opening a run; retry queues add no value, so this is `200`, not `4xx`. |
-| `401` | `UZ-WH-010` / `UZ-WH-011` / `UZ-WH-020` | Missing, malformed, mis-signed, or stale signature; or no webhook secret configured. |
-| `404` | `UZ-WH-001` | No fleet at this URL — wrong `fleet_id`, or the fleet was deleted. |
-| `413` | `UZ-WH-030` | Payload exceeds the 1 MiB ingest limit. |
-| `429` | — | Rate limit hit; back off per `Retry-After`. |
-| `503` | — | Platform applying backpressure; safe to retry after the period resets. |
+Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.
 
-## Approval gate webhooks
+Rate-limited requests include `Retry-After`. The provider should wait for that delay before retrying.
 
-Some fleet actions — sending money, merging a Pull Request (PR), posting to a public channel — should not happen without a human in the loop. The **approval gate** lets a fleet pause mid-run, emit an approval request, and wait for a human to click approve or deny in the dashboard.
+## Remove or undo
 
-For programmatic decisions (e.g. an internal tool calling back into agentsfleet), POST the decision to:
+Delete the webhook from the provider first. Then remove its trigger from `TRIGGER.md` and update the fleet.
 
-```bash
-curl -X POST https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/approval \
-  -H "Authorization: Bearer $APPROVAL_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{ "approval_id": "0198a7b9-5a3f-7e24-9b18-4c7d2a8f5e63", "decision": "approve" }'
-```
+Deleting the fleet removes its webhook URL. Requests to the old URL then return `UZ-WH-001`.
 
-The approval token is auto-provisioned for the fleet at install time.
+## Related pages
 
-## Observing webhook traffic
-
-Every accepted and rejected webhook appears in the activity stream:
-
-```bash
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-```
-
-Rejected requests carry a reason code (`webhook_rejected: signature_mismatch`, etc.) so you can tell a noisy upstream from a real auth bug.
-
-The platform accepts webhooks only with a valid signature (HMAC or Svix) or the per-source path (`/github`, `/approval`, `/grant-approval`, `/svix`). There is no URL-embedded-secret fallback.
+- [Author a fleet](/fleets/authoring)
+- [Secrets](/fleets/secrets)
+- [Troubleshooting](/fleets/troubleshooting)

@@ -1,230 +1,105 @@
 ---
-title: "Authoring a fleet"
-description: "The `SKILL.md` and `TRIGGER.md` file pair — how a fleet is defined end-to-end."
+title: Author a fleet
+description: Create the two files that define a fleet.
+type: how-to
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-## Overview
+# Author a fleet
 
-A fleet is two files: a **`SKILL.md`** that tells the fleet who it is and what to do, and a **`TRIGGER.md`** that tells the platform how the fleet connects to the world. Nothing else is needed — no Dockerfile, no deployment YAML, no server code.
+## What this does
 
-```
-my-fleet/
-├── SKILL.md      # fleet instructions (natural language)
-└── TRIGGER.md    # machine-readable config + deployment metadata
-```
+You will create a fleet bundle. `SKILL.md` defines the task, while `TRIGGER.md` defines runtime access and limits.
 
-Installing a [library entry](/fleets/library) with `agentsfleet install --library <id>` gives you a fleet backed by both files. This page is the reference for authoring your own — which you then onboard as a template (dashboard or API) before installing by id.
+## Before you begin
 
-## `SKILL.md` — fleet instructions
+Create an empty directory. Choose a lowercase fleet name with letters, numbers, and hyphens.
 
-`SKILL.md` is plain markdown. The body is handed to the fleet as its system prompt on every event. The frontmatter at the top carries small authoring metadata.
+## Steps
 
-### Frontmatter
+1. Create `SKILL.md` with required front matter and clear instructions.
 
-```yaml
----
-name: platform-ops-fleet          # required, must match TRIGGER.md
-description: Diagnoses platform health from fly.io and upstash, posts to Slack.
-version: 0.1.0                     # required, semver
-when_to_use: ...                   # optional
-tags: [platform-ops, diagnostics]  # optional
-author: agentsfleet                  # optional
-model: claude-sonnet-4-6           # optional, hint
----
-```
+   ```yaml
+   ---
+   name: health-check
+   description: Checks service health and reports failures.
+   version: 0.1.0
+   ---
 
-| Field | Required | Purpose |
-|---|---|---|
-| `name` | yes | Identity. Must equal `TRIGGER.md` `name:` (onboarding rejects mismatch). |
-| `description` | yes | One-line summary. |
-| `version` | yes | Semver string. |
-| `when_to_use`, `tags`, `author`, `model` | no | Pass-through metadata. |
+   Check each service named in the event.
+   Report failed checks with their source URL.
+   Never change a service.
+   ```
 
-Unknown top-level keys are accepted silently — drop in vendor-specific extras (`x-amp:`, etc.) without breaking onboarding.
+2. Create `TRIGGER.md` with the same name.
 
-### Body
+   ```yaml
+   ---
+   name: health-check
+   x-agentsfleet:
+     triggers:
+       - type: api
+     tools:
+       - memory_recall
+       - memory_store
+     budget:
+       daily_dollars: 1.00
+   ---
+   ```
 
-Plain markdown. The whole body becomes the fleet's system prompt.
+3. Put the files in a GitHub repository.
 
-- **State the role plainly.** "You are a lead qualification fleet." First sentence.
-- **List the event shape.** What arrives on the webhook? Name the fields.
-- **Give an explicit procedure.** Numbered steps beat prose.
-- **Name the tools it can invoke.** Match the names to the `tools:` list in `TRIGGER.md`.
-- **Call out hard no-go behaviors.** "Never promise a demo time." "Never post to #general."
-- **Keep it short.** Every token is paid on every event. Aim for under 1,500 tokens.
+   `SKILL.md` must be at the repository root. `TRIGGER.md` is optional when the default manual trigger is enough.
 
-```markdown SKILL.md
----
-name: platform-ops-fleet
-description: Diagnoses platform health from fly.io and upstash, posts to Slack.
-version: 0.1.0
----
+4. Open **Fleets → Install fleet → Add library entry** in the dashboard.
 
-You are Platform Ops Fleet. You diagnose problems in a small production
-platform that runs on fly.io (app hosting) and upstash (managed Redis).
-You are strictly read-only against fly and upstash; your one write path
-is to post a plain-text summary into one Slack channel.
+   Enter the repository as `<OWNER>/<REPOSITORY>`. Both values come from the GitHub repository URL.
 
-When an operator chats with you, gather evidence in this order:
-1. List fly apps in the org. Note any not in `started` state.
-2. For each suspect app, fetch recent logs via the fly API.
-3. Pull upstash redis stats — connection counts, slow log, memory.
-4. Correlate fly errors with redis pressure and post a one-paragraph
-   summary to Slack with the failing app, the leading hypothesis, and
-   the evidence link.
+5. Install the new library entry.
 
-Never deploy, scale, restart, or flush. Never quote a fix as certain —
-always frame as "leading hypothesis" and let the human decide.
-```
+   `<LIBRARY_ID>` appears in the workspace gallery after the files pass validation.
 
-## `TRIGGER.md` — machine-readable config
+   ```bash
+   agentsfleet install --library <LIBRARY_ID>
+   ```
 
-`TRIGGER.md` carries the runtime contract: trigger source, allowed tools, vault secret references, network allowlist, and budget caps. Everything that controls security, cost, or scheduling lives here. The body below the frontmatter is operator-facing prose (secret shapes, budget rationale, etc.) — the runtime does not parse it.
+   ```text
+   ✓ health-check is live.
+     Fleet ID: <varies>
+   ```
 
-### Shape
+## Verify it works
 
-```yaml
----
-name: platform-ops-fleet   # top level — must match SKILL.md `name:`
-
-x-agentsfleet:                # all runtime config nests under this key
-  triggers:                 # array, 1–8 entries; one fleet can wake on many sources
-    - type: api             # operator chats via /steer; events arrive as event_type: chat
-  tools:
-    - http_request
-    - memory_recall
-    - memory_store
-    - cron_add
-    - cron_list
-    - cron_remove
-  credentials:
-    - fly
-    - upstash
-    - slack
-  network:
-    allow:
-      - api.machines.dev
-      - api.upstash.com
-      - slack.com
-  budget:
-    daily_dollars: 1.00
-    monthly_dollars: 8.00
----
-
-# Operator commentary about secret shapes, budget reasoning,
-# firewall behavior — readable by humans, ignored by the runtime.
-```
-
-### Top level
-
-| Field | Required | Purpose |
-|---|---|---|
-| `name` | yes | Identity. Must equal `SKILL.md` `name:`. |
-| `x-agentsfleet` | yes | Runtime config block. Required subkeys below. |
-
-Top-level keys other than `name`/`x-*` are accepted silently. Runtime keys (`tools`, `credentials`, `network`, `budget`, `trigger`) **must not** appear at the top level — they belong inside `x-agentsfleet:`.
-
-### `x-agentsfleet:` subkeys
-
-Validation under this block is rigid: an unknown subkey is rejected with a typo hint. All listed subkeys are required unless marked optional.
-
-| Subkey | Required | Purpose |
-|---|---|---|
-| `triggers[]` | yes | Array of 1–8 trigger entries. The singular `trigger:` shape is rejected at onboard time with `UZ-AGT-008` (invalid fleet config). Entries are unique on the `(type, source)` tuple; at most one `cron` entry. |
-| `triggers[].type` | yes | One of `webhook` \| `cron` \| `api`. See the table below. |
-| `triggers[].source` | per type | Required for `webhook`. Carries the upstream label (e.g. `github`, `slack`, `linear`) and selects the per-trigger URL `…/v1/webhooks/{fleet_id}/{source}` — see [Webhooks](/fleets/webhooks). |
-| `triggers[].events` | optional | Per-webhook event whitelist (1–16 entries, ≤64 chars each). Omit to accept every event the source delivers. |
-| `triggers[].repositories` | optional | GitHub App repository subscription (1–64 exact `owner/repository` names, each ≤255 chars). Omission receives no managed App traffic; the manual per-fleet GitHub URL remains valid without it. |
-| `triggers[].signature.secret_ref` | optional | Vault key whose value verifies webhook signatures (first-class providers). |
-| `tools` | yes | Non-empty list of tool names from the [Tools catalogue](/fleets/tools). |
-| `credentials` | optional | Vault key names the fleet reads at event time. |
-| `network.allow` | optional | Outbound hostname allowlist enforced by the sandbox. Omit it (or the whole `network:` block) for an empty allowlist — `http_request` then has no permitted hosts. |
-| `budget.daily_dollars` | yes | Rolling 24-hour dollar ceiling. |
-| `budget.monthly_dollars` | optional | Calendar-month dollar ceiling. |
-
-#### `triggers[].type` values
-
-| YAML value | Wakes from | Use when | Companion fields |
-|---|---|---|---|
-| `webhook` | An external HTTP `POST` to `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` with a signed body. | Most production fleets — anything driven by a third-party event (GitHub, Slack, Linear, Jira, etc.). | `source` (label, also selects the URL) + `events` (optional whitelist) + `signature` (HMAC config). See [Webhooks](/fleets/webhooks). |
-| `cron` | A self-scheduled timer the fleet sets via the `cron_add` tool. | Periodic health checks, drift sweeps, scheduled cleanups. | None at the trigger level — schedules live inside the reasoning loop. At most one `cron` entry per fleet. |
-| `api` | A `agentsfleet steer` invocation or a `POST /v1/.../fleets/{id}/messages` API call. | Steerable, operator-driven fleets — manual investigation, on-demand workflows, the install-time smoke test. | None. |
-
-A fleet can declare up to eight triggers and wake on any of them — e.g. one webhook from GitHub plus a cron sweep every 30 minutes. Any fleet can also be steered via `agentsfleet steer` regardless of declared triggers — steer always works. The `api` type is for fleets whose *primary* surface is steer (no inbound webhook).
-
-For a fleet receiving events from the shared GitHub App, bind both the event and repository explicitly:
-
-```yaml
-triggers:
-  - type: webhook
-    source: github
-    events: [pull_request]
-    repositories: [acme/payments]
-```
-
-The App installation belongs to the workspace. The `repositories` list belongs to this fleet. It narrows the repositories selected during App installation and prevents unrelated fleets in the same workspace from waking.
-
-<Note>**A run is never continued automatically.** When a fleet runs out of context it wraps up and the run ends; nothing re-queues it. To carry long work forward, trigger the fleet again — the next run recovers its state from [memory](/memory). See [Context lifecycle](/concepts/context-lifecycle).</Note>
-
-### Tools
-
-The `tools:` list is the explicit allowlist of tools the fleet may invoke. A compromised or jailbroken fleet cannot reach outside this list.
-
-The runner exposes 32 built-in tools — network (`http_request`, `web_search`, `web_fetch`, `pushover`), memory (`memory_store`/`recall`/`list`/`forget`), cron (`cron_add`/`list`/`remove`/`update`/`run`/`runs`), fleet orchestration (`delegate`, `spawn`, `schedule`), browser, git, `shell` and the file tools, and stateless utilities. The list is deny-by-default — declare only what the fleet needs. **See [Tools catalogue](/fleets/tools) for every tool with its purpose and use cases.**
-
-### Credentials
-
-Each entry under `credentials:` is a **bare vault key name** referencing a JSON-shaped secret in the workspace vault (e.g. `github` carrying `{api_token, webhook_secret}`, `slack` carrying `{bot_token}`). Names like `github`, `slack`, `linear`, `jira` are secret references — **not** tool names. The tool bridge resolves the named secret at `http_request` time and substitutes its fields into outbound calls; the fleet sees the response, never the raw secret. Add and rotate via [Secrets](/fleets/secrets).
-
-### Network allowlist
-
-`network.allow:` is enforced by the sandbox firewall: outbound HTTPS to any hostname not on the list is dropped before it leaves the sandbox. Layered on top of the tool allowlist as a belt-and-suspenders control.
-
-### Budgets
-
-| Field | Purpose |
-|---|---|
-| `daily_dollars` | Rolling 24-hour dollar ceiling for this fleet. Required; must be greater than `0` and at most `1000`. |
-| `monthly_dollars` | Calendar-month (UTC) dollar ceiling. Optional — omit it and only the daily ceiling applies. At most `10000`. |
-
-This is your fleet's blast-radius guard, and it is separate from your tenant's credit balance: a runaway fleet stops at its own `daily_dollars` long before it can drain the pool every other fleet is drawing from.
-
-The ceiling is checked twice. Before a run starts, a fleet that has already spent its allowance is refused — the event is recorded `gate_blocked` with a `budget_breach` label, and it is **not** charged. If a fleet crosses its ceiling while a run is in flight, the run is stopped at its next renewal and the event is recorded `fleet_error` with the same `budget_breach` label. Spend counts what you were actually charged, over a rolling 24 hours for `daily_dollars` and over the current UTC calendar month for `monthly_dollars`.
-
-<Note>During the free-trial window every run is charged `$0`, so no fleet accrues spend and no budget can be reached. Both this ceiling and the tenant credit gate begin to bite when the window closes.</Note>
-
-Workspace-wide budgets live in [Billing](/billing/budgets).
-
-## Common authoring mistakes
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| `UZ-AGT-008` (invalid fleet config) | A runtime key (`tools:`, `credentials:`, `network:`, …) at the top of TRIGGER.md instead of nested; a typo'd subkey under `x-agentsfleet:`; a singular `trigger:`; or a malformed `name:` | Nest runtime keys under `x-agentsfleet:`, fix the spelling, use the `triggers:` array, and keep `name:` kebab-case (`^[a-z0-9-]+$`, 1–64 chars). Validation under `x-agentsfleet:` is strict — unknown subkeys are rejected. |
-| `UZ-AGT-011` (name mismatch) | SKILL.md and TRIGGER.md disagree on top-level `name:` | One identity per bundle. Make both `name:` values equal. |
-| Missing `name` / `description` / `version` in SKILL.md | A required frontmatter field is absent | All three are required at the top level of `SKILL.md`. |
-
-## Validation
-
-Authoring produces a template you **onboard** — through the dashboard or the API (`POST /v1/admin/fleet-libraries` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-libraries` for a workspace entry). Onboarding posts both files to the server, which runs the same parser the runtime uses — there is no separate local lint step. Errors come back as a `UZ-AGT-*` wire code with a suggestion:
-
-```
-UZ-AGT-011  SKILL.md and TRIGGER.md disagree on `name:`
-  Suggestion: make the top-level name: identical in both files
-```
-
-Once onboarded, install the entry by id with `agentsfleet install --library <id>`. To re-parse and validate edits against an already-installed fleet, push them with `agentsfleet fleet update <fleet_id> --from <dir>` — the same parser runs and returns the same `UZ-AGT-*` codes.
+`<FLEET_ID>` comes from the install output.
 
 ```bash
-agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
+agentsfleet steer <FLEET_ID> "check the service list"
 ```
 
-## Next
+```text
+<varies>
+```
 
-<CardGroup cols={2}>
-  <Card title="Fleet library" icon="layer-group" href="/fleets/library">
-    See the anatomy of the flagship `platform-ops` sample.
-  </Card>
-  <Card title="Webhooks" icon="webhook" href="/fleets/webhooks">
-    Authentication modes and approval gates in depth.
-  </Card>
-</CardGroup>
+## Common problems
+
+`UZ-AGT-008` means `TRIGGER.md` has an invalid field or value. Keep runtime fields under `x-agentsfleet`.
+
+`UZ-AGT-011` means the two files use different names. Make both top-level `name` values identical.
+
+A bundle allows 1 through 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
+
+## Remove or undo
+
+Delete the installed fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
+
+The public API has no operation for deleting a workspace library entry.
+
+## Related pages
+
+- [Fleet library](/fleets/library)
+- [Tools](/fleets/tools)
+- [Webhooks](/fleets/webhooks)
+- [Secrets](/fleets/secrets)

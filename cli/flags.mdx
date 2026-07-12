@@ -1,37 +1,60 @@
 ---
-title: "Global flags"
-description: "Flags available on all agentsfleet commands."
+title: Global options
+description: Options accepted by the agentsfleet command-line client.
+type: reference
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: true
 ---
 
-## Global flags
+# Global options
 
-These flags can be passed to any `agentsfleet` command.
+## Synopsis
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--api <url>` | API base URL | `https://api.agentsfleet.net` |
-| `--json` | Machine-readable JSON output | `false` |
-| `--no-open` | Suppress browser auto-open (login) | `false` |
-| `--no-input` | Non-interactive mode | `false` |
-| `--help` | Show help text | |
-| `--version` | Show CLI version | |
+Place a global option before or after an `agentsfleet` command.
 
-## Exit codes
-
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error (validation failure, API error) |
-
-When `--json` is enabled, error responses include structured error codes for programmatic consumption:
-
-```json
-{
-  "error": {
-    "code": "UZ-AGT-008",
-    "message": "Invalid fleet config: TRIGGER.md config_json fails schema validation."
-  }
-}
+```text
+agentsfleet [GLOBAL_OPTIONS] <COMMAND>
 ```
 
-See [Error codes](/api-reference/error-codes) for the full registry.
+`<COMMAND>` comes from `agentsfleet --help`. `GLOBAL_OPTIONS` contains any option from the table below.
+
+## Example with output
+
+```bash
+agentsfleet --version
+```
+
+```text
+<varies>
+```
+
+## Options
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `-v`, `--version` | Prints the client version and exits. | `false` | Boolean |
+| `--api <URL>` | Sends API requests to this base URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
+| `--json` | Prints machine-readable JSON when the command supports it. | `false` | Boolean |
+| `--no-input` | Returns an error instead of asking for input. | `false` | Boolean |
+| `--no-open` | Prints the login URL instead of opening a browser. | `false` | Boolean |
+| `-h`, `--help` | Prints help and exits. | `false` | Boolean |
+
+## Errors
+
+The client returns exit code `0` after success. Authentication and unexpected failures return `1`.
+
+Network failures return `2`. API failures return `3`.
+
+Invalid command input returns `4`. Local configuration failures return `5`.
+
+An interrupted browser login returns `130`.
+
+JSON errors include the stable product error identifier when the API supplies one. See the [error registry](/api-reference/error-codes).
+
+## Related pages
+
+- [Command index](/cli/agentsfleet)
+- [Client configuration](/cli/configuration)
+- [Install the client](/cli/install)

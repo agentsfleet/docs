@@ -1,73 +1,49 @@
 ---
-title: "Fleets"
-description: "What a fleet is, the lifecycle it moves through, and how it relates to your workspace."
+title: Fleet overview
+description: Understand what a fleet owns and how its lifecycle works.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-## Overview
+# Fleet overview
 
-A **fleet** is a preconfigured, always-on process in your workspace. You describe it once — its trigger, the tools it can use, the secrets it needs, the budget it is allowed to consume — and the platform keeps it alive, receiving events and invoking the fleet, until you kill it.
+## What it is
 
-Everything in this section of the docs is about working with fleets: how to install one from the Fleet library, how to start and stop it, how to attach secrets, how webhooks reach it, and how to author the `SKILL.md` and `TRIGGER.md` files that define its behavior.
+A fleet handles one recurring outcome. It belongs to one workspace and responds to declared triggers.
 
-## Lifecycle
+`SKILL.md` describes the task. `TRIGGER.md` declares triggers, tools, secrets, network hosts, budgets, and context settings.
 
-A fleet's `status` field reports one of four values — `active`, `paused`, `stopped`, `killed` — followed by a hard `delete` that removes the row entirely. `agentsfleet status` and the API print this value verbatim.
+## Why it exists
 
-```mermaid
-flowchart LR
-    Install[agentsfleet install] --> Active[active<br/>webhook live]
-    Active -->|event: run then exit| Active
-    Active -->|rate limit / circuit breaker| Paused[paused<br/>server-set]
-    Paused -->|auto-resume or agentsfleet resume| Active
-    Active -->|agentsfleet stop| Stopped[stopped]
-    Stopped -->|agentsfleet resume| Active
-    Active -->|agentsfleet kill| Killed[killed<br/>terminal]
-    Stopped -->|agentsfleet kill| Killed
-    Killed -->|agentsfleet delete| Deleted([deleted])
-```
+A fleet keeps repeated event work in one place. The workspace controls access while the fleet owns its events, runs, and memory.
 
-1. **`active`.** `agentsfleet install --library <id>` resolves a [library entry](/fleets/library) from your workspace gallery, fetches its `SKILL.md` + `TRIGGER.md`, creates the fleet in your workspace, provisions the webhook URL, and starts the event loop. Install is the deploy — there is no separate `up` step. While active, each signed event (webhook, cron, or steer) opens a **run**: the fleet reads the event, reasons, invokes the tools listed in `TRIGGER.md`, and produces a result. The activity stream is the durable record — replay with `agentsfleet logs <fleet_id>` (or `events --actor 'webhook:*'` for filtered history).
-2. **`paused`.** The platform pauses a fleet on its own when it trips a guardrail (rate limit or circuit breaker). While paused it refuses new work — a steer or API call returns `UZ-AGT-012`, and a webhook gets `200 {"ignored":"fleet_paused"}` so upstream senders don't retry. It returns to `active` once the condition clears, and `agentsfleet resume` forces it back early. The CLI cannot *set* `paused` — it is server-only.
-3. **`stopped`.** `agentsfleet stop <fleet_id>` halts the running session — new events stop dispatching, the in-flight run finishes cleanly. Reversible with `agentsfleet resume`. Use this for "pause while I debug upstream"; reach for `kill` only when you mean *terminal*.
-4. **`killed`.** `agentsfleet kill <fleet_id>` marks the fleet terminal. The row, history, and webhook URL persist but no new events are processed. State is checkpointed; nothing on the event stream is lost. Re-installing with the same `SKILL.md` produces a **new** `fleet_id`.
-5. **`delete`.** `agentsfleet delete <fleet_id>` hard-removes the fleet — you must `kill` it first. The row, its `fleet_id`, and its webhook URL are gone — the webhook URL starts returning `UZ-WH-001` for any new POSTs. The activity-stream history is retained for the workspace's retention window per [Observability](/cli/agentsfleet#observability); replays after delete reference the prior `fleet_id` as a historical record only.
+## How it behaves
 
-You can inspect state at any time:
+| State | Meaning | Next actions |
+|---|---|---|
+| `active` | The fleet accepts new events. | Stop or kill |
+| `paused` | A service guard has blocked new events. | Resume after resolving the cause |
+| `stopped` | A user has paused new work. | Resume or kill |
+| `killed` | The fleet can never accept work again. | Delete |
 
-```bash
-agentsfleet status                     # every fleet in the active workspace
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71              # tail one fleet's recent activity
-agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check"   # manual trigger
-```
+Installing a library entry creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
-## Workspace scoping
+Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
 
-Every fleet belongs to exactly one **workspace**. The workspace is the boundary for:
+Deleting a killed fleet removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
 
-- **Secrets** — the vault that fleets read from when they invoke tools. See [Secrets](/fleets/secrets).
-- **Access control** — teammates invited to a workspace can see, start, and kill its fleets; they cannot see fleets in other workspaces.
-- **Webhook namespace** — every fleet in a workspace gets one unique URL per declared trigger under `https://api.agentsfleet.net/v1/webhooks/{fleet_id}/{source}` (one entry per `triggers[].source` in `TRIGGER.md`).
+## Limits
 
-Billing is **not** workspace-scoped — every workspace draws on the same tenant-level billing. See [Billing](/billing/plans) for the model.
+The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.
 
-`agentsfleet workspace add [name]` creates a new workspace and sets it as active. Switch between existing ones with `agentsfleet workspace use <id>` (run `agentsfleet workspace list` first to see the IDs). The dashboard's active-workspace selection is independent — switching there does not affect the CLI and vice versa.
+The service validates `SKILL.md` and `TRIGGER.md` during installation and updates. Invalid files do not replace the active fleet settings.
 
-## What's next
+## Related pages
 
-<CardGroup cols={2}>
-  <Card title="Run your first fleet" icon="circle-play" href="/quickstart">
-    The guided five-minute path: install the `github-pr-reviewer` library entry and watch it react to a real pull request.
-  </Card>
-  <Card title="Install a fleet" icon="download" href="/fleets/install">
-    Install a fleet from the Fleet library in your workspace gallery.
-  </Card>
-  <Card title="Start, stop, observe" icon="circle-play" href="/fleets/running">
-    The `install`, `status`, `events`, `steer`, and `kill` commands.
-  </Card>
-  <Card title="Secrets" icon="key" href="/fleets/secrets">
-    Add secrets to the vault without the fleet ever seeing them.
-  </Card>
-  <Card title="Authoring a fleet" icon="file-code" href="/fleets/authoring">
-    How `SKILL.md` and `TRIGGER.md` combine to define a fleet.
-  </Card>
-</CardGroup>
+- [Install a fleet](/fleets/install)
+- [Run and control a fleet](/fleets/running)
+- [Author a fleet](/fleets/authoring)
+- [Webhooks](/fleets/webhooks)

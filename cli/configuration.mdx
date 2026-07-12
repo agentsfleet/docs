@@ -1,73 +1,56 @@
 ---
-title: "Configuration"
-description: "Configuration precedence and environment variables."
+title: Client configuration
+description: Environment variables and value order for the agentsfleet client.
+type: reference
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-## Auth precedence
+# Client configuration
 
-`agentsfleet login` decides which token to **store**, highest priority first:
+## Synopsis
 
-1. **`--token <value>`** — login-only flag
-2. **Piped stdin** — token read from a pipe
-3. **Browser device flow** — interactive terminals only
+The client reads command options, environment variables, saved login data, and built-in defaults. A value earlier in the documented order wins.
 
-Every **other command** then resolves which bearer to send:
+For authentication, `AGENTSFLEET_API_KEY` overrides the saved login token. The `login` command accepts `--token`, piped input, or browser approval.
 
-- **`AGENTSFLEET_API_KEY`** (a service API key) wins whenever it is set — an exported key overrides whatever `agentsfleet login` stored, so machines and CI authenticate as that key.
-- Otherwise the **stored token** written by `agentsfleet login` to `~/.config/agentsfleet/credentials.json` is used.
-
-`--token` is not accepted on commands other than `login`; set `AGENTSFLEET_API_KEY` for non-interactive script and CI auth.
-
-## API URL precedence
-
-1. **CLI flag** -- `--api https://...`
-2. **Environment variable** -- `AGENTSFLEET_API_URL`
-3. **`.env.local`** -- dev fallback file in the current directory
-4. **Built-in default** -- `https://api.agentsfleet.net`
-
-## Environment variables
-
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `AGENTSFLEET_API_URL` | API base URL | `https://api.agentsfleet.net` |
-| `AGENTSFLEET_DASHBOARD_URL` | Dashboard base URL — used for the login verification page. | `https://app.agentsfleet.net` |
-| `AGENTSFLEET_API_KEY` | Service auth (machine-bound). Sent as the bearer and **overrides a stored `login` session**. Use this for CI, service-to-service calls, and external agents (LangGraph, CrewAI, Composio, your own code). | — |
-| `AGENTSFLEET_STATE_DIR` | Directory for local CLI state (login token, telemetry, session). | `~/.config/agentsfleet` |
-| `NO_COLOR` | Set to `1` to disable color output. | — |
-| `AGENTSFLEET_TELEMETRY_DISABLED` | Set to `1` to opt out of anonymous analytics + tracing. | unset (telemetry on) |
-| `DO_NOT_TRACK` | Set to `1` to opt out via the industry-standard signal ([consoledonottrack.com](https://consoledonottrack.com/)). | unset |
-| `AGENTSFLEET_TELEMETRY_POSTHOG_KEY` | Override the bundled PostHog project key (advanced; for self-hosted PostHog routing). | bundled `phc_*` key |
-| `AGENTSFLEET_TELEMETRY_POSTHOG_HOST` | Override the PostHog ingest host. | `https://us.i.posthog.com` |
-| `AGENTSFLEET_TELEMETRY_DEBUG` | Set to `1` to print span summaries to stderr for local development. | unset |
-
-## Telemetry
-
-`agentsfleet` collects anonymous usage data (command name, exit code, duration, OS, CLI version, detected AI agent if any) to improve the CLI. Identifiers are random UUIDs persisted in `$AGENTSFLEET_STATE_DIR/telemetry.json` (default `~/.config/agentsfleet/telemetry.json`); no source paths, file contents, prompts, or tokens are ever sent.
-
-Telemetry is **on by default**. Opt out per-command, per-shell, or persistently:
+## Example with output
 
 ```bash
-# One command
-AGENTSFLEET_TELEMETRY_DISABLED=1 agentsfleet status
-
-# Whole shell session
-export AGENTSFLEET_TELEMETRY_DISABLED=1
-
-# Industry-standard signal (same effect, honored by many CLIs)
-export DO_NOT_TRACK=1
-
-# Persistent — edit $AGENTSFLEET_STATE_DIR/telemetry.json:
-# (defaults to ~/.config/agentsfleet/telemetry.json)
-#   { "consent": "denied", ... }
+AGENTSFLEET_API_URL=https://api.agentsfleet.net agentsfleet --version
 ```
 
-Either env variable forces consent to `denied` regardless of the persisted value. `DO_NOT_TRACK` is the recommended signal if you opt out of multiple CLIs at once.
-
-## CI usage
-
-In CI environments, set `AGENTSFLEET_API_KEY` from your secrets manager and use `--no-input` for non-interactive operation:
-
-```bash
-export AGENTSFLEET_API_KEY="$AGENTSFLEET_SECRET"
-agentsfleet status --no-input --json
+```text
+<varies>
 ```
+
+## Options
+
+| Name | Effect | Default | Valid range |
+|---|---|---|---|
+| `AGENTSFLEET_API_URL` | Sets the API base URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_DASHBOARD_URL` | Sets the browser login URL. | `https://app.agentsfleet.net` | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_API_KEY` | Authenticates every request and overrides saved login data. | None | Valid tenant API key |
+| `AGENTSFLEET_STATE_DIR` | Stores local credentials, settings, and telemetry consent. | `~/.config/agentsfleet` | Writable directory path |
+| `NO_COLOR` | Disables coloured output when set to `1`. | Unset | `1` or unset |
+| `AGENTSFLEET_TELEMETRY_DISABLED` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
+| `DO_NOT_TRACK` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
+| `AGENTSFLEET_TELEMETRY_DEBUG` | Prints telemetry details to standard error when set to `1`. | Unset | `1` or unset |
+
+The API URL uses this order: `--api`, `AGENTSFLEET_API_URL`, `.env.local`, then the built-in URL.
+
+## Errors
+
+An invalid URL returns exit code `4`. A missing token returns exit code `1`.
+
+A network failure returns exit code `2`. The client does not change saved login data after a network failure.
+
+Do not put tokens in command history. Use `AGENTSFLEET_API_KEY` through your secret manager for unattended commands.
+
+## Related pages
+
+- [Global options](/cli/flags)
+- [Command index](/cli/agentsfleet)
+- [Install the client](/cli/install)

@@ -1,17 +1,18 @@
 ---
-title: "Budgets and cost control"
-description: "Per-fleet dollar ceilings, tenant-wide spend caps, and how debits work."
+title: Fleet budgets
+description: Daily and monthly spending limits for one fleet.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-agentsfleet enforces budgets at two levels: per-fleet ceilings declared in `TRIGGER.md`, and a tenant-wide balance that every run debits against.
+# Fleet budgets
 
-<Note>
-  **Free until July 31, 2026.** During the launch trial, hosted execution is free — the tenant-wallet mechanics below apply **after** the trial. See [pricing](https://agentsfleet.net/pricing).
-</Note>
+## What it is
 
-## Per-fleet ceilings (`daily_dollars` / `monthly_dollars`)
-
-Every fleet declares its own dollar ceilings in `TRIGGER.md`:
+A fleet budget limits how much one fleet can spend. The fleet author sets the budget in `TRIGGER.md`.
 
 ```yaml
 budget:
@@ -19,35 +20,36 @@ budget:
   monthly_dollars: 29.0
 ```
 
-- `daily_dollars` caps spend over a rolling 24-hour window.
-- `monthly_dollars` caps spend over the calendar month.
+`daily_dollars` is required. `monthly_dollars` is optional.
 
-When either ceiling is reached the fleet stops processing new events and a budget breach is recorded in the activity stream. This is the first line of defence — one bad prompt never becomes an infinite burn on a single fleet.
+## Why it exists
 
-Per-event token and wall-clock caps are internal runtime controls. They are not user-configurable in `TRIGGER.md` today.
+Every workspace under one tenant shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
 
-## Tenant wallet
+The fleet owns its budget. Updating the fleet replaces the limits, and deleting the fleet removes them.
 
-Separately, your tenant has a single wallet (the $5 free credit at signup, topped up via Stripe). Every completed run debits this wallet.
+## How it behaves
 
-- The wallet is **tenant-scoped**, not workspace-scoped. All workspaces under your tenant share the same pool.
-- When the wallet hits **zero**, runs across all workspaces stop until the tenant tops up.
-- The wallet balance is visible in the dashboard header and via `agentsfleet billing show`.
+The daily limit covers a rolling 24-hour window. The monthly limit covers one Coordinated Universal Time (UTC) calendar month.
 
-Set a monthly spend cap on your tenant from the billing page at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing).
+`agentsfleet` checks the limits before a run and while the run continues. A reached limit blocks new work and stops an active run at its next billing check.
 
-<Note>A `agentsfleet billing budget set` CLI command is planned for a future release.</Note>
+A blocked event does not retry. Raise the limit, update the fleet, and send a new event.
 
-## Run cancellation
+The fleet, memory, and activity stream survive a budget stop. A stopped run has no final result.
 
-Cancel an in-flight run at any time via CLI or API:
+## Limits
 
-```bash
-agentsfleet kill <fleet_id>
-```
+| Field | Default | Unit | Valid range |
+|---|---|---|---|
+| `daily_dollars` | None; required | Dollars per rolling 24 hours | More than `$0` and at most `$1,000` |
+| `monthly_dollars` | None | Dollars per UTC month | More than `$0` and at most `$10,000` |
 
-Cancelling stops the run at the next lease renewal. The run time already elapsed is metered and debited — cancelling doesn't refund the work done so far. See [Credit deduction timing](#credit-deduction-timing) below for the full rule.
+An invalid budget blocks fleet installation. A stored budget that cannot be read blocks the next run.
 
-## Credit deduction timing
+`UZ-RUN-015` marks a budget stop during a run. `UZ-EXEC-015` records the final failure class.
 
-Credit is metered continuously while a run executes: each background lease renewal debits the elapsed time slice from your tenant balance, and a final settle covers the last partial slice when the run ends. Because billing accumulates as the run proceeds, a run that is cancelled or fails partway through is still charged for the time it actually ran — only a run that never starts, or fails before its first metered slice, costs nothing. The same single tenant wallet is debited for every run, across all workspaces.
+## Related pages
+
+- [Author a fleet](/fleets/authoring)
+- [Error codes](/api-reference/error-codes)
