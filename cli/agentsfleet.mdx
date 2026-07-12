@@ -1,538 +1,153 @@
 ---
-title: "Command reference"
-description: "Complete agentsfleet command reference."
+title: Command reference
+description: Commands available in the agentsfleet command-line client.
+type: reference
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-## Overview
+# Command reference
 
-| Group | Commands |
-|-------|----------|
-| Authentication | `login`, `logout`, `auth status` |
-| Fleets (top-level) | `install --library`, `library`, `list`, `status`, `stop`, `resume`, `kill`, `delete`, `logs`, `events`, `steer` |
-| Fleets (in-place update) | `fleet update --from` |
-| Secrets | `secret add`, `secret show`, `secret list`, `secret delete` |
-| Workspaces | `workspace add`, `workspace list`, `workspace use`, `workspace show`, `workspace secrets`, `workspace delete` |
-| Memory | `memory list`, `memory search` |
-| Fleet keys (external access) | `fleet-key add`, `fleet-key list`, `fleet-key delete` |
-| Integration grants | `grant list`, `grant delete` |
-| Billing | `billing show` |
-| Tenant provider | `tenant provider show`, `tenant provider add`, `tenant provider delete` |
-| Diagnostics | `doctor` |
+## Synopsis
 
-Every command accepts the [global flags](/cli/flags). Every command that returns structured data supports `--json` for machine-readable output.
+The command-line interface (CLI) manages workspaces, fleets, access, secrets, and memory.
 
----
-
-## Authentication
-
-### `agentsfleet login`
-
-Authenticate via a Clerk-backed browser device flow with terminal-side verification. Opens your default browser to the approval page; on Approve, the page displays a 6-digit verification code which you type back into the CLI to complete login. The verification code binds the browser approver to the terminal user — phishing the URL alone is not enough to mint a token.
-
-```bash
-agentsfleet login
+```text
+agentsfleet [GLOBAL_OPTIONS] <COMMAND>
 ```
 
-```bash
-# Label this device for visibility in `auth status` and on the approval page
-agentsfleet login --token-name "kishore-macbook"
-```
+`<COMMAND>` comes from the tables below. Run any command with `--help` to see its accepted values.
+
+Identifier placeholders come from the matching create or list command. You choose name, path, provider, message, and query values.
+
+## Example with output
 
 ```bash
-# Non-interactive (CI, scripts): supply a token instead of the browser flow
-agentsfleet login --token "$MY_TOKEN"
-# …or pipe it so it never lands in shell history
-printf '%s' "$MY_TOKEN" | agentsfleet login
+agentsfleet --help
 ```
 
-After the token persists, `login` also fetches `GET /v1/tenants/me/workspaces` and writes the first workspace into local state as `current_workspace_id`. Signup auto-provisions a default workspace, so a fresh `npm i -g @agentsfleet/cli && agentsfleet login` is enough to reach `agentsfleet doctor` green — `workspace add` is only needed if you want a second or custom-named workspace, or if the workspace fetch failed (login still exits 0 in that case).
+```text
+Usage: agentsfleet [options] [command]
 
-Flags:
+Options:
+  -v, --version    Show version
+  --api <url>      API base URL
+  --json           Machine-readable JSON output
+  <varies>
 
-- `--token <token>` — authenticate non-interactively with a token directly, skipping the browser entirely; the token is validated against the server and persisted. Prefer piping the token on stdin to keep it out of your shell history. `--token-name` is ignored for any non-browser token source — `--token` or piped stdin — since there's no browser session to label.
-- `--token-name <label>` — human-readable device label persisted alongside the token. Defaults to your platform family (`macos-cli`, `linux-cli`, `windows-cli`). Shows up on the dashboard approval page (so you know which terminal you're approving for) and in `agentsfleet auth status`.
-- `--no-open` — print the auth URL instead of opening a browser automatically.
-- `--force` — skip the "you're already logged in as `<name>`, replace?" prompt.
-- `--no-input` — fail fast instead of prompting for the verification code. Supply a token non-interactively via `--token` or piped stdin.
-
-`agentsfleet login` resolves a token in priority order — the `--token` flag, then a token piped on stdin — and falls back to the browser device flow only on an interactive terminal with neither set. A non-interactive shell (`--no-input`, or no terminal) with no token exits immediately with an error instructing you to supply one via `--token` or piped stdin — the verification code can't be entered without a terminal. For unattended machine auth that doesn't log in at all, set `AGENTSFLEET_API_KEY` (it overrides a stored login on every command).
-
-The login session lives 5 minutes; an unfinished approval expires automatically. The verification code's 6-digit shape is checked locally before it's sent, so a typo just re-prompts. Wrong (but well-formed) code attempts cap at 5 per session — a sixth wrong code aborts the session and you re-run `agentsfleet login`.
-
-### `agentsfleet logout`
-
-Removes the local login token (`~/.config/agentsfleet/credentials.json`) and aborts any in-flight `agentsfleet login` flows you have pending.
-
-```bash
-agentsfleet logout
+Commands:
+  login [options]  Authenticate via browser
+  workspace        Manage workspaces
+  fleet            Fleet management subcommands
+  <varies>
 ```
 
-Does **NOT** revoke your active session token — JWTs are short-lived and expire on their own. Does **NOT** touch the `AGENTSFLEET_API_KEY` environment variable — if it's set, subsequent commands continue to authenticate with that key (it overrides a stored login) until you unset it.
+## Options
 
-### `agentsfleet auth status`
+### Global options
 
-Inspect the active token without re-authenticating. Resolves the token source (`AGENTSFLEET_API_KEY` env vs the stored login file vs none), decodes the login JWT's claims when present (`iss`, `aud`, `sub`, `metadata.tenant_id`, `metadata.role`, `exp`), surfaces the `token_name` label persisted at login, and probes `GET /v1/tenants/me/billing` to check the token is still accepted by the server.
+`<API_URL>` is the API base URL for your deployment.
 
-```bash
-agentsfleet auth status
-agentsfleet auth status --json
-```
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `-v`, `--version` | Prints the client version and exits. | `false` | Boolean |
+| `--api <API_URL>` | Sends requests to this API URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
+| `--json` | Prints JSON when the command supports it. | `false` | Boolean |
+| `--no-input` | Returns an error instead of asking a question. | `false` | Boolean |
+| `--no-open` | Prints the login URL instead of opening a browser. | `false` | Boolean |
+| `-h`, `--help` | Prints help and exits. | `false` | Boolean |
 
-Exit codes:
+### Account and diagnosis
 
-- `0` — token valid, or server unreachable (transient API issues don't poison local state).
-- `1` — no token configured, or the server rejected the token (`UZ-AUTH-001` / `UZ-AUTH-002` / `TOKEN_EXPIRED`). Re-run `agentsfleet login`.
-
-The probe result is one of `valid` (200 from the billing endpoint), `unauthorized` (server rejected), or `unreachable` (network / 5xx). `unreachable` is informational — the local token is unchanged.
-
----
-
-## Fleets
-
-### `agentsfleet install --library <id>`
-
-Install a fleet from your workspace gallery — the first-party platform catalogue plus your workspace's own onboarded library entries. agentsfleet resolves the entry by id, fetches its pinned `SKILL.md` + `TRIGGER.md`, prints a requirements preview (credentials, tools, network hosts), then creates the fleet in the active workspace. `install` takes exactly one source, `--library <id>`; there are no bare-name aliases and no local-directory install.
-
-```bash
-agentsfleet install --library github-pr-reviewer
-agentsfleet install --library github-pr-reviewer --name pr-reviewer-frontend
-```
-
-If the entry ships no `TRIGGER.md`, a default API wake is generated and the result notes it.
-
-To run a fleet you wrote yourself, onboard its `SKILL.md` + `TRIGGER.md` as a template first — via the dashboard or the API (`POST /v1/admin/fleet-libraries` for the platform tier, `POST /v1/workspaces/{workspace_id}/fleet-libraries` for a workspace entry) — then install it by id. Frontmatter is validated at onboard time. There is no CLI onboard command. See [Authoring a fleet](/fleets/authoring) and [Fleet library](/fleets/library).
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--library <id>` | *(required)* | Install from a workspace-gallery entry by id (browse the platform tier with `agentsfleet library`). |
-| `--name <name>` | *(SKILL.md `name:`)* | Override the fleet name so one library entry can back several fleets in a workspace. Without it, a second install of the same entry collides with `UZ-AGT-006`. |
-
-### `agentsfleet library`
-
-List the first-party library catalogue — the same gallery the dashboard shows. Reads `GET /v1/fleets/bundles`; metadata only, no workspace required.
-
-```bash
-agentsfleet library
-agentsfleet library --json
-```
-
-Prints a table of entry id, name, and required credentials. Pass `--json` for the full metadata (declared tools, network hosts, and `required_credentials_reasons` when the entry declares per-credential purpose copy). The table output is unchanged. Install one with `agentsfleet install --library <id>`. See [Fleet library](/fleets/library).
-
-### `agentsfleet fleet update <fleet_id> --from <path>`
-
-Re-parse `SKILL.md` and `TRIGGER.md` from a local bundle and `PATCH` them onto an existing fleet — the in-place counterpart to `install`. Use it to roll a configuration change onto an already-registered fleet without re-creating it.
-
-```bash
-agentsfleet fleet update 01900000-0000-7000-8000-000000000001 --from ./my-fleet
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--from <path>` | *(required)* | Local bundle whose `SKILL.md` + `TRIGGER.md` are re-parsed and patched onto the fleet. |
-
-### `agentsfleet list`
-
-List fleets in the active workspace. Keyset-paginated over `(created_at, id)` — the dashboard `/fleets` page uses the same contract.
-
-```bash
-agentsfleet list --limit 20
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--workspace-id <id>` | *(active)* | Override the active workspace for this call. |
-| `--limit <n>` | `20` | Page size. Clamped to `100`. |
-| `--cursor <cursor>` | *(none)* | Cursor from a previous response's `cursor` field. |
-| `--json` | *off* | Emit the raw `{items, total, cursor}` envelope for scripting. |
-
-Human-readable output prints a table and, when more pages remain, a "Next" hint with the exact cursor to pass back.
-
-### `agentsfleet status`
-
-List every fleet in the current workspace with state, events processed, and budget consumed.
-
-```bash
-agentsfleet status
-```
-
-### Fleet lifecycle: `stop` / `resume` / `kill` / `delete`
-
-Four verbs control a fleet's lifecycle, in increasing order of irreversibility:
-
-| Verb | What it does | Reversible? |
-|---|---|---|
-| `stop <fleet_id>` | Halt the running session. New events stop dispatching; in-flight run finishes cleanly. | Yes — `agentsfleet resume`. |
-| `resume <fleet_id>` | Resume from `stopped` or auto-paused state. | — |
-| `kill <fleet_id>` | Mark terminal. The fleet won't process events again, but its row, history, and webhook URL persist. | No, but the fleet can be `delete`d after. |
-| `delete <fleet_id>` | Hard-delete. Removes the fleet row and its webhook URL. **Must `kill` first.** | No. |
-
-```bash
-agentsfleet stop   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # pause; resumable
-agentsfleet resume 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # back to active
-agentsfleet kill   0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # terminal; webhook still 200s but routes nowhere new
-agentsfleet delete 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71   # hard-delete; webhook URL starts returning UZ-WH-001
-```
-
-State is checkpointed at every transition — nothing on the activity stream is lost until the final `delete`.
-
-### `agentsfleet logs <fleet_id>`
-
-Print the fleet's recent activity stream — newest-first, paginated.
-
-```bash
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --limit 50 --cursor <next_cursor>
-agentsfleet logs 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--limit <n>` | `20` | Page size. |
-| `--cursor <cursor>` | *(none)* | Pagination cursor returned as `next_cursor` in a previous response. |
-| `--json` | off | Emit the raw `{ items, next_cursor }` envelope. |
-
-The fleet ID may also be passed via `--fleet <id>` for scripting symmetry with `events`.
-
-### `agentsfleet events <fleet_id>` — filtered history
-
-Richer filter surface than `logs`. Use this when you need to slice by actor or time window — for example, when [troubleshooting](/fleets/troubleshooting) a specific webhook source.
-
-```bash
-agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'webhook:*' --since 2h
-agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --actor 'steer:*' --since 7d --limit 100
-agentsfleet events 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --json | jq 'select(.error)'
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--actor <glob>` | *(none)* | Filter by actor — `webhook:*`, `cron:*`, `steer:*`. |
-| `--since <duration>` | `24h` | Time window — Go-style duration (`2h`, `7d`) or RFC 3339 timestamp. |
-| `--cursor <cursor>` | *(none)* | Pagination cursor from a previous response. |
-| `--limit <n>` | `50` | Max events per page. |
-| `--json` | off | Emit raw JSON for scripting. |
-
-There is no `--follow`/streaming-tail flag today. To watch live, poll `events --since 30s` from a script.
-
-### `agentsfleet steer <fleet_id> [message]`
-
-Post a steer message — a manual trigger that uses the same reasoning loop as a webhook event. Useful for ad-hoc investigation or before a webhook is wired up.
-
-```bash
-agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 "morning health check — anything red?"
-echo "check the latest deploy event" | agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-printf "check the latest deploy event\ncheck memory usage\n" | agentsfleet steer 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --tty
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--tty` | *(auto on TTY)* | Force the interactive REPL even when stdin is piped — each line is a separate turn; exits at end-of-file. |
-| `--json` | off | Emit the steer result as JSON. |
-
-When you invoke `agentsfleet steer <fleet_id>` from a terminal (TTY) and omit the message, `agentsfleet` opens a read-eval-print loop (REPL). Each submitted line posts one steer message, streams the reply, then returns to the prompt. Press `Ctrl-D` to exit cleanly, or `Ctrl-C` to cancel the active stream and exit.
-
-Explicit messages stay single-shot, even from a terminal. Piped input also stays single-shot by default so automation and agents can continue invoking the command once per turn. Add `--tty` to force the REPL over piped input; `agentsfleet` exits when the pipe reaches end-of-file.
-
-The reply streams back live; the result also persists to the activity stream for replay.
-
----
-
-## Secrets
-
-### `agentsfleet secret add <name> --data=@-`
-
-Store a JSON-shaped secret in the current workspace vault. The fleet references it by name from `TRIGGER.md`.
-
-Always pipe JSON on stdin via `--data=@-`. Never pass it inline as `--data='{...}'` — that puts the secret in shell history and process argv:
-
-```bash
-agentsfleet secret add github --data=@- <<'JSON'
-{ "api_token": "ghp_...", "webhook_secret": "<32-byte hex>" }
-JSON
-```
-
-Default behaviour is skip-if-exists. Use `--force` to overwrite for rotation.
-
-For a **model-provider** secret (own-key model setup), use typed flags instead of `--data` — including any OpenAI-compatible endpoint:
-
-```bash
-agentsfleet secret add my-gateway \
-  --provider openai-compatible --base-url https://gateway.example.com/v1 \
-  --model my-model \
-  --api-key sk-...          # optional — omit for a keyless gateway
-```
-
-`--base-url` is required and `https`-only (rejected at parse, no network call); `--model` is required; `--api-key` is optional for a keyless gateway. The typed flags and `--data` are mutually exclusive.
-
-See [Secrets](/fleets/secrets) for the full vault model.
-
-### `agentsfleet secret show <name>`
-
-Print metadata (created, last-rotated). **Values are never returned.**
-
-### `agentsfleet secret delete <name>`
-
-Remove a secret from the workspace vault. Any fleet still referencing it will fail with `UZ-AGT-003` (credential missing) on the next event until you re-add it (or update `TRIGGER.md`). See [Error codes](/api-reference/error-codes).
-
-### `agentsfleet secret list`
-
-List secret names and creation timestamps in the current workspace. Values are never returned.
-
-```bash
-agentsfleet secret list
-```
-
-`--json` additionally carries each secret's server-derived `kind` (`provider_key`, `custom_endpoint`, or `custom_secret`) and its non-secret `provider` / `model` / `base_url` — the `api_key` is never among them.
-
----
-
-## Workspaces
-
-### `agentsfleet workspace add [name]`
-
-Create a new workspace under the current tenant and set it as active. The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are not bound to a specific GitHub repo at creation time.
-
-```bash
-agentsfleet workspace add                       # server-assigned name
-agentsfleet workspace add my-platform-ops       # named workspace
-```
-
-Returns the new `workspace_id` and persists it as `current_workspace_id` in `~/.config/agentsfleet/workspaces.json`. Subsequent commands use it by default.
-
-### `agentsfleet workspace list`
-
-List all configured workspaces with an active marker.
-
-```bash
-agentsfleet workspace list
-```
-
-### `agentsfleet workspace use <id>`
-
-Set the active workspace persistently. Writes `current_workspace_id` to `~/.config/agentsfleet/workspaces.json`; every subsequent command that accepts `--workspace-id` defaults to this value when the flag is omitted.
-
-```bash
-agentsfleet workspace use 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
-```
-
-Errors out if the id isn't in the local list (run `agentsfleet workspace list` first). The dashboard's own `active_workspace_id` cookie and the CLI config are independent — switching one does not affect the other. See [Workspaces overview](/workspaces/overview).
-
-### `agentsfleet workspace show`
-
-Show the active workspace (or a specific one via `--workspace-id`) — mirrors the dashboard **Settings** page.
-
-```bash
-agentsfleet workspace show
-```
-
-Prints the workspace's `workspace_id`, `name`, `created_at`, and active marker. Use `--json` for scripting.
-
-### `agentsfleet workspace delete <id>`
-
-Delete a workspace and everything in it. Stops accepting new events immediately, lets in-flight runs finish, retains run history for 30 days. Cannot be undone — recreating a workspace produces a fresh `workspace_id` and fresh `fleet_id`s, so any upstream webhooks pointing at the old workspace's fleets need to be re-wired.
-
-```bash
-agentsfleet workspace delete 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
-```
-
----
-
-## Memory
-
-A read-only window into a fleet's durable memory. There is no write verb — the tenant memory plane is read-only by architecture; fleets write their own memory during runs.
-
-### `agentsfleet memory list`
-
-List memory entries newest-first.
-
-```bash
-agentsfleet memory list --fleet 01900000-0000-7000-8000-000000000001
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--fleet <id>` | *(active)* | Fleet whose memory to read. |
-| `--category <name>` | *(all)* | Filter to a single memory category. |
-| `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
-| `--workspace <id>` | *(active)* | Override the active workspace for this call. |
-
-### `agentsfleet memory search <query>`
-
-Substring-search keys and content across a fleet's memory.
-
-```bash
-agentsfleet memory search "deploy" --fleet 01900000-0000-7000-8000-000000000001
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--fleet <id>` | *(active)* | Fleet whose memory to search. |
-| `--limit <n>` | server default | Max entries to return (clamped to the server cap). |
-| `--workspace <id>` | *(active)* | Override the active workspace for this call. |
-
----
-
-## Fleet keys (external access)
-
-A **fleet key** is an API key that lets an external caller (LangGraph, CrewAI, Composio, your own code) drive a specific fleet programmatically.
-
-### `agentsfleet fleet-key add`
-
-Mint an API key bound to one fleet.
-
-```bash
-agentsfleet fleet-key add --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --name my-fleet
-```
-
-The raw key (`agt_a…`) is returned **once**; store it in your secret manager.
-
-### `agentsfleet fleet-key list`
-
-List every fleet key in a workspace.
-
-```bash
-agentsfleet fleet-key list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
-```
-
-### `agentsfleet fleet-key delete <fleet-key-id>`
-
-Revoke a fleet key.
-
-```bash
-agentsfleet fleet-key delete --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50 0198a7b4-6e1a-7c93-b052-8f3d2a1e7c46
-```
-
----
-
-## Connectors
-
-Connector commands are read-only. They show whether the platform has configured each provider and whether the active workspace has connected it.
-
-### `agentsfleet connector list`
-
-List GitHub, Slack, Zoho Desk, Jira, and Linear with a stable state and next action.
-
-```bash
-agentsfleet connector list
-agentsfleet connector list --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
-agentsfleet connector list --json
-```
-
-| State | Meaning |
+| Command | Effect |
 |---|---|
-| `connected` | The workspace connection is ready. |
-| `not_connected` | The provider is available, but this workspace has not connected it. |
-| `reconnect_required` | The saved provider authorization must be renewed. |
-| `unconfigured` | The platform administrator has not configured the provider App keys. |
+| `agentsfleet login` | Signs in through a browser or supplied token. |
+| `agentsfleet logout` | Revokes every active session and clears local credentials. |
+| `agentsfleet auth status` | Shows the token source, claims, and server status. |
+| `agentsfleet doctor` | Checks client settings, authentication, and API access. |
 
-### `agentsfleet connector status <provider>`
+### Workspaces and access
 
-Show the stable state plus provider-specific details for one connector.
+| Command | Effect |
+|---|---|
+| `agentsfleet workspace create [NAME]` | Creates a workspace and selects it. |
+| `agentsfleet workspace list` | Lists workspaces. |
+| `agentsfleet workspace use <WORKSPACE_ID>` | Selects the active workspace on this computer. |
+| `agentsfleet workspace show [WORKSPACE_ID]` | Shows one workspace. |
+| `agentsfleet workspace secrets` | Prints the secret command and dashboard path. |
+| `agentsfleet workspace delete <WORKSPACE_ID>` | Removes one workspace from local client state. Remote data remains. |
+| `agentsfleet fleet-key create` | Creates a key bound to one fleet. The raw key appears once. |
+| `agentsfleet fleet-key list` | Lists fleet keys without raw values. |
+| `agentsfleet fleet-key delete <FLEET_KEY_ID>` | Revokes a fleet key. Calls using that key fail. |
+| `agentsfleet api-key create` | Creates a tenant API key. The raw key appears once. |
+| `agentsfleet api-key list` | Lists tenant API keys. |
+| `agentsfleet api-key revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
+| `agentsfleet api-key delete <API_KEY_ID>` | Deletes metadata for a revoked tenant API key. |
+| `agentsfleet connector list` | Lists connector setup and connection state. |
+| `agentsfleet connector status <PROVIDER>` | Shows one connector. |
+| `agentsfleet grant list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
+| `agentsfleet grant delete --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
 
-```bash
-agentsfleet connector status github
-agentsfleet connector status slack --workspace 0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50
-agentsfleet connector status github --json
-```
+### Fleets
 
-An unknown provider fails before an API request and points you to `agentsfleet connector list`. A server or network failure returns a non-zero exit code. A valid disconnected or unconfigured state is a successful inspection and returns zero.
+| Command | Effect |
+|---|---|
+| `agentsfleet library` | Lists installable library entries. |
+| `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. |
+| `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
+| `agentsfleet list` | Lists fleets in the active workspace. |
+| `agentsfleet status` | Shows every fleet in the active workspace. |
+| `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
+| `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. |
+| `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. |
+| `agentsfleet delete <FLEET_ID>` | Deletes a killed fleet and its stored data. This cannot be undone. |
+| `agentsfleet logs [FLEET_ID]` | Shows recent activity. |
+| `agentsfleet events <FLEET_ID>` | Lists historical events with filters. |
+| `agentsfleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. |
 
----
+`agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
-## Integration grants
+### Secrets and memory
 
-Integration grants are per-fleet permissions to reach a third-party service (Slack workspace, GitHub repo) that the fleet requested interactively.
+| Command | Effect |
+|---|---|
+| `agentsfleet secret create <NAME>` | Stores a JSON object in the workspace vault. |
+| `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
+| `agentsfleet secret list` | Lists secret names and metadata. |
+| `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
+| `agentsfleet memory list --fleet <FLEET_ID>` | Lists memory entries newest first. |
+| `agentsfleet memory search <QUERY> --fleet <FLEET_ID>` | Searches memory keys and content. |
 
-### `agentsfleet grant list --fleet <id>`
+`agentsfleet secret delete` has no dry-run option. The deleted secret value cannot be recovered.
 
-List pending and approved grants for a fleet.
+### Tenant settings
 
-```bash
-agentsfleet grant list --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-```
+| Command | Effect |
+|---|---|
+| `agentsfleet tenant provider show` | Shows the active model provider. |
+| `agentsfleet tenant provider create --secret <NAME>` | Selects a self-managed provider secret. |
+| `agentsfleet tenant provider delete` | Returns the tenant to the platform provider. |
+| `agentsfleet billing show` | Shows the tenant balance and recent charges. |
 
-### `agentsfleet grant delete --fleet <id> <grant-id>`
+## Errors
 
-Revoke a granted integration. Further attempts by the fleet to reach that integration fail with `UZ-GRANT-003`.
+| Exit code | Meaning |
+|---|---|
+| `0` | The command succeeded. |
+| `1` | Authentication, session, or unexpected failure. |
+| `2` | Network failure, rate limit, or invalid command input. |
+| `3` | The API returned a server failure. |
+| `4` | A supplied value failed validation. |
+| `5` | Local configuration is missing or invalid. |
+| `130` | You interrupted the command. |
 
-```bash
-agentsfleet grant delete --fleet 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 0198a7b4-2b5c-7d18-8f63-4e9a1c7d3b20
-```
+API failures include a stable error code and request identifier when the server supplies them. Use both values when reporting a problem.
 
----
+## Related pages
 
-## Billing
-
-### `agentsfleet billing show`
-
-Show the tenant's wallet balance and recent charges. Tenant-scoped (the wallet is tenant-level), not per-workspace.
-
-```bash
-agentsfleet billing show
-agentsfleet billing show --limit 50
-agentsfleet billing show --cursor <next_cursor>
-agentsfleet billing show --json
-```
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--limit <n>` | *(server)* | Page size for the charges list. |
-| `--cursor <cursor>` | *(none)* | Pagination cursor from a previous response. |
-| `--json` | off | Emit raw JSON for scripting. |
-
-For per-fleet spend breakdowns, use `agentsfleet logs <fleet_id> --json` and aggregate the `tokens` / `wall_ms` fields client-side. Top-ups and payment-method updates happen at [app.agentsfleet.net/billing](https://app.agentsfleet.net/billing).
-
----
-
-## Tenant provider
-
-By default your tenant runs on **platform-managed** inference — agentsfleet holds a Fireworks key for Kimi K2.6 and bills you for the tokens at retail rate, bundled into the run charge. You can flip the tenant to **self-managed** at any time: store your own provider secret — a named provider (Anthropic, OpenAI, Fireworks, Together, Groq, Moonshot) or [any **OpenAI-compatible** endpoint](/fleets/secrets#model-provider-secrets-own-key-model-setup) (a self-hosted vLLM server, a gateway, OpenRouter) — in the vault under a name you choose, then point the tenant at it. On self-managed runs the per-second run fee still applies, but there is no added per-token cost from agentsfleet — you pay your provider directly. See [pricing](https://agentsfleet.net/#pricing) for current rates.
-
-### `agentsfleet tenant provider show`
-
-Print the active posture, model, context-cap, and (for self-managed) the secret name. `--json` for the structured shape.
-
-```bash
-agentsfleet tenant provider show
-agentsfleet tenant provider show --json
-```
-
-### `agentsfleet tenant provider add --secret <name>`
-
-Activate a self-managed secret for the tenant. The secret must already exist in the workspace vault (`agentsfleet secret add <name>`). The command validates the secret structure and pins the model into the tenant's provider row. For a named provider the server resolves the model's context cap from the model library (`core.model_library`); an **OpenAI-compatible** endpoint bypasses the catalogue (it bills against your own provider, so its model need not be catalogued). A missing, malformed, or unsafe-`base_url` secret is rejected with a typed `UZ-PROVIDER-*` error — see [Error codes](/api-reference/error-codes).
-
-```bash
-# 1. Store the provider secret
-agentsfleet secret add account-fireworks --data='{"provider":"fireworks","api_key":"fw_…","model":"accounts/fireworks/models/kimi-k2.6"}'
-
-# 2. Activate it for the tenant
-agentsfleet tenant provider add --secret account-fireworks
-```
-
-In-flight events finish under the snapshot they were claimed under; the next event's debits use the new posture.
-
-### `agentsfleet tenant provider delete`
-
-Drop the explicit `tenant_providers` row and fall back to the platform-managed synth-default.
-
-```bash
-agentsfleet tenant provider delete
-```
-
-For the install-time vs trigger-time resolution flow, the frontmatter overlay sentinels, and the provider routing details, see [`docs/architecture/user_flow.md` §8.7](https://github.com/agentsfleet/agentsfleet/blob/main/docs/architecture/user_flow.md#87-model-and-context-cap-origin-platform-vs-self-managed) and [`docs/architecture/billing_and_provider_keys.md`](https://github.com/agentsfleet/agentsfleet/blob/main/docs/architecture/billing_and_provider_keys.md). The architecture is the canonical reference; this page is the command surface.
-
----
-
-## Diagnostics
-
-### `agentsfleet doctor`
-
-Verify API connectivity, authentication, and local configuration. Does not require authentication.
-
-```bash
-agentsfleet doctor
-```
-
----
-
-See [`docs/architecture/`](https://github.com/agentsfleet/agentsfleet/tree/main/docs/architecture) for the full technical reference.
+- [Install the client](/cli/install)
+- [Global options](/cli/flags)
+- [Client configuration](/cli/configuration)
+- [Quickstart](/quickstart)

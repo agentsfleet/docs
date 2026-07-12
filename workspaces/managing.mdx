@@ -1,79 +1,95 @@
 ---
-title: "Managing workspaces"
-description: "Create, list, and remove workspaces."
+title: Manage workspaces
+description: Create, select, inspect, and remove local workspace entries.
+type: how-to
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-## Add a workspace
+# Manage workspaces
 
-```bash
-agentsfleet workspace add [name]
-```
+## What this does
 
-The optional positional `name` is a human label; if omitted, the server picks a default. There is no repo URL — workspaces are tenant-scoped containers for secrets, fleets, and webhook namespaces. Repos enter the picture later, when you configure per-fleet webhooks (see [Quickstart](/quickstart)).
+These commands create a remote workspace and manage the client's local workspace list.
 
-For example:
+## Before you begin
 
-```bash
-agentsfleet workspace add platform-ops
-```
+Install the client and sign in. Account setup normally creates and selects your first workspace.
 
-The command creates the workspace, returns its `workspace_id`, and persists it as the active workspace in `~/.config/agentsfleet/workspaces.json`.
+## Steps
 
-## List workspaces
+1. Create a named workspace.
 
-```bash
-agentsfleet workspace list
-```
+   ```bash
+   agentsfleet workspace create platform-ops
+   ```
 
-Lists every workspace under your tenant that the local CLI knows about, with the active marker.
+   ```text
+   Workspace added
+   workspace_id: <varies>
+   name: platform-ops
+   ```
 
-```
-   WORKSPACE                               NAME
-*  0198a7b0-3c2d-7f14-9a08-1b6e4d2f8c50    platform-ops
-   0198a7b1-5d3e-7a29-b410-2c7f5e1a9d63    stripe-recon
-   0198a7b1-8f4a-7c1d-9e52-3a8b6d2f0c91    sentry-triage
-```
+2. List local workspace entries.
 
-The leading `*` marks the active workspace (the one set by `agentsfleet workspace use`). Add `--json` for the raw `{ items, current_workspace_id }` envelope.
+   ```bash
+   agentsfleet workspace list
+   ```
 
-## Switch the active workspace
+   ```text
+   ACTIVE    WORKSPACE                               NAME
+   *         <varies>                                platform-ops
+   ```
 
-```bash
-agentsfleet workspace use <workspace-id>
-```
+3. Select a workspace.
 
-Makes the workspace active for subsequent CLI commands — `agentsfleet install --library`, `agentsfleet list`, `agentsfleet status`, `agentsfleet logs`, `agentsfleet events`, `agentsfleet steer`, and anything else that accepts a `--workspace-id` flag defaults to this value when the flag is omitted.
+   `<WORKSPACE_ID>` comes from the list output.
 
-The choice is persisted to `~/.config/agentsfleet/workspaces.json` (`current_workspace_id` field), so it survives across shells and sessions.
+   ```bash
+   agentsfleet workspace use <WORKSPACE_ID>
+   ```
 
-Errors out if the id isn't in your local list — run `agentsfleet workspace list` first to see what's available.
+   ```text
+   ✓ active workspace: <varies>
+   ```
 
-<Tip>
-  The dashboard at [app.agentsfleet.net](https://app.agentsfleet.net) has its own workspace switcher backed by a cookie. The CLI config and the dashboard cookie are independent — switching one does **not** affect the other. Useful when you want the CLI pointed at staging while the browser watches production.
-</Tip>
-
-## Show the active workspace
+## Verify it works
 
 ```bash
 agentsfleet workspace show
 ```
 
-Prints the active workspace's `workspace_id`, `name`, `created_at`, and active marker. Pass `--workspace-id <id>` to inspect a specific workspace without changing the active one. Add `--json` for scripting.
-
-This mirrors the dashboard **Settings** page.
-
-## Delete a workspace
-
-```bash
-agentsfleet workspace delete <workspace-id>
+```text
+Workspace
+workspace_id: <varies>
+active: yes
+name: <varies>
 ```
 
-Deleting a workspace:
+## Common problems
 
-- Stops accepting new events immediately.
-- Allows in-flight runs to complete.
-- Retains run history for 30 days.
+An unknown workspace identifier is rejected because it is absent from local state. Run `workspace list` before `workspace use`.
 
-<Warning>
-  This action cannot be undone. You'll need to recreate the workspace, re-add its secrets, and re-install its fleets. Webhook URLs change because each new fleet gets a fresh `fleet_id`, so any upstream webhook configurations will need to be updated too.
-</Warning>
+The dashboard and client keep separate active-workspace choices. Changing one does not change the other.
+
+## Remove or undo
+
+This command removes the workspace only from local client state. It does not delete remote fleets, secrets, events, or the workspace record.
+
+`<WORKSPACE_ID>` comes from `agentsfleet workspace list`.
+
+```bash
+agentsfleet workspace delete <WORKSPACE_ID>
+```
+
+```text
+✓ workspace removed from local state: <varies>
+```
+
+## Related pages
+
+- [Workspace overview](/workspaces/overview)
+- [Client configuration](/cli/configuration)
+- [Quickstart](/quickstart)

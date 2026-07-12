@@ -1,91 +1,53 @@
 ---
-title: "Fleet library"
-description: "The platform library catalogue and your workspace's own library entries — pre-built fleets you install with one command."
+title: Fleet library
+description: Understand platform and workspace library entries.
+type: explanation
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-A **library entry** is a pre-built fleet you install in one command, `agentsfleet install --library <id>`. Two tiers share that one install path:
+# Fleet library
 
-- The **platform catalogue** — curated entries hosted by agentsfleet, browsable with `agentsfleet library` and installed by id.
-- Your **workspace's own library** — tenant entries onboarded into your workspace; once they appear in your gallery they install by the same `--library <id>`.
+## What it is
 
-There is no `install --from <dir>` — installing a fleet is always by library id. To run a fleet you authored, onboard it as a template first (via **Add template** in the dashboard or the API), then `install --library <id>`. To push local edits to an *already-installed* fleet, use `agentsfleet fleet update <id> --from <dir>` (see [below](#editing-an-installed-fleet-from-a-local-directory)).
+A library entry is a checked fleet bundle. Each entry contains `SKILL.md`, optional `TRIGGER.md`, support files, and requirement summaries.
 
-<Tip>
-  New here? The [Quickstart](/quickstart) runs the `github-pr-reviewer` entry end to end — browse, add the secret, install, register the webhook, and watch it react to a real pull request.
-</Tip>
+The platform library is visible to every workspace. A workspace library entry is visible only inside its owning workspace.
 
-## Browse the catalogue
+## Why it exists
 
-`agentsfleet library` lists the curated platform catalogue. It reads `GET /v1/fleets/bundles`; metadata only, no workspace required. (The dashboard install gallery shows the same platform entries **plus** any tenant entries onboarded into your workspace.)
+The library gives each installation a known source. It also lets `agentsfleet` check required secrets, tools, and network hosts before creation.
+
+## How it behaves
+
+Platform administrators create platform entries. Authorized workspace members create workspace entries from a GitHub repository through the dashboard or API.
+
+Re-adding identical content to one workspace returns the existing content identity. Installing an entry creates a separate fleet owned by that workspace.
 
 ```bash
 agentsfleet library
 ```
 
-```
-LIBRARY                        NAME                            CREDENTIALS
+```text
+LIBRARY                        NAME                            SECRETS
 github-pr-reviewer             GitHub Pull Request reviewer    github
-security-reviewer              Security reviewer               github
-zoho-sprint-daily-summarizer   Zoho Sprints daily summarizer   zoho
+<varies>
 ```
 
-Each row shows the entry id, its name, and the secrets it needs. Wire those into the workspace vault (see [Secrets](/fleets/secrets)) before or after install. Pass `--json` for the full metadata — declared tools, network hosts, and `required_credentials_reasons`, a per-credential map of display-only "why this fleet needs it" copy the dashboard install gate renders. The reasons are purpose text only; install validation reads `required_credentials`, never the reasons.
+New fleets install only by library identifier. Local files can update an existing fleet with `agentsfleet fleet update`.
 
-## Add a workspace template from the dashboard
+## Limits
 
-Use **Add library entry** when you have a GitHub repository you want to install from your workspace gallery. In the dashboard, open **Fleets → Install fleet**, click **Add library entry**, and enter the repository as `owner/repo`.
+`SKILL.md` and `TRIGGER.md` each allow 200 KiB. A bundle can contain up to 32 support files and 256 KiB across those files.
 
-The repository root must contain `SKILL.md`; `TRIGGER.md` is optional. agentsfleet fetches the files, validates the frontmatter described in [Authoring a fleet](/fleets/authoring), and adds the result to your workspace gallery. After the dialog closes, the entry appears next to the platform catalogue and installs by id.
+Each support file allows 64 KiB and a 160-character safe relative path. Secret-shaped support content is rejected.
 
-The dashboard adds workspace-tier entries only. Platform-tier onboarding remains `POST /v1/admin/fleet-libraries`.
+There is no public command to delete a workspace library entry. Removing a fleet does not remove its library entry.
 
-## Install from the catalogue
+## Related pages
 
-Install a catalogue entry by its id:
-
-```bash
-agentsfleet install --library github-pr-reviewer
-```
-
-agentsfleet resolves the entry in your workspace gallery, prints a requirements preview (secrets, tools, network hosts), then creates the fleet from the onboarded entry — the SKILL.md/TRIGGER.md was fetched and content-addressed when the entry was onboarded, so no fetch happens at install. If the entry ships no `TRIGGER.md`, a default API wake is generated (capped at a `$1.00/day` budget) and the result notes it.
-
-Install needs every declared secret in the workspace vault first. The dashboard install gallery blocks on a missing one — there is no skip — and the CLI and API reject the install with [`UZ-BUNDLE-003`](/api-reference/error-codes#fleet-bundle), whose `missing_secrets` list names what's absent. Add the secret, then install.
-
-### Install the same entry more than once
-
-Pass `--name` to give the new fleet a distinct name, so one library entry can back several fleets in a workspace — for example, one PR reviewer per repository:
-
-```bash
-agentsfleet install --library github-pr-reviewer --name pr-reviewer-frontend
-agentsfleet install --library github-pr-reviewer --name pr-reviewer-backend
-```
-
-Without `--name`, the fleet takes the entry's own `name:`. Installing the same entry twice without it collides with `UZ-AGT-006` (fleet name already exists) — see [Error codes](/api-reference/error-codes).
-
-## Editing an installed fleet from a local directory
-
-There is no `agentsfleet install --from <path>` — installing a *new* fleet is always by library id (`--library <id>`), resolved from your workspace gallery. To run a fleet you authored locally, onboard it as a template with [Add template](#add-a-workspace-template-from-the-dashboard) or the API, then install it from the [catalogue](#install-from-the-catalogue).
-
-You can still push local `SKILL.md`/`TRIGGER.md` edits to an **already-installed** fleet:
-
-```bash
-agentsfleet fleet update <fleet_id> --from <path>
-```
-
-This overrides the live fleet's instructions from the directory (a `SKILL.md` is required; `TRIGGER.md` is optional). See [Authoring a fleet](/fleets/authoring) for the file references.
-
-## Writing your own
-
-A template is a GitHub repository or directory with a root `SKILL.md`; `TRIGGER.md` is optional. See [Authoring a fleet](/fleets/authoring) for the file references. To create one for the dashboard, commit those files to GitHub, then use [Add template](#add-a-workspace-template-from-the-dashboard) with `owner/repo`. To iterate on an installed fleet from your working directory:
-
-```bash
-agentsfleet fleet update <fleet_id> --from .
-```
-
-## Sharing
-
-A template is markdown — commit `my-fleet/` to git, clone it on a new machine, onboard it as a library entry (dashboard or API), then install it with `agentsfleet install --library <id>`. Once installed, iterate on it with `agentsfleet fleet update <fleet_id> --from .`. Secrets never live in the template; they live in the workspace vault. The template is safe to share publicly; secrets are not.
-
-<Note>
-  A hosted marketplace for the Fleet library (community-contributed entries, one-click install) is on the roadmap. The platform catalogue above is the curated starting set; git remains the distribution mechanism for your own entries.
-</Note>
+- [Install a fleet](/fleets/install)
+- [Author a fleet](/fleets/authoring)
+- [Secrets](/fleets/secrets)

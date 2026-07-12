@@ -1,69 +1,100 @@
 ---
-title: "Installing a fleet"
-description: "What `agentsfleet install --library <id>` does and how to invoke it."
+title: Install a fleet
+description: Install a fleet from your workspace library.
+type: how-to
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: false
 ---
 
-`agentsfleet install --library <id>` is how you bring a fleet up. It resolves the entry from your workspace gallery — the platform catalogue plus your workspace's own onboarded library entries — reads the entry's already-onboarded `SKILL.md` and `TRIGGER.md`, prints a requirements preview, then creates the fleet in your active workspace. **Install is the deploy** — there's no separate `up` step.
+# Install a fleet
+
+## What this does
+
+This creates a fleet from one library entry. Installation is the only creation step; there is no separate start command.
+
+## Before you begin
+
+Sign in and select a workspace. Save every secret required by the library entry.
+
+## Steps
+
+1. Browse the platform library.
+
+   ```bash
+   agentsfleet library
+   ```
+
+   ```text
+   LIBRARY                        NAME                            SECRETS
+   github-pr-reviewer             GitHub Pull Request reviewer    github
+   <varies>
+   ```
+
+2. Install one library entry.
+
+   ```bash
+   agentsfleet install --library github-pr-reviewer
+   ```
+
+   ```text
+   ✓ github-pr-reviewer is live.
+     Fleet ID: <varies>
+     Webhook URLs (register on the upstream provider):
+       github: <varies>
+   ```
+
+3. Register each printed webhook URL with its provider.
+
+   For GitHub, open **Repository settings → Webhooks → Add webhook**. Use the matching workspace webhook secret.
+
+## Verify it works
 
 ```bash
-agentsfleet library                            # browse the platform catalogue
-agentsfleet install --library github-pr-reviewer
+agentsfleet status
 ```
 
-```
-✓ platform-ops-fleet is live.
-  Fleet ID: 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71
-  Webhook URLs (register on the upstream provider):
-    github: https://api.agentsfleet.net/v1/webhooks/0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71/github
+```text
+Fleets
+Name: github-pr-reviewer
+Status: active
+Events: <varies>
+Budget: <varies>
 ```
 
-One URL is printed per declared `webhook` trigger in the entry's `TRIGGER.md`, keyed by `triggers[].source`. Register each URL on its upstream provider — on GitHub, **Settings → Webhooks** (or `gh api -X POST repos/<owner>/<repo>/hooks …`). See [Webhooks](/fleets/webhooks) for the signature config the platform expects.
+## Common problems
 
-Pass `--name <name>` to override the fleet name so one library entry can back several fleets in a workspace. Without it, a second install of the same entry collides with `UZ-AGT-006`.
+`UZ-BUNDLE-003` means the workspace lacks a required secret. Create each named secret and run the install command again.
+
+`UZ-AGT-006` means the fleet name already exists. Pass `--name <UNIQUE_NAME>` to create another fleet from the same entry.
+
+After any failed install, run `agentsfleet list` before retrying. Retry only when the fleet is absent.
+
+## Remove or undo
+
+Deleting a fleet removes its events, telemetry, sessions, grants, keys, and memory. This loss cannot be undone.
+
+`<FLEET_ID>` comes from `agentsfleet list`. Kill the fleet before deleting it.
 
 ```bash
-agentsfleet install --library github-pr-reviewer --name pr-reviewer-frontend
+agentsfleet kill <FLEET_ID>
 ```
 
-## Authoring your own fleet
-
-There is no local-directory install. To run a fleet you wrote yourself, **onboard** its `SKILL.md` as a template first, then install it by id. `TRIGGER.md` is optional. Onboarding happens through **Add template** in the dashboard or the API — there is no CLI onboard command:
-
-- **Dashboard** — open **Fleets → Install fleet**, click **Add library entry**, and enter the GitHub repository as `owner/repo`.
-- **Workspace tier** (visible only to your workspace) — `POST /v1/workspaces/{workspace_id}/fleet-libraries`.
-- **Platform tier** (visible to every workspace) — `POST /v1/admin/fleet-libraries`.
-
-Onboarding is where the platform parses and validates your frontmatter; a malformed `SKILL.md` / `TRIGGER.md` is rejected there with a `UZ-AGT-*` wire code. Once onboarded, the entry shows up in `agentsfleet library` (platform tier) or your workspace gallery, and you install it the same way as any catalogue entry:
+```text
+✓ <varies> killed.
+```
 
 ```bash
-agentsfleet install --library my-onboarded-fleet
+agentsfleet delete <FLEET_ID>
 ```
 
-See [Authoring a fleet](/fleets/authoring) for the `SKILL.md` / `TRIGGER.md` reference and the onboarding flow.
-
-## Iterating on a running fleet
-
-To roll local `SKILL.md` / `TRIGGER.md` edits onto an already-installed fleet without re-onboarding, use [`agentsfleet fleet update <fleet_id> --from <path>`](/cli/agentsfleet#agentsfleet-fleet-update-fleet-id-from-path) — it re-parses the bundle and `PATCH`es it onto the live fleet. The next event runs the new prose.
-
-```bash
-agentsfleet fleet update 0198a7b2-9e1f-7c3a-8b25-6d4f0a9e2c71 --from ./my-fleet
+```text
+✓ <varies> deleted.
 ```
 
-For the self-managed provider posture, see [`agentsfleet tenant provider`](/cli/agentsfleet#tenant-provider).
+## Related pages
 
-## Exit codes
-
-| Code | Meaning |
-|---|---|
-| `0` | Installed (or updated). |
-| `1` | Not authenticated. |
-| `2` | Network error reaching the API. |
-| `3` | The API rejected the install (name clash, etc.). |
-| `4` | Missing or invalid argument (e.g. no `--library`). |
-| `5` | Library entry not found in the workspace gallery. |
-
-## See also
-
-- [Fleet library](/fleets/library) — the catalogue of pre-built fleets you can install.
-- [Authoring a fleet](/fleets/authoring) — the `SKILL.md` and `TRIGGER.md` reference, plus how to onboard your own template.
-- [Starting, observing, and stopping](/fleets/running) — what to do after install.
+- [Fleet library](/fleets/library)
+- [Secrets](/fleets/secrets)
+- [Run and control a fleet](/fleets/running)

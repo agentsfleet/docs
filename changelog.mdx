@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 12, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
+  ## Removed CLI commands stop appearing in hints, and workspace delete stops implying remote deletion
+
+  Error hints and CLI messages now match the commands `agentsfleet` actually accepts. `agentsfleet workspace delete` also makes clear it only removes local client state — it never deletes the workspace or its data remotely.
+
+  ## Upgrading
+
+  - **`agentsfleet workspace delete` JSON output field renamed** — `{"deleted": "<id>"}` is now `{"removed_from_local_state": "<id>"}`. Update any script parsing this field. The workspace and its remote data are unaffected by this command.
+
+  ## Bug fixes
+
+  - **Stale command hints removed** — error text and CLI messages no longer point at removed verbs (`agentsfleet install --from`, `agentsfleet secret add`, `agentsfleet workspace add`, `agentsfleet tenant provider add`). `agentsfleet list` with no fleets now points to `agentsfleet library` and `agentsfleet install --library <library_id>`; vault error hints now say `agentsfleet secret create <NAME>`.
+  - **Clean `--help` output** — `agentsfleet --help` no longer prints a telemetry-shutdown timeout after valid help output.
+  - **GitHub Pull Request events** — the signed per-fleet webhook now accepts the full set of supported Pull Request actions from the routed source filter.
+</Update>
+
 <Update label="Jul 11, 2026" tags={["What's new", "API", "CLI", "Integrations"]}>
   ## GitHub App events route to repository-bound fleets
 

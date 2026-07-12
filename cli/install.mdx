@@ -1,68 +1,79 @@
 ---
-title: "Install"
-description: "Install the agentsfleet CLI."
+title: Install the client
+description: Install and remove the agentsfleet command-line client.
+type: how-to
+audience: user
+verified: 2026-07-12
+product_version: 0.17.0
+executable: true
 ---
 
-## Install
+# Install the client
 
-<Steps>
-  <Step title="Install Node.js">
-    If you don't have Node.js installed yet, [download it here](https://nodejs.org).
-  </Step>
+## What this does
 
-  <Step title="Install with npm">
-    Run the following command in your terminal:
+This installs the `agentsfleet` command-line client. You can then manage fleets from a terminal.
 
-    ```bash
-    npm install -g @agentsfleet/cli
-    ```
+## Before you begin
 
-    Use `npx` to run without a global install:
+Install Node.js 24 or later. The package also supports Bun 1.3.14 or later.
 
-    ```bash
-    npx @agentsfleet/cli --help
-    ```
-  </Step>
-</Steps>
+## Steps
 
-## Install a fleet
+1. Install the package from npm.
 
-With the CLI installed, sign in and install a fleet from the library catalogue:
+   ```bash
+   npm install --global @agentsfleet/cli
+   ```
 
-```bash
-agentsfleet login                              # browser approval + verification code
-agentsfleet library                            # browse the catalogue
-agentsfleet install --library github-pr-reviewer
-```
+   ```text
+   added <varies> packages in <varies>
+   ```
 
-Authored your own `SKILL.md` + `TRIGGER.md`? Onboard it as a template (via the dashboard or the API), then install it by id with `agentsfleet install --library <id>`. To push local edits onto an already-installed fleet, use `agentsfleet fleet update <fleet_id> --from <path>`. See [Authoring a fleet](/fleets/authoring).
+2. Show the client version.
 
-<Tip>
-  **One-line bootstrap.** `curl -fsSL https://agentsfleet.dev | bash` installs the `agentsfleet` CLI (it runs npm under the hood — Node required). Run `curl -fsSL https://agentsfleet.dev` without `| bash` to read it first.
-</Tip>
+   ```bash
+   agentsfleet --version
+   ```
 
-See [Quickstart](/quickstart) for the end-to-end flow from a cold machine.
+   ```text
+   <varies>
+   ```
 
-## Verify installation
+## Verify it works
 
-```bash
-agentsfleet --version
-```
-
-## Check connectivity
-
-Run the built-in diagnostics command to verify API connectivity, auth status, and local configuration:
+Run the local checks.
 
 ```bash
 agentsfleet doctor
 ```
 
-`doctor` runs three checks and exits non-zero if any fails. It does **not** require authentication and never short-circuits — every check runs and reports:
+```text
+<varies>
+```
 
-| Check | Verifies |
-|---|---|
-| `server_reachable` | `GET /healthz` against the configured API URL returns `{ "status": "ok" }` within 5s. |
-| `workspace_selected` | The local config has a `current_workspace_id`. Auto-populated by `agentsfleet login` from your signup-provisioned default workspace; can also be set or replaced by `agentsfleet workspace add` / `workspace use`. |
-| `workspace_binding_valid` | The resolved auth token can read the selected workspace's fleets — i.e. it is bound to the right tenant. Reports a failed check (rather than aborting) when no token is present. |
+The command checks the API, your selected workspace, and the workspace binding. A failed check returns exit code `1`.
 
-Pass `--json` for the structured `{ ok, api_url, checks: [...] }` envelope. Run it before installing a fleet to confirm connectivity and workspace selection. For the tenant's inference posture and free-trial window, use [`agentsfleet tenant provider show`](/cli/agentsfleet#tenant-provider).
+## Common problems
+
+If `agentsfleet` is not found, reopen the terminal. Also check that the npm global binary directory is in your `PATH`.
+
+If installation reports an unsupported runtime, upgrade Node.js to version 24 or later.
+
+## Remove or undo
+
+Removing the client does not delete remote fleets or workspace data.
+
+```bash
+npm uninstall --global @agentsfleet/cli
+```
+
+```text
+removed <varies> packages in <varies>
+```
+
+## Related pages
+
+- [Quickstart](/quickstart)
+- [Client configuration](/cli/configuration)
+- [Global options](/cli/flags)

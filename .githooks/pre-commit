@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+staged_paths="$(git diff --cached --name-only --diff-filter=ACMR | sort -u)"
+unstaged_paths="$(git diff --name-only --diff-filter=ACMR | sort -u)"
+partial_paths="$(comm -12 <(printf '%s\n' "$staged_paths") <(printf '%s\n' "$unstaged_paths"))"
+if [ -n "$partial_paths" ]; then
+  echo "pre-commit: these files have staged and unstaged edits:" >&2
+  while IFS= read -r path; do
+    printf '  - %s\n' "$path" >&2
+  done <<< "$partial_paths"
+  echo "Stage each whole file before committing." >&2
+  exit 1
+fi
+
+make test
+
+while IFS= read -r path; do
+  case "$path" in
+    docs.json|api-reference/endpoint/*.mdx|Makefile|.githooks/pre-commit)
+      make _lint-openapi-drift
+      break ;;
+  esac
+done <<< "$staged_paths"
