@@ -5,7 +5,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
 staged_paths="$(git diff --cached --name-only --diff-filter=ACMRD | sort -u)"
-unstaged_paths="$(git diff --name-only --diff-filter=ACMR | sort -u)"
+unstaged_paths="$(git diff --name-only --diff-filter=ACMRD | sort -u)"
 partial_paths="$(comm -12 <(printf '%s\n' "$staged_paths") <(printf '%s\n' "$unstaged_paths"))"
 if [ -n "$partial_paths" ]; then
   echo "pre-commit: these files have staged and unstaged edits:" >&2
