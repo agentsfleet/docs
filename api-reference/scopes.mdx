@@ -49,10 +49,11 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `billing:read` | Reads the tenant balance and charges. | None |
 | `workspace:admin` | Creates and lists workspaces. | None |
 | `library:write` | Adds an entry to a workspace library. | None |
+| `platform-library:write` | Adds an entry to the platform library. | None |
 | `approval:read` | Reads pending approvals. | None |
 | `approval:resolve` | Approves or denies a request. | None |
 
-Operator tokens may carry `runner:*`, `platform-key:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
+Operator tokens may carry `runner:*`, `platform-key:*`, `platform-library:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
 
 ## Errors
 
