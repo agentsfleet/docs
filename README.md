@@ -8,7 +8,7 @@
 
 **A fleet of prebuilt AI teammates for recurring engineering work.**
 
-Each one wakes on an event — a pull request, an incident, a deploy — investigates across your code, telemetry, and live control-plane state, opens a scenario-backed fix, and waits for human approval before it ships or drafts the customer reply. Runs against a durable, replayable log — posts evidenced answers, never chats.
+Each one wakes on an event — a pull request, an incident, a deploy. It investigates across your code, telemetry, and live control-plane state, then opens a scenario-backed fix. It waits for human approval before it ships or drafts the customer reply. It runs against a durable, replayable log — posts evidenced answers, never chats.
 
 [![Docs](https://img.shields.io/badge/agentsfleet-Docs-5EEAD4?style=for-the-badge)](https://docs.agentsfleet.net)
 [![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-5EEAD4?style=for-the-badge)](https://accounts.agentsfleet.net/waitlist)
@@ -56,7 +56,7 @@ View your local preview at `http://localhost:3000`.
 
 ## Publishing
 
-Changes pushed to the default branch are deployed automatically via the [Mintlify GitHub app](https://dashboard.mintlify.com/settings/organization/github-app).
+The [Mintlify GitHub app](https://dashboard.mintlify.com/settings/organization/github-app) deploys every change pushed to the default branch.
 
 ## License
 
