@@ -56,7 +56,7 @@ Changing the repository or ref discards the stored bundle and returns the entry 
 
 Workspaces already running the fleet are unaffected. Each install keeps the exact bundle it installed.
 
-A rename survives the next bundle fetch, as the description and credential copy always have. Credential copy is pruned to the credentials the bundle actually declares, so a credential the fleet no longer requests does not linger in the dialog.
+A rename survives the next bundle fetch, as the description and credential copy always have. A pinned ref survives it too: **Fetch update** fetches at the ref the entry names, rather than resetting the entry to the repository's default branch. Credential copy is pruned to the credentials the bundle actually declares, so a credential the fleet no longer requests does not linger in the dialog.
 
 An entry that is published but holds no bundle shows as **Broken** in the catalog. It is invisible to every workspace; fetch a bundle or unpublish it.
 
