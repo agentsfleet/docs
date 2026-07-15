@@ -3,7 +3,7 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-07-16
 product_version: 0.17.0
 executable: false
 ---
@@ -31,6 +31,8 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 Installing a library entry creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
+The fleet detail page shows source, live activity, memory, approvals, run metrics, and recent cost together. You can edit `SKILL.md` or `TRIGGER.md` there. A save takes effect on the next wake and keeps the same fleet identifier and memory.
+
 Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
 
 Deleting a killed fleet removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
@@ -38,6 +40,8 @@ Deleting a killed fleet removes all fleet records. A replacement fleet receives 
 ## Limits
 
 The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.
+
+The recent cost rollup covers the latest 200 events within seven days. The page labels this bound and shows lifetime spend separately.
 
 The service validates `SKILL.md` and `TRIGGER.md` during installation and updates. Invalid files do not replace the active fleet settings.
 
