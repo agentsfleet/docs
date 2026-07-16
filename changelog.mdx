@@ -29,6 +29,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
+  - **Draft-first onboarding** — creating or refetching a platform entry now returns it to draft. Publish it after review before any workspace can see or install it.
   - **Edit a catalog entry's identity** — name, repository, and ref are editable from the catalog's Edit dialog. Changing the repository or ref discards the stored bundle and returns the entry to draft, because the stored bundle was built from the old repository; fetch and publish again to go live. Workspaces already running the fleet keep the exact bundle they installed. A rename survives the next bundle fetch, and so does a pinned ref — **Fetch update** now fetches at the ref the entry names instead of resetting it to the default branch.
   - **An honest status column** — an entry that is published but holds no bundle now shows as **Broken** (it was shown as Published while being invisible to every workspace). Its help text says how to resolve it: fetch a bundle, or unpublish.
   - **The admin button says what it does** — **Create fleet library** replaces "Add fleet", matching the workspace-side dialog; the page and navigation use the singular **Fleet library**.

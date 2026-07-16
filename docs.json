@@ -187,7 +187,16 @@
             "group": "Workspaces",
             "pages": [
               "POST /v1/workspaces",
-              "GET /v1/workspaces/{workspace_id}/events"
+              "GET /v1/workspaces/{workspace_id}/events",
+              "GET /v1/workspaces/{workspace_id}/events/stream",
+              "GET /v1/workspaces/{workspace_id}/onboarding"
+            ]
+          },
+          {
+            "group": "Workspace preferences",
+            "pages": [
+              "GET /v1/workspaces/{workspace_id}/preferences",
+              "PUT /v1/workspaces/{workspace_id}/preferences/{pref_key}"
             ]
           },
           {
@@ -231,6 +240,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/fleets",
               "POST /v1/workspaces/{workspace_id}/fleets",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}"
             ]
@@ -239,9 +249,12 @@
             "group": "Fleet library",
             "pages": [
               "GET /v1/fleets/bundles",
+              "GET /v1/admin/fleet-libraries",
               "GET /v1/workspaces/{workspace_id}/fleet-libraries",
               "POST /v1/admin/fleet-libraries",
-              "POST /v1/workspaces/{workspace_id}/fleet-libraries"
+              "POST /v1/workspaces/{workspace_id}/fleet-libraries",
+              "PATCH /v1/admin/fleet-libraries/{id}",
+              "DELETE /v1/admin/fleet-libraries/{id}"
             ]
           },
           {
@@ -253,7 +266,20 @@
           {
             "group": "Fleet memories",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories"
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories",
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}"
+            ]
+          },
+          {
+            "group": "Fleet schedules",
+            "pages": [
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules",
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
+              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}:sync",
+              "POST /v1/ingress/qstash/schedules"
             ]
           },
           {
