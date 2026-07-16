@@ -33,7 +33,9 @@ Memory lets a fleet keep useful conclusions between events. Store conclusions in
 
 `memory_list` filters entries. `memory_forget` deletes one key.
 
-The dashboard's fleet detail page lists each entry's content, category, and update time. Forgetting an entry requires fleet write access. The API route is `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` and returns `204` after deletion.
+The dashboard's fleet detail page lists each entry's content, category, and update time. Forgetting an entry requires fleet write access.
+
+The API route is `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}`. It returns `204` after deletion and `UZ-MEM-004` when the key is absent.
 
 `<FLEET_ID>` comes from `agentsfleet list`.
 

@@ -33,6 +33,8 @@ Installing a library entry creates the fleet. The active workspace owns it, and 
 
 The fleet detail page shows source, live activity, memory, approvals, run metrics, and recent cost together. You can edit `SKILL.md` or `TRIGGER.md` there. A save takes effect on the next wake and keeps the same fleet identifier and memory.
 
+If another operator saves first, your stale source edit is refused. The editor reloads the current source so you can review the newer version and apply your change again.
+
 Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
 
 Deleting a killed fleet removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.

@@ -39,7 +39,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Fleet detail** — `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}` returns source, triggers, lifecycle state, lifetime counters, and an `ETag` header.
   - **Event cost** — fleet event rows now include nullable `cost_nanos`, sourced from settled billing telemetry.
   - **Memory forget** — `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` requires `fleet:write`, returns `204` when deleted, and returns `UZ-MEM-004` when the key is absent.
-  - **Stale-write protection** — fleet source and platform library PATCH requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`; a stale catalog edit returns `UZ-CATALOG-005`. Both responses use `412` and include the current `etag`.
+  - **Stale-write protection** — fleet source and platform library PATCH requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`; a stale catalog edit returns `UZ-CATALOG-005`. Both responses use `412` and include the current `ETag`.
 </Update>
 
 <Update label="Jul 14, 2026" tags={["What's new", "API", "UI"]}>
