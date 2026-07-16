@@ -40,13 +40,25 @@ New fleets install only by library identifier. Local files can update an existin
 
 ## Onboard a platform entry
 
-Platform entries are added from the dashboard at **Fleet libraries**, under Configuration. The page is visible only to an operator whose session carries the `platform-library:write` scope. Everyone else is redirected, and the API refuses the request independently.
+Platform entries are added from the dashboard at **Fleet library**, under Configuration, with **Create fleet library**. The page is visible only to an operator whose session carries the `platform-library:write` scope. Everyone else is redirected, and the API refuses the request independently.
 
-Enter the repository as `owner/repo`. `agentsfleet` fetches the repository, validates the bundle, stores it, and adds the catalog row. The entry then appears in every workspace's library, and any workspace can install it.
+Enter the repository as `owner/repo`. `agentsfleet` fetches the repository, validates the bundle, stores it, and adds the catalog row **as a draft**. No workspace can see or install a draft; publishing is the only door to a workspace's library.
 
 A platform entry's identifier comes from the `name` in the bundle's `SKILL.md`, not from the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical. When they differ, `agentsfleet` rejects the bundle or files it under an identifier you did not expect.
 
-Onboarding the same repository twice updates the existing entry. It does not create a second one.
+Onboarding the same repository twice updates the existing entry. It does not create a second one. A refetch always returns the entry to draft, so a newer bundle never reaches workspaces unreviewed.
+
+## Edit a platform entry
+
+An entry's name, repository, and ref are editable in place from the catalog's **Edit** dialog, alongside its description and the install-gate copy for each credential. The identifier is not editable — installed fleets reference it.
+
+Changing the repository or ref discards the stored bundle and returns the entry to draft. The stored bundle was built from the old repository, and an entry never advertises a source it is not serving. Fetch the bundle again, then publish.
+
+Workspaces already running the fleet are unaffected. Each install keeps the exact bundle it installed.
+
+A rename survives the next bundle fetch, as the description and credential copy always have. A pinned ref survives it too: **Fetch update** fetches at the ref the entry names, rather than resetting the entry to the repository's default branch. Credential copy is pruned to the credentials the bundle actually declares, so a credential the fleet no longer requests does not linger in the dialog.
+
+An entry that is published but holds no bundle shows as **Broken** in the catalog. It is invisible to every workspace; fetch a bundle or unpublish it.
 
 ## Prebuilt fleets
 
@@ -59,7 +71,7 @@ Four fleets ship as platform entries. Each is a public repository under `agentsf
 | `zoho-sprint-daily-summarizer` | Summarizes the day's Zoho Sprints activity and posts a digest. | `zoho` |
 | `zoho-recruiter-daily-summarizer` | Summarizes the day's Zoho Recruit pipeline and posts a digest. | `zoho_recruit` |
 
-A prebuilt fleet appears in your library only after an operator onboards it. Until then the catalog knows its name but holds no bundle, and it does not show in the gallery.
+A prebuilt fleet appears in your library only after an operator onboards and publishes it. Until then it does not show in the gallery.
 
 ## Limits
 

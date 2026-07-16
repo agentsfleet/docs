@@ -22,6 +22,27 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 14, 2026" tags={["What's new", "API", "UI"]}>
+  ## The fleet catalog stops overstating itself, and operators can fix a mistyped repository in place
+
+  A catalog entry's status badge now always matches what a workspace will actually get, and an operator can correct an entry's name, repository, or ref without deleting it — keeping every piece of curated install-gate copy. Copy buttons across the dashboard now report a failed copy instead of pretending it worked, the dashboard counts every fleet state, and the live activity thread shows the tools a fleet calls and what each event cost.
+
+  ## What's new
+
+  - **Draft-first onboarding** — creating or refetching a platform entry now returns it to draft. Publish it after review before any workspace can see or install it.
+  - **Edit a catalog entry's identity** — name, repository, and ref are editable from the catalog's Edit dialog. Changing the repository or ref discards the stored bundle and returns the entry to draft, because the stored bundle was built from the old repository; fetch and publish again to go live. Workspaces already running the fleet keep the exact bundle they installed. A rename survives the next bundle fetch, and so does a pinned ref — **Fetch update** now fetches at the ref the entry names instead of resetting it to the default branch.
+  - **An honest status column** — an entry that is published but holds no bundle now shows as **Broken** (it was shown as Published while being invisible to every workspace). Its help text says how to resolve it: fetch a bundle, or unpublish.
+  - **The admin button says what it does** — **Create fleet library** replaces "Add fleet", matching the workspace-side dialog; the page and navigation use the singular **Fleet library**.
+  - **Copy buttons everywhere a value wants copying** — bundle hashes (the full hash, not the visible preview), fleet and host identifiers, secret names, model identifiers, cron schedules, webhook URLs, approval action identifiers, and one-time credentials. A failed clipboard write is reported on the button and announced to screen readers — previously several surfaces showed "Copied" or nothing at all when the write failed, which could cost you a one-time runner token or API key.
+  - **The dashboard counts every fleet** — installing and killed fleets now appear in the summary tiles; previously they were counted nowhere.
+  - **The live thread shows tool calls and cost** — each fleet response lists the tools it called with their durations while it works, and event history rows show tokens and wall time.
+
+  ## API reference
+
+  `PATCH /v1/admin/fleet-libraries/{id}` additionally accepts `name`, `source_repo`, and `source_ref`. A request whose `source_repo` or `source_ref` differs from the stored value sets `content_hash` to null and `visibility` to `draft` atomically; re-sending the stored value is a no-op. A request that changes the source and sets `published: true` in the same call is refused with `UZ-CATALOG-002` (there is no bundle to publish by the time the publish would apply). Malformed sources are refused with `UZ-BUNDLE-001` using the same validation as onboarding. The entry identifier is never patchable.
+
+</Update>
+
 <Update label="Jul 12, 2026" tags={["What's new", "API"]}>
   ## Platform operators onboard fleets from the dashboard, and four prebuilt fleets are ready to install
 
