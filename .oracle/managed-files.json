@@ -1,4 +1,6 @@
 {
+  "schema_version": 1,
+  "profile": "mintlify-docs",
   "files": [
     ".oracle/managed-files.json",
     ".oracle/profile.json",
@@ -8,7 +10,5 @@
     "dispatch/write_mdx.md",
     "docs/CHANGELOG_VOICE.md",
     "docs/DOCUMENTATION_RULES.md"
-  ],
-  "profile": "mintlify-docs",
-  "schema_version": 1
+  ]
 }
