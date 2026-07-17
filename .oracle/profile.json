@@ -1,0 +1,23 @@
+{
+  "commands": {
+    "conform": [
+      [
+        "make",
+        "lint"
+      ]
+    ],
+    "verify.documentation": [
+      [
+        "make",
+        "test"
+      ]
+    ]
+  },
+  "name": "mintlify-docs",
+  "packs": [
+    "language.mdx",
+    "domain.documentation",
+    "domain.changelog"
+  ],
+  "schema_version": 1
+}
