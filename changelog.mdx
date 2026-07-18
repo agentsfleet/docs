@@ -22,6 +22,22 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 17, 2026" tags={["Bug fixes", "UI"]}>
+  ## The dashboard stops flashing a missing-page frame, and platform tools get their own sidebar group
+
+  Opening the dashboard, switching workspaces, or creating one now lands you straight on the fleet wall instead of flashing a not-found frame on the way. Platform surfaces move into their own sidebar group, and the fleet-library refetch dialog no longer looks like the create dialog.
+
+  ## Bug fixes
+
+  - **No not-found flash on the workspace home** — the dashboard entry, the workspace switcher, and workspace creation now open the fleet wall directly. Before, they routed through the empty workspace root, which flashed a not-found frame before redirecting to the wall.
+  - **The refetch dialog reads as a refetch** — **Fetch update** on a catalog entry now opens a dialog titled **Fetch update**, with the repository locked to the entry's source and its own in-progress label, instead of the **Create fleet library** dialog with an editable repository. Repointing a source is still done from **Edit**, not here.
+  - **A finished onboarding step shows a check** — a completed step in the getting-started checklist shows an explicit checkmark, and the next step a small dot, so progress reads at a glance.
+
+  ## What's new
+
+  - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of the Configuration list into their own **Platform** group, shown only to an operator holding the matching scope. The group is open by default and can be collapsed with a click.
+</Update>
+
 <Update label="Jul 16, 2026" tags={["What's new", "API", "UI", "Performance"]}>
   ## Fleet detail becomes the operating console
 
@@ -49,6 +65,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
+  - **Draft-first onboarding** — creating or refetching a platform entry now returns it to draft. Publish it after review before any workspace can see or install it.
   - **Edit a catalog entry's identity** — name, repository, and ref are editable from the catalog's Edit dialog. Changing the repository or ref discards the stored bundle and returns the entry to draft, because the stored bundle was built from the old repository; fetch and publish again to go live. Workspaces already running the fleet keep the exact bundle they installed. A rename survives the next bundle fetch, and so does a pinned ref — **Fetch update** now fetches at the ref the entry names instead of resetting it to the default branch.
   - **An honest status column** — an entry that is published but holds no bundle now shows as **Broken** (it was shown as Published while being invisible to every workspace). Its help text says how to resolve it: fetch a bundle, or unpublish.
   - **The admin button says what it does** — **Create fleet library** replaces "Add fleet", matching the workspace-side dialog; the page and navigation use the singular **Fleet library**.

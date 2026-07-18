@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-07-12
+verified: 2026-07-16
 product_version: 0.17.0
 executable: false
 ---
@@ -155,6 +155,12 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-BUNDLE-003"></span>`UZ-BUNDLE-003` | 424 | Fleet Bundle secrets missing | This Fleet Bundle needs secrets this workspace doesn't have yet. Add the missing secrets, then install again. | Check Fleet Bundle files and limits before upload. |
 | <span id="UZ-BUNDLE-004"></span>`UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | We couldn't fetch that Fleet Bundle from GitHub. Check the source and try again. | Check Fleet Bundle files and limits before upload. |
 | <span id="UZ-BUNDLE-005"></span>`UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | We couldn't store your Fleet Bundle right now. Try again shortly. | Check Fleet Bundle files and limits before upload. |
+
+### Fleet catalog
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-CATALOG-002"></span>`UZ-CATALOG-002` | 409 | Cannot publish a fleet with no bundle | This entry has no bundle, so it has nothing to publish. Fetch the bundle from its repository, then publish. | Fetch and review the bundle before publishing. |
 
 ### Secrets
 
