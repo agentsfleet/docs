@@ -40,7 +40,7 @@ New fleets install only by library identifier. Local files can update an existin
 
 ## Onboard a platform entry
 
-Platform entries are added from the dashboard at **Fleet library**, under Configuration, with **Create fleet library**. The page is visible only to an operator whose session carries the `platform-library:write` scope. Everyone else is redirected, and the API refuses the request independently.
+Platform entries are added from the dashboard at **Fleet library**, under Platform, with **Create fleet library**. The page is visible only to an operator whose session carries the `platform-library:write` scope. Everyone else is redirected, and the API refuses the request independently.
 
 Enter the repository as `owner/repo`. `agentsfleet` fetches the repository, validates the bundle, stores it, and adds the catalog row **as a draft**. No workspace can see or install a draft; publishing is the only door to a workspace's library.
 
