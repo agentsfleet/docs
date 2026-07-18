@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-07-16
+verified: 2026-07-18
 product_version: 0.17.0
 executable: false
 ---
@@ -145,6 +145,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AGT-011"></span>`UZ-AGT-011` | 400 | Fleet files disagree on `name:` | This Fleet Bundle's files disagree on its name. `SKILL.md` and `TRIGGER.md` must match. Fix the source and try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. | Use fleet identifiers from the current workspace. |
+| <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Another update changed the fleet source. Reload the current source and `etag`, reapply your change, then retry. | Reload the fleet source before editing and send the latest `etag`. |
 
 ### Fleet Bundles
 
@@ -161,6 +162,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
 | <span id="UZ-CATALOG-002"></span>`UZ-CATALOG-002` | 409 | Cannot publish a fleet with no bundle | This entry has no bundle, so it has nothing to publish. Fetch the bundle from its repository, then publish. | Fetch and review the bundle before publishing. |
+| <span id="UZ-CATALOG-005"></span>`UZ-CATALOG-005` | 412 | Catalog entry changed since you loaded it | Another update changed the catalog entry. Refresh it, reapply your change, then retry. | Refresh the catalog entry before editing and send the latest `etag`. |
 
 ### Secrets
 
@@ -256,6 +258,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-MEM-002"></span>`UZ-MEM-002` | 404 | Fleet not found for memory op | The fleet_id does not exist or does not belong to the requesting workspace. Verify the fleet_id and workspace scope. | Use an existing fleet and a valid memory category. |
 | <span id="UZ-MEM-003"></span>`UZ-MEM-003` | 503 | Saved memory unavailable | Saved memory is unavailable. The fleet uses temporary workspace memory until the service recovers. | Use an existing fleet and a valid memory category. |
+| <span id="UZ-MEM-004"></span>`UZ-MEM-004` | 404 | Memory entry not found | No memory entry exists for this key. List memories to confirm the exact key. | Use an existing memory key. |
 
 ### API keys
 

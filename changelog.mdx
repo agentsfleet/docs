@@ -38,6 +38,26 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of the Configuration list into their own **Platform** group, shown only to an operator holding the matching scope. The group is open by default and can be collapsed with a click.
 </Update>
 
+<Update label="Jul 16, 2026" tags={["What's new", "API", "UI", "Performance"]}>
+  ## Fleet detail becomes the operating console
+
+  Fleet detail now puts source editing, live steering, memory, run cost, and lifecycle controls on one page.
+
+  ## What's new
+
+  - **Source editing** — read and edit `SKILL.md` or `TRIGGER.md` from the dashboard. A save takes effect on the next wake and keeps the fleet's memory. If someone else saves first, the editor reloads their change instead of overwriting it.
+  - **Memory correction** — inspect learned entries and forget one incorrect entry from the dashboard. Deleting the fleet still deletes all its memory; editing its source does not.
+  - **Run cost** — each event can show tokens, wall time, and settled cost. The recent rollup covers the latest 200 events within seven days and labels that bound; lifetime spend remains visible separately.
+  - **Faster fleet lists** — lifetime event and spend counters are maintained when activity is written, so list reads no longer re-sum the full event history.
+
+  ## API reference
+
+  - **Fleet detail** — `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}` returns source, triggers, lifecycle state, lifetime counters, and an `ETag` header.
+  - **Event cost** — fleet event rows now include nullable `cost_nanos`, sourced from settled billing telemetry.
+  - **Memory forget** — `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` requires `fleet:write`, returns `204` when deleted, and returns `UZ-MEM-004` when the key is absent.
+  - **Stale-write protection** — fleet source and platform library PATCH requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`; a stale catalog edit returns `UZ-CATALOG-005`. Both responses use `412` and include the current `ETag`.
+</Update>
+
 <Update label="Jul 14, 2026" tags={["What's new", "API", "UI"]}>
   ## The fleet catalog stops overstating itself, and operators can fix a mistyped repository in place
 

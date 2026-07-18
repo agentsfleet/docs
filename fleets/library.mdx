@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-07-16
 product_version: 0.17.0
 executable: false
 ---
@@ -59,6 +59,8 @@ Workspaces already running the fleet are unaffected. Each install keeps the exac
 A rename survives the next bundle fetch, as the description and credential copy always have. A pinned ref survives it too: **Fetch update** fetches at the ref the entry names, rather than resetting the entry to the repository's default branch. Credential copy is pruned to the credentials the bundle actually declares, so a credential the fleet no longer requests does not linger in the dialog.
 
 An entry that is published but holds no bundle shows as **Broken** in the catalog. It is invisible to every workspace; fetch a bundle or unpublish it.
+
+The dashboard protects edits with the row version loaded by the form. If another operator saves first, your stale edit is refused. Refresh the row, review the newer values, and apply your change again.
 
 ## Prebuilt fleets
 
