@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "profile": "mintlify-docs",
-  "ruleset_digest": "4da90d903f2e186d89b1603a7444d3b82423995d9674afabed3f93aeb4b7ffa5",
+  "ruleset_digest": "facde611d4dc6d9f3f32078eda1fb375f342076fbe2182e80dfead4edaaa35b9",
   "files": {
     ".oracle/managed-files.json": "6684338a82e4cbe9f4ff744d01108cae28d3e3de146a7c3e218667b2cc55a9bf",
     ".oracle/profile.json": "ce99a642feceff0c31e93cd032156191fba3a0cfbb1a47dd335feade10ec4bcc",
-    "AGENTS.md": "dbf20442ed33c8b828c1786f5d1388a37830742c4af37eb673180da9f561dd7d",
+    "AGENTS.md": "518be5ee6f2c027250c02cedecc62706069e9e1ba442d73c9d941e2f37e33965",
     "dispatch/write_changelog.md": "44c2824225ad92c0af674af2a641a42ced227d2211cff6d6060c1fc4adb0b1f7",
     "dispatch/write_documentation.md": "0d4a051550a2925e864d64f05ad2a02ede93bf35ebc4f4ed4db4994fa02f352f",
     "dispatch/write_mdx.md": "71309fa7fd2f690973da53e70108fe92c0af9b51c12b49ee9bd0fbe747313029",
