@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "profile": "mintlify-docs",
-  "ruleset_digest": "6ceada26fe30a500a9d03dc1c2218d0d2823dfaf3e4757e361881a57af10aba3",
+  "ruleset_digest": "4da90d903f2e186d89b1603a7444d3b82423995d9674afabed3f93aeb4b7ffa5",
   "files": {
     ".oracle/managed-files.json": "6684338a82e4cbe9f4ff744d01108cae28d3e3de146a7c3e218667b2cc55a9bf",
     ".oracle/profile.json": "ce99a642feceff0c31e93cd032156191fba3a0cfbb1a47dd335feade10ec4bcc",
-    "AGENTS.md": "0487607441a116a4ecd9ce75b5c9a631773050cdb35c9ec64a043ed69d55db6a",
-    "dispatch/write_changelog.md": "b29ee57e924135cef159c473ac7eb1f285c8ce4d24c7d5a25ff5410fec4cd093",
+    "AGENTS.md": "dbf20442ed33c8b828c1786f5d1388a37830742c4af37eb673180da9f561dd7d",
+    "dispatch/write_changelog.md": "44c2824225ad92c0af674af2a641a42ced227d2211cff6d6060c1fc4adb0b1f7",
     "dispatch/write_documentation.md": "0d4a051550a2925e864d64f05ad2a02ede93bf35ebc4f4ed4db4994fa02f352f",
     "dispatch/write_mdx.md": "71309fa7fd2f690973da53e70108fe92c0af9b51c12b49ee9bd0fbe747313029",
-    "docs/CHANGELOG_VOICE.md": "340b30766421a830463c9975f80d5d214fc10d147015e32bea194ab5b90f89ac",
+    "docs/CHANGELOG_VOICE.md": "3a9cd7d87dab1f03eba2b5eb04e85bbc8dd19cf86a72d2587a304e1563721013",
     "docs/DOCUMENTATION_RULES.md": "805a6bf0239d07c280d1a1fb1bfe5075108c178d8f42ad9646d0e0b3253f27b6"
   },
   "modes": {
