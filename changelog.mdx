@@ -22,6 +22,37 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
+  ## Delete revoked runners, a seeded model catalogue, and loaders with personality
+
+  Revoking a runner used to leave a dead row you could never clear. Revoked runners now show a delete action, and the model catalogue ships pre-populated — so picking a real provider like Kimi or Anthropic works out of the box instead of forcing every model through the custom-endpoint escape hatch.
+
+  ## What's new
+
+  - **Delete a revoked runner.** Runners follow the same lifecycle as API keys: revoke is the destructive step, delete retires the record. The trash action appears only on revoked runners — the platform refuses to delete a live one.
+  - **A pre-seeded model catalogue.** Operators can seed the platform model library from a curated list covering Anthropic, OpenAI, Gemini, DeepSeek, Kimi, GLM, MiniMax, Qwen, xAI, Groq, and Mistral direct — plus the same models via Pioneer, Fireworks, Together, Novita, and OpenRouter, with per-host pricing so cost differences are visible. Tenants then pick providers and models from real dropdowns.
+  - **Custom endpoints learn their context window.** An OpenAI-compatible endpoint naming a known model now shows and enforces that model's real context cap instead of an unknown.
+  - **Loading screens speak.** Route loaders show a rotating vocabulary ("Wrangling Fleets…", "Mustering Runners…") instead of a static word — screen readers still hear the plain wording.
+
+  ## API reference
+
+  New endpoint: `DELETE /v1/fleets/runners/{id}` (scope `runner:write`).
+
+  ```json
+  // 204 No Content on success
+  // 404 UZ-RUN-014 — no runner with this id
+  // 409 UZ-RUN-016 — active runner must be revoked before deletion
+  ```
+
+  Deletion cascades the runner's lease and event history.
+
+  ## Bug fixes
+
+  - The workspace Models page no longer shows a green **Active** badge for a platform default that was never configured — a fresh tenant now sees "No default is configured" instead of a healthy-looking default whose first run fails.
+  - Self-managed model entries say **"Billed by provider"** instead of the misleading "Rates unavailable" — the platform never charges token rates for models you bring yourself.
+  - The platform-default row is hidden entirely for tenants running their own model with no default configured.
+</Update>
+
 <Update label="Jul 17, 2026" tags={["Bug fixes", "UI"]}>
   ## The dashboard stops flashing a missing-page frame, and platform tools get their own sidebar group
 
