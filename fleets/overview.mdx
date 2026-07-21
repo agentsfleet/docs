@@ -45,7 +45,7 @@ Use the fleet navigation for one task at a time:
 
 Chat retries a lost connection five times, with delays from two to 15 seconds. It backfills missed activity after reconnecting.
 
-If recovery stops, new and queued messages remain in Chat. Choose **Retry** to reconnect immediately and send them in order.
+If recovery stops, new and queued messages remain in Chat. Choose **Retry** in Chat to reconnect immediately and send them in order.
 
 Provider webhook registration stays in the install output. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
 
@@ -61,7 +61,7 @@ Deleting a killed fleet removes all fleet records. A replacement fleet receives 
 
 The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.
 
-The summary derives usage and outcome values from the fleet's durable event history. A fleet with no event history shows an empty outcome instead of an estimate.
+The summary shows usage and outcome values from the latest durable event. A fleet with no event history shows an empty outcome instead of an estimate.
 
 The service validates `SKILL.md` and `TRIGGER.md` during installation and updates. Invalid files do not replace the active fleet settings.
 
