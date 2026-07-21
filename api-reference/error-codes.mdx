@@ -222,6 +222,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed. Token counts become zero, but the renewed slice still charges for runtime. The lease still renews. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`. The lease cannot renew, so the run stops. This differs from UZ-RUN-012, which reports a low tenant balance. | Keep runner settings and lease health within configured limits. |
+| <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner has not been revoked. Send `PATCH /v1/fleets/runners/{id}` with the `action` field set to `revoke`, then retry deletion. | Revoke a runner before deleting it. |
 
 ### Runs
 
