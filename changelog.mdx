@@ -22,7 +22,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Jul 21, 2026" tags={["What's new", "UI"]}>
+<Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "UI"]}>
   ## Fleet detail is now a focused workspace
 
   Fleet detail now opens on Chat. Events, Memory, Skill, Trigger, and Settings move into fleet-local navigation instead of stacking every panel together.
@@ -31,10 +31,20 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
-  - **Chat survives connection loss** — messages wait while the fleet is busy, reconnecting, or offline. Missed activity returns after recovery, with manual retry when needed.
+  - **The composer is always on screen** — Chat fills the window and only the conversation scrolls, so sending a message no longer means scrolling past the fleet's whole history.
+  - **Every message says who sent it** — each entry carries a sender chip, a readable name, and the time. Your own messages read `Operator`; the fleet's read its own name.
+  - **Events describe themselves** — an incoming event shows what arrived, such as `opened · owner/repo#539 — add retry with backoff`, with its full payload one click away. An event with no reply says whether it is still working, waiting for approval, or failed.
+  - **Failures read as sentences** — a run that fails a startup safety check says so, in Chat, in the summary, and in the events table alike, instead of showing the runner's internal tag.
   - **Fleet-local views** — Events uses a fleet-scoped table. Memory, Skill, Trigger, and Settings each have one focused destination.
   - **Approvals stay in context** — a waiting count opens the workspace Approvals page already filtered to the current fleet.
   - **Trigger details lose setup clutter** — Trigger shows its source, filters, schedule, and latest delivery. Webhook registration remains in the install output.
+
+  ## Bug fixes
+
+  - **Messages send while the live feed is down** — Chat previously held every message whenever the connection was lost or the fleet was busy, so a message could sit marked as queued and never be sent. Sending no longer depends on the live feed at all; a message that the server refuses is shown as failed, with a retry.
+  - **Your own messages no longer disappear on reload** — a message you sent read as an empty row once the page reloaded, because Chat rendered the fleet's reply field for every entry, including yours.
+  - **Incoming events no longer render as blank rows** — an event from a connected app showed a timestamp and nothing else.
+  - **A lost connection recovers on its own** — Chat used to stop trying after a few attempts and stay marked as disconnected until you pressed Retry. It now keeps trying, and reconnects immediately when the tab returns to the foreground or the network comes back.
 </Update>
 
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
