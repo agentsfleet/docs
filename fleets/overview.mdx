@@ -3,7 +3,7 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-07-16
+verified: 2026-07-21
 product_version: 0.17.0
 executable: false
 ---
@@ -31,7 +31,25 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 Installing a library entry creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
-The fleet detail page shows source, live activity, memory, approvals, run metrics, and recent cost together. You can edit `SKILL.md` or `TRIGGER.md` there. A save takes effect on the next wake and keeps the same fleet identifier and memory.
+The fleet detail page is a focused workspace with Chat as its default view. Its summary shows status, the latest outcome, tokens, spend, and duration.
+
+If an approval is waiting, the summary links to the workspace Approvals page filtered to this fleet.
+
+Use the fleet navigation for one task at a time:
+
+- **Chat** sends instructions and shows the fleet's replies. Messages wait while the fleet is busy, reconnecting, or offline.
+- **Events** lists the fleet's durable activity, outcome, token use, spend, and duration in a table.
+- **Memory** shows the durable lessons the fleet can use in later runs.
+- **Skill** edits `SKILL.md`, while **Trigger** edits `TRIGGER.md` and shows the latest delivery.
+- **Settings** contains stop, resume, kill, and delete controls.
+
+Chat retries a lost connection five times, with delays from two to 15 seconds. It backfills missed activity after reconnecting.
+
+If recovery stops, new and queued messages remain in Chat. Choose **Retry** to reconnect immediately and send them in order.
+
+Provider webhook registration stays in the install output. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
+
+A source save takes effect on the next wake and keeps the same fleet identifier and memory.
 
 If another operator saves first, your stale source edit is refused. The editor reloads the current source so you can review the newer version and apply your change again.
 
@@ -43,7 +61,7 @@ Deleting a killed fleet removes all fleet records. A replacement fleet receives 
 
 The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.
 
-The recent cost rollup covers the latest 200 events within seven days. The page labels this bound and shows lifetime spend separately.
+The summary derives usage and outcome values from the fleet's durable event history. A fleet with no event history shows an empty outcome instead of an estimate.
 
 The service validates `SKILL.md` and `TRIGGER.md` during installation and updates. Invalid files do not replace the active fleet settings.
 

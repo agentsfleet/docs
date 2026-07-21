@@ -22,6 +22,21 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 21, 2026" tags={["What's new", "UI"]}>
+  ## Fleet detail is now a focused workspace
+
+  Fleet detail now opens on Chat. Events, Memory, Skill, Trigger, and Settings move into fleet-local navigation instead of stacking every panel together.
+
+  The summary keeps status, latest outcome, tokens, spend, duration, and waiting approvals visible.
+
+  ## What's new
+
+  - **Chat survives connection loss** — messages wait while the fleet is busy, reconnecting, or offline. Missed activity returns after recovery, with manual retry when needed.
+  - **Fleet-local views** — Events uses a fleet-scoped table. Memory, Skill, Trigger, and Settings each have one focused destination.
+  - **Approvals stay in context** — a waiting count opens the workspace Approvals page already filtered to the current fleet.
+  - **Trigger details lose setup clutter** — Trigger shows its source, filters, schedule, and latest delivery. Webhook registration remains in the install output.
+</Update>
+
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
   ## Delete revoked runners, a seeded model catalogue, and loaders with personality
 
