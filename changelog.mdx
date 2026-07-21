@@ -22,7 +22,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "UI"]}>
+<Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
   ## Fleet detail is now a focused workspace
 
   Fleet detail now opens on Chat. Events, Memory, Skill, Trigger, and Settings move into fleet-local navigation instead of stacking every panel together.
@@ -45,6 +45,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **Your own messages no longer disappear on reload** — a message you sent read as an empty row once the page reloaded, because Chat rendered the fleet's reply field for every entry, including yours.
   - **Incoming events no longer render as blank rows** — an event from a connected app showed a timestamp and nothing else.
   - **A lost connection recovers on its own** — Chat used to stop trying after a few attempts and stay marked as disconnected until you pressed Retry. It now keeps trying, and reconnects immediately when the tab returns to the foreground or the network comes back.
+  - **The API accepts a real request's headers** — the server allowed only 4 KiB of request headers and answered `431` past that. An authenticated request that crosses a proxy carries more than that in its credential and forwarding headers alone. The limit is now 16 KiB.
 </Update>
 
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
