@@ -22,6 +22,19 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 22, 2026" tags={["What's new", "UI"]}>
+  ## Tables stay sortable and contained
+
+  Dashboard tables now sort meaningful columns, paginate long datasets, and keep scrolling inside the table instead of stretching the whole page.
+
+  ## What's new
+
+  - **Sortable columns** — click a supported column heading to cycle through ascending, descending, and original order.
+  - **Contained event history** — long lists scroll below a sticky heading, so the rest of the dashboard stays in place.
+  - **Consistent pagination** — client, cursor, and page-backed lists share the same controls and preserve recovery navigation on an empty later page.
+  - **Exact dashboard frame** — the header aligns edge to edge, and page content owns viewport scrolling without one-pixel drift.
+</Update>
+
 <Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
   ## Fleet detail is now a focused workspace
 
