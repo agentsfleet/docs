@@ -37,15 +37,19 @@ If an approval is waiting, the summary links to the workspace Approvals page fil
 
 Use the fleet navigation for one task at a time:
 
-- **Chat** sends instructions and shows the fleet's replies. Messages wait while the fleet is busy, reconnecting, or offline.
+- **Chat** sends instructions and shows the fleet's replies. A message is sent when you submit it, whether or not the live feed is connected. The fleet handles what arrives in order, so a busy fleet does not block you.
 - **Events** lists the fleet's durable activity, outcome, token use, spend, and duration in a table.
 - **Memory** shows the durable lessons the fleet can use in later runs.
 - **Skill** edits `SKILL.md`, while **Trigger** edits `TRIGGER.md` and shows the latest delivery.
 - **Settings** contains stop, resume, kill, and delete controls.
 
-Chat retries a lost connection five times, with delays from two to 15 seconds. It backfills missed activity after reconnecting.
+Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
 
-If recovery stops, new and queued messages remain in Chat. Choose **Retry** in Chat to reconnect immediately and send them in order.
+An event from a connected app shows what it carried. Its full payload is one click away. An event with no reply says whether it is still working, is waiting for approval, or failed.
+
+Chat retries a lost connection quickly at first, with delays from one to 15 seconds. It then reports the feed as not live and keeps retrying every 30 seconds. It also reconnects as soon as the tab returns to the foreground or the network comes back.
+
+Choose **Retry** in Chat to reconnect without waiting. Missed activity is backfilled after reconnecting. A message the server refuses is marked as not sent, with a retry beside it.
 
 Provider webhook registration stays in the install output. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
 
