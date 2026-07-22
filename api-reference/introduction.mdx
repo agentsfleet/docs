@@ -3,7 +3,7 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-07-22
 product_version: 0.17.0
 executable: false
 ---
@@ -43,6 +43,10 @@ Errors use the HTTP problem details format. Each product error includes an `erro
 Identifiers use version 7 Universally Unique Identifiers (UUIDs). Timestamps use Unix milliseconds unless an operation states another unit.
 
 ## Limits
+
+The request line and headers can use up to 16 KiB. The server refuses larger header blocks before API routing.
+
+Clients may receive HTTP `431` or a closed connection. Reduce credentials, cookies, or forwarding headers before retrying.
 
 Rate limits apply per workspace. A limited request includes `Retry-After`; wait for that delay before retrying.
 
