@@ -14,7 +14,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## API reference
 
-  - **Uppercase and mixed-case ids return `400`** — a request sending `0195B4BA-8D3A-7F13-…` where a `uuid` field is expected now fails with `ERR_INVALID_REQUEST` instead of being silently normalized. Every id the API returns is already lowercase, so anything echoing back a server-issued id is unaffected.
+  - **Uppercase and mixed-case ids return `400`** — a request sending `0195B4BA-8D3A-7F13-…` where a `uuid` field is expected now fails with [`UZ-UUIDV7-009`](/api-reference/error-codes) instead of being silently normalized. Routes that validate the id inline answer the generic [`UZ-REQ-001`](/api-reference/error-codes) for the same input, so handle both. Every id the API returns is already lowercase, so anything echoing back a server-issued id is unaffected.
   - **The CLI rejects the same shape** — `agentsfleet` checks id arguments before the request leaves your machine, so a miscased id fails immediately, not after a round trip.
 
   ## Bug fixes
