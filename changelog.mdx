@@ -3,21 +3,6 @@ title: "Changelog"
 description: "Stay up to date with the latest agentsfleet product updates, new features, platform improvements, and bug fixes."
 ---
 
-import { STARTER_CREDIT, EVENT_RATE } from "/snippets/rates.mdx";
-
-{/*
-  Historical pricing constants frozen inline so older entries preserve the
-  rates that shipped at the time, independent of current pricing. The pre-M66
-  era used a single per-stage rate (STAGE_RATE_M65); the M66 nanos rebill used
-  a two-rate platform/self-managed gradient (STAGE_*_M66), since superseded by
-  the per-second run-fee model. `EVENT_RATE` / `STARTER_CREDIT` imported above
-  resolve to the current values.
-*/}
-export const EVENT_RATE_M65 = "$0.01";
-export const STAGE_RATE_M65 = "$0.10";
-export const STAGE_PLATFORM_M66 = "$0.001";
-export const STAGE_SELF_MANAGED_M66 = "$0.0001";
-
 <Tip>
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
@@ -25,101 +10,98 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 <Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
   ## A struggling fleet explains itself
 
-  A fleet that keeps failing the same way used to fill Chat and the Events table with dozens of identical rows, each saying only "Failed a startup safety check" with no hint of which check or why. Now the cause carries all the way from the runner to the row, repeats collapse into one line, and the conversation stays readable underneath.
+  A failed run now names its cause instead of repeating "Failed a startup safety check", and identical failures collapse into one row.
 
   ## What's new
 
-  - **Failures name their cause** — a run that fails now carries a specific reason, such as `Failed a startup safety check — no instructions configured`, in Chat, in the events table, and in the live completion frame. A run from an older runner that records no cause still shows the plain-language sentence, never a guess.
-  - **A repeating failure is one banner, not a wall** — when the same failure lands twice or more in a row, one line pins above the conversation: what failed, why, how many times, when it last happened, and what to do about it. It clears the moment the fleet recovers.
-  - **Repeats collapse** — a run of identical deliveries in Chat folds into one expandable row with a `×N` count and its time range; the Events table does the same for consecutive identical failures. Open the count to see every delivery it stands for. A success or one of your own messages always breaks the run.
-  - **Activity steps back** — an incoming integration event renders as one compact line so your own conversation stays in front, with the full payload one click away. A recognized change proposal shows its action and links out to the source.
-  - **Guidance where you can act on it** — a startup failure points at the fleet's Skill tab, in the failure row and in the event's Inspect dialog. Failures you cannot act on from the console stay quiet rather than offering advice that leads nowhere.
-  - **The live connection shows itself** — connecting animates instead of sitting behind a motionless banner, and arriving flashes once before settling. A message you send now animates while it works instead of reading a static "Still working."
-  - **One pagination control everywhere** — every table in the console, including the Events log and the billing ledger, now pages the same way. A page is a screenful you can share by link and return to on reload, instead of a "Load more" button that walked off the bottom of a list that only grew.
+  - **Failures name their cause** — `Failed a startup safety check — no instructions configured` appears in Chat, the events table, and the live completion frame. A run from an older runner that records no cause still shows the plain-language sentence, never a guess.
+  - **A repeating failure is one banner** — the same failure twice or more pins one line above the conversation: what failed, why, how many times, when it last happened, and what to do. It clears when the fleet recovers.
+  - **Repeats collapse** — consecutive identical deliveries fold into one expandable row with a `×N` count and time range. A success or one of your own messages breaks the run.
+  - **Compact integration events** — an incoming event renders as one line with the full payload one click away; a recognized change proposal links out to its source.
+  - **Guidance where you can act on it** — a startup failure links to the fleet's Skill tab. Failures you cannot act on from the console stay quiet.
+  - **One pagination control everywhere** — every console table, Events and the billing ledger included, pages the same way. A page is a screenful you can share by link.
 
   ## API reference
 
-  - **`core.fleet_events` gains `failure_detail`** — an additive nullable text column carrying the human-readable failure cause. The events endpoint returns it beside `failure_label`; both are `null` on a clean run. A runner that predates the field omits it and the row reads exactly as before.
+  - **`core.fleet_events` gains `failure_detail`** — an additive nullable text column carrying the human-readable failure cause. The events endpoint returns it beside `failure_label`; both are `null` on a clean run.
 
   ## Bug fixes
 
-  - **Zero metrics on a failed run read as absence, not measurement** — a failed run's `0` tokens, `$0.00` cost, and `0ms` duration now dim in the Events table, so they no longer look like a real reading of nothing.
-  - **A long-open Chat tab stays bounded** — the live view keeps a recent window of events instead of growing without limit; the full history remains in the Events tab.
+  - **Zero metrics on a failed run dim** — `0` tokens, `$0.00` cost, and `0ms` no longer read as a real measurement.
+  - **A long-open Chat tab stays bounded** — the live view keeps a recent window of events; the full history stays in the Events tab.
 </Update>
 
 <Update label="Jul 22, 2026" tags={["What's new", "UI"]}>
   ## Tables stay sortable and contained
 
-  Dashboard tables now sort meaningful columns, paginate long datasets, and keep scrolling inside the table instead of stretching the whole page.
+  Dashboard tables now sort meaningful columns, paginate long datasets, and scroll inside the table instead of stretching the page.
 
   ## What's new
 
-  - **Sortable columns** — click a supported column heading to cycle through ascending, descending, and original order.
-  - **Contained event history** — long lists scroll below a sticky heading, so the rest of the dashboard stays in place.
-  - **Consistent pagination** — client, cursor, and page-backed lists share the same controls and preserve recovery navigation on an empty later page.
-  - **Exact dashboard frame** — the header aligns edge to edge, and page content owns viewport scrolling without one-pixel drift.
+  - **Sortable columns** — click a supported heading to cycle ascending, descending, original order.
+  - **Contained event history** — long lists scroll below a sticky heading.
+  - **Consistent pagination** — client, cursor, and page-backed lists share the same controls and keep recovery navigation on an empty later page.
+  - **Exact dashboard frame** — the header aligns edge to edge and page content owns viewport scrolling.
 </Update>
 
 <Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
   ## Fleet detail is now a focused workspace
 
-  Fleet detail now opens on Chat. Events, Memory, Skill, Trigger, and Settings move into fleet-local navigation instead of stacking every panel together.
-
-  The summary keeps status, latest outcome, tokens, spend, duration, and waiting approvals visible.
+  Fleet detail opens on Chat, and every other panel moves into fleet-local navigation instead of stacking together. The summary keeps status, latest outcome, tokens, spend, duration, and waiting approvals visible.
 
   ## What's new
 
-  - **The composer is always on screen** — Chat fills the window and only the conversation scrolls, so sending a message no longer means scrolling past the fleet's whole history.
-  - **Every message says who sent it** — each entry carries a sender chip, a readable name, and the time. Your own messages read `Operator`; the fleet's read its own name.
-  - **Events describe themselves** — an incoming event shows what arrived, such as `opened · owner/repo#539 — add retry with backoff`, with its full payload one click away. An event with no reply says whether it is still working, waiting for approval, or failed.
-  - **Failures read as sentences** — a run that fails a startup safety check says so, in Chat, in the summary, and in the events table alike, instead of showing the runner's internal tag.
-  - **Fleet-local views** — Events uses a fleet-scoped table. Memory, Skill, Trigger, and Settings each have one focused destination.
-  - **Approvals stay in context** — a waiting count opens the workspace Approvals page already filtered to the current fleet.
-  - **Trigger details lose setup clutter** — Trigger shows its source, filters, schedule, and latest delivery. Webhook registration remains in the install output.
+  - **The composer is always on screen** — Chat fills the window and only the conversation scrolls.
+  - **Every message says who sent it** — a sender chip, a readable name, and the time. Yours read `Operator`; the fleet's read its own name.
+  - **Events describe themselves** — an incoming event shows what arrived, such as `opened · owner/repo#539 — add retry with backoff`, with its payload one click away. An event with no reply says whether it is working, waiting for approval, or failed.
+  - **Failures read as sentences** — a startup safety-check failure says so in Chat, the summary, and the events table, instead of the runner's internal tag.
+  - **Fleet-local views** — Events uses a fleet-scoped table; Memory, Skill, Trigger, and Settings each get one destination.
+  - **Approvals stay in context** — a waiting count opens workspace Approvals filtered to the current fleet.
+  - **Trigger drops setup clutter** — source, filters, schedule, and latest delivery only; webhook registration stays in the install output.
 
   ## Bug fixes
 
-  - **Messages send while the live feed is down** — Chat previously held every message whenever the connection was lost or the fleet was busy, so a message could sit marked as queued and never be sent. Sending no longer depends on the live feed at all; a message that the server refuses is shown as failed, with a retry.
-  - **Your own messages no longer disappear on reload** — a message you sent read as an empty row once the page reloaded, because Chat rendered the fleet's reply field for every entry, including yours.
-  - **Incoming events no longer render as blank rows** — an event from a connected app showed a timestamp and nothing else.
-  - **A lost connection recovers on its own** — Chat used to stop trying after a few attempts and stay marked as disconnected until you pressed Retry. It now keeps trying, and reconnects immediately when the tab returns to the foreground or the network comes back.
-  - **The API accepts a real request's headers** — the server allowed only 4 KiB of request headers and answered `431` past that. An authenticated request that crosses a proxy carries more than that in its credential and forwarding headers alone. The limit is now 16 KiB.
+  - **Messages send while the live feed is down** — sending no longer depends on the live feed. A message the server refuses shows as failed with a retry, instead of sitting queued forever.
+  - **Your own messages survive a reload** — they rendered as empty rows because Chat used the fleet's reply field for every entry.
+  - **Incoming events no longer render as blank rows.**
+  - **A lost connection recovers on its own** — Chat keeps retrying and reconnects immediately when the tab returns to the foreground or the network comes back.
+  - **The API accepts a real request's headers** — the 4 KiB request-header limit answered `431` on any authenticated request crossing a proxy. The limit is now 16 KiB.
 </Update>
 
 <Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "UI"]}>
   ## The console puts steering first, and every label reads in plain words
 
-  The fleet console now opens on the steer thread instead of the source editor, and the wall drops its abbreviations: a tile reads `$1.20 spent · 7 events`, and a tile whose live feed is unavailable says **not live** with a one-line explanation on hover or focus. The workspace Events page moves into the same table every other data surface uses.
+  The fleet console opens on the steer thread instead of the source editor, and the wall drops its abbreviations.
 
   ## What's new
 
-  - **Steer-first console** — the `SKILL.md`/`TRIGGER.md` source card is collapsed to its header until you open it; pressing **Edit** opens it and keeps it open while a draft exists. On narrow screens the steer thread stacks above the source column instead of below it.
-  - **A way back to the wall** — the console header gains a **← Fleets** link, so leaving a fleet no longer requires the sidebar.
-  - **Plain-words wall tiles** — footers spell out `spent` and `events`; the stale-feed eyebrow reads **not live** with a tooltip: "Live feed unavailable — showing the last activity received."
-  - **Events in the standard table** — the Events page renders one row per event with Time, Status, Fleet, Actor, Type, Summary, Tokens, and Duration columns; a failed run's row carries its plain-language reason. Cursor paging and the empty state stay.
-  - **The wall search box is gone** — it only filtered fleets already loaded in the page and duplicated nothing the wall needs at its current size.
+  - **Steer-first console** — the `SKILL.md`/`TRIGGER.md` source card is collapsed to its header until you open it; **Edit** opens it and keeps it open while a draft exists. On narrow screens the steer thread stacks above the source column.
+  - **A way back to the wall** — the console header gains a **← Fleets** link.
+  - **Plain-words wall tiles** — footers read `$1.20 spent · 7 events`; a stale feed reads **not live** with the tooltip "Live feed unavailable — showing the last activity received."
+  - **Events in the standard table** — one row per event with Time, Status, Fleet, Actor, Type, Summary, Tokens, and Duration; a failed run carries its plain-language reason. Cursor paging and the empty state stay.
+  - **The wall search box is gone** — it only filtered fleets already loaded in the page.
 
   ## Bug fixes
 
-  - **Console columns no longer overlap** — long unbroken lines (a `SKILL.md` source line, a webhook URL, a registration command) now scroll inside their own block instead of pushing a card underneath the neighbouring column.
-  - **The run-metrics strip says Time** — the wall-clock figure was labelled `Wall`, which collided with the Live Wall page name; it now reads `Time`.
+  - **Console columns no longer overlap** — long unbroken lines (a `SKILL.md` line, a webhook URL, a registration command) scroll inside their own block.
+  - **The run-metrics strip says Time** — `Wall` collided with the Live Wall page name.
 </Update>
 
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
-  ## Delete revoked runners, a seeded model catalogue, and loaders with personality
+  ## Delete revoked runners, and a seeded model catalogue
 
-  Revoking a runner used to leave a dead row you could never clear. Revoked runners now show a delete action, and the model catalogue ships pre-populated — so picking a real provider like Kimi or Anthropic works out of the box instead of forcing every model through the custom-endpoint escape hatch.
+  Revoked runners now show a delete action, and the model catalogue ships pre-populated instead of forcing every model through the custom-endpoint escape hatch.
 
   ## What's new
 
-  - **Delete a revoked runner.** Runners follow the same lifecycle as API keys: revoke is the destructive step, delete retires the record. The trash action appears only on revoked runners — the platform refuses to delete a live one.
-  - **A pre-seeded model catalogue.** Operators can seed the platform model library from a curated list covering Anthropic, OpenAI, Gemini, DeepSeek, Kimi, GLM, MiniMax, Qwen, xAI, Groq, and Mistral direct — plus the same models via Pioneer, Fireworks, Together, Novita, and OpenRouter, with per-host pricing so cost differences are visible. Tenants then pick providers and models from real dropdowns.
-  - **Custom endpoints learn their context window.** An OpenAI-compatible endpoint naming a known model now shows and enforces that model's real context cap instead of an unknown.
-  - **Loading screens speak.** Route loaders show a rotating vocabulary ("Wrangling Fleets…", "Mustering Runners…") instead of a static word — screen readers still hear the plain wording.
+  - **Delete a revoked runner** — runners follow the API-key lifecycle: revoke is the destructive step, delete retires the record. The trash action appears only on revoked runners.
+  - **A pre-seeded model catalogue** — operators seed the library from a set list: Anthropic, OpenAI, Gemini, DeepSeek, Kimi, GLM, MiniMax, Qwen, xAI, Groq, and Mistral direct, plus the same models via Pioneer, Fireworks, Together, Novita, and OpenRouter. Each host carries its own pricing.
+  - **Custom endpoints learn their context window** — an OpenAI-compatible endpoint naming a known model shows and enforces that model's real context cap.
+  - **Loading screens speak** — route loaders rotate wording ("Wrangling Fleets…", "Mustering Runners…"); screen readers still hear the plain wording.
 
   ## API reference
 
-  New endpoint: `DELETE /v1/fleets/runners/{id}` (scope `runner:write`).
+  New endpoint: `DELETE /v1/fleets/runners/{id}` (scope `runner:write`). Deletion cascades the runner's lease and event history.
 
   ```json
   // 204 No Content on success
@@ -127,29 +109,25 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   // 409 UZ-RUN-016 — active runner must be revoked before deletion
   ```
 
-  Deletion cascades the runner's lease and event history.
-
   ## Bug fixes
 
-  - The workspace Models page no longer shows a green **Active** badge for a platform default that was never configured — a fresh tenant now sees "No default is configured" instead of a healthy-looking default whose first run fails.
-  - Self-managed model entries say **"Billed by provider"** instead of the misleading "Rates unavailable" — the platform never charges token rates for models you bring yourself.
-  - The platform-default row is hidden entirely for tenants running their own model with no default configured.
+  - **No fake platform default** — the Models page no longer shows a green **Active** badge for a default that was never configured; a fresh tenant sees "No default is configured".
+  - **Self-managed models say "Billed by provider"** instead of "Rates unavailable" — the platform never charges token rates for models you bring yourself.
+  - **The platform-default row is hidden** for tenants running their own model with no default configured.
 </Update>
 
 <Update label="Jul 17, 2026" tags={["Bug fixes", "UI"]}>
-  ## The dashboard stops flashing a missing-page frame, and platform tools get their own sidebar group
-
-  Opening the dashboard, switching workspaces, or creating one now lands you straight on the fleet wall instead of flashing a not-found frame on the way. Platform surfaces move into their own sidebar group, and the fleet-library refetch dialog no longer looks like the create dialog.
+  ## No missing-page flash, and platform tools get their own sidebar group
 
   ## Bug fixes
 
-  - **No not-found flash on the workspace home** — the dashboard entry, the workspace switcher, and workspace creation now open the fleet wall directly. Before, they routed through the empty workspace root, which flashed a not-found frame before redirecting to the wall.
-  - **The refetch dialog reads as a refetch** — **Fetch update** on a catalog entry now opens a dialog titled **Fetch update**, with the repository locked to the entry's source and its own in-progress label, instead of the **Create fleet library** dialog with an editable repository. Repointing a source is still done from **Edit**, not here.
-  - **A finished onboarding step shows a check** — a completed step in the getting-started checklist shows an explicit checkmark, and the next step a small dot, so progress reads at a glance.
+  - **No not-found flash on the workspace home** — the dashboard entry, the workspace switcher, and workspace creation open the fleet wall directly. They used to route through the empty workspace root.
+  - **The refetch dialog reads as a refetch** — **Fetch update** opens its own dialog with the repository locked to the entry's source, not the **Create fleet library** dialog. Repointing a source stays under **Edit**.
+  - **A finished onboarding step shows a check** — a completed getting-started step shows a checkmark, the next step a dot.
 
   ## What's new
 
-  - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of the Configuration list into their own **Platform** group, shown only to an operator holding the matching scope. The group is open by default and can be collapsed with a click.
+  - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of Configuration into their own **Platform** group. It shows only to an operator holding the matching scope, and is open by default.
 </Update>
 
 <Update label="Jul 16, 2026" tags={["What's new", "API", "UI", "Performance"]}>
@@ -159,477 +137,460 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
-  - **Source editing** — read and edit `SKILL.md` or `TRIGGER.md` from the dashboard. A save takes effect on the next wake and keeps the fleet's memory. If someone else saves first, the editor reloads their change instead of overwriting it.
-  - **Memory correction** — inspect learned entries and forget one incorrect entry from the dashboard. Deleting the fleet still deletes all its memory; editing its source does not.
-  - **Run cost** — each event can show tokens, wall time, and settled cost. The recent rollup covers the latest 200 events within seven days and labels that bound; lifetime spend remains visible separately.
-  - **Faster fleet lists** — lifetime event and spend counters are maintained when activity is written, so list reads no longer re-sum the full event history.
+  - **Source editing** — read and edit `SKILL.md` or `TRIGGER.md` from the dashboard. A save takes effect on the next wake and keeps the fleet's memory. A concurrent save reloads the other change instead of overwriting it.
+  - **Memory correction** — inspect learned entries and forget one incorrect entry. Deleting the fleet still deletes all its memory; editing its source does not.
+  - **Run cost** — each event can show tokens, wall time, and settled cost. The recent rollup covers the latest 200 events within seven days and labels that bound; lifetime spend stays separate.
+  - **Faster fleet lists** — lifetime event and spend counters are maintained on write, so list reads no longer re-sum the event history.
 
   ## API reference
 
   - **Fleet detail** — `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}` returns source, triggers, lifecycle state, lifetime counters, and an `ETag` header.
-  - **Event cost** — fleet event rows now include nullable `cost_nanos`, sourced from settled billing telemetry.
-  - **Memory forget** — `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` requires `fleet:write`, returns `204` when deleted, and returns `UZ-MEM-004` when the key is absent.
-  - **Stale-write protection** — fleet source and platform library PATCH requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`; a stale catalog edit returns `UZ-CATALOG-005`. Both responses use `412` and include the current `ETag`.
+  - **Event cost** — fleet event rows include nullable `cost_nanos`, sourced from settled billing telemetry.
+  - **Memory forget** — `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` requires `fleet:write`, returns `204` when deleted and `UZ-MEM-004` when the key is absent.
+  - **Stale-write protection** — fleet source and platform library `PATCH` requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`, a stale catalog edit `UZ-CATALOG-005`; both are `412` and include the current `ETag`.
 </Update>
 
 <Update label="Jul 14, 2026" tags={["What's new", "API", "UI"]}>
-  ## The fleet catalog stops overstating itself, and operators can fix a mistyped repository in place
+  ## The fleet catalog stops overstating itself
 
-  A catalog entry's status badge now always matches what a workspace will actually get, and an operator can correct an entry's name, repository, or ref without deleting it — keeping every piece of curated install-gate copy. Copy buttons across the dashboard now report a failed copy instead of pretending it worked, the dashboard counts every fleet state, and the live activity thread shows the tools a fleet calls and what each event cost.
+  A catalog entry's status badge now matches what a workspace will actually get, and an operator can correct an entry's name, repository, or ref without deleting it.
 
   ## What's new
 
-  - **Draft-first onboarding** — creating or refetching a platform entry now returns it to draft. Publish it after review before any workspace can see or install it.
-  - **Edit a catalog entry's identity** — name, repository, and ref are editable from the catalog's Edit dialog. Changing the repository or ref discards the stored bundle and returns the entry to draft, because the stored bundle was built from the old repository; fetch and publish again to go live. Workspaces already running the fleet keep the exact bundle they installed. A rename survives the next bundle fetch, and so does a pinned ref — **Fetch update** now fetches at the ref the entry names instead of resetting it to the default branch.
-  - **An honest status column** — an entry that is published but holds no bundle now shows as **Broken** (it was shown as Published while being invisible to every workspace). Its help text says how to resolve it: fetch a bundle, or unpublish.
-  - **The admin button says what it does** — **Create fleet library** replaces "Add fleet", matching the workspace-side dialog; the page and navigation use the singular **Fleet library**.
-  - **Copy buttons everywhere a value wants copying** — bundle hashes (the full hash, not the visible preview), fleet and host identifiers, secret names, model identifiers, cron schedules, webhook URLs, approval action identifiers, and one-time credentials. A failed clipboard write is reported on the button and announced to screen readers — previously several surfaces showed "Copied" or nothing at all when the write failed, which could cost you a one-time runner token or API key.
-  - **The dashboard counts every fleet** — installing and killed fleets now appear in the summary tiles; previously they were counted nowhere.
-  - **The live thread shows tool calls and cost** — each fleet response lists the tools it called with their durations while it works, and event history rows show tokens and wall time.
+  - **Draft-first onboarding** — creating or refetching a platform entry returns it to draft. Publish after review before any workspace sees it.
+  - **Edit a catalog entry's identity** — name, repository, and ref are editable from **Edit**. Changing the repository or ref discards the stored bundle and returns the entry to draft; fetch and publish again to go live. Workspaces already running the fleet keep the bundle they installed. A rename and a pinned ref both survive the next fetch — **Fetch update** fetches at the ref the entry names, not the default branch.
+  - **An honest status column** — an entry published with no bundle shows as **Broken**, not Published, with help text saying to fetch a bundle or unpublish.
+  - **Consistent naming** — **Create fleet library** replaces "Add fleet"; the page and navigation read **Fleet library**.
+  - **Copy buttons where a value wants copying** — bundle hashes (the full hash, not the preview), fleet and host identifiers, secret names, model identifiers, cron schedules, webhook URLs, approval action identifiers, and one-time credentials. A failed write is reported on the button and announced to screen readers, instead of showing "Copied" and costing you a one-time runner token or API key.
+  - **The dashboard counts every fleet** — installing and killed fleets now appear in the summary tiles.
+  - **The live thread shows tool calls and cost** — each response lists the tools it called with durations; history rows show tokens and wall time.
 
   ## API reference
 
-  `PATCH /v1/admin/fleet-libraries/{id}` additionally accepts `name`, `source_repo`, and `source_ref`. A request whose `source_repo` or `source_ref` differs from the stored value sets `content_hash` to null and `visibility` to `draft` atomically; re-sending the stored value is a no-op. A request that changes the source and sets `published: true` in the same call is refused with `UZ-CATALOG-002` (there is no bundle to publish by the time the publish would apply). Malformed sources are refused with `UZ-BUNDLE-001` using the same validation as onboarding. The entry identifier is never patchable.
-
+  `PATCH /v1/admin/fleet-libraries/{id}` additionally accepts `name`, `source_repo`, and `source_ref`. A request whose `source_repo` or `source_ref` differs from the stored value sets `content_hash` to null and `visibility` to `draft` atomically; re-sending the stored value is a no-op. Changing the source and setting `published: true` in one call is refused with `UZ-CATALOG-002`. Malformed sources are refused with `UZ-BUNDLE-001`. The entry identifier is never patchable.
 </Update>
 
 <Update label="Jul 12, 2026" tags={["What's new", "API"]}>
-  ## Platform operators onboard fleets from the dashboard, and four prebuilt fleets are ready to install
+  ## Platform operators onboard fleets from the dashboard
 
-  A platform operator can now fill the fleet library from **Fleet libraries**, under Configuration in the dashboard. Enter a GitHub repository as `owner/repo`; `agentsfleet` fetches it, validates the bundle, and adds it to the catalog, where every workspace can install it. The page is visible only to an operator holding the `platform-library:write` scope.
+  A platform operator fills the fleet library from **Fleet libraries** under Configuration: enter a GitHub repository as `owner/repo`, and `agentsfleet` fetches it, validates the bundle, and adds it to the catalog. The page requires the `platform-library:write` scope.
 
   ## What's new
 
-  - **Onboard a platform fleet without leaving the dashboard** — the operation previously had no interface at all and could only be performed with a hand-built API request. Onboarding the same repository twice updates the existing entry rather than creating a second one.
-  - **Four prebuilt fleets** — `github-pr-reviewer`, `platform-ops` (Fly.io and Upstash evidence correlated into a Slack diagnosis), `zoho-sprint-daily-summarizer`, and `zoho-recruiter-daily-summarizer`. Each is a public repository under `agentsfleet` and installs by its identifier once an operator has onboarded it.
-  - **A fleet's library identifier comes from its bundle** — `agentsfleet` reads the identifier from the `name` in `SKILL.md`, not from the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical.
+  - **Onboarding without a hand-built API request** — the operation previously had no interface. Onboarding the same repository twice updates the existing entry rather than creating a second one.
+  - **Four prebuilt fleets** — `github-pr-reviewer`, `platform-ops` (Fly.io and Upstash evidence correlated into a Slack diagnosis), `zoho-sprint-daily-summarizer`, and `zoho-recruiter-daily-summarizer`. Each is a public repository under `agentsfleet` and installs by its identifier once onboarded.
+  - **A fleet's library identifier comes from its bundle** — read from the `name` in `SKILL.md`, not the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical.
 
   ## API reference
 
-  - **`security-reviewer` removed from the prebuilt catalog** — it named a repository that was never published, so it could never be installed. It may return as a real bundle later.
+  - **`security-reviewer` removed from the prebuilt catalog** — it named a repository that was never published, so it could never be installed.
 </Update>
 
 <Update label="Jul 12, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
-  ## Removed CLI commands stop appearing in hints, and workspace delete stops implying remote deletion
+  ## Removed CLI commands stop appearing in hints
 
-  Error hints and CLI messages now match the commands `agentsfleet` actually accepts. `agentsfleet workspace delete` also makes clear it only removes local client state — it never deletes the workspace or its data remotely.
+  Error hints and CLI messages now match the commands `agentsfleet` accepts, and `agentsfleet workspace delete` makes clear it only removes local client state.
 
   ## Upgrading
 
-  - **`agentsfleet workspace delete` JSON output field renamed** — `{"deleted": "<id>"}` is now `{"removed_from_local_state": "<id>"}`. Update any script parsing this field. The workspace and its remote data are unaffected by this command.
+  - **`agentsfleet workspace delete` JSON output field renamed** — `{"deleted": "<id>"}` is now `{"removed_from_local_state": "<id>"}`. Update any script parsing it. The workspace and its remote data are unaffected by this command.
 
   ## Bug fixes
 
-  - **Stale command hints removed** — error text and CLI messages no longer point at removed verbs (`agentsfleet install --from`, `agentsfleet secret add`, `agentsfleet workspace add`, `agentsfleet tenant provider add`). `agentsfleet list` with no fleets now points to `agentsfleet library` and `agentsfleet install --library <library_id>`; vault error hints now say `agentsfleet secret create <NAME>`.
+  - **Stale command hints removed** — error text no longer points at `agentsfleet install --from`, `agentsfleet secret add`, `agentsfleet workspace add`, or `agentsfleet tenant provider add`. `agentsfleet list` with no fleets points to `agentsfleet library` and `agentsfleet install --library <library_id>`; vault error hints say `agentsfleet secret create <NAME>`.
   - **Clean `--help` output** — `agentsfleet --help` no longer prints a telemetry-shutdown timeout after valid help output.
-  - **GitHub Pull Request events** — the signed per-fleet webhook now accepts the full set of supported Pull Request actions from the routed source filter.
+  - **GitHub Pull Request events** — the signed per-fleet webhook accepts the full set of supported Pull Request actions from the routed source filter.
 </Update>
 
 <Update label="Jul 11, 2026" tags={["What's new", "API", "CLI", "Integrations"]}>
   ## GitHub App events route to repository-bound fleets
 
-  A connected GitHub App can now route Pull Request and failed workflow-run events to active fleets that explicitly subscribe to the repository and event and hold an approved GitHub grant. Connector inspection is also available from the `agentsfleet` command-line interface (CLI).
+  A connected GitHub App routes Pull Request and failed workflow-run events to active fleets that subscribe to the repository and event and hold an approved GitHub grant.
 
   ## What's new
 
-  - **Repository-bound GitHub triggers** — add `repositories: [owner/repository]` beside `source: github` and `events` in `TRIGGER.md`; omission receives no managed App traffic.
-  - **Scoped fan-out** — one App delivery may wake several matching fleets in its connected workspace, while wrong-repository, wrong-event, inactive, and unapproved fleets receive nothing.
-  - **Verified installation ownership** — the GitHub callback exchanges a one-time user-authorization code, verifies access to the claimed installation, and refuses to move an installation already connected to another workspace.
-  - **Replay recovery** — replay protection uses the signed payload body per fleet, so changing the unsigned delivery header cannot bypass it and a retry fills a failed queue write without duplicating successful fleet events.
+  - **Repository-bound triggers** — add `repositories: [owner/repository]` beside `source: github` and `events` in `TRIGGER.md`; omission receives no managed App traffic.
+  - **Scoped fan-out** — one delivery may wake several matching fleets in its connected workspace; wrong-repository, wrong-event, inactive, and unapproved fleets receive nothing.
+  - **Verified installation ownership** — the callback exchanges a one-time user-authorization code and verifies access to the claimed installation. It refuses to move an installation already connected to another workspace.
+  - **Replay recovery** — replay protection uses the signed payload body per fleet, so changing the unsigned delivery header cannot bypass it.
 
   ## API reference
 
-  - `POST /v1/ingress/github` verifies the platform GitHub App signature, acknowledges signed `ping` checks, maps `installation.id` to a workspace, and normalizes supported events. It returns `202` after routing matching fleets and `404` with `UZ-WH-022` when no fleet subscription matches.
-  - `pull_request` events are accepted. `workflow_run` is accepted only for completed failed runs; successful runs are ignored.
+  - `POST /v1/ingress/github` verifies the platform GitHub App signature, acknowledges signed `ping` checks, maps `installation.id` to a workspace, and normalizes supported events. Returns `202` after routing and `404` with `UZ-WH-022` when no fleet subscription matches.
+  - `pull_request` events are accepted. `workflow_run` is accepted only for completed failed runs.
 
   ## CLI
 
-  - **Connector list** — `agentsfleet connector list [--workspace <id>] [--json]` reports `connected`, `not_connected`, `reconnect_required`, or `unconfigured` for every provider.
-  - **Connector status** — `agentsfleet connector status <provider> [--workspace <id>] [--json]` shows one provider's stable state and details without treating a valid disconnected state as an error.
+  - **`agentsfleet connector list [--workspace <id>] [--json]`** — reports `connected`, `not_connected`, `reconnect_required`, or `unconfigured` per provider.
+  - **`agentsfleet connector status <provider> [--workspace <id>] [--json]`** — one provider's state and details, without treating a valid disconnected state as an error.
 </Update>
 
 <Update label="Jul 11, 2026" tags={["Breaking", "API", "Security"]}>
   ## The model library is now an authenticated read
 
-  The model catalogue moved off its public URL. `GET /v1/models` (Bearer) returns the same per-model rows the public document carried — context caps and per-token rates — and per-model pricing is no longer world-readable.
+  The model catalogue moved off its public URL, so per-model pricing is no longer world-readable.
 
   ## Upgrading
 
-  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** If you read the public catalogue directly, switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. The old `?model=` filter is not ported — the read returns the full catalogue; filter client-side. If you only use the dashboard or the `agentsfleet` CLI, there is nothing to do — the dashboard now reads the authenticated route, and the CLI resolves caps server-side.
-  - **The global `rates`/`billing` block is gone with the document** — `GET /v1/models` carries the catalogue only. Current rates stay published at [agentsfleet.net/#pricing](https://agentsfleet.net/#pricing).
+  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** Switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. The `?model=` filter is not ported — filter client-side. Dashboard and `agentsfleet` CLI users need do nothing.
+  - **The global `rates`/`billing` block is gone with the document** — `GET /v1/models` carries the catalogue only. Current rates stay at [agentsfleet.net/#pricing](https://agentsfleet.net/#pricing).
 
   ## API reference
 
-  - **`GET /v1/models`** — Bearer-authed; any tenant, no capability scope. Returns `{ "version": "YYYY-MM-DD", "models": [...] }`; an empty catalogue is `200` with `models: []`; a missing or invalid token is `401`. Documented under **Model Library** in the API reference (formerly the Model Catalogue page).
-  - **`UZ-PROVIDER-004`** — the "Model not in library" guidance now points at the model library (`GET /v1/models`) instead of the retired document.
+  - **`GET /v1/models`** — Bearer-authed, any tenant, no capability scope. Returns `{ "version": "YYYY-MM-DD", "models": [...] }`; an empty catalogue is `200` with `models: []`; a missing or invalid token is `401`. Documented under **Model Library**.
+  - **`UZ-PROVIDER-004`** — the "Model not in library" guidance points at `GET /v1/models`.
 </Update>
 
 <Update label="Jul 10, 2026" tags={["Bug fixes", "API", "Integrations", "Security"]}>
   ## Reconnecting an integration takes effect immediately, and Jira stays connected
 
-  Two credential fixes land for fleets using connected integrations. Reconnecting a workspace's GitHub App to a different installation (or re-storing a static token) now takes effect on the very next tool call — previously the platform could keep serving a token minted from the old connection for up to an hour. And connectors whose providers rotate refresh tokens on every renewal (Atlassian's Jira OAuth does this by default) now stay connected indefinitely — previously Jira users were forced to reconnect from the dashboard roughly every hour.
+  Two credential fixes for fleets using connected integrations. No API shapes, endpoints, or error codes changed.
 
   ## Bug fixes
 
-  - **Stale token after reconnect** — the credential cache now recognizes when a connected integration's identity changed (a different GitHub installation, a rotated personal access token) and mints a fresh token instead of serving the cached one. An operator's intentional privilege reduction no longer lags behind the reconnect.
-  - **Jira hourly reconnect loop** — the platform now stores the rotated refresh token a provider returns during token renewal, so the next renewal uses the current token instead of a revoked one. Applies automatically to any provider that rotates refresh tokens; providers with permanent refresh tokens (such as Zoho Desk) are unaffected. If storing the rotated token fails, the in-flight request still succeeds and at most one reconnect prompt can follow.
-
-  No API shapes, endpoints, or error codes changed.
+  - **Stale token after reconnect** — the credential cache now spots a changed identity, such as a different GitHub installation or a rotated personal access token, and mints a fresh token. It used to serve the cached one for up to an hour, so an intentional privilege reduction lagged the reconnect.
+  - **Jira hourly reconnect loop** — the platform stores the rotated refresh token a provider returns during renewal, so the next renewal uses the current token instead of a revoked one. Applies to any provider that rotates refresh tokens (Atlassian's Jira OAuth does by default); providers with permanent refresh tokens, such as Zoho Desk, are unaffected. If storing the rotated token fails, the in-flight request still succeeds and at most one reconnect prompt follows.
 </Update>
 
 <Update label="Jul 10, 2026" tags={["API", "Bug fixes"]}>
   ## Per-fleet spend ceilings are enforced
 
-  `daily_dollars` is required in every `TRIGGER.md` and has been documented as a hard spend ceiling since it shipped. It was read by nothing: a fleet stuck in a tool-call loop drew on the tenant credit pool until the pool emptied or the lease's runtime cap fired. The ceiling now holds.
+  `daily_dollars` is required in every `TRIGGER.md` and documented as a hard spend ceiling, but nothing read it. A fleet stuck in a tool-call loop drew on the tenant credit pool until it emptied. The ceiling now holds.
 
   ## What changed
 
-  - **`daily_dollars` and `monthly_dollars` now stop a fleet** — a fleet that has spent its allowance is refused before its next run opens, recording `gate_blocked` with a `budget_breach` label. The refused event is **not** charged. A fleet that crosses its ceiling mid-run is stopped at its next lease renewal (`UZ-RUN-015`) and records `fleet_error` with the same label.
-  - **`budget_breach` is a distinct label** — previously every mid-run stop reported `renewal_terminate`, so a fleet hitting its own ceiling looked identical to a tenant running out of credit. The two are now distinguishable on the event row.
-  - **Spend windows** — `daily_dollars` is a rolling 24 hours, `monthly_dollars` the UTC calendar month. Spend counts what you were actually charged. `monthly_dollars` remains optional; omit it and only the daily ceiling applies.
-  - **Lowering a ceiling takes effect immediately**, including on a run already in flight.
-  - **`/v1/admin/models` is documented** — the platform-admin model catalogue routes (`GET`/`POST` on the collection, `PATCH`/`DELETE` on `{uid}`) have been served for a milestone without appearing in the API reference. A continuous-integration gate now fails whenever a served route is missing from the specification.
+  - **`daily_dollars` and `monthly_dollars` now stop a fleet** — a fleet that has spent its allowance is refused before its next run opens, recording `gate_blocked` with a `budget_breach` label. The refused event is **not** charged. A fleet crossing its ceiling mid-run stops at its next lease renewal (`UZ-RUN-015`) and records `fleet_error` with the same label.
+  - **`budget_breach` is a distinct label** — previously every mid-run stop reported `renewal_terminate`, so a fleet hitting its own ceiling looked identical to a tenant out of credit.
+  - **Spend windows** — `daily_dollars` is a rolling 24 hours, `monthly_dollars` the UTC calendar month; spend counts what you were charged. `monthly_dollars` stays optional.
+  - **Lowering a ceiling takes effect immediately**, including on a run in flight.
+  - **`/v1/admin/models` is documented** — the platform-admin model catalogue routes (`GET`/`POST` on the collection, `PATCH`/`DELETE` on `{uid}`) were served without appearing in the API reference. A continuous-integration gate now fails whenever a served route is missing from the specification.
 
   ## Documentation corrections
 
-  - **Continuation chains never existed.** The context-lifecycle page described the runtime re-queuing an exhausted run as a continuation, a chain capping at 10, and an 11th attempt labelled `chunk_chain_escalate_human`. None of that was ever built. The runtime observes how full the context window is and writes a log line; it cannot interrupt a fleet mid-loop. A fleet that runs out of context wraps up, the run ends `processed`, and nothing re-queues it. To carry work forward, trigger the fleet again — it recovers its state from memory.
-  - **`actor=continuation:<original_actor>` is not a value the runtime writes.** It has been removed from the activity-stream and `--actor` filter documentation.
-  - **`budget_breach` was documented before it existed.** It exists now, and the pages describing it are accurate.
+  - **Continuation chains never existed.** The context-lifecycle page described the runtime re-queuing an exhausted run as a continuation, a chain capping at 10, and an 11th attempt labelled `chunk_chain_escalate_human`. None of it was built. A fleet that runs out of context wraps up, the run ends `processed`, and nothing re-queues it — trigger the fleet again and it recovers its state from memory.
+  - **`actor=continuation:<original_actor>` is not a value the runtime writes** — removed from the activity-stream and `--actor` filter documentation.
+  - **`budget_breach` was documented before it existed.** It exists now.
 
-  <Note>Every run is charged `$0` during the free-trial window, so no fleet accrues spend and no budget can be reached. The per-fleet ceiling and the tenant credit gate both begin to bite when the window closes.</Note>
+  <Note>Every run is charged `$0` during the free-trial window, so no budget can be reached. The per-fleet ceiling and the tenant credit gate both begin to bite when the window closes.</Note>
 </Update>
 
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 
-  The live fleet timeline silently dropped every frame published while its stream connection was down — a network blip or an idle proxy kill left a gap in the tail that only a page reload repaired. The dashboard now recovers the missed window on every reconnect, without a reload.
+  The live timeline silently dropped every frame published while its stream connection was down. It now recovers the missed window on every reconnect, without a reload.
 
   ## Bug fixes
 
-  - **Reconnect gap-recovery** — on every stream reconnect the timeline re-fetches the events published during the outage from the durable event history and merges them by event id, so a frame delivered both live and via recovery renders once.
-  - **Honest tail on failure** — a failed recovery fetch changes nothing on screen; live frames resume immediately and the next reconnect retries. Nothing is fabricated to fill a gap.
-  - **Conflicting style classes resolve last-wins** — dashboard components previously kept both of two conflicting utility classes stacked on one element; every component now merges classes through one Tailwind-aware implementation, so the later class wins.
+  - **Reconnect gap-recovery** — on reconnect the timeline re-fetches the events published during the outage and merges them by event id, so a frame delivered twice renders once.
+  - **Honest tail on failure** — a failed recovery fetch changes nothing on screen; live frames resume and the next reconnect retries. Nothing is fabricated to fill a gap.
+  - **Conflicting style classes resolve last-wins** — components merge classes through one Tailwind-aware implementation.
 </Update>
 
 <Update label="Jul 09, 2026" tags={["UI", "API"]}>
-  ## Admin model library: edit a model's rates and set the platform default from its row
+  ## Admin model library: edit rates and set the default from a row
 
-  The platform-admin model library made you delete and recreate a catalogue entry just to correct a rate, and set the platform default through a separate form below the table. Every catalogue row now carries its own actions — edit its rates in place, make it the platform default, or remove it — and the row currently serving as the default is marked on the row itself.
+  Correcting a rate no longer means delete-and-recreate, and the platform default is set from the row rather than a separate form.
 
   ## What's new
 
-  - **Edit rates in place** — the pencil on a catalogue row opens a dialog to change the context cap and per-token rates; the provider and model id stay fixed. No more delete-and-recreate to fix a price.
-  - **Make any model the default from its row** — a star action sets that model as the platform default (you enter the provider API key, stored in your vault), replacing the separate Platform Default form. The active row shows a "Default" badge.
-  - **Consistent action icons across settings** — every Create button (API keys, runners, secrets, model library) now shows a plus icon, and the fleet Install button a download icon, matching the Secrets page.
+  - **Edit rates in place** — the pencil on a catalogue row opens a dialog for the context cap and per-token rates; provider and model id stay fixed.
+  - **Make any model the default from its row** — a star action sets the platform default (you enter the provider API key, stored in your vault). The active row shows a "Default" badge.
+  - **Consistent action icons** — every Create button (API keys, runners, secrets, model library) shows a plus icon, and the fleet Install button a download icon.
 
   ## API reference
 
-  - `GET /v1/admin/platform-keys` — each returned row now includes `model`, the priced `(provider, model_id)` the default resolves to (`null` for a provider that has been stood down).
+  - `GET /v1/admin/platform-keys` — each row now includes `model`, the priced `(provider, model_id)` the default resolves to (`null` for a provider that has been stood down).
 </Update>
 
 <Update label="Jul 08, 2026" tags={["UI", "API"]}>
-  ## Models page becomes a registry — every configured model in one table, keys shared across models
+  ## Models page becomes a registry
 
-  The Models page held four fixed slots (Default, Anthropic, one bucket for every other provider, one custom endpoint), which hid every Anthropic key past the first and couldn't tell apart the same model running on two different hosts. It's now a sortable table with one row per model you've configured — add three Anthropic models on a single key, or the same model on two different hosts, and see all of them at once.
+  Four fixed slots become a sortable table. Register three Anthropic models on one key, or the same model on two hosts, and see all of them at once.
 
   ## What's new
 
-  - **One row per configured model** — the Models table lists every model you've registered, sorted by model or provider, with the platform default pinned as the first row.
-  - **Key names are identities** — the "Add model" dialog is always one paste-a-key form; adding a model under a key name you've already stored (same provider) updates that stored key in place and points the new model at it, so several models share one credential without a separate "use existing key" step. A name that belongs to a different provider's key is rejected instead of overwritten.
-  - **Custom endpoints can go keyless** — the Custom-endpoint tab's API key field is now optional; an endpoint that needs no key registers and activates without one.
-  - **Per-row actions** — each row's `⋯` menu offers View details (provider, endpoint, key name, created date — never the key itself), Edit (change the model, or paste a new key to rotate it), and Remove (blocked with a reason on the row currently powering inference).
-  - **Switch with one click** — an inactive row's Switch button activates it immediately; no key field, no confirmation.
+  - **One row per configured model** — sorted by model or provider, with the platform default pinned first.
+  - **Key names are identities** — a key name you already stored (same provider) updates that key in place and points the new model at it, so models share one credential. A name belonging to a different provider's key is rejected, not overwritten.
+  - **Custom endpoints can go keyless** — the API key field is optional.
+  - **Per-row actions** — View details (provider, endpoint, key name, created date — never the key), Edit (change the model, or paste a new key to rotate it), and Remove (blocked with a reason on the row powering inference).
+  - **Switch with one click** — an inactive row's Switch button activates it immediately.
 
   ## API reference
 
-  - `GET /v1/tenants/me/models` — lists the tenant's registered model entries, each joined to its key's provider/kind/endpoint and an `active` flag; also returns `platform_default_available`.
-  - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `secret_ref` is required and names the stored provider key or keyless custom-endpoint record; omit the API key when creating that stored record for a keyless endpoint. `404 UZ-MODELS-002` when `secret_ref` names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
-  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. Key rotation stays on the stored secret, so editing a row can rotate the key without changing this registry endpoint's body. `404 UZ-MODELS-004` when the id isn't yours.
-  - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the entry currently active.
-  - `PUT /v1/tenants/me/provider` (existing) now also registers the matching model entry when none exists, so an activation is always visible as a row in `GET /v1/tenants/me/models`.
-  - Activating a self-managed model takes the model from the `PUT` body (or the registry entry), never the stored key — so a key holds `{provider, api_key}` with no `model` and backs many models. An activation that resolves no model returns `400 UZ-PROVIDER-004`.
-  - Deleting a stored key that's still referenced by a model entry now returns `409` naming how many entries reference it, instead of deleting silently out from under them.
+  - `GET /v1/tenants/me/models` — lists registered entries, each joined to its key's provider/kind/endpoint and an `active` flag; also returns `platform_default_available`.
+  - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `secret_ref` is required and names the stored provider key or keyless custom-endpoint record. `404 UZ-MODELS-002` when it names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
+  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours. Key rotation stays on the stored secret.
+  - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the active entry.
+  - `PUT /v1/tenants/me/provider` also registers the matching model entry when none exists, so an activation is always a row in `GET /v1/tenants/me/models`.
+  - Activating a self-managed model takes the model from the `PUT` body or the registry entry, never the stored key, so a key holds `{provider, api_key}` and backs many models. An activation that resolves no model returns `400 UZ-PROVIDER-004`.
+  - Deleting a stored key still referenced by a model entry returns `409` naming how many entries reference it.
 </Update>
 
 <Update label="Jul 07, 2026" tags={["UI"]}>
-  ## Dashboard cards read crisper, isolation mode is easier to pick, and every account gets its own avatar
-
-  Cards and tables across the dashboard now have a slightly more defined edge at rest instead of only on hover, the Billing usage history table pins its column headers while you scroll a long list, enrolling a runner picks its isolation mode from clear cards instead of a dropdown, and your account avatar is now a pattern unique to you instead of the same grey circle everyone sees.
+  ## Crisper cards, clearer isolation modes, per-account avatars
 
   ## What's new
 
-  - **Sharper cards and tables** — resting-state borders and card backgrounds are a touch brighter across the dashboard, so panels read as distinct surfaces immediately instead of only once you hover over them.
-  - **Pinned table header on Billing usage** — the Billing page's usage-history table keeps its "Date / Amount / Type / Description" header visible while you scroll through a long charge history.
-  - **Isolation mode as option cards** — enrolling a runner (Settings → Runners → Create runner) now picks its isolation mode from four cards with a one-line description each, instead of a plain dropdown.
-  - **A distinct account avatar** — if you haven't uploaded a profile photo, your account avatar is now a pattern generated from your account, so it looks different from every other signed-in user's.
+  - **Sharper cards and tables** — resting-state borders and card backgrounds are brighter, so panels read as distinct surfaces without hovering.
+  - **Pinned table header on Billing usage** — the "Date / Amount / Type / Description" header stays visible while scrolling a long charge history.
+  - **Isolation mode as option cards** — Settings → Runners → Create runner picks its isolation mode from four described cards instead of a dropdown.
+  - **A distinct account avatar** — with no uploaded photo, your avatar is a pattern generated from your account.
 </Update>
 
 <Update label="Jul 06, 2026" tags={["Bug fixes", "API"]}>
-  ## Error responses stop leaking internal names; model-provider copy says "library"
+  ## Error responses stop leaking internal names
 
-  Backend failures returned an internal Zig error name or engineering jargon in the error response's `detail` field on some paths; both are now stable, plain-English text, and the error-codes reference page is generated straight from the backend registry instead of hand-maintained.
+  Backend failures returned an internal Zig error name or engineering jargon in `detail` on some paths; both are now stable, plain-English text.
 
   ## Bug fixes
 
-  - **No more raw internal error names** — an authentication-middleware failure previously returned the caller a raw internal error identifier (e.g. `error.TokenExpired`) in the response `detail`; it now returns a stable, curated message, with the raw identifier logged server-side only.
-  - **Plainer failure messages** — around three dozen internal-failure responses that surfaced backend jargon (allocation/serialization internals, component names) now return plain-English text instead; several previously-generic connector and provider failures (including the connector catalog lookup behind "Couldn't load connectors") now return distinct, diagnosable error codes.
-  - **Model-provider errors say "library"** — model-provider setup and activation error messages now say "library" everywhere, matching the Model library page; they previously said "catalogue."
-  - **`UZ-AUTH-014` is now 409 Conflict** — submitting a login verification code before approving the session in the dashboard previously returned 410 (Gone) even though the session was still open and approvable; it now returns 409 with the same approve-then-retry guidance.
+  - **No more raw internal error names** — an authentication-middleware failure returned a raw identifier (e.g. `error.TokenExpired`) in `detail`; it now returns a curated message, with the raw identifier logged server-side only.
+  - **Plainer failure messages** — around three dozen internal-failure responses that surfaced backend jargon now return plain English; several previously-generic connector and provider failures, including the catalog lookup behind "Couldn't load connectors", return distinct, diagnosable codes.
+  - **Model-provider errors say "library"** — matching the Model library page; they previously said "catalogue".
+  - **`UZ-AUTH-014` is now 409 Conflict** — submitting a login verification code before approving the session returned 410 (Gone) even though the session was still approvable.
 
   ## API reference
 
-  - The [error codes reference](/api-reference/error-codes) is now generated directly from the backend error registry on every release, so it can no longer drift from the codes the API actually returns.
+  - The [error codes reference](/api-reference/error-codes) is generated from the backend error registry on every release, so it cannot drift from the codes the API returns.
 </Update>
 
 <Update label="Jul 06, 2026" tags={["Breaking", "Security", "API"]}>
-  ## Fleets now need an approved integration grant before minting provider tokens
+  ## Fleets need an approved integration grant before minting provider tokens
 
-  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, but no longer automatically authorizes every fleet in it. Such a fleet must hold a human-approved integration grant before the platform will mint a provider token for it, checked both when a run is leased and again on every token request, so revoking a grant takes effect on the fleet's very next call. **Slack is not affected** — its bot token is long-lived and delivered directly, not minted through this path, so Slack fleets keep working with no grant.
+  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, not every fleet in it. Such a fleet must hold a human-approved grant before a token is minted, checked at lease and again on every token request. **Slack is not affected** — its bot token is long-lived and delivered directly.
 
   ## Upgrading
 
-  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant will stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body: `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
-  - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated and keep working unchanged.
+  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
+  - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated.
 
   ## What's new
 
-  - **Grants are now requestable for `github`, `zoho`, `jira`, and `linear`** — previously the grant endpoint rejected these services, so connector access could not be scoped per fleet at all.
-  - **A refused mint returns [`UZ-GRANT-001`](/api-reference/error-codes)** (403, "No integration grant for service") with the request-grant endpoint in the hint — never a silent failure.
-  - **Revoke works mid-run** — revoking a grant refuses the fleet's next token request even if its current run is still leased; re-approving restores minting with no reconnect.
+  - **Grants are requestable for `github`, `zoho`, `jira`, and `linear`** — the grant endpoint previously rejected these services, so connector access could not be scoped per fleet at all.
+  - **A refused mint returns [`UZ-GRANT-001`](/api-reference/error-codes)** (403, "No integration grant for service") with the request-grant endpoint in the hint.
+  - **Revoke works mid-run** — revoking refuses the fleet's next token request even while its run is leased; re-approving restores minting with no reconnect.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["What's new", "Integrations"]}>
   ## A guide to connecting GitHub, Slack, Zoho Desk, Jira, and Linear
 
-  The docs now cover the connector flow end to end: what a connector is, the browser round-trip that vaults your provider token (you never paste one in), and the exact OAuth shape for each of the five supported providers.
+  The docs now cover the connector flow end to end: what a connector is, the browser round-trip that vaults your provider token, and the exact OAuth shape for each supported provider.
 
   ## What's new
 
-  - **[Connectors guide](/fleets/connectors)** — new page explaining the connect round-trip, the GitHub App-install exception, and which providers issue a refresh token.
-  - **Secrets page** now links to the Connectors guide and calls out the difference between a pasted vendor key (`${secrets.<name>.<field>}`) and a connector.
+  - **[Connectors guide](/fleets/connectors)** — the connect round-trip, the GitHub App-install exception, and which providers issue a refresh token.
+  - **Secrets page** links to the guide and calls out the difference between a pasted vendor key (`${secrets.<name>.<field>}`) and a connector.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["UI", "Bug fixes"]}>
-  ## Runners, Model library, and Secrets adopt the standard table layout
-
-  The operator Runners, Model rates, and Secrets pages now share one table layout and plainer labels. Runners gains a "Create runner" flow, "Model rates" becomes "Model library", and the "Secrets & ENVs" page is now just "Secrets".
+  ## Runners, Model library, and Secrets adopt the standard table
 
   ## What's new
 
-  - **Runners page** — adopts the "Manage runners" layout and renders in the same table as API keys and secrets. Enrolling a runner is now the "Create runner" dialog, which shows the install token once with a notice that it won't be shown again.
-  - **Runner labels** — "Host id" is now "Host name" (a display label, not a key), and "Sandbox tier" is now "Isolation mode" with plain-language options: Linux · Landlock, Nested container, macOS · Seatbelt, and None.
-  - **Model library** — the "Model rates" page is renamed "Model library" across the nav, the page, and the "Create model library" dialog; the catalogue renders as the standard table.
-  - **Secrets** — the "Secrets & ENVs" page and sidebar entry are now just "Secrets". Renaming a secret is its own dialog, opened from the Name column.
+  - **Runners page** — renders in the same table as API keys and secrets. Enrolling is now the "Create runner" dialog, which shows the install token once with a notice that it won't be shown again.
+  - **Runner labels** — "Host id" is now "Host name" (a display label, not a key); "Sandbox tier" is now "Isolation mode" with plain options: Linux · Landlock, Nested container, macOS · Seatbelt, and None.
+  - **Model library** — "Model rates" is renamed "Model library" across the nav, the page, and the "Create model library" dialog.
+  - **Secrets** — "Secrets & ENVs" is now just "Secrets". Renaming a secret is its own dialog, opened from the Name column.
 
   ## Bug fixes
 
-  - **Model library token counts** — large token counts on the Model library page rendered inconsistently between server and client (a hydration and locale mismatch); they now render the same on both.
+  - **Model library token counts** — large counts rendered inconsistently between server and client (a locale mismatch); they now match.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["Bug fixes", "UI", "API"]}>
-  ## Follow-up — API Keys stands alone, Buy credits works, library copy stops saying "template"
-
-  The Workspace tab folds into a standalone API Keys page, Billing's credit-purchase button becomes a working `mailto:` link instead of a disabled placeholder, and dashboard copy that still said "template" now says "fleet library" consistently.
+  ## API Keys stands alone, Buy credits works, library copy drops "template"
 
   ## What's new
 
-  - **API Keys page** — the sidebar's "Workspace" entry is now "API Keys", a standalone page for your keys. `/settings` redirects here. The Workspace tab and its "Manage workspace" menu item are gone — switching and creating a workspace stay in the top-right workspace switcher, which now reads "Create workspace".
-  - **Buy credits** — "Purchase credits" is renamed "Buy credits" and is now a live `mailto:` link instead of a permanently disabled button.
-  - **"Create fleet library"** replaces "Add library entry" across the dashboard and CLI empty-state text; the Dashboard and install-picker empty states no longer say "template".
-  - **Left-nav active indicator** — the selected sidebar item now shows a left accent bar in addition to its background fill.
-  - **[Scopes reference](/api-reference/scopes)** — a new page lists every scope a tenant token can carry, linked from `UZ-AUTH-022`.
+  - **API Keys page** — the sidebar's "Workspace" entry is now "API Keys", a standalone page; `/settings` redirects here. Switching and creating a workspace stay in the top-right switcher, which reads "Create workspace".
+  - **Buy credits** — renamed from "Purchase credits" and now a live `mailto:` link instead of a disabled button.
+  - **"Create fleet library"** replaces "Add library entry" across the dashboard and CLI empty states.
+  - **Left-nav active indicator** — the selected item shows a left accent bar in addition to its background fill.
+  - **[Scopes reference](/api-reference/scopes)** — a new page listing every scope a tenant token can carry, linked from `UZ-AUTH-022`.
 
   ## Bug fixes
 
-  - **Models page** — the active-model row no longer glows permanently (a `[data-live]` CSS selector matched the "not live" state too); its redundant "Switch to platform defaults" button is removed — the equivalent row in the provider list below it is the one switch path.
-  - **`UZ-PROVIDER-009`** — switching back to platform defaults when none is configured now returns a plain-English message instead of leaking "operator action required" into the dashboard toast.
+  - **Models page** — the active-model row no longer glows permanently (a `[data-live]` selector matched the "not live" state too); its redundant "Switch to platform defaults" button is removed.
+  - **`UZ-PROVIDER-009`** — switching back to platform defaults when none is configured returns plain English instead of leaking "operator action required" into the toast.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["What's new", "Breaking", "UI", "CLI", "API"]}>
-  ## Fleet library replaces Templates, Secrets & ENVs gets its own page
+  ## Fleet library replaces Templates, Secrets gets its own page
 
-  The install picker reads "Fleet library" instead of "Templates," vault secrets move off the Models page onto a standalone "Secrets & ENVs" page, the Models page collapses to a single row list, and error messages across the product read as plain sentences instead of raw backend codes.
+  The install picker reads "Fleet library" instead of "Templates", and vault secrets move onto a standalone page. Error messages read as plain sentences, not raw backend codes.
 
   ## Upgrading
 
-  - **`agentsfleet templates` → `agentsfleet library`; `--template` → `--library`.** No alias — update any script or CI job calling the old command or flag.
-  - **`agentsfleet credential` → `agentsfleet secret`.** Same for `credential add`/`list`/`show`/`delete` and any automation calling them.
+  - **`agentsfleet templates` → `agentsfleet library`; `--template` → `--library`.** No alias — update any script or continuous-integration job calling the old command or flag.
+  - **`agentsfleet credential` → `agentsfleet secret`.** Same for `credential add`/`list`/`show`/`delete`.
   - **Routes renamed, no deprecation window:** `/v1/admin/fleet-templates` → `/v1/admin/fleet-libraries`; `/v1/workspaces/{workspace_id}/fleet-templates` → `.../fleet-libraries`; `/v1/workspaces/{workspace_id}/credentials` → `.../secrets`. Wire fields `platform_template_id`/`tenant_template_id` → `platform_library_id`/`tenant_library_id`.
 
   ## What's new
 
-  - **Fleet library** — "Add library entry" replaces "Create a template" in the dashboard; the `?library=` deep-link query param replaces `?template=`.
+  - **Fleet library** — "Add library entry" replaces "Create a template"; the `?library=` deep-link query param replaces `?template=`.
   - **Secrets & ENVs** — vault secrets get their own sidebar entry and page instead of a form at the bottom of Models.
-  - **Models page collapses to one list** — the platform-default model now renders as a normal row alongside every other provider, instead of a separate hero card with a scroll-to button that did nothing obvious. The "Other provider" form's Provider field is now a dropdown of real catalogue models instead of free text.
+  - **Models page collapses to one list** — the platform-default model renders as a normal row alongside every other provider. The "Other provider" form's Provider field is a dropdown of real catalogue models instead of free text.
 
   ## Bug fixes
 
-  - **Friendlier errors** — every error response can now carry an optional plain-English `user_message` field (RFC 7807 `problem+json` body), curated for ~15 codes across model-provider setup (`UZ-PROVIDER-001..004`), secrets (`UZ-VAULT-001..003`), fleet-bundle onboarding (`UZ-BUNDLE-001..002`), and approval gates (`UZ-APPROVAL-001..006`) — omitted (not null) for any code without one, so untouched responses are byte-identical. Six dashboard call sites that previously showed the raw backend string now route through the same friendly-copy layer as the rest of the product.
+  - **Friendlier errors** — every error response can carry an optional plain-English `user_message` field (RFC 7807 `problem+json` body). It is written for ~15 codes: model-provider setup (`UZ-PROVIDER-001..004`), secrets (`UZ-VAULT-001..003`), fleet-bundle onboarding (`UZ-BUNDLE-001..002`), and approval gates (`UZ-APPROVAL-001..006`). A code without one omits the field rather than nulling it, so untouched responses are byte-identical.
 </Update>
 
-<Update label="Jul 04, 2026" tags={["Fixes", "UI"]}>
-  ## Readable account settings, a copyable workspace ID, and consistent dashboard labels
-
-  The account settings dialog now renders its text and controls correctly on the dark theme, the workspace ID copies with one click, and section labels read at one size across every dashboard page.
+<Update label="Jul 04, 2026" tags={["Bug fixes", "UI"]}>
+  ## Readable account settings, a copyable workspace ID, consistent labels
 
   ## What's new
 
-  - **Copy the workspace ID** — the **Workspace** page lists the workspace name and ID as labelled rows, each with a copy button. The ID is the value the `agentsfleet` command line and the API expect.
-  - **One label size** — eyebrow labels (section headers, table columns, sidebar groups) now share a single type size across the dashboard instead of two near-identical ones.
-  - **Clearer first-run screens** — the Dashboard, Fleets, and Models empty states lead with **Learn more** plus one primary action, and **API Keys** states that keys authenticate with the agentsfleet API.
+  - **Copy the workspace ID** — the **Workspace** page lists the workspace name and ID as labelled rows with copy buttons. The ID is the value the `agentsfleet` CLI and the API expect.
+  - **One label size** — section headers, table columns, and sidebar groups share a single type size.
+  - **Clearer first-run screens** — Dashboard, Fleets, and Models empty states lead with **Learn more** plus one primary action; **API Keys** states that keys authenticate with the agentsfleet API.
 
-  ## Fixes
+  ## Bug fixes
 
-  - **Account settings dialog** — headings, your email address, and the close (×) button rendered dark-on-dark and were effectively invisible on the dark theme; they now use readable colors. The dialog picks up the app theme correctly after a Clerk appearance fix.
+  - **Account settings dialog** — headings, your email address, and the close button rendered dark-on-dark and were effectively invisible on the dark theme.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["What's new", "API", "UI"]}>
   ## Connect Grafana, Zoho Desk, Jira, Linear, Fly, and Datadog
 
-  Six connectors join GitHub and Slack on the connector platform. Each connect lands a vaulted credential the platform mints short-lived tokens from, and every vendor call runs under an enforced deadline. Open **Connectors** in the dashboard and the cards render from the live registry — there is no hard-coded provider list.
+  Six connectors join GitHub and Slack. Each connect lands a vaulted credential the platform mints short-lived tokens from, and every vendor call runs under an enforced deadline. The dashboard cards render from the live registry — there is no hard-coded provider list.
 
   ## What's new
 
-  - **OAuth connectors** — Zoho Desk, Jira, and Linear connect with a browser OAuth round-trip and store a refresh token; the credential broker mints fresh access tokens on demand, so a workspace stays connected without re-authorizing. Jira resolves its Atlassian cloud instance during connect.
+  - **OAuth connectors** — Zoho Desk, Jira, and Linear connect with a browser OAuth round-trip and store a refresh token; the broker mints fresh access tokens on demand. Jira resolves its Atlassian cloud instance during connect.
   - **API-key connectors** — Datadog, Grafana, and Fly take an operator-supplied key, checked by a live validation probe before it is vaulted; a rejected key returns `UZ-CONN-005` and nothing is stored.
-  - **Connector catalog** — `GET /v1/connectors` lists every provider with its archetype and whether it is configured (platform side) and connected (for the workspace). The dashboard cards read from it.
+  - **Connector catalog** — `GET /v1/connectors` lists every provider with its archetype and whether it is configured (platform side) and connected (for the workspace).
 
-  ## Fixes
+  ## Bug fixes
 
-  - **Bounded broker calls** — the credential broker's token exchanges are now deadline-armed and fail closed, so a hung vendor token endpoint can no longer stall a mint.
+  - **Bounded broker calls** — token exchanges are deadline-armed and fail closed, so a hung vendor token endpoint cannot stall a mint.
 </Update>
 
-<Update label="Jul 03, 2026" tags={["Fixes", "CLI"]}>
+<Update label="Jul 03, 2026" tags={["Bug fixes", "CLI"]}>
   ## Reliability fixes for logs, credential help, and approval enforcement
 
-  - **`agentsfleet fleet logs`** — a malformed event timestamp no longer throws `RangeError` and aborts the command; that row renders `—` and the log stream continues.
-  - **`agentsfleet workspace credentials`** — the redirect now points at the real `agentsfleet credential` command group instead of a non-existent `agentsfleet agent credential`.
-  - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write. The durable database row is consulted as a fallback, so enforcement can no longer diverge from the approval audit trail.
-  </Update>
+  - **`agentsfleet fleet logs`** — a malformed event timestamp no longer throws `RangeError` and aborts the command; that row renders `—` and the stream continues.
+  - **`agentsfleet workspace credentials`** — the redirect points at the real `agentsfleet credential` command group instead of a non-existent `agentsfleet agent credential`.
+  - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write; the durable database row is the fallback, so enforcement cannot diverge from the approval audit trail.
+</Update>
 
-<Update label="Jul 03, 2026" tags={["Fixes", "API"]}>
-  ## Error reference matches the server, and provider-credential guidance is accurate
+<Update label="Jul 03, 2026" tags={["Bug fixes", "API"]}>
+  ## Error reference matches the server
 
-  The error-code reference no longer lists codes the server cannot emit, and the `UZ-PROVIDER-003` hint now describes what a self-managed credential actually requires.
-
-  ## Fixes
-
-  - **`UZ-PROVIDER-003` hint** — now states that `provider` and `model` are required and `api_key` is required only for a named provider (optional for an `openai-compatible` endpoint), matching the credential validator. A client following the old wording would send an unnecessary `api_key`, or misread an unrelated failure as a missing key.
+  - **`UZ-PROVIDER-003` hint** — now states that `provider` and `model` are required and `api_key` is required only for a named provider (optional for an `openai-compatible` endpoint), matching the credential validator. The old wording had clients sending an unnecessary `api_key`.
   - **Error-code reference** — removed the `UZ-AUTH-009` and `UZ-AUTH-010` rows, which have no producer in the server registry (both superseded by `UZ-AUTH-022`). The retired `UZ-AUTH-021` stays as a struck-through historical entry.
-  </Update>
+</Update>
 
 <Update label="Jul 03, 2026" tags={["What's new", "UI"]}>
   ## Add a workspace template from the dashboard
 
-  The Fleets install gallery now has **Add template**, so workspace owners can onboard a GitHub-hosted template without leaving the dashboard. Enter `owner/repo`; the dashboard validates the required `SKILL.md`, adds the workspace template, and returns you to the gallery where it installs like any other template.
+  The Fleets install gallery gains **Add template**: enter `owner/repo`, the dashboard validates the required `SKILL.md`, adds the workspace template, and returns you to the gallery where it installs like any other.
 
   ## What's new
 
-  - **Dashboard onboarding** — **Add template** accepts a GitHub repository, calls the workspace template onboarding API, and refreshes the gallery after the template is accepted.
-  - **Empty states** — empty Fleets and Events views now use simple "No ... found" copy, with direct links to install or create the next template.
-  - **Models navigation** — the dashboard nav now labels the page **Models**, and **Bring your own key** uses the same primary button style as **Install fleet**.
-  - **Route motion** — dashboard route changes no longer wobble; loading states rely on the spinner.
-  </Update>
+  - **Dashboard onboarding** — **Add template** calls the workspace template onboarding API and refreshes the gallery.
+  - **Empty states** — Fleets and Events use simple "No … found" copy with direct links to install or create.
+  - **Models navigation** — the nav labels the page **Models**, and **Bring your own key** uses the same primary button style as **Install fleet**.
+  - **Route motion** — route changes no longer wobble; loading states rely on the spinner.
+</Update>
 
-<Update label="Jul 03, 2026" tags={["Improvements", "API"]}>
+<Update label="Jul 03, 2026" tags={["What's new", "API"]}>
   ## Operator dashboard access follows the same scopes as the API
 
-  The platform-operator surfaces — the runner fleet and the model catalogue — are now gated on the operator's explicit `resource:action` scopes, the same capabilities the API enforces on those routes, instead of a separate platform-admin flag that had to be set independently. A correctly-scoped operator reaches the dashboard surface, and there is no longer a second place for that access to drift out of sync with the API.
+  The platform-operator surfaces — the runner fleet and the model catalogue — are gated on explicit `resource:action` scopes, the same ones the API enforces. The separate platform-admin flag, which had to be set independently, is gone.
 
-  - **Error code** — a request missing an operator capability now returns `UZ-AUTH-022` (Insufficient scope), whose `detail` names the scope required; the former `UZ-AUTH-021` ("platform-admin privileges required") is retired.
-  - **Scope hierarchy** — a held higher scope satisfies a lower one on the dashboard exactly as it does at the API (`model:admin` covers `model:read`, `runner:write` covers `runner:read`), so an operator granted the write rung sees the read-gated view without a second grant.
-
-  Marketing-site analytics also recovers from a transient load failure now instead of staying dark for the rest of the visit. The route method-check consolidation behind these changes is internal and has no visible effect.
+  - **Error code** — a request missing an operator capability returns `UZ-AUTH-022` (Insufficient scope), whose `detail` names the required scope; the former `UZ-AUTH-021` ("platform-admin privileges required") is retired.
+  - **Scope hierarchy** — a held higher scope satisfies a lower one on the dashboard exactly as at the API (`model:admin` covers `model:read`, `runner:write` covers `runner:read`).
+  - **Marketing-site analytics** recovers from a transient load failure instead of staying dark for the rest of the visit.
 </Update>
 
 <Update label="Jul 02, 2026" tags={["What's new", "API", "UI", "Integrations"]}>
   ## Slack: mention @agentsfleet in a channel, get an answer in the thread
 
-  agentsfleet is now Slack-resident. Connect Slack from the dashboard Integrations page — a browser OAuth round-trip, no token to paste — invite `@agentsfleet` to a channel, and mention it. The first mention materializes a fleet that lives in that channel; it answers in the thread it was mentioned in, and what it learns in one thread it remembers across the channel's other threads. It is reactive and read-only: it speaks only when mentioned, and only in the thread that asked.
+  Connect Slack from the dashboard Integrations page — a browser OAuth round-trip, no token to paste — invite `@agentsfleet` to a channel, and mention it. The first mention creates a fleet resident in that channel. It is reactive and read-only: it speaks only when mentioned, and only in the thread that asked.
 
   ## What's new
 
-  - **Connect Slack from Integrations.** A Slack row sits next to GitHub: **Connect** redirects to Slack's authorize page and the callback stores the bot token server-side in the workspace vault. The row shows the connected workspace ("Slack connected: {team}") and offers **Reconnect** if the install is revoked.
-  - **One fleet per channel.** The first `@agentsfleet` mention in a channel creates that channel's resident fleet; later mentions in any thread reuse it. Memory is channel-scoped — tell it a fact in one thread and it recalls it in another.
-  - **Answers land in-thread.** Replies post to the thread that mentioned the bot — never to the channel top level, never to another channel.
-  - **Recent thread context.** Each mention re-reads up to 20 recent messages in its thread, so a follow-up mention sees the conversation so far even where the bot wasn't mentioned in between. Best-effort: if Slack throttles the read, the mention still processes without it.
+  - **Connect Slack from Integrations** — **Connect** redirects to Slack's authorize page; the callback stores the bot token in the workspace vault. The row shows "Slack connected: \{team\}" and offers **Reconnect** if the install is revoked.
+  - **One fleet per channel** — later mentions in any thread reuse it. Memory is channel-scoped: a fact told in one thread is recalled in another.
+  - **Answers land in-thread** — never at channel top level, never in another channel.
+  - **Recent thread context** — each mention re-reads up to 20 recent messages in its thread. Best-effort: if Slack throttles the read, the mention still processes.
 
   ## API reference
 
   - **`POST /v1/workspaces/{workspace_id}/connectors/slack/connect`** (scope `connector:write`) — returns the Slack authorize URL carrying a signed single-use `state`; **`GET /v1/connectors/slack/callback`** finishes the round-trip and vaults the bot token.
-  - **`GET /v1/workspaces/{workspace_id}/connectors/slack`** (scope `connector:read`) — connector status as `{status, team}`, where `status` is `connected`, `reconnect_required`, or `not_connected`; never a secret.
-  - **`POST /v1/connectors/slack/events`** — the signed events ingress. Authenticated by Slack's request signature (HMAC over the raw body, 5-minute replay window), not a Bearer token.
-  - **New error codes:** `UZ-SLK-010` (401, invalid Slack signature), `UZ-SLK-011` (401, stale timestamp), `UZ-SLK-020` (200 — an event from a team with no install is acknowledged and ignored), `UZ-SLK-022` (502, OAuth token exchange failed), `UZ-SLK-030` (502, answer delivery to Slack failed — logged and retried; the run itself never fails). `UZ-CONN-001`/`UZ-CONN-002` now cover the Slack connect flow as well as GitHub.
+  - **`GET /v1/workspaces/{workspace_id}/connectors/slack`** (scope `connector:read`) — status as `{status, team}`, where `status` is `connected`, `reconnect_required`, or `not_connected`; never a secret.
+  - **`POST /v1/connectors/slack/events`** — the signed events ingress, authenticated by Slack's request signature (a hash-based message authentication code over the raw body, 5-minute replay window), not a Bearer token.
+  - **New error codes:** `UZ-SLK-010` (401, invalid signature), `UZ-SLK-011` (401, stale timestamp), `UZ-SLK-020` (200, event from a team with no install is acknowledged and ignored), `UZ-SLK-022` (502, OAuth token exchange failed), `UZ-SLK-030` (502, answer delivery failed — logged and retried; the run never fails). `UZ-CONN-001`/`UZ-CONN-002` now cover Slack as well as GitHub.
 </Update>
 
 <Update label="Jul 02, 2026" tags={["What's new", "API", "Integrations"]}>
   ## Connector platform: one uniform API, bounded vendor calls
 
-  Connecting a third-party service (Slack, GitHub, and the providers landing next) now runs through one uniform, documented route set instead of a per-provider one. The URLs you already use are unchanged; what's new is that the connector surface is in the public API reference, an unknown provider returns a clear `404` instead of a generic not-found, and every outbound call agentsfleet makes to a connector's vendor is now time-bounded — a vendor that accepts a connection and then stalls degrades that one connect or mention instead of tying up the platform.
+  Connecting a third-party service now runs through one documented route set instead of a per-provider one. The URLs you already use are unchanged. What's new: the surface is in the public API reference, an unknown provider returns a clear `404`, and every outbound call to a vendor is time-bounded.
 
   ## API reference
 
-  - **`POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect`** and **`GET /v1/workspaces/{workspace_id}/connectors/{provider}`** — start a connect and read connector status for any registered provider (`slack`, `github`), Bearer-authed with the `connector:write` / `connector:read` scopes.
+  - **`POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect`** and **`GET /v1/workspaces/{workspace_id}/connectors/{provider}`** — start a connect and read status for any registered provider (`slack`, `github`), Bearer-authed with `connector:write` / `connector:read`.
   - **`GET /v1/connectors/{provider}/callback`** — the vendor redirect target; Bearer-less, authenticated by the signed single-use state minted at connect.
-  - **`UZ-CONN-003`** (502) — an outbound call to a connector's vendor hit its enforced deadline, could not be time-bounded, or the vendor was unreachable; the call never runs unbounded. Transient — retry.
-  - **`UZ-CONN-004`** (404) — the `{provider}` in a connector URL matches no provider on this deployment; the body names the unknown provider.
+  - **`UZ-CONN-003`** (502) — an outbound vendor call hit its enforced deadline, could not be time-bounded, or the vendor was unreachable. Transient — retry.
+  - **`UZ-CONN-004`** (404) — the `{provider}` matches no provider on this deployment; the body names it.
 </Update>
 
 <Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
   ## Bring your own Fleet templates
 
-  You can now onboard your own Fleet templates into your workspace, alongside the curated platform catalogue. The install gallery shows both — the platform templates and your workspace's own — and you install any of them by id. Templates are stored once, content-addressed, and shared across the fleets you spin up from them. Installing a fleet is now always "pick a template, install it"; the old "paste a local `SKILL.md`" and "import a GitHub repo at install" paths are gone.
+  You can now onboard your own Fleet templates into your workspace alongside the curated platform catalogue. Templates are stored once, content-addressed, and shared across the fleets you spin up from them. Installing is always "pick a template, install it".
 
   ## Upgrading
 
-  - **Install is template-only.** `agentsfleet install --from <path>` (installing a new fleet from a local directory) has been removed. Install by id instead: `agentsfleet install --template <id>`. To run a fleet you authored yourself, onboard its `SKILL.md`/`TRIGGER.md` as a template first — through the dashboard or the onboarding API — then install it by id. To push local edits onto an **already-installed** fleet, use `agentsfleet fleet update <fleet_id> --from <path>` (unchanged). Upgrade the CLI and server together.
-  - **Fleet-create takes a template id, not a bundle.** `POST /v1/workspaces/{workspace_id}/fleets` now accepts exactly one of `{platform_template_id}` or `{tenant_template_id}` (plus an optional `name`). Raw `source_markdown`, the per-workspace `bundle_id`, and the github-import-at-create body are rejected. Onboard a template, then install it by id.
-  - **Bundle import/snapshot endpoints removed.** `POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots` and the snapshot-detail read no longer exist. Use the onboarding routes below.
+  - **Install is template-only.** `agentsfleet install --from <path>` has been removed. Install by id instead: `agentsfleet install --template <id>`. To run a fleet you authored, onboard its `SKILL.md`/`TRIGGER.md` as a template first. To push local edits onto an already-installed fleet, use `agentsfleet fleet update <fleet_id> --from <path>` (unchanged). Upgrade the CLI and server together.
+  - **Fleet-create takes a template id, not a bundle.** `POST /v1/workspaces/{workspace_id}/fleets` accepts exactly one of `{platform_template_id}` or `{tenant_template_id}`, plus an optional `name`. Raw `source_markdown`, the per-workspace `bundle_id`, and the github-import-at-create body are rejected.
+  - **Bundle import/snapshot endpoints removed.** `POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots` and the snapshot-detail read no longer exist.
 
   ## What's new
 
-  - **Onboard templates into two tiers.** Onboard a template into the global platform catalogue or into your own workspace; workspace templates are visible only to your workspace.
-  - **One gallery, both tiers.** The dashboard install gallery unions the platform catalogue with your workspace's own templates, and never shows another workspace's templates.
-  - **Templates explain their credentials.** Gallery entries carry a description and per-credential "why this is needed" copy, so the install gate can tell you what each credential is for before you connect it.
+  - **Two tiers** — onboard a template into the global platform catalogue or into your own workspace; workspace templates are visible only to your workspace.
+  - **One gallery, both tiers** — the install gallery unions the platform catalogue with your workspace's own templates, and never shows another workspace's.
+  - **Templates explain their credentials** — entries carry a description and per-credential "why this is needed" copy.
 
   ## API reference
 
-  - **`GET /v1/workspaces/{workspace_id}/fleet-templates`** — the workspace gallery: the platform catalogue plus this workspace's own templates. Each entry carries `id`, `name`, `description`, `visibility` (`"platform"` or `"tenant"`), `source_ref`, `requirements`, `required_credentials_reasons`, and support-file summaries — never an object-store key.
-  - **`POST /v1/admin/fleet-templates`** (scope `platform-template:write`) and **`POST /v1/workspaces/{workspace_id}/fleet-templates`** (scope `template:write` + workspace ownership) — onboard a template from a GitHub source into the platform or workspace tier. The canonical bundle is written to object storage keyed by content hash; the response is metadata only.
-  - **`POST /v1/workspaces/{workspace_id}/fleets`** — install body is now `{platform_template_id}` **or** `{tenant_template_id}`, plus an optional `name` so one template can back several fleets.
+  - **`GET /v1/workspaces/{workspace_id}/fleet-templates`** — the workspace gallery. Each entry carries `id`, `name`, `description`, `visibility` (`"platform"` or `"tenant"`), `source_ref`, `requirements`, `required_credentials_reasons`, and support-file summaries — never an object-store key.
+  - **`POST /v1/admin/fleet-templates`** (scope `platform-template:write`) and **`POST /v1/workspaces/{workspace_id}/fleet-templates`** (scope `template:write` + workspace ownership) — onboard from a GitHub source. The canonical bundle is written to object storage keyed by content hash; the response is metadata only.
   - **`UZ-BUNDLE-002`** now reads "No installable template or stored snapshot matches the request in this workspace."
 
   ## CLI
 
-  - **`agentsfleet install --template <id>`** resolves the template in your workspace gallery and installs it by tier. The `--from <path>` option has been removed from `install`.
-  - **`agentsfleet fleet update <fleet_id> --from <path>`** (live-editing an installed fleet's instructions from a local directory) is unchanged.
+  - **`agentsfleet install --template <id>`** resolves the template in your gallery and installs it by tier. `--from <path>` has been removed from `install`.
+  - **`agentsfleet fleet update <fleet_id> --from <path>`** is unchanged.
 </Update>
 
 <Update label="Jun 30, 2026" tags={["What's new", "API"]}>
   ## Authorization is now scope-based
 
-  Every capability a token holds is now an explicit `resource:action` scope, read directly off the token — replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-provisioned principal sees no change: every route that worked before still works, and tenant isolation and workspace ownership are enforced exactly as before. What changes is that "what can this token do?" is now enumerable, and a denial tells you precisely which scope is missing.
+  Every capability a token holds is an explicit `resource:action` scope read off the token, replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-configured principal sees no change; what changes is that "what can this token do?" is enumerable, and a denial names the missing scope.
 
   ## API reference
 
-  - **`scopes` claim** — the session token and tenant API key now carry an explicit space-delimited `scopes` list (e.g. `fleet:admin credential:write workspace:admin`). It is provisioned automatically for a workspace owner at signup; a strict client needs no change.
-  - **`403 UZ-AUTH-022` "Insufficient scope"** — a capability denial now names the required scope in the error detail (`Requires scope fleet:admin`), instead of an opaque role rejection.
-  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`, so a `fleet:admin` holder passes any `fleet:read` route. A destructive route (e.g. `DELETE`) can require the top rung.
+  - **`scopes` claim** — the session token and tenant API key carry a space-delimited `scopes` list (e.g. `fleet:admin credential:write workspace:admin`), set automatically for a workspace owner at signup.
+  - **`403 UZ-AUTH-022` "Insufficient scope"** — a denial names the required scope in the detail (`Requires scope fleet:admin`) instead of an opaque role rejection.
+  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`. A destructive route can require the top rung.
 
-  See the [error-codes reference](/api-reference/error-codes) for `UZ-AUTH-022` and the full authorization code registry.
+  See the [error-codes reference](/api-reference/error-codes) for `UZ-AUTH-022`.
 </Update>
 
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API", "Bug fixes"]}>
-  ## Template installs now explain why a credential is needed
+  ## Template installs explain why a credential is needed
 
-  When you install a fleet template and a required credential is missing, the dashboard now tells you *why* the fleet needs it — "this fleet needs github to review your pull requests" — instead of a bare "connect github". The reason copy travels with each template in the catalogue, and the first-run Fleets page now opens straight into the real template gallery.
+  A missing required credential now tells you *why* the fleet needs it — "this fleet needs github to review your pull requests" — instead of a bare "connect github".
 
   ## What's new
 
-  - **Purpose-driven connect step** — the install gate reads a per-credential reason from the template and shows it when a required credential is missing; templates without reason copy fall back to the generic connect prompt.
-  - **No skippable installs** — the dashboard no longer offers a way past a missing credential. A fleet that can't reach its tool can't run, so connecting the credential is the only path forward; this removes the route that created un-runnable fleets.
-  - **Fleets empty state is the gallery** — the first-run Fleets page now shows the same full-width template gallery as the install screen, not abstract step cards.
-  - **Custom secrets copy** — the secrets section states plainly that values are encrypted and write-only once saved: replaceable, never viewable.
+  - **Purpose-driven connect step** — the install gate reads a per-credential reason from the template; templates without reason copy fall back to the generic prompt.
+  - **No skippable installs** — the dashboard no longer offers a way past a missing credential, removing the route that created un-runnable fleets.
+  - **Fleets empty state is the gallery** — the first-run page shows the full-width template gallery, not abstract step cards.
+  - **Custom secrets copy** — the secrets section states that values are encrypted and write-only once saved: replaceable, never viewable.
 
   ## API reference
 
@@ -637,30 +598,30 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   GET /v1/fleets/bundles   each template row now carries required_credentials_reasons
   ```
 
-  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only "why" copy for the install gate. It does **not** replace `required_credentials`: install validation still reads that array, so a strict client should treat the new field as optional.
-  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list — unchanged on the API, but now surfaced directly in the dashboard instead of letting you proceed to a broken fleet.
+  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only copy. It does **not** replace `required_credentials`: install validation still reads that array, so treat the new field as optional.
+  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list — unchanged on the API, now surfaced in the dashboard.
 
   ## Bug fixes
 
-  - **Billing empty state** now reads "No charges yet" instead of "No billable events yet", matching the rest of the billing surface.
-  - **Dashboard loading states** keep each route's real title while data loads, so navigating no longer flashes a wrong header.
+  - **Billing empty state** reads "No charges yet" instead of "No billable events yet".
+  - **Dashboard loading states** keep each route's real title while data loads.
 
   ## CLI
 
-  - No command or flag changed. `agentsfleet templates --json` passes the new `required_credentials_reasons` field straight through; the default table still shows id, name, and credentials.
+  - No command or flag changed. `agentsfleet templates --json` passes `required_credentials_reasons` straight through.
 </Update>
 
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API"]}>
   ## Models and Keys is one page, and credentials say what they are
 
-  Model and key management is now a single **Models & Keys** page. The active model reads as a hero you can take in at a glance, every stored provider key is one click from live, and the credentials list now tells the dashboard what each credential *is* instead of guessing from its name. The standalone Credentials page is gone — `/credentials` redirects here.
+  Model and key management is now a single **Models & Keys** page. The standalone Credentials page is gone — `/credentials` redirects here.
 
   ## What's new
 
-  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`) with every stored provider key one click away on a switch list; switching sets that credential's saved model with no key re-entry. This replaces the separate Models and Credentials destinations and the two-option-card screen.
-  - **Credentials are classified server-side** — the list carries each credential's `kind` (provider key, custom endpoint, or custom secret) plus its non-secret provider, model, and base URL, so a stored-but-inactive provider key no longer misfiles as a custom secret. The API key is still never returned.
-  - **Replace a key in place** — rotating a provider key now updates only the secret and keeps the model, provider, and endpoint, so a custom-endpoint key rotation can't corrupt the saved base URL.
-  - **Custom secrets keep their own section** — `NAME=value` secrets a SKILL reads by name stay listed apart from model-provider keys on the same page.
+  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`) with every stored provider key one click away on a switch list; switching sets that credential's saved model with no key re-entry.
+  - **Credentials are classified server-side** — each row carries its `kind` plus non-secret provider, model, and base URL, so a stored-but-inactive provider key no longer misfiles as a custom secret. The API key is never returned.
+  - **Replace a key in place** — rotating a provider key updates only the secret and keeps model, provider, and endpoint, so a custom-endpoint rotation cannot corrupt the saved base URL.
+  - **Custom secrets keep their own section** — `NAME=value` secrets a SKILL reads by name stay listed apart from model-provider keys.
 
   ## API reference
 
@@ -670,13 +631,13 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   ```
 
   - **`kind` is derived server-side** from the stored provider field — `provider_key`, `custom_endpoint`, or `custom_secret` — never from the user-chosen name. An unreadable legacy body lists as a custom secret and the call still returns 200.
-  - **Rotate errors** — a missing credential returns `UZ-VAULT-003` (404); an empty key returns `UZ-REQ-001` (400). The list stays operator-gated and the API key is never in the response.
+  - **Rotate errors** — a missing credential returns `UZ-VAULT-003` (404); an empty key returns `UZ-REQ-001` (400).
 </Update>
 
 <Update label="Jun 25, 2026" tags={["Security", "Breaking"]}>
   ## The sandboxed agent runner is hardened for general availability
 
-  We closed two ways a sandboxed run could expose data and made the runner's failure modes bounded and provable. Secrets are now redacted from every live progress frame — including a secret value split across two streaming chunks — and the durable record was already scrubbed. Network egress fails closed by default, and a tenant-supplied host that resolves to a private or link-local address is rejected before any connection opens. The kernel sandbox is now proven by real-process tests that run against a live Linux kernel in continuous integration on every change.
+  Two ways a sandboxed run could expose data are closed. The runner's failure modes are now bounded, and proven against a live Linux kernel in continuous integration.
 
   ## Upgrading
 
@@ -684,26 +645,26 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
 
   ## What's new
 
-  - **Complete secret redaction on the live tail** — the model API key and every custom secret field are replaced with their `${secrets.NAME.FIELD}` placeholder before any progress frame leaves the run, even when a secret is tokenized across two streaming chunks; on a memory failure the frame is dropped, never sent raw.
+  - **Complete secret redaction on the live tail** — the model API key and every custom secret field become their `${secrets.NAME.FIELD}` placeholder before any progress frame leaves the run, even when a secret is split across two streaming chunks. On a memory failure the frame is dropped, never sent raw.
   - **Server-Side Request Forgery (SSRF) protection for tenant hosts** — a tool dialing a tenant-configured host resolves and pins the address and rejects private, loopback, and link-local targets, including the cloud metadata endpoint.
-  - **Bounded retries and call deadlines** — runner backoff is capped with jitter, and a call whose watchdog cannot start fails fast instead of running unbounded.
+  - **Bounded retries and call deadlines** — runner backoff is capped with jitter, and a call whose watchdog cannot start fails fast.
   - **Proven kernel enforcement** — seccomp syscall traps, Landlock filesystem denial, and cgroup process and memory limits are verified against a real kernel, not compiled and skipped.
 </Update>
 
 <Update label="Jun 25, 2026" tags={["What's new", "API", "UI"]}>
   ## Build the model catalogue and set the priced default from the dashboard
 
-  Platform operators now build the priced model catalogue and choose the one active default model and key entirely in the dashboard. A new environment no longer needs a SQL seed or a manual onboarding step to serve teammates: add a model with its rates, activate it as the default, and the next platform-mode run uses it — no redeploy.
+  Platform operators build the priced catalogue and choose the one active default model and key entirely in the dashboard — no SQL seed, no redeploy.
 
   ## What's new
 
-  - **Model catalogue** — `/admin/models` lists every priced model and adds one through a dialog (provider, model id, context cap, and per-million-token input / cached-input / output rates). Edits and deletes apply live — each change repopulates the in-process rate cache with no restart.
-  - **Platform default** — a Platform Default card activates one model as the default, pairing it with the key's source workspace and an optional OpenAI-compatible base URL. Exactly one default is active at a time, and changing it reaches every platform-mode teammate on their next run.
-  - **Catalogue-curated onboarding** — the catalogue ships empty and admins populate it, so standing up a fresh environment no longer means hand-seeding a model row and wiring the default by hand.
+  - **Model catalogue** — `/admin/models` lists every priced model and adds one through a dialog (provider, model id, context cap, and per-million-token input / cached-input / output rates). Edits and deletes repopulate the in-process rate cache with no restart.
+  - **Platform default** — a Platform Default card activates one model, pairing it with the key's source workspace and an optional OpenAI-compatible base URL. Exactly one default is active at a time.
+  - **Catalogue-curated onboarding** — the catalogue ships empty and admins populate it.
 
   ## API reference
 
-  A new platform-admin surface manages the catalogue and the default. Every route requires the `platform_admin` claim — a per-tenant admin role returns `UZ-AUTH-021`.
+  Every route requires the `platform_admin` claim; a per-tenant admin role returns `UZ-AUTH-021`.
 
   ```
   GET    /v1/admin/models          list the catalogue (each row carries its uid)
@@ -713,7 +674,7 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   PUT    /v1/admin/platform-keys   set the one active default
   ```
 
-  Catalogue rows are keyed by `uid` in the URL, not `provider/model_id` — a model id can contain `/`. A create body:
+  Rows are keyed by `uid` in the URL, not `provider/model_id` — a model id can contain `/`. A create body:
 
   ```json
   {
@@ -726,26 +687,25 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   }
   ```
 
-  `PUT /v1/admin/platform-keys` now takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row (authoritative — never the body), and the default's `(provider, model)` must already be a priced catalogue row (an uncatalogued pair is rejected with `UZ-PROVIDER-004`). New error codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
-
+  `PUT /v1/admin/platform-keys` takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row, never the body, and the default's `(provider, model)` must already be a priced row (rejected with `UZ-PROVIDER-004`). New codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
 </Update>
 
 <Update label="Jun 24, 2026" tags={["What's new", "Bug fixes", "UI", "CLI", "API", "Security"]}>
   ## One terminal-native dashboard, and any OpenAI-compatible endpoint
 
-  The dashboard now reads as one product instead of several half-finished pages: a single underline tab style, one content width with an ambient glow on every page, a description under each page title, and an ink primary button in light mode — with Billing, Models, and Credentials rebuilt on it. And own-key model setup is no longer limited to the named providers: you can point a fleet at any OpenAI-compatible URL — self-hosted vLLM, a gateway, OpenRouter — from the CLI or the dashboard, with the endpoint validated before any run.
+  The dashboard reads as one product: a single underline tab style, one content width, a description under each page title, and an ink primary button in light mode. Billing, Models, and Credentials are rebuilt on it. Own-key model setup also drops its named-provider limit — point a fleet at any OpenAI-compatible URL, validated before any run.
 
   ## What's new
 
-  - **Billing** — a balance card with a full-width consumption meter and a terminal-style usage ledger (`date · amount · type · description`) with an empty state; the per-seat grid is gone, replaced by a single "Pay as you go" row.
-  - **Models and Credentials are now two destinations** — the sidebar lists `Models` (`/settings/models`) and `Credentials` (`/credentials`) separately; the Models screen collapses to two option cards, where the active one reads "Active — nothing to do" and the action lives only on the option you'd switch to.
-  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets a SKILL reads by name, and integrations. Provider keys stay write-only and masked (Replace, never reveal). GitHub, Zoho, and Slack render as **Planned**, with a hint to bridge them as a custom secret until first-class connectors land.
-  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it; the base URL rides inside the saved credential, so the activation request shape is unchanged.
-  - **One install flow** — the Dashboard and Fleets pages share a single minimal install experience (a template, an `owner/repo` GitHub source, or pasted `SKILL.md`). One click proceeds in place through live importing → creating → done states instead of a separate review page, and a fleet that is still installing shows its progress until it is ready, then opens into its steer/chat.
+  - **Billing** — a balance card with a full-width consumption meter and a terminal-style ledger (`date · amount · type · description`). The per-seat grid is replaced by a single "Pay as you go" row.
+  - **Models and Credentials are two destinations** — `Models` (`/settings/models`) and `Credentials` (`/credentials`).
+  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets, and integrations. Provider keys stay write-only and masked (Replace, never reveal). GitHub, Zoho, and Slack render as **Planned**.
+  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it; the base URL rides inside the saved credential.
+  - **One install flow** — Dashboard and Fleets share one install screen, taking a template, an `owner/repo` GitHub source, or pasted `SKILL.md`. It proceeds in place through importing → creating → done.
 
   ## API reference
 
-  A self-managed credential may now carry an OpenAI-compatible endpoint in its stored JSON. The `PUT /v1/tenants/me/provider` body is unchanged — the URL lives in the referenced credential:
+  A self-managed credential may carry an OpenAI-compatible endpoint in its stored JSON. The `PUT /v1/tenants/me/provider` body is unchanged — the URL lives in the referenced credential:
 
   ```json
   {
@@ -756,419 +716,31 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   }
   ```
 
-  - **`base_url` is validated before any run** — it must be `https` and resolve to a public host. A loopback, private, link-local, or cloud-metadata target is rejected with `UZ-PROVIDER-005` and never dialed, and a `base_url` set on a named (non-`openai-compatible`) provider is rejected too.
+  - **`base_url` is validated before any run** — it must be `https` and resolve to a public host. A loopback, private, link-local, or cloud-metadata target is rejected with `UZ-PROVIDER-005` and never dialed. A `base_url` set on a named provider is rejected too.
 
   ## Bug fixes
 
-  - **Custom endpoints now activate** — selecting an OpenAI-compatible credential previously failed because its model is not in the platform rate catalogue. Self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
-  - **Account-modal email is readable in dark mode** — the secondary identifier in the account modal mapped to a too-dim token; it now uses a readable one in both themes.
-  - **Outbound model calls pin the validated address** — the non-streaming provider dial connects to the address checked at validation time instead of re-resolving at connect, closing a DNS-rebinding gap on custom endpoints. Requests still reach only the validated host.
+  - **Custom endpoints now activate** — selecting an OpenAI-compatible credential failed because its model is not in the platform rate catalogue. Self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
+  - **Account-modal email is readable in dark mode.**
+  - **Outbound model calls pin the validated address** — the non-streaming provider dial connects to the address checked at validation time instead of re-resolving, closing a DNS-rebinding gap.
 
   ## CLI
 
-  - **`agentsfleet credential add`** accepts `--provider openai-compatible --base-url <url> --model <m> [--api-key <key>]` — the key is optional (a keyless gateway), the model is required, and a non-`https` `--base-url` is rejected at parse time with no network call. **`agentsfleet tenant provider add --credential <name>`** then activates that credential as the workspace's model. Tool secrets (a GitHub token, a Slack token) keep the existing `credential add <name> --data=@-` form.
+  - **`agentsfleet credential add`** accepts `--provider openai-compatible --base-url <url> --model <m> [--api-key <key>]` — the key is optional, the model required, and a non-`https` `--base-url` is rejected at parse time with no network call. **`agentsfleet tenant provider add --credential <name>`** then activates it. Tool secrets keep the existing `credential add <name> --data=@-` form.
 </Update>
 
 <Update label="Jun 23, 2026" tags={["What's new", "Bug fixes", "Observability"]}>
   ## Grafana dashboards for token throughput, credit drain, and run latency
 
-  agentsfleetd now pushes metrics to Grafana Cloud, completing the OpenTelemetry triad next to the traces and logs it already exports. You can watch run-latency p95, token throughput by model, and credit-drain rate live in Grafana while the control-plane database stays out of the query path. A ready-made dashboard ships at `deploy/grafana/agent-observability.json`.
-
-  Metrics ride the same `GRAFANA_OTLP_*` environment the trace and log exporters use, so one credential triple now turns on all three signals. With it unset, the exporter stays off and says so in one startup log line. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
+  `agentsfleetd` now pushes metrics to Grafana Cloud, completing the OpenTelemetry triad next to the traces and logs it already exports. A ready-made dashboard ships at `deploy/grafana/agent-observability.json`. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
 
   ## What's new
 
-  - **Three series** — credit drained (by posture and model), token throughput (by direction: input, cached, output), and a run-latency histogram, plus a `samples_dropped` counter that reports the exporter's own health.
-  - **One credential triple** — `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` now enable traces, logs, and metrics together.
-  - **Collector requirement** — metrics use OTLP delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir, or the panels read empty. The dashboard's deployment note spells this out.
+  - **Three series** — credit drained (by posture and model), token throughput (by direction: input, cached, output), and a run-latency histogram, plus a `samples_dropped` counter reporting the exporter's own health.
+  - **One credential triple** — `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` enable traces, logs, and metrics together. Unset, the exporter stays off and says so in one startup log line.
+  - **Collector requirement** — metrics use OpenTelemetry Protocol (OTLP) delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir, or the panels read empty.
 
   ## Bug fixes
 
-  - **Traces and logs** — span names, attributes, and log bodies were emitted with a stray extra quote that produced invalid JSON Grafana could reject; both now send well-formed payloads, so Tempo and Loki receive the data reliably.
-</Update>
-
-<Update label="Jun 17, 2026" tags={["What's new", "UI"]}>
-  ## The website explains agentsfleet as one resident-engineer loop
-
-  agentsfleet.net now describes the product as a single loop a resident engineer runs: a first signal becomes a recurring problem class, then a scenario and test, then a fix pull request a human reviews before merge — so the same incident recurs less often. A hero pipeline diagram draws the loop end to end, replacing the earlier deploy-failure wake-on-event framing.
-
-  ## What's new
-
-  - **Hero pipeline diagram** — the home page shows the loop step by step (first signal → recurring problem class → scenario and test → fix pull request → human review → fewer repeats), with the human-approval gate marked explicitly.
-  - **Signal source strip** — names the categories the agent reads: Signals, Telemetry, Code, and Control plane.
-  - **Compounding-knowledge section and competition table** — describe how recurring problem classes accrue over time and how a resident engineer differs from a wrapper around a model.
-  - **Unchanged paths still work** — the install copy-row, the animated terminal, the per-second pricing section, and the `/pricing` and `/agents` routes behave exactly as before.
-</Update>
-
-<Update label="Jun 17, 2026" tags={["Breaking", "API"]}>
-  ## Invalid gate conditions are rejected at write time
-
-  A gate rule whose `condition` is not a valid expression now fails `agent create` / `agent patch` with `400 UZ-APPROVAL-005` instead of being accepted and silently firing the gate on every matching action. Conditions must read `field == 'value'` or `field != 'value'` (single-quoted).
-
-  - **`UZ-APPROVAL-005` is now raised** — a malformed `gates[].condition` in `TRIGGER.md` (or a directly-supplied `config_json`) returns `400` at create/patch; it previously parsed and over-gated at run time, which could mass-pause an `auto_kill` rule. Fix the expression and re-install.
-  - **Installed agents keep running** — the runtime parser stays lenient, so an agent stored before this change still loads; only new writes are validated.
-  - **`UZ-APPROVAL-004` now appears in logs** — when the approval gate fails closed because Redis is unreachable, the default-deny carries the registry code for tracing.
-
-  ## Error-codes reference
-
-  The [error-codes reference](/api-reference/error-codes) now lists exactly the codes `agentsfleetd` can emit. The full runner control-plane (`UZ-RUN-*`), runner-engine (`UZ-EXEC-*`), CLI login (`UZ-AUTH-011`–`UZ-AUTH-021`), API-key (`UZ-APIKEY-*`), and LLM-provider (`UZ-PROVIDER-*`) codes are documented; codes with no producer (`UZ-BILLING-*`, `UZ-WORKSPACE-*`, and the retired `UZ-MEM-001`) were removed. Cross-workspace memory access returns `UZ-MEM-002` / `404`, never a `403` — resource existence is not leaked.
-</Update>
-
-<Update label="Jun 15, 2026" tags={["Breaking", "What's new", "API", "CLI"]}>
-  ## The product is now agentsfleet
-
-  usezombie is now **agentsfleet**. Every operator-facing name moved together: the CLI is `agentsfleet`, the API answers on `api.agentsfleet.net`, the dashboard on `app.agentsfleet.net`, and the install one-liner lives at `agentsfleet.dev`. The durable, event-woken worker the API exposes is now uniformly an **agent** across routes, wire fields, error codes, and config — existing data is untouched, the surfaces around it were renamed.
-
-  ## Upgrading
-
-  A hard cutover with no compatibility shims — the CLI and server must move together.
-
-  - **Reinstall the CLI** — `zombiectl` is now `agentsfleet`. Reinstall from `https://agentsfleet.dev`, or `npm i -g @agentsfleet/cli` in place of `@usezombie/zombiectl`. Config moves from `~/.config/zombiectl` to `~/.config/agentsfleet`, and the CLI re-asks telemetry consent once on first run.
-  - **Repoint API hosts** — `api.usezombie.com` becomes `api.agentsfleet.net` (dev: `api-dev.agentsfleet.net`). Any pinned base URL must change.
-  - **Rename environment variables** — every `ZOMBIE_*` variable is now `AGENTSFLEET_*`. The old names are no longer read; a process started with a legacy `ZOMBIE_*` value logs a loud diagnostic and ignores it.
-  - **Update routes and wire fields** — `…/zombies/{zombie_id}/…` is now `…/agents/{agent_id}/…`, and the `zombie_id` field is `agent_id`. The `/agents` collection replaces `/zombies`.
-  - **Re-read entity error codes** — `UZ-ZMB-*` codes are now `UZ-AGT-*` (a 404 on a missing agent is `UZ-AGT-009`). `UZ-AUTH-*` codes are unchanged.
-  - **Re-mint raw tokens** — prefixes are now role-symmetric: agent keys start `agt_a` (was `zmb_a`), tenant API keys `agt_t` (was `zmb_t`), runner tokens `agt_r` (was `zmb_r`). Tokens minted under the old prefixes no longer validate.
-  - **Re-point Prometheus dashboards and alerts** — every `zombie_*` metric is renamed: agent-entity metrics are now `agent_*` (e.g. `agent_duration_seconds`, `agent_tokens_total`), fleet/runner metrics `agentsfleet_runner_*`, daemon metrics `agentsfleetd_*`. Queries on the old names return no data silently — panels go blank and alerts stop firing, with no error.
-
-  ## What's new
-
-  - **One brand, end to end** — README, dashboard, CLI, container images (`ghcr.io/agentsfleet/agentsfleetd`), and runner metrics (`agentsfleet_runner_*`) all read agentsfleet.
-  - **Agent keys are their own credential** — a workspace-scoped key (`agt_a…`) carries its own `agent_key_id`, distinct from the `agent_id` it acts against, managed under `/v1/workspaces/{workspace_id}/agent-keys` and `agentsfleet agent-key …`.
-
-  ## API reference
-
-  ```http
-  GET /v1/workspaces/{workspace_id}/agents/{agent_id}
-  → 200 { "agent_id": "…", "agent_slug": "…", … }
-  → 404 { "error_code": "UZ-AGT-009", … }
-  ```
-
-  ## CLI
-
-  - **`agentsfleet`** replaces `zombiectl`; subcommand shapes are unchanged. `agentsfleet agent-key add|list|delete` manages workspace agent keys.
-</Update>
-
-<Update label="Jun 12, 2026" tags={["What's new", "Breaking", "API"]}>
-  ## Scratch memories now expire on their own
-
-  Memories stored under the `daily` category expire 72 hours after their last update, swept automatically on the agent's next memory push. Scratch notes from a noisy week no longer pile up until they crowd durable facts out of the per-agent entry cap — and expired scratch is cleared before cap eviction ever picks a victim, so a `core` fact never loses its slot to a note that was already past its window.
-
-  ## Upgrading
-
-  - **`updated_at` in the memories API is now a JSON number** — epoch milliseconds, previously a decimal string of epoch seconds. If you parse `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories` directly, read the field as a 64-bit integer; the current `zombiectl` release already does. No other field, key, or error code changed.
-
-  ## What's new
-
-  - **72-hour scratch retention** — only the `daily` category expires; `core`, `conversation`, and custom categories persist until the entry cap or an explicit forget, exactly as before. Nothing to configure.
-  - **Expiry is observable** — `zombiectl memory list` shows exactly what survived; an expired note is simply absent after its window. Operators running their own runner fleet additionally see a per-push swept count in the server's structured logs, beside the existing stored/skipped/evicted counts.
-
-  ## API reference
-
-  Memory items in list and search responses now carry numeric timestamps:
-
-  ```json
-  { "key": "deploy_target", "content": "fly", "category": "core", "updated_at": 1765500300000 }
-  ```
-</Update>
-
-<Update label="Jun 12, 2026" tags={["What's new", "CLI"]}>
-  ## Inspect an agent's durable memory from the CLI
-
-  `zombiectl` gains two read-only memory verbs, so "my agent forgot X" becomes a one-command diagnosis instead of a support ticket: the fact is there (the agent knows it), absent (it was never stored), or expired by design.
-
-  ## What's new
-
-  - **`zombiectl memory list --zombie <id>`** — newest-first table of key, category, updated time, and a content preview; `--category <name>` filters, `--limit <n>` caps results (server maximum 100), `--workspace <id>` overrides the active workspace.
-  - **`zombiectl memory search --zombie <id> <query>`** — case-insensitive substring match across keys and content, rendered the same way.
-  - **Machine-readable when piped** — piping or redirecting stdout (or passing `--json`) emits the server's JSON envelope verbatim with full, untruncated content and the `request_id`; an interactive terminal gets the human table.
-  - **Empty results exit `0`** — an empty store is an answer, not an error. Unknown agents fail with `UZ-MEM-002` and a `zombiectl list` hint; a memory-backend outage fails with `UZ-MEM-003` and a retry hint.
-
-  ## CLI
-
-  Both verbs are read-only consumers of `GET /v1/workspaces/{workspace_id}/zombies/{zombie_id}/memories`. No write verbs exist — durable memory is written only by the runner plane.
-</Update>
-
-<Update label="Jun 12, 2026" tags={["What's new"]}>
-  ## `core` memories now survive the hydration window and the entry cap
-
-  Memory selection previously ran on write-recency alone: an identity fact stored once — an owner, a deploy target, a customer's plan — was the first thing both the hydration window and cap eviction discarded once noisier `daily` writes piled up. Both mechanisms are now category-pinned, so the facts an agent marked durable stop being the first casualties of the byte budget and the entry cap.
-
-  ## What's new
-
-  - **Category-pinned hydration** — every `core` entry that fits the hydration byte budget loads before any non-core entry is considered; the remaining budget fills with the newest non-core entries. A `core` fact written in run 1 is still in context at entry 1001.
-  - **Tiered cap eviction** — at the per-agent entry cap, the coldest non-core rows are deleted first; a `core` row is evicted only when no non-core row remains.
-  - **Safe default for custom categories** — a category the platform doesn't recognise is windowed by recency, never silently pinned.
-  - **Deterministic selection** — same entries, same budget, same hydration on every run, so "why does my agent remember X but not Y?" has a checkable answer: X was `core`, Y was windowed.
-  - **Memory-hygiene guidance** — the [Memory page](/memory) now documents what to store as `core`, why stable keys beat dated ones, and why hoarding everything as `core` defeats the pinning.
-
-  The four memory tools, the wire shapes, the hydration byte budget, and the entry cap are unchanged — only which entries fill the window.
-</Update>
-
-<Update label="Jun 12, 2026" tags={["Bug fixes"]}>
-  ## Platform token spend now actually bills
-
-  Runs on a platform-provided model were billed the run fee only — the tokens the agent consumed priced as zero. The platform has always known how to charge for token usage, but the runner never reported how many tokens a run spent, so the token component of every platform run settled at zero. A run's input and output token usage is now reported as the run executes, so platform token spend is charged the way the rate card always described.
-
-  ## Upgrading
-
-  - **Update your runner fleet to bill token spend.** The fix is in the runner binary. A host running an older runner keeps working and is never charged a wrong amount — it simply continues to bill run-fee-only, exactly as before, until you update it. Update your runner hosts to start billing the token component on the runs they execute.
-
-  ## Bug fixes
-
-  - **Platform-model runs under-billed** — a run that consumed model tokens on a platform-provided key was charged only the per-second run fee; the token component was zero. Such runs now bill the input and output token counts the agent actually consumed, metered as the run accrues rather than only at the end.
-  - **Cached-input tokens** are not yet billed separately: until the model-provider layer reports cache reads on their own, cache-heavy runs bill those tokens at whatever class the provider folds them into. No run is over-charged for them.
-</Update>
-
-<Update label="Jun 12, 2026" tags={["What's new", "Observability"]}>
-  ## Agent memory loss is now measurable
-
-  An agent's learned fact could previously vanish — evicted past the per-agent cap, windowed out of a hydration reply, or skipped during a capture push — with no signal anywhere. Every one of those loss events now increments a Prometheus counter on `GET /metrics`, so a dashboard answers "is my agent losing memory?" the day it starts instead of three weeks later through a support ticket.
-
-  ## What's new
-
-  Six counter families, all global and label-free (per-agent inspection stays in logs and the upcoming CLI read verbs, never in metric labels):
-
-  - **`zombie_memory_hydration_dropped_entries_total` / `zombie_memory_hydration_dropped_bytes_total`** — entries and bytes the hydration byte-budget window cut from a reply; the cold tail stays durable in Postgres, these count what a run did not see.
-  - **`zombie_memory_cap_evictions_total`** — rows deleted by the per-agent cap after a capture push, counted from the database's own deleted-row report; eviction is never blocked on telemetry.
-  - **`zombie_memory_capture_truncated_total`** — pushes that hit the push byte budget and stopped early, once per truncated push.
-  - **`zombie_memory_capture_skipped_total`** — capture deltas rejected by validation (oversized or empty key, content, or category), counted per delta.
-  - **`zombie_memory_search_zero_hits_total`** — memory searches that matched nothing, the recall-miss signal. A database error mid-read is never counted: only a cleanly empty result moves it, so infrastructure noise cannot impersonate recall loss.
-
-  The three existing memory families keep their names, types, and meaning unchanged.
-</Update>
-
-<Update label="Jun 11, 2026" tags={["Bug fixes", "Observability", "Internal"]}>
-  ## Billing audit rows now always equal the wallet drain
-
-  Concurrent renewals for the same tenant at the moment its balance ran out could write metering audit rows that summed to more than the wallet actually lost: the per-slice charge was priced off a balance read taken before the wallet row was locked. Audit rows — the substrate future invoices read from — are now priced with the tenant's balance row locked, so they equal the real drain in every interleaving. Metered token cursors also never move backwards, so tokens that were already billed cannot be billed again.
-
-  ## Upgrading
-
-  - **Removed flatlined metrics** — `/metrics` no longer renders series that nothing increments: external retry/failure classification (`zombie_external_*`), run-limit reasons (`zombied_run_limit_exceeded_total`), the agent-duration histogram (`zombie_agent_duration_seconds`), per-agent completion/failure/token counters (`zombie_completed_total`, `zombie_failed_total`, `zombie_tokens_total`, `zombie_execution_seconds`), agent-token and backoff-wait totals, and per-workspace token series (`zombie_workspace_tokens_total`). These series only ever reported zero; if a dashboard or alert references one, delete that panel — no data is lost. `zombie_triggered_total`, backpressure, Server-Sent Events (SSE), signup-funnel, worker-liveness, and Redis pool series are unchanged.
-
-  ## Bug fixes
-
-  - **Metering over-report at balance exhaustion** — two same-tenant renewals racing at exhaustion now record audit rows summing exactly to the wallet drain, never more.
-  - **Token cursor rewind** — a renewal reporting a lower cumulative token count than already recorded charges zero for that slice and holds the cursor, instead of rewinding it and re-charging the same tokens on a later report.
-  - **Account erasure completes for gated accounts** — deleting an account (or hard-deleting an agent) failed outright if it had ever raised an approval gate: the gates audit table is append-only, and the purge could not remove the rows its foreign keys require. The purge transactions now carry a transaction-scoped bypass for exactly that table, and account erasure also sweeps the fleet lease, affinity, and metering rows that carried the account's identifiers.
-  - **Account teardown recovery** — a database failure midway through an account hard-purge now rolls the transaction back on a path that still works after a statement error, so the connection recovers instead of staying stuck in an aborted transaction.
-  - 25 error codes that no code path can raise were removed from the error registry, the dashboard error-message map, and the API description.
-</Update>
-
-<Update label="Jun 11, 2026" tags={["Bug fixes", "API"]}>
-  ## Events that can't run now say why, instead of stranding silently
-
-  Every accepted delivery now ends in a state you can see, or stays recoverable. Before, an event refused by a lease gate — a missing credential, a denied approval, an approval that timed out — sat in `received` forever with no signal; a delivery stranded in a retired or crashed runner's queue was never retried; and a webhook whose enqueue hit a transient error came back `duplicate` on the sender's retry and was lost for good. All three are fixed.
-
-  ## What's new
-
-  - **Steering a paused agent fails loudly** — `POST /v1/workspaces/{workspace_id}/zombies/{zombie_id}/messages` returns `409 UZ-ZMB-012` with a resume hint and a `current_state` field, instead of accepting a message that would silently never run.
-
-  ## API reference
-
-  - **Webhooks to a paused agent** — the generic, GitHub, and Svix webhook endpoints now return `200 {"ignored": "zombie_paused"}` for a paused agent instead of `409`; the retired `UZ-WH-003` code is gone. The idempotency slot is not consumed, so a redelivery after resume processes normally.
-
-  ## Bug fixes
-
-  - **Gate refusals are visible** — a delivery a lease gate refuses is written as a terminal `gate_blocked` event with a named `failure_label` (`secret_missing`, `tenant_resolve_failed`, `approval_denied`, `approval_expired`, `balance_exhausted`), so the activity stream shows why nothing ran instead of leaving the event pending forever.
-  - **Stranded deliveries recover** — a delivery left pending in a retired or crashed runner's queue is reclaimed and re-leased, rather than waiting forever.
-  - **Webhooks are loss-proof** — a transient enqueue failure no longer burns the idempotency slot, so the sender's retry delivers the event exactly once. A genuine duplicate still dedupes.
-  - **Missing credentials refuse the run** — an agent that declares a credential absent from the vault no longer ships a run with an empty secrets map; it refuses with a `secret_missing` terminal row.
-</Update>
-
-<Update label="Jun 11, 2026" tags={["What's new", "Bug fixes", "API", "Observability"]}>
-  ## Backpressure, shared event-stream fan-out, and clean shutdowns
-
-  The API now sheds load with explicit signals instead of queueing without bound, live activity streams share one Redis subscription per instance instead of opening one per viewer, and shutdown drains active streams within a bounded window instead of stranding them. Authentication keeps working through an identity provider's signing-key rotation, and a runner child that outlives its lease deadline is reliably killed.
-
-  ## What's new
-
-  - **In-flight request ceiling** — above the cap, requests get `429` with `Retry-After` and `X-RateLimit-Limit` / `X-RateLimit-Remaining` / `X-RateLimit-Reset` headers (code `UZ-API-001`). Operators raise `API_MAX_IN_FLIGHT_REQUESTS` or add replicas.
-  - **Ops probes are never shed** — `/healthz`, `/readyz`, and `/metrics` answer even at full saturation, so orchestrators and scrapers see a saturated instance instead of killing it blind.
-  - **Event-stream cap** — concurrent Server-Sent Events (SSE) streams per instance are capped by `SSE_MAX_STREAMS` (default 64). Above the cap, new tails get `503` with `Retry-After` (code `UZ-API-002`); existing API traffic is untouched. Each stream runs on its own dedicated thread, so a long-lived tail can no longer stall unrelated requests.
-  - **Shared activity fan-out** — one Redis subscription per instance fans frames out to every viewer of an agent; a stalled tab takes oldest-frame drops on its own bounded queue instead of slowing its siblings. Watch `zombie_sse_in_flight_streams`, `zombie_sse_dropped_frames_total`, `zombie_sse_hub_reconnects_total`, and `zombie_sse_backpressure_rejections_total`.
-  - **Live-stream listing for operators** — `GET /v1/fleet/streams` (platform-admin token) returns `{items, total, max_streams}` for every open activity stream on the instance.
-
-  ## API reference
-
-  - `429` on any API route at the in-flight ceiling — `application/problem+json` body with `code: "UZ-API-001"`, plus `Retry-After` and `X-RateLimit-*` headers.
-  - `503` on `GET /v1/zombies/{id}/events/stream` at the stream cap — `code: "UZ-API-002"` with `Retry-After`. The stream description in the public OpenAPI now states the shared-subscription fan-out and the cap semantics.
-  - `GET /v1/fleet/streams` — fleet plane (platform admin), list envelope `{items, total, max_streams}`.
-
-  ## Bug fixes
-
-  - **Signing-key rotation no longer locks users out** — token verification refreshes the JSON Web Key Set (JWKS) on an unknown key id instead of returning `401` until restart.
-  - **A parked stream could black-hole other requests** — one long-lived SSE tail poisoned a share of the worker pool's queue; streams now run on dedicated threads and the pool queue is shared, so a parked worker can no longer starve queued requests.
-  - **Runner children die at the lease deadline** — control-plane calls are bounded and batched, so a blocked network call can no longer starve the kill tick past its deadline.
-  - **Shutdown no longer hangs on live streams** — drain rejects new streams, wakes every live one, and exits within a bounded window.
-  - **Telemetry writes no longer tear** — concurrent metric and span writes can't interleave half-written records into the OpenTelemetry export path.
-</Update>
-
-<Update label="Jun 11, 2026" tags={["Internal", "Security"]}>
-  ## Groundwork for kernel-enforced egress allowlists on sandboxed runners
-
-  Runner network posture is now selected through the `RUNNER_NETWORK_POLICY` environment variable instead of being hard-wired. Nothing changes in this release — the default posture is exactly today's behavior, and the enforced mode stays off until its kernel-level enforcement arrives in an upcoming release.
-
-  - **`allow_all`** — the default, and what an unset variable resolves to: full outbound access, unchanged from today.
-  - **`deny_all_egress`** — no outbound network at all.
-  - **`allow_list_egress`** — outbound only to permitted destinations; deliberately fails closed with `UZ-RUN-007` until enforcement lands, so it never silently pretends to enforce.
-</Update>
-
-<Update label="Jun 10, 2026" tags={["What's new", "API"]}>
-  ## Take runners out of rotation from the Dashboard
-
-  Platform admins can now cordon, drain, or revoke a runner from the Runners page, then inspect that runner's activity stream without exposing runner tokens. Cordon stops new work, drain waits for active leases to finish and then marks the runner drained, and revoke immediately blocks runner-plane authentication.
-
-  ## What's new
-
-  - **Runner actions** — The Runners page now exposes cordon, drain, and revoke actions with state badges for `active`, `cordoned`, `draining`, `drained`, and `revoked`.
-  - **Activity stream** — Each runner has an activity stream backed by `fleet.runner_events`, covering registration, online/offline, lease, and operator-state events.
-  - **Drain behavior** — Draining finishes automatically when the runner has no active leases; if no eligible fallback runner exists, work stays held instead of bouncing between unavailable hosts.
-
-  ## API reference
-
-  - **`PATCH /v1/fleet/runners/{id}`** — platform-admin only; accepts `{ "action": "cordon" | "drain" | "revoke" }` and returns the runner `id` plus its `admin_state`. Tenant admins and tenant API keys get `403 UZ-AUTH-021`.
-  - **`GET /v1/fleet/runners/{id}/events`** — platform-admin only; returns paginated history with `event_type`, `since`, and `until` filters.
-  - **Runner-plane gate** — runner tokens tied to any non-`active` `admin_state` now get `401 UZ-RUN-009` on runner lookup and heartbeat endpoints.
-</Update>
-
-<Update label="Jun 07, 2026" tags={["Breaking", "What's new", "UI", "API"]}>
-  ## Set up a bring-your-own-key model provider without leaving the Models page
-
-  The Models page is now a guided, two-step wizard for bring-your-own-key (BYOK) setup. Choosing "use my own provider key" with an empty vault used to dead-end at a disabled button that sent you off to Credentials; now you paste an API key, the provider and a default model fill themselves in from the key's prefix, you save the credential inline, pick the model, and activate — all on one screen. Platform-managed keys stay a one-click choice. A short note explains that switching providers applies to new runs while in-flight agents finish on their current one.
-
-  Behind the wizard, the public model catalogue moved: the unauthenticated `_um/<key>/model-caps.json` document is now `cap.json`, and it carries the global run and event rates, the starter credit, and the free-trial window alongside the per-model catalogue — one document for the client config that needs no auth.
-
-  ## Upgrading
-
-  - **`_um/<key>/model-caps.json` is now `_um/<key>/cap.json`.** The old path returns `404` (no alias). The per-model `models[]` shape is unchanged, so if you read the public catalogue directly, only the path moves — switch to `cap.json`. If you only use the dashboard or `zombiectl`, there is nothing to do; they handle this for you.
-
-  ## What's new
-
-  - **Inline credential create on the Models page** — a structured provider / API key / model form that names the credential after the provider and detects the provider from the key prefix. No trip to Credentials.
-  - **Catalogue-backed model picker** — the model field is populated from `cap.json`, with free-text entry as a fallback for a model not in the catalogue.
-  - **Global config in `cap.json`** — the document now includes a `rates` block (run and event rates) and a `billing` block (starter credit, free-trial window), so a client no longer hardcodes those constants.
-
-  ## API reference
-
-  - **`GET /_um/<key>/cap.json`** — unauthenticated; replaces `model-caps.json`. Returns `{ version, models, rates, billing }`. Each `models[]` row carries `id`, `provider`, `context_cap_tokens`, and the per-model token rates (unchanged); `rates` carries `run_nanos_per_sec` and `event_nanos`; `billing` carries `starter_credit_nanos`, `free_trial_end_ms`, and `free_trial_stage_nanos`. The optional `?model=` filter narrows `models[]`; the global blocks are always present. A wrong key returns `404`; an empty catalogue returns `503`.
-</Update>
-
-<Update label="Jun 06, 2026" tags={["What's new", "API"]}>
-  ## Pin an agent to capable runners with tags
-
-  An agent's `tags:` now decide where it runs. Add `tags: [gpu, us-east]` to your SKILL.md frontmatter and the agent runs only on a runner whose advertised labels cover every tag — capability-bound work lands on a host that can serve it. An agent with no tags runs on any runner, exactly as before. The tags you already write in the manifest drive this; there is no separate field to set.
-
-  If no enrolled runner currently advertises the required labels, the agent waits for a matching runner rather than running on an unsuitable host.
-
-  <Note>
-    A waiting agent surfaces no separate status today. If an agent never starts, confirm an enrolled runner advertises every tag the agent requires.
-  </Note>
-
-  ## API reference
-
-  - **`required_tags` on an agent** — derived from the SKILL.md `tags:` on create and re-derived when you `PATCH` a new `source_markdown`. A runner claims an agent only when `required_tags` is a subset of the runner's labels. Each tag is 1–64 characters; an agent carries at most 32. Either bound exceeded rejects the request with `UZ-REQ-001`.
-</Update>
-
-<Update label="Jun 04, 2026" tags={["Breaking", "What's new", "UI", "CLI", "Security"]}>
-  ## Enroll runners from the dashboard, plus a regrouped left navigation
-
-  You can now add a runner to your fleet from the dashboard instead of the command line. A platform admin opens **Runners**, clicks **Add runner**, and copies a one-time runner token to install on the host — your platform-admin login never touches a shell. The runner list shows each host's liveness honestly: a host you just enrolled reads **registered** until it first checks in, instead of a false **online**.
-
-  The dashboard's left navigation is regrouped into **Operations** (Agents, Approvals, Events), **Configuration** (Credentials, Model, and Runners for platform admins), and **Organization** (Settings, Billing). The model-and-provider settings move out of Settings to their own **Model** entry at `/settings/models`.
-
-  ## Upgrading
-
-  - **`zombie-runner register` is removed.** The runner CLI no longer accepts `--token`, `--host-id`, or `ZOMBIE_TOKEN`. To enroll a host, a platform admin mints a runner token from the dashboard (Runners → Add runner) and installs it on the host as `ZOMBIE_RUNNER_TOKEN`. Runners already enrolled keep working — only the enrollment step changed.
-  - **Server errors on non-idempotent requests are no longer retried.** The dashboard and `zombiectl` HTTP clients now retry a server 5xx only for idempotent methods (`GET`/`PUT`/`DELETE`/`HEAD`); a failed `POST` or `PATCH` surfaces immediately instead of risking a duplicate write. Network errors and `Retry-After` responses (`429`/`503`/`504`) retry as before.
-
-  ## What's new
-
-  - **Fleet list in the dashboard** — platform admins see every enrolled runner with its derived liveness: `registered`, `online`, `busy`, or `offline`.
-
-  ## API reference
-
-  - **`GET /v1/fleet/runners`** — platform-admin only; paginated. Each item carries `liveness ∈ {registered, online, busy, offline}` and never includes the token hash. A tenant token gets `403`.
-
-  ## CLI
-
-  - **`zombie-runner register` is gone.** The subcommand and its `--token` / `--host-id` flags no longer exist; see **Upgrading** above for the dashboard enrollment flow.
-</Update>
-
-<Update label="Jun 03, 2026" tags={["What's new", "UI"]}>
-  ## One name across the product: the thing you install is an "agent"
-
-  The dashboard, the marketing site, and these docs now call the thing you install an **agent**, and define it the moment you meet the word: *"An agent is a long-lived runtime you install once. It sleeps until an event wakes it, runs your skill against that event, and reports back with evidence."* The same concept used to appear as `zombie`, "the agent", or "a runtime" in different places — it is one noun now. The brand stays **usezombie**, and the CLI (`zombiectl`), the routes, and the API fields are unchanged; only the words you read changed.
-
-  ## What's new
-  - The dashboard navigation, empty states, install buttons, and the stop/resume/kill dialogs all read "agent".
-  - First-touch surfaces — the "What is usezombie?" FAQ, the dashboard first-run card, and the agents-list empty state — now carry the definition above.
-</Update>
-
-<Update label="Jun 02, 2026" tags={["Breaking", "Internal"]}>
-  ## `zombied` runs on a single database role — the worker datastore credentials retire
-
-  Following the runner-fleet split, the deleted worker process left behind a `worker_runtime` Postgres role, a `worker` Redis access-control list (ACL) user, and `DATABASE_URL_WORKER` / `REDIS_URL_WORKER` deploy variables that `zombied` still required at startup but never used to connect. `zombied` already writes every event-path row through its API database role, so the worker role and its variables are removed. The control plane now runs on a single `api_runtime` role for both reads and writes; a host-resident runner continues to hold no datastore credentials at all.
-
-  ## Upgrading
-
-  - **Drop `DATABASE_URL_WORKER` and `REDIS_URL_WORKER`** from the `zombied` deployment. The server boots on `DATABASE_URL_API` + `REDIS_URL_API` alone; the worker variables are no longer read.
-  - **Deploy order matters:** ship the updated `zombied` first, then remove the `worker_runtime` Postgres role and the `worker` Redis ACL user. The old binary still authenticates as `worker_runtime`, so dropping the role before the new build is live would cut its connection.
-</Update>
-
-<Update label="Jun 02, 2026" tags={["What's new", "API"]}>
-  ## Usage-based billing — agent runs metered by the second
-
-  Agent run time is now billed by the second while an agent is actively running, at $0.0001/sec (≈ $0.36/hr), plus the model's per-token cost on platform-key runs. This replaces the flat estimate taken when work started: a long run is charged for the time it actually used, a short one is not over-charged, and an agent that is not running is not billed. The run rate is the same whether you bring your own model key or use a platform key — bring-your-own-key runs record token usage but are charged for run time only.
-
-  Credit drains as the run proceeds: each background lease renewal meters the elapsed slice plus any new token usage, so a multi-minute run bills continuously instead of in one lump at the end. A run that exhausts its balance stops at the next renewal rather than going negative.
-
-  ## API reference
-
-  - **`GET /v1/tenants/me/billing/charges/{event_id}/metering-periods`** — the per-slice breakdown behind a single run charge: one row per renewal plus the final settle, each carrying the run milliseconds, token deltas, run fee, token cost, and the amount actually charged. Scoped to the calling tenant; a foreign `event_id` returns no rows.
-</Update>
-
-<Update label="Jun 01, 2026" tags={["What's new", "CLI"]}>
-  ## Host skills move to their own repo — install with `npx skills add usezombie/skills`
-
-  The `/usezombie-*` host-agent skills now live in the public [`usezombie/skills`](https://github.com/usezombie/skills) repository and install with `npx skills add usezombie/skills`. The npm package ships the `zombiectl` CLI and agent samples only; it no longer bundles the skills. Installing the CLI and adding the skills are now two commands. The `curl -fsSL https://usezombie.sh | bash` one-shot installer does both for you and is unchanged.
-
-  ## What's new
-
-  - **`npx skills add usezombie/skills`** — the install path on `index.mdx`, `quickstart.mdx`, `cli/install.mdx`, and `zombies/install.mdx`. Pass `--host=<claude|amp|codex|opencode>` to pin a specific host.
-  - **Skills iterate independently.** A skill update ships from the skills repo without a CLI release, so skill fixes reach you without waiting on an npm publish.
-  - **`npm install -g @usezombie/zombiectl`** installs the CLI and samples only. Older instructions that said the npm install also set up the skills no longer apply — add them with the command above.
-</Update>
-
-<Update label="Jun 01, 2026" tags={["What's new", "Internal"]}>
-  ## Long single events keep running — lease renewal lands
-
-  The follow-up promised in the May 27, 2026 runner-fleet release is here: an event that runs longer than the lease window is no longer reclaimed and replayed. While a runner is executing an event, it renews the lease in the background, pushing the kill deadline forward so a single long-running agent runs to completion instead of being cut off after 30 seconds. A hard 12-hour ceiling still caps a runaway event.
-
-  ## What's new
-
-  - **Background lease renewal.** A runner renews mid-execution and keeps ownership of the event while it is still working. A runner that loses its lease cannot reclaim it.
-  - **Fail-safe renewal.** A renewal that hits a transient database fault is retried on the next tick rather than ending the event; only a genuinely missing or superseded lease stops it, so a long event survives a brief datastore blip.
-  - **Bounded runtime.** Renewal cannot extend a single event past a 12-hour maximum, so a stuck agent is still reclaimed.
-</Update>
-
-<Update label="May 27, 2026" tags={["What's new", "Internal"]}>
-  ## Execution moves to a host-resident runner fleet
-
-  Behind an unchanged user surface, an event's agent now runs in a separate `zombie-runner` daemon instead of inside the API server. `zombied` became the control plane — it owns Postgres, Redis, and the Vault, and hands work to runners over an authenticated HTTPS protocol — while the runner is the execution plane that runs each event in an isolated sandbox holding no datastore credentials. Steering, webhooks, cron, the live event tail, and history behave exactly as before; what changed is where the work runs.
-
-  ## What's new
-
-  - **Control plane / execution plane split.** A runner leases an event, runs it, and reports the result; `zombied` does the durable writes. Work can run on hosts that never see a database credential.
-  - **Lease-based ownership.** Each lease carries a deadline. A runner that dies mid-event has its work reclaimed and re-run by another runner; a late report from the dead runner is rejected, so state is never double-written.
-  - **Sandbox is mandatory.** Every event runs in a sandbox; a sandbox that fails to start fails closed rather than running unprotected.
-
-  <Note>
-    Host-resident runners are not enabled in production yet — this release lands the architecture; turning them on follows in a later update.
-  </Note>
-
-  <Note>
-    One known limit: an agent that runs longer than the 30-second lease window is reclaimed and re-run, so long single events wait on a follow-up that adds lease renewal.
-  </Note>
+  - **Traces and logs** — span names, attributes, and log bodies were emitted with a stray extra quote that produced invalid JSON, so Tempo and Loki could reject them.
 </Update>
