@@ -86,6 +86,25 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   - **The API accepts a real request's headers** — the server allowed only 4 KiB of request headers and answered `431` past that. An authenticated request that crosses a proxy carries more than that in its credential and forwarding headers alone. The limit is now 16 KiB.
 </Update>
 
+<Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "UI"]}>
+  ## The console puts steering first, and every label reads in plain words
+
+  The fleet console now opens on the steer thread instead of the source editor, and the wall drops its abbreviations: a tile reads `$1.20 spent · 7 events`, and a tile whose live feed is unavailable says **not live** with a one-line explanation on hover or focus. The workspace Events page moves into the same table every other data surface uses.
+
+  ## What's new
+
+  - **Steer-first console** — the `SKILL.md`/`TRIGGER.md` source card is collapsed to its header until you open it; pressing **Edit** opens it and keeps it open while a draft exists. On narrow screens the steer thread stacks above the source column instead of below it.
+  - **A way back to the wall** — the console header gains a **← Fleets** link, so leaving a fleet no longer requires the sidebar.
+  - **Plain-words wall tiles** — footers spell out `spent` and `events`; the stale-feed eyebrow reads **not live** with a tooltip: "Live feed unavailable — showing the last activity received."
+  - **Events in the standard table** — the Events page renders one row per event with Time, Status, Fleet, Actor, Type, Summary, Tokens, and Duration columns; a failed run's row carries its plain-language reason. Cursor paging and the empty state stay.
+  - **The wall search box is gone** — it only filtered fleets already loaded in the page and duplicated nothing the wall needs at its current size.
+
+  ## Bug fixes
+
+  - **Console columns no longer overlap** — long unbroken lines (a `SKILL.md` source line, a webhook URL, a registration command) now scroll inside their own block instead of pushing a card underneath the neighbouring column.
+  - **The run-metrics strip says Time** — the wall-clock figure was labelled `Wall`, which collided with the Live Wall page name; it now reads `Time`.
+</Update>
+
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
   ## Delete revoked runners, a seeded model catalogue, and loaders with personality
 
