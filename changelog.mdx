@@ -22,6 +22,31 @@ export const STAGE_SELF_MANAGED_M66 = "$0.0001";
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
+  ## A struggling fleet explains itself
+
+  A fleet that keeps failing the same way used to fill Chat and the Events table with dozens of identical rows, each saying only "Failed a startup safety check" with no hint of which check or why. Now the cause carries all the way from the runner to the row, repeats collapse into one line, and the conversation stays readable underneath.
+
+  ## What's new
+
+  - **Failures name their cause** — a run that fails now carries a specific reason, such as `Failed a startup safety check — no instructions configured`, in Chat, in the events table, and in the live completion frame. A run from an older runner that records no cause still shows the plain-language sentence, never a guess.
+  - **A repeating failure is one banner, not a wall** — when the same failure lands twice or more in a row, one line pins above the conversation: what failed, why, how many times, when it last happened, and what to do about it. It clears the moment the fleet recovers.
+  - **Repeats collapse** — a run of identical deliveries in Chat folds into one expandable row with a `×N` count and its time range; the Events table does the same for consecutive identical failures. Open the count to see every delivery it stands for. A success or one of your own messages always breaks the run.
+  - **Activity steps back** — an incoming integration event renders as one compact line so your own conversation stays in front, with the full payload one click away. A recognized change proposal shows its action and links out to the source.
+  - **Guidance where you can act on it** — a startup failure points at the fleet's Skill tab, in the failure row and in the event's Inspect dialog. Failures you cannot act on from the console stay quiet rather than offering advice that leads nowhere.
+  - **The live connection shows itself** — connecting animates instead of sitting behind a motionless banner, and arriving flashes once before settling. A message you send now animates while it works instead of reading a static "Still working."
+  - **One pagination control everywhere** — every table in the console, including the Events log and the billing ledger, now pages the same way. A page is a screenful you can share by link and return to on reload, instead of a "Load more" button that walked off the bottom of a list that only grew.
+
+  ## API reference
+
+  - **`core.fleet_events` gains `failure_detail`** — an additive nullable text column carrying the human-readable failure cause. The events endpoint returns it beside `failure_label`; both are `null` on a clean run. A runner that predates the field omits it and the row reads exactly as before.
+
+  ## Bug fixes
+
+  - **Zero metrics on a failed run read as absence, not measurement** — a failed run's `0` tokens, `$0.00` cost, and `0ms` duration now dim in the Events table, so they no longer look like a real reading of nothing.
+  - **A long-open Chat tab stays bounded** — the live view keeps a recent window of events instead of growing without limit; the full history remains in the Events tab.
+</Update>
+
 <Update label="Jul 22, 2026" tags={["What's new", "UI"]}>
   ## Tables stay sortable and contained
 
