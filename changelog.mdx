@@ -10,14 +10,13 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 23, 2026" tags={["What's new", "Observability", "Performance"]}>
   ## A hung peer cannot hold a call open
 
-  Every outbound network call the platform makes — vendor deliveries, credential mints, scheduled-job dispatch, Redis pub/sub setup and recovery, and the runner's control-plane verbs — is now bounded by one deadline scheduler per process instead of one watchdog thread per caller. A deadline that fires can cancel only the exact connection attempt that armed it: cancellation is checked against a connection generation, so a timeout racing a completed call can never shut down an unrelated connection that recycled the same socket. A call whose deadline cannot be enforced is refused up front rather than run unbounded.
+  Outbound network calls now have enforced deadlines. Calls fail instead of remaining open indefinitely.
 
   ## What's new
 
-  - **Redis recovery is bounded end-to-end** — name resolution, dial, TLS, authentication, and the initial subscribe spend one absolute budget per attempt, so a peer stalling each stage just under a per-stage limit no longer adds the stages up. A stalled reconnect is cancelled and retried, resubscribe sweeps check for shutdown between channels, and a timeout stays distinct from an authentication or transport failure.
-  - **Telemetry export drains by work, not by timer** — an export cycle drains the backlog it found at cycle start across multiple bounded collections, each network post is attempted once and cancelled at its deadline, and shutdown wakes the exporter, drains within one shared deadline, and joins.
-  - **Exporter health is on `/metrics`** — the telemetry queues report their depth and fixed drop reasons (`ring_full`, `aggregate_cap`, `serialize_failed`, `partial_rejected`, `export_rejected`, `export_uncertain`) as Prometheus families, so a lossy exporter is visible instead of silent. An exporter outage cannot recursively fill the log pipeline with its own warnings.
-  - **Trace noise is capped at the source** — every route carries an explicit trace class, noisy runner-success chatter is suppressed before enqueue, and runner rejections and server errors obey hard budgets with every excess counted.
+  - **Telemetry export finishes predictably** — each network request obeys a deadline, so a stalled endpoint cannot hold telemetry delivery open indefinitely.
+  - **Exporter health is on `/metrics`** — queue depth and dropped telemetry totals make an exporter outage visible instead of silent.
+  - **High-volume traces stay bounded** — routine success traffic is limited while runner rejections, server errors, and dropped telemetry remain visible in metrics.
 </Update>
 
 <Update label="Jul 23, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
