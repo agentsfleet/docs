@@ -7,6 +7,18 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 23, 2026" tags={["What's new", "Observability", "Performance"]}>
+  ## A hung peer cannot hold a call open
+
+  Outbound network calls now have enforced deadlines. Calls fail instead of remaining open indefinitely.
+
+  ## What's new
+
+  - **Telemetry export finishes predictably** — each network request obeys a deadline, so a stalled endpoint cannot hold telemetry delivery open indefinitely.
+  - **Exporter health is on `/metrics`** — queue depth and dropped telemetry totals make an exporter outage visible instead of silent.
+  - **High-volume traces stay bounded** — routine success traffic is limited while runner rejections, server errors, and dropped telemetry remain visible in metrics.
+</Update>
+
 <Update label="Jul 23, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
   ## An identifier has exactly one spelling
 
