@@ -17,6 +17,10 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Uppercase and mixed-case ids return `400`** — a request sending `0195B4BA-8D3A-7F13-…` where a `uuid` field is expected now fails with [`UZ-UUIDV7-009`](/api-reference/error-codes) instead of being silently normalized. Routes that validate the id inline answer the generic [`UZ-REQ-001`](/api-reference/error-codes) for the same input, so handle both. Every id the API returns is already lowercase, so anything echoing back a server-issued id is unaffected.
   - **The CLI rejects the same shape** — `agentsfleet` checks id arguments before the request leaves your machine, so a miscased id fails immediately, not after a round trip.
 
+  ## Upgrading
+
+  - **Lowercase any identifier your code stores or builds itself.** Ids handed back by the API and the CLI are already lowercase, so echoing one straight back needs no change. Action is only required where your code uppercases an id, reads one from a system that upper-cases (some spreadsheet and logging pipelines do), or hard-codes one in a fixture or webhook URL. Those requests now fail with [`UZ-UUIDV7-009`](/api-reference/error-codes) rather than being accepted.
+
   ## Bug fixes
 
   - **A clock outside the representable range fails loudly** — minting an id on a host whose clock is set before 1970 now returns an error, instead of an id whose embedded timestamp is corrupted and sorts in the wrong place.
