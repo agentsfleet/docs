@@ -7,7 +7,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Jul 23, 2026" tags={["Bug fixes", "API", "CLI"]}>
+<Update label="Jul 23, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
   ## An identifier has exactly one spelling
 
   Every workspace, fleet, and event id is a lowercase Universally Unique Identifier version 7 (UUIDv7). An uppercase id used to be accepted, and the two spellings could then drift apart: the database read one record, while caches, deduplication keys, and plain string comparisons read two. The API and the `agentsfleet` CLI now reject a non-lowercase id.
@@ -19,7 +19,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Upgrading
 
-  - **Lowercase any identifier your code stores or builds itself.** Ids handed back by the API and the CLI are already lowercase, so echoing one straight back needs no change. Action is only required where your code uppercases an id, reads one from a system that upper-cases (some spreadsheet and logging pipelines do), or hard-codes one in a fixture or webhook URL. Those requests now fail with [`UZ-UUIDV7-009`](/api-reference/error-codes) rather than being accepted.
+  - **Lowercase any identifier your code stores or builds itself.** Ids handed back by the API and the CLI are already lowercase, so echoing one straight back needs no change. Action is only required where your code uppercases an id, reads one from a system that upper-cases (some spreadsheet and logging pipelines do), or hard-codes one in a fixture or webhook URL. Those requests now fail with [`UZ-UUIDV7-009`](/api-reference/error-codes), or [`UZ-REQ-001`](/api-reference/error-codes) on routes that validate the id inline, rather than being accepted.
 
   ## Bug fixes
 
