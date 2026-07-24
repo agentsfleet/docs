@@ -7,51 +7,71 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API"]}>
-  ## Idle load tracks your work, not your history
+<Update label="Jul 25, 2026" tags={["Breaking", "What's new", "Observability"]}>
+  ## Metrics move to one namespace and standard names
 
-  The dashboard and API now do database work for current activity instead of total stored history. Response cost stays stable as an account accumulates fleets, runners, and events. Event-history filters now accept literal backslashes.
+  Exported metrics now use standard OpenTelemetry names and correct units on a single `agentsfleet_` prefix. Old names are not emitted alongside the new ones, so stored queries need repointing.
+
+  ## Upgrading
+
+  - **`/metrics` families that started `fleet_` now start `agentsfleet_`** — `fleet_triggered_total` becomes `agentsfleet_fleet_triggered_total`.
+  - **Four metrics renamed** — `agentsfleet.credit.drained_nanos` → `agentsfleet.billing.credit.consumed` (`{nanocredit}`); `agentsfleet.run.duration_ms` → `gen_ai.invoke_agent.duration` (seconds); `agentsfleet.tokens.processed` → `agentsfleet.invoke_agent.token.usage` (`{token}`, split by `gen_ai.token.type`), with cached input separate as `agentsfleet.invoke_agent.cache_read.token.usage` — a subset of input, not a third total.
+  - **Workspace and tenant identity no longer appear on metrics** — per-workspace cost stays a Postgres query against the execution-telemetry rows.
 
   ## What's new
 
-  - **Idle database load stays flat as accounts grow** — stored runners and events no longer make routine background work more expensive over time.
-  - **Long lists stay responsive as accounts grow** — runner, credential, and API key lists now limit their work to the requested page.
+  - **Bounded model attribution** — `gen_ai.provider.name` and `gen_ai.request.model` are attached while a series budget allows; past it the attribute is dropped, never truncated, and `agentsfleet_otel_attribute_omitted_total` counts the omission.
+  - **Standard HTTP span keys** — `http.request.method`, `http.route`, and numeric `http.response.status_code`. The route is the matched template, so the concrete path, query string, and `Authorization` header stay out.
 
   ## Bug fixes
 
-  - **A backslash in an actor filter no longer returns a server error** — filtering event history by an actor value ending in `\` (or containing one) used to return `500`. It now matches the literal backslash and returns a normal page, so a filter you are entitled to type can no longer break the request.
+  - **Successful lease renewals now reach the credit metric** — renewals committed money but emitted no sample, understating consumption for any run that renewed.
+</Update>
 
+<Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API"]}>
+  ## Idle load tracks your work, not your history
+
+  Database work now scales with current activity instead of total stored history.
+
+  ## What's new
+
+  - **Idle database load stays flat as accounts grow** — stored runners and events no longer make background work more expensive over time.
+  - **Long lists stay responsive** — runner, credential, and API key lists limit their work to the requested page.
+
+  ## Bug fixes
+
+  - **A backslash in an actor filter no longer returns `500`** — an actor value containing `\` now matches the literal backslash and returns a normal page.
 </Update>
 
 <Update label="Jul 23, 2026" tags={["What's new", "Observability", "Performance"]}>
   ## A hung peer cannot hold a call open
 
-  Outbound network calls now have enforced deadlines. Calls fail instead of remaining open indefinitely.
+  Outbound network calls now have enforced deadlines.
 
   ## What's new
 
-  - **Telemetry export finishes predictably** — each network request obeys a deadline, so a stalled endpoint cannot hold telemetry delivery open indefinitely.
-  - **Exporter health is on `/metrics`** — queue depth and dropped telemetry totals make an exporter outage visible instead of silent.
-  - **High-volume traces stay bounded** — routine success traffic is limited while runner rejections, server errors, and dropped telemetry remain visible in metrics.
+  - **Telemetry export finishes predictably** — each request obeys a deadline, so a stalled endpoint cannot hold delivery open indefinitely.
+  - **Exporter health is on `/metrics`** — queue depth and dropped-telemetry totals make an exporter outage visible.
+  - **High-volume traces stay bounded** — routine success traffic is limited; runner rejections, server errors, and drops stay visible in metrics.
 </Update>
 
 <Update label="Jul 23, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
   ## An identifier has exactly one spelling
 
-  Every workspace, fleet, and event id is a lowercase Universally Unique Identifier version 7 (UUIDv7). An uppercase id used to be accepted, and the two spellings could then drift apart: the database read one record, while caches, deduplication keys, and plain string comparisons read two. The API and the `agentsfleet` CLI now reject a non-lowercase id.
-
-  ## API reference
-
-  - **Uppercase and mixed-case ids return `400`** — a request sending `0195B4BA-8D3A-7F13-…` where a `uuid` field is expected now fails with [`UZ-UUIDV7-009`](/api-reference/error-codes) instead of being silently normalized. Routes that validate the id inline answer the generic [`UZ-REQ-001`](/api-reference/error-codes) for the same input, so handle both. Every id the API returns is already lowercase, so anything echoing back a server-issued id is unaffected.
-  - **The CLI rejects the same shape** — `agentsfleet` checks id arguments before the request leaves your machine, so a miscased id fails immediately, not after a round trip.
+  Every workspace, fleet, and event id is a lowercase Universally Unique Identifier version 7 (UUIDv7). The API and the `agentsfleet` CLI now reject a non-lowercase id, which used to be accepted and could then drift from its lowercase twin across caches and deduplication keys.
 
   ## Upgrading
 
-  - **Lowercase any identifier your code stores or builds itself.** Ids handed back by the API and the CLI are already lowercase, so echoing one straight back needs no change. Action is only required where your code uppercases an id, reads one from a system that upper-cases (some spreadsheet and logging pipelines do), or hard-codes one in a fixture or webhook URL. Those requests now fail with [`UZ-UUIDV7-009`](/api-reference/error-codes), or [`UZ-REQ-001`](/api-reference/error-codes) on routes that validate the id inline, rather than being accepted.
+  - **Lowercase any identifier your code stores or builds itself.** Ids returned by the API and CLI are already lowercase; act only where your code uppercases an id or hard-codes one in a fixture or webhook URL. Those requests fail with [`UZ-UUIDV7-009`](/api-reference/error-codes), or [`UZ-REQ-001`](/api-reference/error-codes) on inline-validating routes.
+
+  ## API reference
+
+  - **Uppercase and mixed-case ids return `400`** — [`UZ-UUIDV7-009`](/api-reference/error-codes), or [`UZ-REQ-001`](/api-reference/error-codes) on inline-validating routes. Handle both.
+  - **The CLI rejects the same shape** — checked before the request leaves your machine.
 
   ## Bug fixes
 
-  - **A clock outside the representable range fails loudly** — minting an id on a host whose clock is set before 1970 now returns an error, instead of an id whose embedded timestamp is corrupted and sorts in the wrong place.
+  - **A clock outside the representable range fails loudly** — minting an id on a host set before 1970 returns an error instead of an id that sorts wrong.
 </Update>
 
 <Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
@@ -62,89 +82,85 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## What's new
 
   - **Failures name their cause** — `Failed a startup safety check — no instructions configured` appears in Chat, the events table, and the live completion frame. A run from an older runner that records no cause still shows the plain-language sentence, never a guess.
-  - **A repeating failure is one banner** — the same failure twice or more pins one line above the conversation: what failed, why, how many times, when it last happened, and what to do. It clears when the fleet recovers.
-  - **Repeats collapse** — consecutive identical deliveries fold into one expandable row with a `×N` count and time range. A success or one of your own messages breaks the run.
-  - **Compact integration events** — an incoming event renders as one line with the full payload one click away; a recognized change proposal links out to its source.
-  - **Guidance where you can act on it** — a startup failure links to the fleet's Skill tab. Failures you cannot act on from the console stay quiet.
-  - **One pagination control everywhere** — every console table, Events and the billing ledger included, pages the same way. A page is a screenful you can share by link.
+  - **A repeating failure is one banner** — what failed, why, how many times, when it last happened, and what to do. It clears when the fleet recovers.
+  - **Repeats collapse** — consecutive identical deliveries fold into one expandable row with a `×N` count and time range.
+  - **Compact integration events** — one line with the full payload one click away; a recognized change proposal links to its source.
+  - **Guidance where you can act on it** — a startup failure links to the fleet's Skill tab.
+  - **One pagination control everywhere** — every console table pages the same way, and a page is shareable by link.
 
   ## API reference
 
-  - **`core.fleet_events` gains `failure_detail`** — an additive nullable text column carrying the human-readable failure cause. The events endpoint returns it beside `failure_label`; both are `null` on a clean run.
+  - **`core.fleet_events` gains `failure_detail`** — an additive nullable text column carrying the human-readable cause. The events endpoint returns it beside `failure_label`; both are `null` on a clean run.
 
   ## Bug fixes
 
   - **Zero metrics on a failed run dim** — `0` tokens, `$0.00` cost, and `0ms` no longer read as a real measurement.
-  - **A long-open Chat tab stays bounded** — the live view keeps a recent window of events; the full history stays in the Events tab.
+  - **A long-open Chat tab stays bounded** — the live view keeps a recent window; full history stays in Events.
 </Update>
 
 <Update label="Jul 22, 2026" tags={["What's new", "UI"]}>
   ## Tables stay sortable and contained
 
-  Dashboard tables now sort meaningful columns, paginate long datasets, and scroll inside the table instead of stretching the page.
-
   ## What's new
 
   - **Sortable columns** — click a supported heading to cycle ascending, descending, original order.
   - **Contained event history** — long lists scroll below a sticky heading.
-  - **Consistent pagination** — client, cursor, and page-backed lists share the same controls and keep recovery navigation on an empty later page.
+  - **Consistent pagination** — client, cursor, and page-backed lists share one control and keep recovery navigation on an empty later page.
   - **Exact dashboard frame** — the header aligns edge to edge and page content owns viewport scrolling.
 </Update>
 
 <Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "API", "UI"]}>
   ## Fleet detail is now a focused workspace
 
-  Fleet detail opens on Chat, and every other panel moves into fleet-local navigation instead of stacking together. The summary keeps status, latest outcome, tokens, spend, duration, and waiting approvals visible.
+  Fleet detail opens on Chat, and every other panel moves into fleet-local navigation. The summary keeps status, latest outcome, tokens, spend, duration, and waiting approvals visible.
 
   ## What's new
 
-  - **The composer is always on screen** — Chat fills the window and only the conversation scrolls.
+  - **The composer is always on screen** — only the conversation scrolls.
   - **Every message says who sent it** — a sender chip, a readable name, and the time. Yours read `Operator`; the fleet's read its own name.
-  - **Events describe themselves** — an incoming event shows what arrived, such as `opened · owner/repo#539 — add retry with backoff`, with its payload one click away. An event with no reply says whether it is working, waiting for approval, or failed.
-  - **Failures read as sentences** — a startup safety-check failure says so in Chat, the summary, and the events table, instead of the runner's internal tag.
-  - **Fleet-local views** — Events uses a fleet-scoped table; Memory, Skill, Trigger, and Settings each get one destination.
+  - **Events describe themselves** — an incoming event shows what arrived, such as `opened · owner/repo#539 — add retry with backoff`, with its payload one click away.
+  - **Failures read as sentences** — in Chat, the summary, and the events table, instead of the runner's internal tag.
+  - **Fleet-local views** — Events is fleet-scoped; Memory, Skill, Trigger, and Settings each get one destination.
   - **Approvals stay in context** — a waiting count opens workspace Approvals filtered to the current fleet.
-  - **Trigger drops setup clutter** — source, filters, schedule, and latest delivery only; webhook registration stays in the install output.
+  - **Trigger drops setup clutter** — source, filters, schedule, and latest delivery only.
 
   ## Bug fixes
 
-  - **Messages send while the live feed is down** — sending no longer depends on the live feed. A message the server refuses shows as failed with a retry, instead of sitting queued forever.
+  - **Messages send while the live feed is down** — a refused message shows as failed with a retry instead of sitting queued.
   - **Your own messages survive a reload** — they rendered as empty rows because Chat used the fleet's reply field for every entry.
   - **Incoming events no longer render as blank rows.**
-  - **A lost connection recovers on its own** — Chat keeps retrying and reconnects immediately when the tab returns to the foreground or the network comes back.
+  - **A lost connection recovers on its own** — Chat reconnects when the tab returns to the foreground or the network comes back.
   - **The API accepts a real request's headers** — the 4 KiB request-header limit answered `431` on any authenticated request crossing a proxy. The limit is now 16 KiB.
 </Update>
 
 <Update label="Jul 21, 2026" tags={["What's new", "Bug fixes", "UI"]}>
-  ## The console puts steering first, and every label reads in plain words
+  ## The console puts steering first
 
   The fleet console opens on the steer thread instead of the source editor, and the wall drops its abbreviations.
 
   ## What's new
 
-  - **Steer-first console** — the `SKILL.md`/`TRIGGER.md` source card is collapsed to its header until you open it; **Edit** opens it and keeps it open while a draft exists. On narrow screens the steer thread stacks above the source column.
+  - **Steer-first console** — the `SKILL.md`/`TRIGGER.md` source card is collapsed to its header until you open it; **Edit** keeps it open while a draft exists.
   - **A way back to the wall** — the console header gains a **← Fleets** link.
-  - **Plain-words wall tiles** — footers read `$1.20 spent · 7 events`; a stale feed reads **not live** with the tooltip "Live feed unavailable — showing the last activity received."
-  - **Events in the standard table** — one row per event with Time, Status, Fleet, Actor, Type, Summary, Tokens, and Duration; a failed run carries its plain-language reason. Cursor paging and the empty state stay.
+  - **Plain-words wall tiles** — footers read `$1.20 spent · 7 events`; a stale feed reads **not live**.
+  - **Events in the standard table** — Time, Status, Fleet, Actor, Type, Summary, Tokens, and Duration, with cursor paging.
   - **The wall search box is gone** — it only filtered fleets already loaded in the page.
 
   ## Bug fixes
 
-  - **Console columns no longer overlap** — long unbroken lines (a `SKILL.md` line, a webhook URL, a registration command) scroll inside their own block.
+  - **Console columns no longer overlap** — long unbroken lines scroll inside their own block.
   - **The run-metrics strip says Time** — `Wall` collided with the Live Wall page name.
 </Update>
 
 <Update label="Jul 19, 2026" tags={["What's new", "API", "UI"]}>
   ## Delete revoked runners, and a seeded model catalogue
 
-  Revoked runners now show a delete action, and the model catalogue ships pre-populated instead of forcing every model through the custom-endpoint escape hatch.
-
   ## What's new
 
-  - **Delete a revoked runner** — runners follow the API-key lifecycle: revoke is the destructive step, delete retires the record. The trash action appears only on revoked runners.
-  - **A pre-seeded model catalogue** — operators seed the library from a set list: Anthropic, OpenAI, Gemini, DeepSeek, Kimi, GLM, MiniMax, Qwen, xAI, Groq, and Mistral direct, plus the same models via Pioneer, Fireworks, Together, Novita, and OpenRouter. Each host carries its own pricing.
-  - **Custom endpoints learn their context window** — an OpenAI-compatible endpoint naming a known model shows and enforces that model's real context cap.
-  - **Loading screens speak** — route loaders rotate wording ("Wrangling Fleets…", "Mustering Runners…"); screen readers still hear the plain wording.
+  - **Delete a revoked runner** — revoke is the destructive step, delete retires the record. The trash action appears only on revoked runners.
+  - **A pre-seeded model catalogue** — Anthropic, OpenAI, Gemini, DeepSeek, Kimi, GLM, MiniMax, Qwen, xAI, Groq, and Mistral direct, plus the same models via Pioneer, Fireworks, Together, Novita, and OpenRouter. Each host carries its own pricing.
+  - **Custom endpoints learn their context window** — an OpenAI-compatible endpoint naming a known model enforces that model's real context cap.
+  - **Loading screens speak** — route loaders rotate wording; screen readers hear the plain wording.
 
   ## API reference
 
@@ -158,59 +174,59 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Bug fixes
 
-  - **No fake platform default** — the Models page no longer shows a green **Active** badge for a default that was never configured; a fresh tenant sees "No default is configured".
-  - **Self-managed models say "Billed by provider"** instead of "Rates unavailable" — the platform never charges token rates for models you bring yourself.
+  - **No fake platform default** — a fresh tenant sees "No default is configured" instead of a green **Active** badge.
+  - **Self-managed models say "Billed by provider"** instead of "Rates unavailable".
   - **The platform-default row is hidden** for tenants running their own model with no default configured.
 </Update>
 
 <Update label="Jul 17, 2026" tags={["Bug fixes", "UI"]}>
-  ## No missing-page flash, and platform tools get their own sidebar group
+  ## No missing-page flash, and a Platform sidebar group
 
   ## Bug fixes
 
-  - **No not-found flash on the workspace home** — the dashboard entry, the workspace switcher, and workspace creation open the fleet wall directly. They used to route through the empty workspace root.
-  - **The refetch dialog reads as a refetch** — **Fetch update** opens its own dialog with the repository locked to the entry's source, not the **Create fleet library** dialog. Repointing a source stays under **Edit**.
-  - **A finished onboarding step shows a check** — a completed getting-started step shows a checkmark, the next step a dot.
+  - **No not-found flash on the workspace home** — the dashboard entry, workspace switcher, and workspace creation open the fleet wall directly.
+  - **The refetch dialog reads as a refetch** — **Fetch update** opens its own dialog with the repository locked to the entry's source. Repointing a source stays under **Edit**.
+  - **A finished onboarding step shows a check.**
 
   ## What's new
 
-  - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of Configuration into their own **Platform** group. It shows only to an operator holding the matching scope, and is open by default.
+  - **A Platform sidebar group** — **Runners**, **Model library**, and **Fleet library** move out of Configuration. It shows only to an operator holding the matching scope.
 </Update>
 
 <Update label="Jul 16, 2026" tags={["What's new", "API", "UI", "Performance"]}>
   ## Fleet detail becomes the operating console
 
-  Fleet detail now puts source editing, live steering, memory, run cost, and lifecycle controls on one page.
+  Source editing, live steering, memory, run cost, and lifecycle controls land on one page.
 
   ## What's new
 
-  - **Source editing** — read and edit `SKILL.md` or `TRIGGER.md` from the dashboard. A save takes effect on the next wake and keeps the fleet's memory. A concurrent save reloads the other change instead of overwriting it.
-  - **Memory correction** — inspect learned entries and forget one incorrect entry. Deleting the fleet still deletes all its memory; editing its source does not.
+  - **Source editing** — read and edit `SKILL.md` or `TRIGGER.md` from the dashboard. A save takes effect on the next wake and keeps the fleet's memory; a concurrent save reloads the other change instead of overwriting it.
+  - **Memory correction** — inspect learned entries and forget one. Deleting the fleet still deletes all its memory; editing its source does not.
   - **Run cost** — each event can show tokens, wall time, and settled cost. The recent rollup covers the latest 200 events within seven days and labels that bound; lifetime spend stays separate.
-  - **Faster fleet lists** — lifetime event and spend counters are maintained on write, so list reads no longer re-sum the event history.
+  - **Faster fleet lists** — lifetime event and spend counters are maintained on write.
 
   ## API reference
 
   - **Fleet detail** — `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}` returns source, triggers, lifecycle state, lifetime counters, and an `ETag` header.
   - **Event cost** — fleet event rows include nullable `cost_nanos`, sourced from settled billing telemetry.
   - **Memory forget** — `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}` requires `fleet:write`, returns `204` when deleted and `UZ-MEM-004` when the key is absent.
-  - **Stale-write protection** — fleet source and platform library `PATCH` requests may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`, a stale catalog edit `UZ-CATALOG-005`; both are `412` and include the current `ETag`.
+  - **Stale-write protection** — fleet source and platform library `PATCH` may send `If-Match`. A stale fleet edit returns `UZ-AGT-014`, a stale catalog edit `UZ-CATALOG-005`; both are `412` and include the current `ETag`.
 </Update>
 
 <Update label="Jul 14, 2026" tags={["What's new", "API", "UI"]}>
   ## The fleet catalog stops overstating itself
 
-  A catalog entry's status badge now matches what a workspace will actually get, and an operator can correct an entry's name, repository, or ref without deleting it.
+  A catalog entry's status badge now matches what a workspace will actually get, and an operator can correct an entry without deleting it.
 
   ## What's new
 
-  - **Draft-first onboarding** — creating or refetching a platform entry returns it to draft. Publish after review before any workspace sees it.
-  - **Edit a catalog entry's identity** — name, repository, and ref are editable from **Edit**. Changing the repository or ref discards the stored bundle and returns the entry to draft; fetch and publish again to go live. Workspaces already running the fleet keep the bundle they installed. A rename and a pinned ref both survive the next fetch — **Fetch update** fetches at the ref the entry names, not the default branch.
-  - **An honest status column** — an entry published with no bundle shows as **Broken**, not Published, with help text saying to fetch a bundle or unpublish.
-  - **Consistent naming** — **Create fleet library** replaces "Add fleet"; the page and navigation read **Fleet library**.
-  - **Copy buttons where a value wants copying** — bundle hashes (the full hash, not the preview), fleet and host identifiers, secret names, model identifiers, cron schedules, webhook URLs, approval action identifiers, and one-time credentials. A failed write is reported on the button and announced to screen readers, instead of showing "Copied" and costing you a one-time runner token or API key.
-  - **The dashboard counts every fleet** — installing and killed fleets now appear in the summary tiles.
-  - **The live thread shows tool calls and cost** — each response lists the tools it called with durations; history rows show tokens and wall time.
+  - **Draft-first onboarding** — creating or refetching a platform entry returns it to draft. Publish after review.
+  - **Edit a catalog entry's identity** — name, repository, and ref are editable. Changing the repository or ref discards the stored bundle and returns the entry to draft; workspaces already running the fleet keep the bundle they installed. **Fetch update** fetches at the ref the entry names, not the default branch.
+  - **An honest status column** — an entry published with no bundle shows as **Broken**, not Published.
+  - **Consistent naming** — **Create fleet library** replaces "Add fleet"; the page reads **Fleet library**.
+  - **Copy buttons where a value wants copying** — bundle hashes (the full hash), identifiers, secret names, cron schedules, webhook URLs, and one-time credentials. A failed write is reported on the button instead of showing "Copied" and costing you a one-time token.
+  - **The dashboard counts every fleet** — installing and killed fleets appear in the summary tiles.
+  - **The live thread shows tool calls and cost** — each response lists the tools it called with durations.
 
   ## API reference
 
@@ -220,23 +236,21 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 12, 2026" tags={["What's new", "API"]}>
   ## Platform operators onboard fleets from the dashboard
 
-  A platform operator fills the fleet library from **Fleet libraries** under Configuration: enter a GitHub repository as `owner/repo`, and `agentsfleet` fetches it, validates the bundle, and adds it to the catalog. The page requires the `platform-library:write` scope.
+  Enter a GitHub repository as `owner/repo` under **Fleet libraries**, and `agentsfleet` fetches it, validates the bundle, and adds it to the catalog. Requires the `platform-library:write` scope.
 
   ## What's new
 
-  - **Onboarding without a hand-built API request** — the operation previously had no interface. Onboarding the same repository twice updates the existing entry rather than creating a second one.
-  - **Four prebuilt fleets** — `github-pr-reviewer`, `platform-ops` (Fly.io and Upstash evidence correlated into a Slack diagnosis), `zoho-sprint-daily-summarizer`, and `zoho-recruiter-daily-summarizer`. Each is a public repository under `agentsfleet` and installs by its identifier once onboarded.
+  - **Onboarding without a hand-built API request** — onboarding the same repository twice updates the existing entry rather than creating a second one.
+  - **Four prebuilt fleets** — `github-pr-reviewer`, `platform-ops`, `zoho-sprint-daily-summarizer`, and `zoho-recruiter-daily-summarizer`. Each is a public repository under `agentsfleet`.
   - **A fleet's library identifier comes from its bundle** — read from the `name` in `SKILL.md`, not the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical.
 
   ## API reference
 
-  - **`security-reviewer` removed from the prebuilt catalog** — it named a repository that was never published, so it could never be installed.
+  - **`security-reviewer` removed from the prebuilt catalog** — it named a repository that was never published.
 </Update>
 
 <Update label="Jul 12, 2026" tags={["Breaking", "Bug fixes", "API", "CLI"]}>
   ## Removed CLI commands stop appearing in hints
-
-  Error hints and CLI messages now match the commands `agentsfleet` accepts, and `agentsfleet workspace delete` makes clear it only removes local client state.
 
   ## Upgrading
 
@@ -244,9 +258,9 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Bug fixes
 
-  - **Stale command hints removed** — error text no longer points at `agentsfleet install --from`, `agentsfleet secret add`, `agentsfleet workspace add`, or `agentsfleet tenant provider add`. `agentsfleet list` with no fleets points to `agentsfleet library` and `agentsfleet install --library <library_id>`; vault error hints say `agentsfleet secret create <NAME>`.
+  - **Stale command hints removed** — error text no longer points at `agentsfleet install --from`, `agentsfleet secret add`, `agentsfleet workspace add`, or `agentsfleet tenant provider add`. `agentsfleet list` with no fleets points to `agentsfleet library` and `agentsfleet install --library <library_id>`; vault hints say `agentsfleet secret create <NAME>`.
   - **Clean `--help` output** — `agentsfleet --help` no longer prints a telemetry-shutdown timeout after valid help output.
-  - **GitHub Pull Request events** — the signed per-fleet webhook accepts the full set of supported Pull Request actions from the routed source filter.
+  - **GitHub Pull Request events** — the signed per-fleet webhook accepts the full set of supported Pull Request actions.
 </Update>
 
 <Update label="Jul 11, 2026" tags={["What's new", "API", "CLI", "Integrations"]}>
@@ -257,8 +271,8 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## What's new
 
   - **Repository-bound triggers** — add `repositories: [owner/repository]` beside `source: github` and `events` in `TRIGGER.md`; omission receives no managed App traffic.
-  - **Scoped fan-out** — one delivery may wake several matching fleets in its connected workspace; wrong-repository, wrong-event, inactive, and unapproved fleets receive nothing.
-  - **Verified installation ownership** — the callback exchanges a one-time user-authorization code and verifies access to the claimed installation. It refuses to move an installation already connected to another workspace.
+  - **Scoped fan-out** — one delivery may wake several matching fleets in its workspace; wrong-repository, wrong-event, inactive, and unapproved fleets receive nothing.
+  - **Verified installation ownership** — the callback verifies access to the claimed installation and refuses to move one already connected to another workspace.
   - **Replay recovery** — replay protection uses the signed payload body per fleet, so changing the unsigned delivery header cannot bypass it.
 
   ## API reference
@@ -269,52 +283,52 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## CLI
 
   - **`agentsfleet connector list [--workspace <id>] [--json]`** — reports `connected`, `not_connected`, `reconnect_required`, or `unconfigured` per provider.
-  - **`agentsfleet connector status <provider> [--workspace <id>] [--json]`** — one provider's state and details, without treating a valid disconnected state as an error.
+  - **`agentsfleet connector status <provider> [--workspace <id>] [--json]`** — one provider's state, without treating a valid disconnected state as an error.
 </Update>
 
 <Update label="Jul 11, 2026" tags={["Breaking", "API", "Security"]}>
   ## The model library is now an authenticated read
 
-  The model catalogue moved off its public URL, so per-model pricing is no longer world-readable.
+  Per-model pricing is no longer world-readable.
 
   ## Upgrading
 
-  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** Switch to `GET /v1/models` with a Bearer token (an API key or a dashboard session). The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. The `?model=` filter is not ported — filter client-side. Dashboard and `agentsfleet` CLI users need do nothing.
+  - **`GET /_um/<key>/cap.json` is retired — the path returns `404`, no alias.** Switch to `GET /v1/models` with a Bearer token. The `models[]` rows are unchanged: `id`, `provider`, `context_cap_tokens`, `input_nanos_per_mtok`, `cached_input_nanos_per_mtok`, `output_nanos_per_mtok`. The `?model=` filter is not ported — filter client-side. Dashboard and CLI users need do nothing.
   - **The global `rates`/`billing` block is gone with the document** — `GET /v1/models` carries the catalogue only. Current rates stay at [agentsfleet.net/#pricing](https://agentsfleet.net/#pricing).
 
   ## API reference
 
-  - **`GET /v1/models`** — Bearer-authed, any tenant, no capability scope. Returns `{ "version": "YYYY-MM-DD", "models": [...] }`; an empty catalogue is `200` with `models: []`; a missing or invalid token is `401`. Documented under **Model Library**.
+  - **`GET /v1/models`** — Bearer-authed, any tenant, no capability scope. Returns `{ "version": "YYYY-MM-DD", "models": [...] }`; an empty catalogue is `200` with `models: []`; a missing or invalid token is `401`.
   - **`UZ-PROVIDER-004`** — the "Model not in library" guidance points at `GET /v1/models`.
 </Update>
 
 <Update label="Jul 10, 2026" tags={["Bug fixes", "API", "Integrations", "Security"]}>
   ## Reconnecting an integration takes effect immediately, and Jira stays connected
 
-  Two credential fixes for fleets using connected integrations. No API shapes, endpoints, or error codes changed.
+  No API shapes, endpoints, or error codes changed.
 
   ## Bug fixes
 
-  - **Stale token after reconnect** — the credential cache now spots a changed identity, such as a different GitHub installation or a rotated personal access token, and mints a fresh token. It used to serve the cached one for up to an hour, so an intentional privilege reduction lagged the reconnect.
-  - **Jira hourly reconnect loop** — the platform stores the rotated refresh token a provider returns during renewal, so the next renewal uses the current token instead of a revoked one. Applies to any provider that rotates refresh tokens (Atlassian's Jira OAuth does by default); providers with permanent refresh tokens, such as Zoho Desk, are unaffected. If storing the rotated token fails, the in-flight request still succeeds and at most one reconnect prompt follows.
+  - **Stale token after reconnect** — the credential cache spots a changed identity, such as a different GitHub installation or a rotated personal access token, and mints a fresh token. It used to serve the cached one for up to an hour.
+  - **Jira hourly reconnect loop** — the platform stores the rotated refresh token returned during renewal. Applies to any provider that rotates them (Atlassian's Jira OAuth does by default); Zoho Desk is unaffected. A failed store still lets the in-flight request succeed, at the cost of at most one reconnect prompt.
 </Update>
 
 <Update label="Jul 10, 2026" tags={["API", "Bug fixes"]}>
   ## Per-fleet spend ceilings are enforced
 
-  `daily_dollars` is required in every `TRIGGER.md` and documented as a hard spend ceiling, but nothing read it. A fleet stuck in a tool-call loop drew on the tenant credit pool until it emptied. The ceiling now holds.
+  `daily_dollars` was required in every `TRIGGER.md` and documented as a hard ceiling, but nothing read it. The ceiling now holds.
 
   ## What changed
 
   - **`daily_dollars` and `monthly_dollars` now stop a fleet** — a fleet that has spent its allowance is refused before its next run opens, recording `gate_blocked` with a `budget_breach` label. The refused event is **not** charged. A fleet crossing its ceiling mid-run stops at its next lease renewal (`UZ-RUN-015`) and records `fleet_error` with the same label.
-  - **`budget_breach` is a distinct label** — previously every mid-run stop reported `renewal_terminate`, so a fleet hitting its own ceiling looked identical to a tenant out of credit.
+  - **`budget_breach` is a distinct label** — previously every mid-run stop reported `renewal_terminate`.
   - **Spend windows** — `daily_dollars` is a rolling 24 hours, `monthly_dollars` the UTC calendar month; spend counts what you were charged. `monthly_dollars` stays optional.
   - **Lowering a ceiling takes effect immediately**, including on a run in flight.
-  - **`/v1/admin/models` is documented** — the platform-admin model catalogue routes (`GET`/`POST` on the collection, `PATCH`/`DELETE` on `{uid}`) were served without appearing in the API reference. A continuous-integration gate now fails whenever a served route is missing from the specification.
+  - **`/v1/admin/models` is documented** — the platform-admin catalogue routes were served without appearing in the API reference. A continuous-integration gate now fails whenever a served route is missing from the specification.
 
   ## Documentation corrections
 
-  - **Continuation chains never existed.** The context-lifecycle page described the runtime re-queuing an exhausted run as a continuation, a chain capping at 10, and an 11th attempt labelled `chunk_chain_escalate_human`. None of it was built. A fleet that runs out of context wraps up, the run ends `processed`, and nothing re-queues it — trigger the fleet again and it recovers its state from memory.
+  - **Continuation chains never existed.** The context-lifecycle page described a continuation chain capping at 10 and an 11th attempt labelled `chunk_chain_escalate_human`. None of it was built: a fleet that runs out of context wraps up, the run ends `processed`, and nothing re-queues it.
   - **`actor=continuation:<original_actor>` is not a value the runtime writes** — removed from the activity-stream and `--actor` filter documentation.
   - **`budget_breach` was documented before it existed.** It exists now.
 
@@ -324,25 +338,21 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 10, 2026" tags={["Bug fixes", "UI"]}>
   ## Fleet timeline recovers frames lost to a connection blip
 
-  The live timeline silently dropped every frame published while its stream connection was down. It now recovers the missed window on every reconnect, without a reload.
-
   ## Bug fixes
 
-  - **Reconnect gap-recovery** — on reconnect the timeline re-fetches the events published during the outage and merges them by event id, so a frame delivered twice renders once.
-  - **Honest tail on failure** — a failed recovery fetch changes nothing on screen; live frames resume and the next reconnect retries. Nothing is fabricated to fill a gap.
+  - **Reconnect gap-recovery** — on reconnect the timeline re-fetches events published during the outage and merges them by event id, so a frame delivered twice renders once.
+  - **Honest tail on failure** — a failed recovery fetch changes nothing on screen; the next reconnect retries. Nothing is fabricated to fill a gap.
   - **Conflicting style classes resolve last-wins** — components merge classes through one Tailwind-aware implementation.
 </Update>
 
 <Update label="Jul 09, 2026" tags={["UI", "API"]}>
   ## Admin model library: edit rates and set the default from a row
 
-  Correcting a rate no longer means delete-and-recreate, and the platform default is set from the row rather than a separate form.
-
   ## What's new
 
   - **Edit rates in place** — the pencil on a catalogue row opens a dialog for the context cap and per-token rates; provider and model id stay fixed.
-  - **Make any model the default from its row** — a star action sets the platform default (you enter the provider API key, stored in your vault). The active row shows a "Default" badge.
-  - **Consistent action icons** — every Create button (API keys, runners, secrets, model library) shows a plus icon, and the fleet Install button a download icon.
+  - **Make any model the default from its row** — a star action sets the platform default (you enter the provider API key, stored in your vault).
+  - **Consistent action icons** — every Create button shows a plus icon, and the fleet Install button a download icon.
 
   ## API reference
 
@@ -352,24 +362,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 08, 2026" tags={["UI", "API"]}>
   ## Models page becomes a registry
 
-  Four fixed slots become a sortable table. Register three Anthropic models on one key, or the same model on two hosts, and see all of them at once.
+  Four fixed slots become a sortable table: register three Anthropic models on one key, or the same model on two hosts.
 
   ## What's new
 
   - **One row per configured model** — sorted by model or provider, with the platform default pinned first.
   - **Key names are identities** — a key name you already stored (same provider) updates that key in place and points the new model at it, so models share one credential. A name belonging to a different provider's key is rejected, not overwritten.
   - **Custom endpoints can go keyless** — the API key field is optional.
-  - **Per-row actions** — View details (provider, endpoint, key name, created date — never the key), Edit (change the model, or paste a new key to rotate it), and Remove (blocked with a reason on the row powering inference).
+  - **Per-row actions** — View details (provider, endpoint, key name, created date — never the key), Edit, and Remove (blocked with a reason on the row powering inference).
   - **Switch with one click** — an inactive row's Switch button activates it immediately.
 
   ## API reference
 
   - `GET /v1/tenants/me/models` — lists registered entries, each joined to its key's provider/kind/endpoint and an `active` flag; also returns `platform_default_available`.
   - `POST /v1/tenants/me/models` — registers `{model_id, secret_ref}`. `secret_ref` is required and names the stored provider key or keyless custom-endpoint record. `404 UZ-MODELS-002` when it names no stored key; `409 UZ-MODELS-003` on an exact duplicate.
-  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours. Key rotation stays on the stored secret.
+  - `PATCH /v1/tenants/me/models/{id}` — changes an entry's `model_id`. `404 UZ-MODELS-004` when the id isn't yours.
   - `DELETE /v1/tenants/me/models/{id}` — removes an entry; idempotent. `409 UZ-MODELS-001` when it's the active entry.
-  - `PUT /v1/tenants/me/provider` also registers the matching model entry when none exists, so an activation is always a row in `GET /v1/tenants/me/models`.
-  - Activating a self-managed model takes the model from the `PUT` body or the registry entry, never the stored key, so a key holds `{provider, api_key}` and backs many models. An activation that resolves no model returns `400 UZ-PROVIDER-004`.
+  - `PUT /v1/tenants/me/provider` also registers the matching model entry when none exists.
+  - Activating a self-managed model takes the model from the `PUT` body or the registry entry, never the stored key. An activation that resolves no model returns `400 UZ-PROVIDER-004`.
   - Deleting a stored key still referenced by a model entry returns `409` naming how many entries reference it.
 </Update>
 
@@ -378,50 +388,46 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **Sharper cards and tables** — resting-state borders and card backgrounds are brighter, so panels read as distinct surfaces without hovering.
-  - **Pinned table header on Billing usage** — the "Date / Amount / Type / Description" header stays visible while scrolling a long charge history.
-  - **Isolation mode as option cards** — Settings → Runners → Create runner picks its isolation mode from four described cards instead of a dropdown.
+  - **Sharper cards and tables** — resting-state borders and card backgrounds are brighter.
+  - **Pinned table header on Billing usage** — the "Date / Amount / Type / Description" header stays visible while scrolling.
+  - **Isolation mode as option cards** — Settings → Runners → Create runner picks its mode from four described cards instead of a dropdown.
   - **A distinct account avatar** — with no uploaded photo, your avatar is a pattern generated from your account.
 </Update>
 
 <Update label="Jul 06, 2026" tags={["Bug fixes", "API"]}>
   ## Error responses stop leaking internal names
 
-  Backend failures returned an internal Zig error name or engineering jargon in `detail` on some paths; both are now stable, plain-English text.
-
   ## Bug fixes
 
   - **No more raw internal error names** — an authentication-middleware failure returned a raw identifier (e.g. `error.TokenExpired`) in `detail`; it now returns a curated message, with the raw identifier logged server-side only.
-  - **Plainer failure messages** — around three dozen internal-failure responses that surfaced backend jargon now return plain English; several previously-generic connector and provider failures, including the catalog lookup behind "Couldn't load connectors", return distinct, diagnosable codes.
-  - **Model-provider errors say "library"** — matching the Model library page; they previously said "catalogue".
-  - **`UZ-AUTH-014` is now 409 Conflict** — submitting a login verification code before approving the session returned 410 (Gone) even though the session was still approvable.
+  - **Plainer failure messages** — around three dozen internal-failure responses now return plain English; several previously-generic connector and provider failures return distinct, diagnosable codes.
+  - **Model-provider errors say "library"** — they previously said "catalogue".
+  - **`UZ-AUTH-014` is now 409 Conflict** — submitting a login verification code before approving the session returned 410 even though the session was still approvable.
 
   ## API reference
 
-  - The [error codes reference](/api-reference/error-codes) is generated from the backend error registry on every release, so it cannot drift from the codes the API returns.
+  - The [error codes reference](/api-reference/error-codes) is generated from the backend error registry on every release, so it cannot drift.
 </Update>
 
 <Update label="Jul 06, 2026" tags={["Breaking", "Security", "API"]}>
   ## Fleets need an approved integration grant before minting provider tokens
 
-  Connecting a provider whose token the platform mints on demand — GitHub, Zoho Desk, Jira, Linear — authorizes your workspace, not every fleet in it. Such a fleet must hold a human-approved grant before a token is minted, checked at lease and again on every token request. **Slack is not affected** — its bot token is long-lived and delivered directly.
+  Connecting GitHub, Zoho Desk, Jira, or Linear authorizes your workspace, not every fleet in it. Such a fleet must hold a human-approved grant, checked at lease and again on every token request. **Slack is not affected** — its bot token is long-lived and delivered directly.
 
   ## Upgrading
 
-  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant stop minting** after this release. One-time fix per fleet: the fleet requests access with `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body `{"service": "github", "reason": "..."}`), and you approve it from the dashboard. Already-approved fleets are unaffected.
+  - **Existing GitHub/Zoho/Jira/Linear fleets without a grant stop minting** after this release. One-time fix per fleet: `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/integration-requests` (body `{"service": "github", "reason": "..."}`), then approve it from the dashboard. Already-approved fleets are unaffected.
   - **Slack fleets and static secrets** you pasted yourself (`${secrets.<name>.<field>}`) are not gated.
 
   ## What's new
 
-  - **Grants are requestable for `github`, `zoho`, `jira`, and `linear`** — the grant endpoint previously rejected these services, so connector access could not be scoped per fleet at all.
+  - **Grants are requestable for `github`, `zoho`, `jira`, and `linear`** — the endpoint previously rejected these services.
   - **A refused mint returns [`UZ-GRANT-001`](/api-reference/error-codes)** (403, "No integration grant for service") with the request-grant endpoint in the hint.
   - **Revoke works mid-run** — revoking refuses the fleet's next token request even while its run is leased; re-approving restores minting with no reconnect.
 </Update>
 
 <Update label="Jul 05, 2026" tags={["What's new", "Integrations"]}>
   ## A guide to connecting GitHub, Slack, Zoho Desk, Jira, and Linear
-
-  The docs now cover the connector flow end to end: what a connector is, the browser round-trip that vaults your provider token, and the exact OAuth shape for each supported provider.
 
   ## What's new
 
@@ -434,14 +440,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **Runners page** — renders in the same table as API keys and secrets. Enrolling is now the "Create runner" dialog, which shows the install token once with a notice that it won't be shown again.
-  - **Runner labels** — "Host id" is now "Host name" (a display label, not a key); "Sandbox tier" is now "Isolation mode" with plain options: Linux · Landlock, Nested container, macOS · Seatbelt, and None.
-  - **Model library** — "Model rates" is renamed "Model library" across the nav, the page, and the "Create model library" dialog.
+  - **Runners page** — renders in the same table as API keys and secrets. Enrolling is the "Create runner" dialog, which shows the install token once with a notice that it won't be shown again.
+  - **Runner labels** — "Host id" is now "Host name"; "Sandbox tier" is now "Isolation mode" with plain options: Linux · Landlock, Nested container, macOS · Seatbelt, and None.
+  - **Model library** — "Model rates" is renamed "Model library" across the nav, page, and dialog.
   - **Secrets** — "Secrets & ENVs" is now just "Secrets". Renaming a secret is its own dialog, opened from the Name column.
 
   ## Bug fixes
 
-  - **Model library token counts** — large counts rendered inconsistently between server and client (a locale mismatch); they now match.
+  - **Model library token counts** — large counts rendered inconsistently between server and client (a locale mismatch).
 </Update>
 
 <Update label="Jul 05, 2026" tags={["Bug fixes", "UI", "API"]}>
@@ -449,22 +455,20 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **API Keys page** — the sidebar's "Workspace" entry is now "API Keys", a standalone page; `/settings` redirects here. Switching and creating a workspace stay in the top-right switcher, which reads "Create workspace".
+  - **API Keys page** — the sidebar's "Workspace" entry is now "API Keys", a standalone page; `/settings` redirects here. Switching and creating a workspace stay in the top-right switcher.
   - **Buy credits** — renamed from "Purchase credits" and now a live `mailto:` link instead of a disabled button.
   - **"Create fleet library"** replaces "Add library entry" across the dashboard and CLI empty states.
-  - **Left-nav active indicator** — the selected item shows a left accent bar in addition to its background fill.
+  - **Left-nav active indicator** — the selected item shows a left accent bar.
   - **[Scopes reference](/api-reference/scopes)** — a new page listing every scope a tenant token can carry, linked from `UZ-AUTH-022`.
 
   ## Bug fixes
 
   - **Models page** — the active-model row no longer glows permanently (a `[data-live]` selector matched the "not live" state too); its redundant "Switch to platform defaults" button is removed.
-  - **`UZ-PROVIDER-009`** — switching back to platform defaults when none is configured returns plain English instead of leaking "operator action required" into the toast.
+  - **`UZ-PROVIDER-009`** — switching back to platform defaults when none is configured returns plain English instead of leaking "operator action required".
 </Update>
 
 <Update label="Jul 05, 2026" tags={["What's new", "Breaking", "UI", "CLI", "API"]}>
   ## Fleet library replaces Templates, Secrets gets its own page
-
-  The install picker reads "Fleet library" instead of "Templates", and vault secrets move onto a standalone page. Error messages read as plain sentences, not raw backend codes.
 
   ## Upgrading
 
@@ -475,12 +479,12 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## What's new
 
   - **Fleet library** — "Add library entry" replaces "Create a template"; the `?library=` deep-link query param replaces `?template=`.
-  - **Secrets & ENVs** — vault secrets get their own sidebar entry and page instead of a form at the bottom of Models.
-  - **Models page collapses to one list** — the platform-default model renders as a normal row alongside every other provider. The "Other provider" form's Provider field is a dropdown of real catalogue models instead of free text.
+  - **Secrets & ENVs** — vault secrets get their own sidebar entry and page.
+  - **Models page collapses to one list** — the platform-default model renders as a normal row. The "Other provider" form's Provider field is a dropdown of real catalogue models instead of free text.
 
   ## Bug fixes
 
-  - **Friendlier errors** — every error response can carry an optional plain-English `user_message` field (RFC 7807 `problem+json` body). It is written for ~15 codes: model-provider setup (`UZ-PROVIDER-001..004`), secrets (`UZ-VAULT-001..003`), fleet-bundle onboarding (`UZ-BUNDLE-001..002`), and approval gates (`UZ-APPROVAL-001..006`). A code without one omits the field rather than nulling it, so untouched responses are byte-identical.
+  - **Friendlier errors** — every error response can carry an optional plain-English `user_message` field (RFC 7807 `problem+json` body). It is written for ~15 codes: `UZ-PROVIDER-001..004`, `UZ-VAULT-001..003`, `UZ-BUNDLE-001..002`, and `UZ-APPROVAL-001..006`. A code without one omits the field rather than nulling it, so untouched responses are byte-identical.
 </Update>
 
 <Update label="Jul 04, 2026" tags={["Bug fixes", "UI"]}>
@@ -490,27 +494,27 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **Copy the workspace ID** — the **Workspace** page lists the workspace name and ID as labelled rows with copy buttons. The ID is the value the `agentsfleet` CLI and the API expect.
   - **One label size** — section headers, table columns, and sidebar groups share a single type size.
-  - **Clearer first-run screens** — Dashboard, Fleets, and Models empty states lead with **Learn more** plus one primary action; **API Keys** states that keys authenticate with the agentsfleet API.
+  - **Clearer first-run screens** — Dashboard, Fleets, and Models empty states lead with **Learn more** plus one primary action.
 
   ## Bug fixes
 
-  - **Account settings dialog** — headings, your email address, and the close button rendered dark-on-dark and were effectively invisible on the dark theme.
+  - **Account settings dialog** — headings, your email address, and the close button rendered dark-on-dark on the dark theme.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["What's new", "API", "UI"]}>
   ## Connect Grafana, Zoho Desk, Jira, Linear, Fly, and Datadog
 
-  Six connectors join GitHub and Slack. Each connect lands a vaulted credential the platform mints short-lived tokens from, and every vendor call runs under an enforced deadline. The dashboard cards render from the live registry — there is no hard-coded provider list.
+  Six connectors join GitHub and Slack. Each connect lands a vaulted credential the platform mints short-lived tokens from, and every vendor call runs under an enforced deadline.
 
   ## What's new
 
-  - **OAuth connectors** — Zoho Desk, Jira, and Linear connect with a browser OAuth round-trip and store a refresh token; the broker mints fresh access tokens on demand. Jira resolves its Atlassian cloud instance during connect.
+  - **OAuth connectors** — Zoho Desk, Jira, and Linear connect with a browser OAuth round-trip and store a refresh token. Jira resolves its Atlassian cloud instance during connect.
   - **API-key connectors** — Datadog, Grafana, and Fly take an operator-supplied key, checked by a live validation probe before it is vaulted; a rejected key returns `UZ-CONN-005` and nothing is stored.
-  - **Connector catalog** — `GET /v1/connectors` lists every provider with its archetype and whether it is configured (platform side) and connected (for the workspace).
+  - **Connector catalog** — `GET /v1/connectors` lists every provider with its archetype and whether it is configured and connected.
 
   ## Bug fixes
 
-  - **Bounded broker calls** — token exchanges are deadline-armed and fail closed, so a hung vendor token endpoint cannot stall a mint.
+  - **Bounded broker calls** — token exchanges are deadline-armed and fail closed.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["Bug fixes", "CLI"]}>
@@ -518,35 +522,35 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **`agentsfleet fleet logs`** — a malformed event timestamp no longer throws `RangeError` and aborts the command; that row renders `—` and the stream continues.
   - **`agentsfleet workspace credentials`** — the redirect points at the real `agentsfleet credential` command group instead of a non-existent `agentsfleet agent credential`.
-  - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write; the durable database row is the fallback, so enforcement cannot diverge from the approval audit trail.
+  - **Approval enforcement** — an approved or denied grant is honored by the fleet's lease path even when the Redis mirror of that decision fails to write; the durable database row is the fallback.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["Bug fixes", "API"]}>
   ## Error reference matches the server
 
-  - **`UZ-PROVIDER-003` hint** — now states that `provider` and `model` are required and `api_key` is required only for a named provider (optional for an `openai-compatible` endpoint), matching the credential validator. The old wording had clients sending an unnecessary `api_key`.
+  - **`UZ-PROVIDER-003` hint** — now states that `provider` and `model` are required and `api_key` is required only for a named provider (optional for an `openai-compatible` endpoint). The old wording had clients sending an unnecessary `api_key`.
   - **Error-code reference** — removed the `UZ-AUTH-009` and `UZ-AUTH-010` rows, which have no producer in the server registry (both superseded by `UZ-AUTH-022`). The retired `UZ-AUTH-021` stays as a struck-through historical entry.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["What's new", "UI"]}>
   ## Add a workspace template from the dashboard
 
-  The Fleets install gallery gains **Add template**: enter `owner/repo`, the dashboard validates the required `SKILL.md`, adds the workspace template, and returns you to the gallery where it installs like any other.
+  The Fleets install gallery gains **Add template**: enter `owner/repo`, the dashboard validates the required `SKILL.md`, adds the workspace template, and returns you to the gallery.
 
   ## What's new
 
   - **Dashboard onboarding** — **Add template** calls the workspace template onboarding API and refreshes the gallery.
-  - **Empty states** — Fleets and Events use simple "No … found" copy with direct links to install or create.
+  - **Empty states** — Fleets and Events use simple "No … found" copy with direct links.
   - **Models navigation** — the nav labels the page **Models**, and **Bring your own key** uses the same primary button style as **Install fleet**.
-  - **Route motion** — route changes no longer wobble; loading states rely on the spinner.
+  - **Route motion** — route changes no longer wobble.
 </Update>
 
 <Update label="Jul 03, 2026" tags={["What's new", "API"]}>
   ## Operator dashboard access follows the same scopes as the API
 
-  The platform-operator surfaces — the runner fleet and the model catalogue — are gated on explicit `resource:action` scopes, the same ones the API enforces. The separate platform-admin flag, which had to be set independently, is gone.
+  The runner fleet and model catalogue are gated on explicit `resource:action` scopes, the same ones the API enforces. The separate platform-admin flag is gone.
 
-  - **Error code** — a request missing an operator capability returns `UZ-AUTH-022` (Insufficient scope), whose `detail` names the required scope; the former `UZ-AUTH-021` ("platform-admin privileges required") is retired.
+  - **Error code** — a request missing an operator capability returns `UZ-AUTH-022` (Insufficient scope), whose `detail` names the required scope; the former `UZ-AUTH-021` is retired.
   - **Scope hierarchy** — a held higher scope satisfies a lower one on the dashboard exactly as at the API (`model:admin` covers `model:read`, `runner:write` covers `runner:read`).
   - **Marketing-site analytics** recovers from a transient load failure instead of staying dark for the rest of the visit.
 </Update>
@@ -554,12 +558,12 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 02, 2026" tags={["What's new", "API", "UI", "Integrations"]}>
   ## Slack: mention @agentsfleet in a channel, get an answer in the thread
 
-  Connect Slack from the dashboard Integrations page — a browser OAuth round-trip, no token to paste — invite `@agentsfleet` to a channel, and mention it. The first mention creates a fleet resident in that channel. It is reactive and read-only: it speaks only when mentioned, and only in the thread that asked.
+  Connect Slack from the dashboard Integrations page, invite `@agentsfleet` to a channel, and mention it. The first mention creates a fleet resident in that channel. It is reactive and read-only: it speaks only when mentioned, and only in the thread that asked.
 
   ## What's new
 
-  - **Connect Slack from Integrations** — **Connect** redirects to Slack's authorize page; the callback stores the bot token in the workspace vault. The row shows "Slack connected: \{team\}" and offers **Reconnect** if the install is revoked.
-  - **One fleet per channel** — later mentions in any thread reuse it. Memory is channel-scoped: a fact told in one thread is recalled in another.
+  - **Connect Slack from Integrations** — the callback stores the bot token in the workspace vault. The row shows "Slack connected: \{team\}" and offers **Reconnect** if the install is revoked.
+  - **One fleet per channel** — later mentions in any thread reuse it. Memory is channel-scoped.
   - **Answers land in-thread** — never at channel top level, never in another channel.
   - **Recent thread context** — each mention re-reads up to 20 recent messages in its thread. Best-effort: if Slack throttles the read, the mention still processes.
 
@@ -574,7 +578,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 02, 2026" tags={["What's new", "API", "Integrations"]}>
   ## Connector platform: one uniform API, bounded vendor calls
 
-  Connecting a third-party service now runs through one documented route set instead of a per-provider one. The URLs you already use are unchanged. What's new: the surface is in the public API reference, an unknown provider returns a clear `404`, and every outbound call to a vendor is time-bounded.
+  Connecting a third-party service runs through one documented route set instead of a per-provider one. The URLs you already use are unchanged.
 
   ## API reference
 
@@ -587,7 +591,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
   ## Bring your own Fleet templates
 
-  You can now onboard your own Fleet templates into your workspace alongside the curated platform catalogue. Templates are stored once, content-addressed, and shared across the fleets you spin up from them. Installing is always "pick a template, install it".
+  Onboard your own Fleet templates alongside the curated platform catalogue. Templates are stored once, content-addressed, and shared across the fleets you spin up from them.
 
   ## Upgrading
 
@@ -598,7 +602,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## What's new
 
   - **Two tiers** — onboard a template into the global platform catalogue or into your own workspace; workspace templates are visible only to your workspace.
-  - **One gallery, both tiers** — the install gallery unions the platform catalogue with your workspace's own templates, and never shows another workspace's.
+  - **One gallery, both tiers** — the install gallery unions the platform catalogue with your workspace's own templates.
   - **Templates explain their credentials** — entries carry a description and per-credential "why this is needed" copy.
 
   ## API reference
@@ -616,13 +620,13 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 30, 2026" tags={["What's new", "API"]}>
   ## Authorization is now scope-based
 
-  Every capability a token holds is an explicit `resource:action` scope read off the token, replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-configured principal sees no change; what changes is that "what can this token do?" is enumerable, and a denial names the missing scope.
+  Every capability a token holds is an explicit `resource:action` scope read off the token, replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-configured principal sees no change.
 
   ## API reference
 
   - **`scopes` claim** — the session token and tenant API key carry a space-delimited `scopes` list (e.g. `fleet:admin credential:write workspace:admin`), set automatically for a workspace owner at signup.
-  - **`403 UZ-AUTH-022` "Insufficient scope"** — a denial names the required scope in the detail (`Requires scope fleet:admin`) instead of an opaque role rejection.
-  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`. A destructive route can require the top rung.
+  - **`403 UZ-AUTH-022` "Insufficient scope"** — a denial names the required scope in the detail (`Requires scope fleet:admin`).
+  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`.
 
   See the [error-codes reference](/api-reference/error-codes) for `UZ-AUTH-022`.
 </Update>
@@ -630,14 +634,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API", "Bug fixes"]}>
   ## Template installs explain why a credential is needed
 
-  A missing required credential now tells you *why* the fleet needs it — "this fleet needs github to review your pull requests" — instead of a bare "connect github".
+  A missing required credential now tells you *why* — "this fleet needs github to review your pull requests" — instead of a bare "connect github".
 
   ## What's new
 
   - **Purpose-driven connect step** — the install gate reads a per-credential reason from the template; templates without reason copy fall back to the generic prompt.
-  - **No skippable installs** — the dashboard no longer offers a way past a missing credential, removing the route that created un-runnable fleets.
-  - **Fleets empty state is the gallery** — the first-run page shows the full-width template gallery, not abstract step cards.
-  - **Custom secrets copy** — the secrets section states that values are encrypted and write-only once saved: replaceable, never viewable.
+  - **No skippable installs** — the dashboard no longer offers a way past a missing credential.
+  - **Fleets empty state is the gallery** — the first-run page shows the full-width template gallery.
+  - **Custom secrets copy** — values are encrypted and write-only once saved: replaceable, never viewable.
 
   ## API reference
 
@@ -645,8 +649,8 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   GET /v1/fleets/bundles   each template row now carries required_credentials_reasons
   ```
 
-  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only copy. It does **not** replace `required_credentials`: install validation still reads that array, so treat the new field as optional.
-  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list — unchanged on the API, now surfaced in the dashboard.
+  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only copy. It does **not** replace `required_credentials`: install validation still reads that array.
+  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list.
 
   ## Bug fixes
 
@@ -661,13 +665,13 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 28, 2026" tags={["What's new", "UI", "API"]}>
   ## Models and Keys is one page, and credentials say what they are
 
-  Model and key management is now a single **Models & Keys** page. The standalone Credentials page is gone — `/credentials` redirects here.
+  Model and key management is a single **Models & Keys** page. The standalone Credentials page is gone — `/credentials` redirects here.
 
   ## What's new
 
-  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`) with every stored provider key one click away on a switch list; switching sets that credential's saved model with no key re-entry.
-  - **Credentials are classified server-side** — each row carries its `kind` plus non-secret provider, model, and base URL, so a stored-but-inactive provider key no longer misfiles as a custom secret. The API key is never returned.
-  - **Replace a key in place** — rotating a provider key updates only the secret and keeps model, provider, and endpoint, so a custom-endpoint rotation cannot corrupt the saved base URL.
+  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`); switching sets that credential's saved model with no key re-entry.
+  - **Credentials are classified server-side** — each row carries its `kind` plus non-secret provider, model, and base URL. The API key is never returned.
+  - **Replace a key in place** — rotating a provider key updates only the secret and keeps model, provider, and endpoint.
   - **Custom secrets keep their own section** — `NAME=value` secrets a SKILL reads by name stay listed apart from model-provider keys.
 
   ## API reference
@@ -684,24 +688,22 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 25, 2026" tags={["Security", "Breaking"]}>
   ## The sandboxed agent runner is hardened for general availability
 
-  Two ways a sandboxed run could expose data are closed. The runner's failure modes are now bounded, and proven against a live Linux kernel in continuous integration.
-
   ## Upgrading
 
-  - **Egress now fails closed by default.** A runner with `RUNNER_NETWORK_POLICY` unset no longer shares the host network. If you relied on the previous open-by-default posture, set `RUNNER_NETWORK_POLICY=allow_all` explicitly; typos and unrecognized values also fail closed.
+  - **Egress now fails closed by default.** A runner with `RUNNER_NETWORK_POLICY` unset no longer shares the host network. To keep the previous open-by-default posture, set `RUNNER_NETWORK_POLICY=allow_all` explicitly; typos and unrecognized values also fail closed.
 
   ## What's new
 
   - **Complete secret redaction on the live tail** — the model API key and every custom secret field become their `${secrets.NAME.FIELD}` placeholder before any progress frame leaves the run, even when a secret is split across two streaming chunks. On a memory failure the frame is dropped, never sent raw.
-  - **Server-Side Request Forgery (SSRF) protection for tenant hosts** — a tool dialing a tenant-configured host resolves and pins the address and rejects private, loopback, and link-local targets, including the cloud metadata endpoint.
+  - **Server-Side Request Forgery (SSRF) protection for tenant hosts** — a tool dialing a tenant-configured host pins the resolved address and rejects private, loopback, and link-local targets, including the cloud metadata endpoint.
   - **Bounded retries and call deadlines** — runner backoff is capped with jitter, and a call whose watchdog cannot start fails fast.
-  - **Proven kernel enforcement** — seccomp syscall traps, Landlock filesystem denial, and cgroup process and memory limits are verified against a real kernel, not compiled and skipped.
+  - **Proven kernel enforcement** — seccomp syscall traps, Landlock filesystem denial, and cgroup process and memory limits are verified against a real kernel.
 </Update>
 
 <Update label="Jun 25, 2026" tags={["What's new", "API", "UI"]}>
   ## Build the model catalogue and set the priced default from the dashboard
 
-  Platform operators build the priced catalogue and choose the one active default model and key entirely in the dashboard — no SQL seed, no redeploy.
+  Platform operators build the priced catalogue and choose the one active default model and key in the dashboard — no SQL seed, no redeploy.
 
   ## What's new
 
@@ -740,15 +742,15 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jun 24, 2026" tags={["What's new", "Bug fixes", "UI", "CLI", "API", "Security"]}>
   ## One terminal-native dashboard, and any OpenAI-compatible endpoint
 
-  The dashboard reads as one product: a single underline tab style, one content width, a description under each page title, and an ink primary button in light mode. Billing, Models, and Credentials are rebuilt on it. Own-key model setup also drops its named-provider limit — point a fleet at any OpenAI-compatible URL, validated before any run.
+  The dashboard reads as one product: one tab style, one content width, a description under each page title. Own-key model setup also drops its named-provider limit.
 
   ## What's new
 
   - **Billing** — a balance card with a full-width consumption meter and a terminal-style ledger (`date · amount · type · description`). The per-seat grid is replaced by a single "Pay as you go" row.
   - **Models and Credentials are two destinations** — `Models` (`/settings/models`) and `Credentials` (`/credentials`).
-  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets, and integrations. Provider keys stay write-only and masked (Replace, never reveal). GitHub, Zoho, and Slack render as **Planned**.
-  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it; the base URL rides inside the saved credential.
-  - **One install flow** — Dashboard and Fleets share one install screen, taking a template, an `owner/repo` GitHub source, or pasted `SKILL.md`. It proceeds in place through importing → creating → done.
+  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets, and integrations. Provider keys stay write-only and masked (Replace, never reveal).
+  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it.
+  - **One install flow** — Dashboard and Fleets share one install screen, taking a template, an `owner/repo` GitHub source, or pasted `SKILL.md`.
 
   ## API reference
 
@@ -767,7 +769,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Bug fixes
 
-  - **Custom endpoints now activate** — selecting an OpenAI-compatible credential failed because its model is not in the platform rate catalogue. Self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
+  - **Custom endpoints now activate** — self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
   - **Account-modal email is readable in dark mode.**
   - **Outbound model calls pin the validated address** — the non-streaming provider dial connects to the address checked at validation time instead of re-resolving, closing a DNS-rebinding gap.
 
@@ -777,15 +779,15 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 </Update>
 
 <Update label="Jun 23, 2026" tags={["What's new", "Bug fixes", "Observability"]}>
-  ## Grafana dashboards for token throughput, credit drain, and run latency
+  ## Metrics export to Grafana Cloud
 
-  `agentsfleetd` now pushes metrics to Grafana Cloud, completing the OpenTelemetry triad next to the traces and logs it already exports. A ready-made dashboard ships at `deploy/grafana/agent-observability.json`. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
+  `agentsfleetd` pushes metrics to Grafana Cloud, completing the OpenTelemetry triad next to traces and logs. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
 
   ## What's new
 
   - **Three series** — credit drained (by posture and model), token throughput (by direction: input, cached, output), and a run-latency histogram, plus a `samples_dropped` counter reporting the exporter's own health.
   - **One credential triple** — `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` enable traces, logs, and metrics together. Unset, the exporter stays off and says so in one startup log line.
-  - **Collector requirement** — metrics use OpenTelemetry Protocol (OTLP) delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir, or the panels read empty.
+  - **Collector requirement** — metrics use OpenTelemetry Protocol (OTLP) delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir.
 
   ## Bug fixes
 
