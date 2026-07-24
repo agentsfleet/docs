@@ -7,19 +7,20 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Jul 23, 2026" tags={["Bug fixes", "Performance", "API"]}>
+<Update label="Jul 23, 2026" tags={["What's new", "Bug fixes", "API"]}>
   ## Idle load tracks your work, not your history
 
-  The dashboard and the API stay responsive as an account accumulates fleets, runners, and events — the database work behind a request now follows what you are actually doing, not how much you have stored. An account running for a year responds like one running for a day. Separately, an event-history filter that ends in a backslash no longer fails.
+  The dashboard and API now do database work for current activity instead of total stored history. Response cost stays stable as an account accumulates fleets, runners, and events. Event-history filters now accept literal backslashes.
+
+  ## What's new
+
+  - **Idle database load stays flat as accounts grow** — stored runners and events no longer make routine background work more expensive over time.
+  - **Long lists stay responsive as accounts grow** — runner, credential, and API key lists now limit their work to the requested page.
 
   ## Bug fixes
 
   - **A backslash in an actor filter no longer returns a server error** — filtering event history by an actor value ending in `\` (or containing one) used to return `500`. It now matches the literal backslash and returns a normal page, so a filter you are entitled to type can no longer break the request.
 
-  ## Performance
-
-  - **Background bookkeeping stopped re-reading whole tables** — the periodic sweeps that expire stale runners and reclaim leases now seek the rows they need instead of scanning and sorting the full set every cycle. The effect is invisible except as flatter idle database load that no longer climbs with account size.
-  - **Long lists do their expensive work on the page you asked for** — the runner list, the credential list, and the api-key list stopped computing per-row detail across the whole result set before narrowing to one page. Same responses, less work per request.
 </Update>
 
 <Update label="Jul 23, 2026" tags={["What's new", "Observability", "Performance"]}>
