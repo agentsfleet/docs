@@ -16,7 +16,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **`GET /v1/models` returns at most 50 models per request** — follow `next_cursor` until it is null. A client that reads only the first response now sees a truncated catalogue. `version` and `models` keep their names and shapes; `total` (always null) and `next_cursor` are added beside them.
   - **`GET /v1/workspaces/{workspace_id}/fleet-libraries` is a page too** — ordered `created_at DESC`, then platform entries before tenant entries, then id. Follow `next_cursor`.
-  - **The gallery summary no longer carries `support_files`** — read `GET /v1/workspaces/{workspace_id}/fleet-libraries/{tier}/{id}` for the support-file manifest. Nothing else moved off the card.
+  - **The gallery summary no longer carries `support_files`** — the manifest is not served on the workspace plane; the admin catalog (`GET /v1/admin/fleet-libraries/{id}`) remains its only reader. Nothing else moved off the card.
   - **Upgrade the `agentsfleet` CLI together with the server** — `agentsfleet install --library <id>` resolves an id against the gallery, and a pre-upgrade CLI reads only the first page, so it reports a valid entry past that page as missing.
   - **Bundle imports and catalog edits now enforce requirement ceilings** — at most 32 required credentials, 64 required tools, and 64 network hosts, with names up to 200 bytes and hosts up to 253. An import past a ceiling returns `413`; a catalog edit whose install-gate copy is over 32 entries, or longer than 500 bytes for one credential, returns `400`. Stored entries are not re-validated, so nothing already saved becomes unreadable.
 
@@ -24,14 +24,11 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **Filter the catalogue** — `?q=` matches a case- and accent-insensitive substring across a model's id and provider, `?provider=` matches a provider exactly. `%` and `_` match literally.
   - **Conditional catalogue reads** — every answer carries an `ETag`, `Cache-Control: private, no-cache`, and `Vary: Authorization`. Send the tag back as `If-None-Match` and an unchanged catalogue answers `304` with no body.
-  - **One Fleet library entry, in full** — the new detail route returns an entry's requirements, per-credential reason copy, and its support-file manifest.
-  - **A Fleet library entry in another workspace is indistinguishable from one that does not exist** — both answer `404` with `UZ-LIBRARY-007`, so the route cannot be used to discover which ids exist elsewhere.
 
   ## API reference
 
   - `GET /v1/models?limit=&starting_after=&q=&provider=` → `{version, models, total, next_cursor}`, plus `ETag` / `Cache-Control` / `Vary` on both `200` and `304`.
-  - `GET /v1/workspaces/{workspace_id}/fleet-libraries/{tier}/{id}` → one entry, where `tier` is `platform` or `tenant`. A value outside that set does not route.
-  - New error codes: `UZ-LIBRARY-001` (cursor this endpoint never issued), `UZ-LIBRARY-002` (cursor for different filters or page size), `UZ-LIBRARY-003` (`limit` outside 1..100, or `q` over 128 bytes), `UZ-LIBRARY-004` (catalogue revision unreadable), `UZ-LIBRARY-005` (a compliant response would exceed its body ceiling), `UZ-LIBRARY-006` (pool or query failure), `UZ-LIBRARY-007` (Fleet library entry absent or foreign), `UZ-LIBRARY-008` (a secret-reference write lost a race to a concurrent delete).
+  - New error codes: `UZ-LIBRARY-001` (cursor this endpoint never issued), `UZ-LIBRARY-002` (cursor for different filters or page size), `UZ-LIBRARY-003` (`limit` outside 1..100, or `q` over 128 bytes), `UZ-LIBRARY-004` (catalogue revision unreadable), `UZ-LIBRARY-005` (a compliant response would exceed its body ceiling), `UZ-LIBRARY-006` (pool or query failure), `UZ-LIBRARY-008` (a secret-reference write lost a race to a concurrent delete).
   - A stale-but-valid cursor is not an error: it resumes from its boundary and may return an empty page with `next_cursor: null`.
 
   ## Bug fixes
