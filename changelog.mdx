@@ -7,6 +7,40 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 27, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "CLI"]}>
+  ## Model and Fleet library reads are bounded pages
+
+  The model catalogue and the workspace Fleet library gallery used to return everything they held in one response. Both now return a page, ordered and resumable through a cursor, and the catalogue can be filtered and revalidated with an `ETag`.
+
+  ## Upgrading
+
+  - **`GET /v1/models` returns at most 50 models per request** — follow `next_cursor` until it is null. A client that reads only the first response now sees a truncated catalogue. `version` and `models` keep their names and shapes; `total` (always null) and `next_cursor` are added beside them.
+  - **`GET /v1/workspaces/{workspace_id}/fleet-libraries` is a page too** — ordered `created_at DESC`, then platform entries before tenant entries, then id. Follow `next_cursor`.
+  - **The gallery summary no longer carries `support_files`** — the manifest is not served on the workspace plane; the admin catalog (`GET /v1/admin/fleet-libraries/{id}`) remains its only reader. Nothing else moved off the card.
+  - **Upgrade the `agentsfleet` CLI together with the server** — `agentsfleet install --library <id>` resolves an id against the gallery, and a pre-upgrade CLI reads only the first page, so it reports a valid entry past that page as missing.
+  - **Bundle imports and catalog edits now enforce requirement ceilings** — at most 32 required credentials, 64 required tools, and 64 network hosts, with names up to 200 bytes and hosts up to 253. An import past a ceiling returns `413`; a catalog edit whose install-gate copy is over 32 entries, or longer than 500 bytes for one credential, returns `400`. Stored entries are not re-validated, so nothing already saved becomes unreadable.
+
+  ## What's new
+
+  - **Filter the catalogue** — `?q=` matches a case- and accent-insensitive substring across a model's id and provider, `?provider=` matches a provider exactly. `%` and `_` match literally.
+  - **Conditional catalogue reads** — every answer carries an `ETag`, `Cache-Control: private, no-cache`, and `Vary: Authorization`. Send the tag back as `If-None-Match` and an unchanged catalogue answers `304` with no body.
+
+  ## API reference
+
+  - `GET /v1/models?limit=&starting_after=&q=&provider=` → `{version, models, total, next_cursor}`, plus `ETag` / `Cache-Control` / `Vary` on both `200` and `304`.
+  - New error codes: `UZ-LIBRARY-001` (cursor this endpoint never issued), `UZ-LIBRARY-002` (cursor for different filters or page size), `UZ-LIBRARY-003` (`limit` outside 1..100, or `q` over 128 bytes), `UZ-LIBRARY-004` (catalogue revision unreadable), `UZ-LIBRARY-005` (a compliant response would exceed its body ceiling), `UZ-LIBRARY-006` (pool or query failure), `UZ-LIBRARY-008` (a secret-reference write lost a race to a concurrent delete).
+  - A stale-but-valid cursor is not an error: it resumes from its boundary and may return an empty page with `next_cursor: null`.
+
+  ## Bug fixes
+
+  - **The dashboard Models page lists every model entry again** — the page sent no `limit` and ignored `next_cursor`, so a tenant with more entries than one page silently saw only the first.
+
+  ## CLI
+
+  - **`agentsfleet install --library <id>` reads the whole gallery** — it follows `next_cursor` until the id is found, so an entry past the first page installs instead of reporting itself absent.
+
+</Update>
+
 <Update label="Jul 26, 2026" tags={["What's new", "Bug fixes", "Performance"]}>
   ## Adding runners no longer slows the control plane
 

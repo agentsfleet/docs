@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-07-18
+verified: 2026-07-27
 product_version: 0.17.0
 executable: false
 ---
@@ -196,6 +196,18 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-MODELS-002"></span>`UZ-MODELS-002` | 404 | Referenced secret not found | We couldn't find that key. Store it under Secrets & ENVs first, or pick an existing key. | Use a model available to the tenant. |
 | <span id="UZ-MODELS-003"></span>`UZ-MODELS-003` | 409 | Model entry already exists | You already have this model registered with that key. Edit the existing entry instead. | Use a model available to the tenant. |
 | <span id="UZ-MODELS-004"></span>`UZ-MODELS-004` | 404 | Model entry not found | We couldn't find that model entry. It may have already been removed — refresh the list. | Use a model available to the tenant. |
+
+### Library listings
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-LIBRARY-001"></span>`UZ-LIBRARY-001` | 400 | Pagination cursor is malformed | That page link is no longer valid. Go back to the first page and try again. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-002"></span>`UZ-LIBRARY-002` | 400 | Pagination cursor does not match this request | The filters changed since that page was loaded. Start again from the first page. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-003"></span>`UZ-LIBRARY-003` | 400 | Pagination or search input out of bounds | That request asked for too much at once. Try a smaller page size or a shorter search. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-004"></span>`UZ-LIBRARY-004` | 503 | Catalogue version unavailable | The model catalogue is temporarily unavailable. Try again shortly. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-005"></span>`UZ-LIBRARY-005` | 500 | Response exceeded its size ceiling | We couldn't build that page. Try again shortly, and contact support with the request id if it continues. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-006"></span>`UZ-LIBRARY-006` | 503 | Data service temporarily unavailable | We couldn't reach the database. Try again shortly. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-008"></span>`UZ-LIBRARY-008` | 409 | Credential was deleted while it was being referenced | That key was deleted while you were saving. Refresh and pick another key. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
 
 ### Startup
 
