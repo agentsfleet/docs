@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-07-16
+verified: 2026-07-27
 product_version: 0.17.0
 executable: false
 ---
@@ -80,6 +80,12 @@ A prebuilt fleet appears in your library only after an operator onboards and pub
 `SKILL.md` and `TRIGGER.md` each allow 200 KiB. A bundle can contain up to 32 support files and 256 KiB across those files.
 
 Each support file allows 64 KiB and a 160-character safe relative path. Secret-shaped support content is rejected.
+
+A bundle may declare at most 32 required credentials, 64 required tools, and 64 network hosts. A bundle over any of those counts is refused at import.
+
+A credential or tool name allows 200 bytes. A network host allows 253 bytes, the longest name that can resolve.
+
+Install-gate copy is bounded too. An entry carries reason text for at most 32 credentials, and each reason allows 500 bytes.
 
 There is no public command to delete a workspace library entry. Removing a fleet does not remove its library entry.
 
