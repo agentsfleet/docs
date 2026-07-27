@@ -7,6 +7,26 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 26, 2026" tags={["What's new", "Bug fixes", "Performance"]}>
+  ## Adding runners no longer slows the control plane
+
+  An idle runner's poll now costs one bounded Redis read and no database round-trip. Idle cost tracks how many runners you run, never how many fleets exist, so adding execution capacity stops making the API slower for everyone.
+
+  ## What's new
+
+  - **Idle polls skip the database entirely** — a poll consults a readiness index that ingress writes when a fleet actually receives work, so a fleet holding nothing is never examined. Previously every poll walked every active fleet on the platform.
+  - **Scheduled fires enter the fast path too** — the cron producer records readiness when it appends, so a scheduled run is picked up on the next poll instead of waiting for the background sweep to reach its fleet.
+  - **Per-poll work is capped** — the candidate scan is bounded by `MAX_READY_CANDIDATES_PER_POLL`, alongside `NO_WORK_RETRY_AFTER_MS` so both knobs are visible together.
+  - **Runner authentication is memoized for one heartbeat interval** — repeat calls from the same runner no longer re-read `fleet.runners`. A cordon, drain, revoke, or delete drops the entry on the machine that served it, and any other machine's entry expires within one heartbeat.
+  - **New `/metrics` families for poll cost and readiness depth** — candidate-scan depth and per-poll database round-trips, unlabelled and rendered without touching a datastore.
+
+  ## Bug fixes
+
+  - **A message posted to a non-canonical fleet id is now rejected** — an uppercase, brace-wrapped, or dash-free `fleet_id` on `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages` matched the fleet and returned `202`, then queued the event onto a stream nothing reads, so the message was never delivered.
+  - **Stopping, deleting, or auto-pausing a fleet clears its readiness entry** — a fleet that left `active` kept an unreachable entry that held a slot of the bounded sample permanently; the approval gate's automatic pause now clears it the same way the stop and delete paths do. A stop keeps the fleet's stream, so a resume still finds its undelivered event.
+  - **A stranded event no longer waits on unrelated traffic** — the background sweep re-derives readiness from the streams themselves, including entries appended but never delivered to any consumer, which the previous reclaim path could not see.
+</Update>
+
 <Update label="Jul 25, 2026" tags={["Breaking", "What's new", "Observability"]}>
   ## Metrics move to one namespace and standard names
 
