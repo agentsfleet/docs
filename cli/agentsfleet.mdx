@@ -4,7 +4,7 @@ description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
 verified: 2026-07-12
-product_version: 0.17.0
+product_version: 0.24.0
 executable: false
 ---
 
@@ -113,7 +113,7 @@ Commands:
 
 | Command | Effect |
 |---|---|
-| `agentsfleet secret create <NAME>` | Stores a JSON object in the workspace vault. |
+| `agentsfleet secret create <NAME>` | Stores a JSON object in the workspace vault under a name that is free. A name already in use is reported as skipped, and nothing is written. |
 | `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
 | `agentsfleet secret list` | Lists secret names and metadata. |
 | `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |

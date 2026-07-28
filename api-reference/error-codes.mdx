@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-07-27
-product_version: 0.17.0
+verified: 2026-07-28
+product_version: 0.24.0
 executable: false
 ---
 
@@ -67,6 +67,12 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-REQ-001"></span>`UZ-REQ-001` | 400 | Invalid request | That request wasn't valid. Double-check the values you entered and try again. | Validate request fields before sending the request. |
 | <span id="UZ-REQ-002"></span>`UZ-REQ-002` | 413 | Payload too large | Request body exceeds the maximum allowed size. | Validate request fields before sending the request. |
+
+### Workspaces
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-WORKSPACE-001"></span>`UZ-WORKSPACE-001` | 409 | Workspace name already exists | A workspace with that name already exists. Check the refreshed list or choose another name. | Use a unique workspace name within the current tenant. |
 
 ### Authentication
 
@@ -145,7 +151,20 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AGT-011"></span>`UZ-AGT-011` | 400 | Fleet files disagree on `name:` | This Fleet Bundle's files disagree on its name. `SKILL.md` and `TRIGGER.md` must match. Fix the source and try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. | Use fleet identifiers from the current workspace. |
-| <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Another update changed the fleet source. Reload the current source and `etag`, reapply your change, then retry. | Reload the fleet source before editing and send the latest `etag`. |
+| <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. | Use fleet identifiers from the current workspace. |
+
+### Schedules
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-SCHED-001"></span>`UZ-SCHED-001` | 422 | Invalid schedule | cron must be a valid five-field expression and timezone must name a supported region. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-002"></span>`UZ-SCHED-002` | 404 | Schedule not found | No schedule matches this identifier for the selected Fleet. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-003"></span>`UZ-SCHED-003` | 409 | Schedule limit reached | A Fleet can hold at most 32 schedules. Remove one before creating another. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-004"></span>`UZ-SCHED-004` | 502 | Schedule provider unavailable | QStash did not confirm the change. Run the schedule sync command shown by the client. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-005"></span>`UZ-SCHED-005` | 401 | Invalid schedule signature | QStash delivery signature verification failed. Confirm the vaulted signing keys and ingress URL. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-006"></span>`UZ-SCHED-006` | 409 | Schedule update busy | Another schedule mutation holds the synchronization lease. Retry after the reported delay. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-007"></span>`UZ-SCHED-007` | 503 | Schedule service unavailable | QStash credentials are not configured. Follow the registration playbook and roll agentsfleetd. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-008"></span>`UZ-SCHED-008` | 409 | Schedule source already exists | A schedule already uses this source key for the selected Fleet. Pick a different source or update the existing schedule. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
 
 ### Fleet Bundles
 
@@ -157,13 +176,6 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-BUNDLE-004"></span>`UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | We couldn't fetch that Fleet Bundle from GitHub. Check the source and try again. | Check Fleet Bundle files and limits before upload. |
 | <span id="UZ-BUNDLE-005"></span>`UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | We couldn't store your Fleet Bundle right now. Try again shortly. | Check Fleet Bundle files and limits before upload. |
 
-### Fleet catalog
-
-| Code | HTTP | Title | Why and fix | Prevent |
-|---|---|---|---|---|
-| <span id="UZ-CATALOG-002"></span>`UZ-CATALOG-002` | 409 | Cannot publish a fleet with no bundle | This entry has no bundle, so it has nothing to publish. Fetch the bundle from its repository, then publish. | Fetch and review the bundle before publishing. |
-| <span id="UZ-CATALOG-005"></span>`UZ-CATALOG-005` | 412 | Catalog entry changed since you loaded it | Another update changed the catalog entry. Refresh it, reapply your change, then retry. | Refresh the catalog entry before editing and send the latest `etag`. |
-
 ### Secrets
 
 | Code | HTTP | Title | Why and fix | Prevent |
@@ -172,6 +184,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-VAULT-002"></span>`UZ-VAULT-002` | 400 | Secret data too large | That secret is too large. Keep it under 4 KiB. Trim or shorten the fields. | Use a valid workspace secret name and value. |
 | <span id="UZ-VAULT-003"></span>`UZ-VAULT-003` | 404 | Secret not found | We couldn't find that secret. It may have already been deleted — refresh the list. | Use a valid workspace secret name and value. |
 | <span id="UZ-VAULT-004"></span>`UZ-VAULT-004` | 409 | Secret still referenced by model entries | This key is used by one or more models in your registry. Remove those entries first, then delete the key. | Use a valid workspace secret name and value. |
+| <span id="UZ-VAULT-005"></span>`UZ-VAULT-005` | 409 | Secret name already taken | A secret with that name already exists. Rename this one, or open the existing secret and replace its value. | Use a valid workspace secret name and value. |
 
 ### Model providers
 
@@ -197,13 +210,30 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-MODELS-003"></span>`UZ-MODELS-003` | 409 | Model entry already exists | You already have this model registered with that key. Edit the existing entry instead. | Use a model available to the tenant. |
 | <span id="UZ-MODELS-004"></span>`UZ-MODELS-004` | 404 | Model entry not found | We couldn't find that model entry. It may have already been removed — refresh the list. | Use a model available to the tenant. |
 
+### Dashboard preferences
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-PREFS-001"></span>`UZ-PREFS-001` | 400 | Unknown preference key | That setting doesn't exist. Reload the page and try again. | Write only preference keys the dashboard declares, with small values. |
+| <span id="UZ-PREFS-002"></span>`UZ-PREFS-002` | 400 | Preference value too large | That setting is too large to save. Reload the page and try again. | Write only preference keys the dashboard declares, with small values. |
+
+### Fleet library catalog
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-CATALOG-001"></span>`UZ-CATALOG-001` | 404 | Fleet library entry not found | We couldn't find that fleet. It may have already been removed — refresh the page. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
+| <span id="UZ-CATALOG-002"></span>`UZ-CATALOG-002` | 409 | Cannot publish a fleet with no bundle | There's no bundle for this fleet yet. Fetch it from its repository first, then publish. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
+| <span id="UZ-CATALOG-003"></span>`UZ-CATALOG-003` | 409 | Cannot delete a published fleet | This fleet is published. Unpublish it first, then delete it. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
+| <span id="UZ-CATALOG-004"></span>`UZ-CATALOG-004` | 409 | Catalog id already taken by another repository | A different repository already owns this fleet's name. Rename the bundle, or confirm you want to replace it. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
+| <span id="UZ-CATALOG-005"></span>`UZ-CATALOG-005` | 412 | Catalog entry changed since you loaded it | Someone else edited this catalog entry since you opened it. Refresh to see their change, then re-apply your edit. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
+
 ### Library listings
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
 | <span id="UZ-LIBRARY-001"></span>`UZ-LIBRARY-001` | 400 | Pagination cursor is malformed | That page link is no longer valid. Go back to the first page and try again. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
 | <span id="UZ-LIBRARY-002"></span>`UZ-LIBRARY-002` | 400 | Pagination cursor does not match this request | The filters changed since that page was loaded. Start again from the first page. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
-| <span id="UZ-LIBRARY-003"></span>`UZ-LIBRARY-003` | 400 | Pagination or search input out of bounds | That request asked for too much at once. Try a smaller page size or a shorter search. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
+| <span id="UZ-LIBRARY-003"></span>`UZ-LIBRARY-003` | 400 | Pagination or filter input out of bounds | That request asked for too much at once. Try a smaller page size or a shorter filter. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
 | <span id="UZ-LIBRARY-004"></span>`UZ-LIBRARY-004` | 503 | Catalogue version unavailable | The model catalogue is temporarily unavailable. Try again shortly. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
 | <span id="UZ-LIBRARY-005"></span>`UZ-LIBRARY-005` | 500 | Response exceeded its size ceiling | We couldn't build that page. Try again shortly, and contact support with the request id if it continues. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
 | <span id="UZ-LIBRARY-006"></span>`UZ-LIBRARY-006` | 503 | Data service temporarily unavailable | We couldn't reach the database. Try again shortly. | Page with the `next_cursor` returned by the previous page, keep `limit` within 1 to 100, and start over from the first page after changing a filter. |
@@ -234,7 +264,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed. Token counts become zero, but the renewed slice still charges for runtime. The lease still renews. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`. The lease cannot renew, so the run stops. This differs from UZ-RUN-012, which reports a low tenant balance. | Keep runner settings and lease health within configured limits. |
-| <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner has not been revoked. Send `PATCH /v1/fleets/runners/{id}` with the `action` field set to `revoke`, then retry deletion. | Revoke a runner before deleting it. |
+| <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. | Keep runner settings and lease health within configured limits. |
 
 ### Runs
 
@@ -253,6 +283,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-EXEC-013"></span>`UZ-EXEC-013` | 500 | Runner fleet run failed | The runner could not finish the fleet run. Check the activity stream. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-014"></span>`UZ-EXEC-014` | 400 | Run settings invalid | The run settings are invalid. Check the fleet files before retrying. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-015"></span>`UZ-EXEC-015` | 402 | Run stopped: fleet limit reached | The run stopped because the fleet reached its configured limit. | Check runner settings and access before starting work. |
+| <span id="UZ-EXEC-016"></span>`UZ-EXEC-016` | 401 | Runner token rejected | The control plane rejected this host's agt_r runner token (401/403) on the heartbeat. Retrying can't fix it — mint a fresh agt_r and issue the host's runner token again, then restart the runner. | Check runner settings and access before starting work. |
 
 ### Approvals
 
@@ -271,7 +302,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-MEM-002"></span>`UZ-MEM-002` | 404 | Fleet not found for memory op | The fleet_id does not exist or does not belong to the requesting workspace. Verify the fleet_id and workspace scope. | Use an existing fleet and a valid memory category. |
 | <span id="UZ-MEM-003"></span>`UZ-MEM-003` | 503 | Saved memory unavailable | Saved memory is unavailable. The fleet uses temporary workspace memory until the service recovers. | Use an existing fleet and a valid memory category. |
-| <span id="UZ-MEM-004"></span>`UZ-MEM-004` | 404 | Memory entry not found | No memory entry exists for this key. List memories to confirm the exact key. | Use an existing memory key. |
+| <span id="UZ-MEM-004"></span>`UZ-MEM-004` | 404 | Memory entry not found | That memory entry is already gone — the fleet isn't holding anything under that key. | Use an existing fleet and a valid memory category. |
 
 ### API keys
 

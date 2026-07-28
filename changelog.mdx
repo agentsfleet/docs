@@ -7,6 +7,45 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 28, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "CLI"]}>
+  ## The dashboard loads the page you asked for, and a failed read says so
+
+  The Fleet library gallery and the Models registry used to read everything they held before painting, then render a failed read as an empty one — a workspace whose library was merely unreachable was told it had none, with no retry and no way to tell the two apart. Both now load one page at a time, keep what is already on screen when a read fails, and state what they have not loaded. Creating a workspace secret has also stopped overwriting a secret that already holds the name.
+
+  ## Upgrading
+
+  - **Creating a secret no longer overwrites one that exists** — `POST /v1/workspaces/{workspace_id}/secrets` answers `409` `UZ-VAULT-005` when the name is already held, and writes nothing. Rotate with `PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}` instead. The database decides, so two concurrent creates on one name resolve to one `201` and one `409`. Reconnecting a provider and refreshing its token are unaffected — those are rotations, not creations.
+  - **`agentsfleet secret create --force` is gone** — it relied on the endpoint upserting, which it no longer does, so the flag could only have failed. Passing it now exits non-zero before anything is sent. Creating a name that already exists reports `skipped` and exits `0`; replace a value with `agentsfleet secret delete <name>` followed by `agentsfleet secret create <name>`.
+  - **`?q=` is gone from `GET /v1/models` and `GET /v1/workspaces/{workspace_id}/fleet-libraries`** — the substring filter published on Jul 27, 2026 had no caller on any plane. A request that still sends it is answered as though it were absent, so you get a page rather than an error. Page with `next_cursor` and filter client-side.
+  - **`support_files` has left every API response** — the admin catalog was the last surface carrying it. The manifest is still written and stored on import, and the content-addressed bundle tar remains the authoritative file list, so no install behaviour changes.
+
+  ## What's new
+
+  - **The Fleet library gallery and Models registry load more instead of everything** — each states how many entries it is holding and that more remain, so a bounded page never reads as a complete list.
+  - **Your place in the gallery survives a reload** — the cursor of the page you are on is written into the address bar. A reload, a shared link, or a Back out of a fleet lands where you were rather than at the first page.
+  - **The model catalogue loads when you reach for it** — hovering, focusing, or opening the model picker fetches it, and an ordinary visit to Models does not. Hover is skipped on touch pointers and under `Save-Data`, where a hover is not a guess about intent.
+  - **A deep link to a library entry that is not on the loaded page says so** — it neither errors the page nor quietly shows you something else.
+  - **The Add-model dialog will not save against a secret list that never loaded** — it used to submit anyway, skipping the name-ownership check. Save now waits for the list, says what it is waiting for, and offers a retry when the read fails.
+
+  ## API reference
+
+  - New error code: `UZ-VAULT-005` (409) — a secret with this name already exists in the workspace.
+  - `UZ-LIBRARY-003` narrows to a `limit` outside 1 to 100. Its search-length cause left with `?q=`; the code and its registry row are unchanged.
+  - `GET /v1/workspaces/{workspace_id}/fleet-libraries` cursors are bound to the workspace and page size, no longer to a filter.
+
+  ## Bug fixes
+
+  - **Fleet chat replies render as they arrive** — a reply stayed invisible until you switched tabs or reloaded, while the typing indicator ran and the Live badge stayed green. Every streamed frame is named by its kind, and a named frame reaches only a listener registered for that name; the per-fleet stream listened for unnamed frames alone and dropped all of them.
+  - **The Events tab scrolls again** — expanding a grouped run set left the page frozen in a non-maximized window. The table's scroll region contained the wheel on both axes while having nothing of its own to scroll vertically, so the page never received it.
+  - **Sortable column headers read evenly** — the unsorted indicator was drawn heavier and taller than the sorted one, on every sortable column at once.
+  - **Runner rows lost a copy button that copied nothing useful**, and now lead with administrative state before liveness.
+
+  ## CLI
+
+  - **`agentsfleet secret create` costs one request** — it no longer reads the secret list first to decide whether the name is free. The endpoint decides, which also closes the window where two creates of one name could both believe they were first.
+
+</Update>
+
 <Update label="Jul 27, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "CLI"]}>
   ## Model and Fleet library reads are bounded pages
 
