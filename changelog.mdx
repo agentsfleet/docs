@@ -15,7 +15,6 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## Upgrading
 
   - **`PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}` is removed** — replaced by `PUT` on the same route. `PUT` takes `{"data": {...}}`, the same shape `create` takes, and replaces the stored body whole; a field you omit is absent afterwards. There is no compatibility spelling, and a `PATCH` now answers method-not-allowed. Client and server upgrade together.
-  - **Secrets stored before Jul 11, 2026 need replacing** — the vault reads only the current envelope format. A secret sealed under the earlier format answers a typed unsupported-version error at use. Replace it once with `agentsfleet secret update` (or delete and create it) and it is re-sealed in the current format.
 
   ## What's new
 
