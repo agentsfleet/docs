@@ -213,7 +213,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/secrets",
               "POST /v1/workspaces/{workspace_id}/secrets",
-              "PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}",
+              "PUT /v1/workspaces/{workspace_id}/secrets/{secret_name}",
               "DELETE /v1/workspaces/{workspace_id}/secrets/{secret_name}"
             ]
           },
