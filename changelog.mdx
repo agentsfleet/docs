@@ -7,6 +7,36 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 29, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI"]}>
+  ## Replacing a secret means sending the secret you want stored
+
+  A stored secret can never be read back, so changing one field by field could not be checked by the caller — and on most secret shapes the old field patch silently did nothing at all. Replacement is now total on every surface: the API takes the whole body, the client gets `agentsfleet secret update`, and the dashboard's Edit dialog is the same form as Add, prefilled.
+
+  ## Upgrading
+
+  - **`PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}` is removed** — replaced by `PUT` on the same route. `PUT` takes `{"data": {...}}`, the same shape `create` takes, and replaces the stored body whole; a field you omit is absent afterwards. There is no compatibility spelling, and a `PATCH` now answers method-not-allowed. Client and server upgrade together.
+  - **Secrets stored before Jul 11, 2026 need replacing** — the vault reads only the current envelope format. A secret sealed under the earlier format answers a typed unsupported-version error at use. Replace it once with `agentsfleet secret update` (or delete and create it) and it is re-sealed in the current format.
+
+  ## What's new
+
+  - **`agentsfleet secret update <name>`** replaces a stored secret in one call. The name stays claimed for the whole call, so fleets that require it keep resolving — no delete-and-recreate gap. It takes the same `--data` object (or `--data=@-` on stdin) and the same typed custom-endpoint flags as `create`.
+  - **The dashboard's Edit dialog is the Create form, prefilled** — provider, base URL, and model come from the row you opened; you supply the key. A custom endpoint's base URL is editable after creation for the first time. The secret writes first and exactly once, so a failed save reports one outcome instead of leaving the table half-updated.
+
+  ## API reference
+
+  - `PUT /v1/workspaces/{workspace_id}/secrets/{secret_name}` — request `{"data": {...}}` (non-empty object, at most 4 KiB stringified); `200` `{"name": "..."}`. A name the workspace does not hold answers `404` `UZ-VAULT-003` and creates nothing — a replace racing a delete cannot resurrect the deleted secret.
+  - The write is one statement. Two concurrent replaces resolve to the later body whole; no merge of the two can be stored.
+
+  ## Bug fixes
+
+  - **Reconfiguring an existing custom endpoint from the Add dialog works again** — it still sent a create, which stopped overwriting on Jul 28, 2026, so reusing the name answered `UZ-VAULT-005` and saved nothing. It now replaces the endpoint's stored body.
+  - **A failed save in Edit no longer half-applies** — the model rename used to commit before a failed key write, leaving the table renamed while the credential kept the old key.
+
+  ## CLI
+
+  - `agentsfleet secret create` on a name that already exists still reports `skipped` and exits `0`; the message now points at `agentsfleet secret update` instead of delete-and-recreate.
+</Update>
+
 <Update label="Jul 28, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "CLI"]}>
   ## The dashboard loads the page you asked for, and a failed read says so
 
