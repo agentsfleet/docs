@@ -7,6 +7,12 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 30, 2026" tags={["What's new", "Performance"]}>
+  ## Follow-up — chat replies start streaming immediately
+
+  Fleet replies now appear in chat the moment the fleet starts answering. The runner used to hold the first activity frames of a run in a batch for up to a second before shipping them; it now ships the first frame of a run and the first response chunk the instant they arrive, so the chat surface shows the fleet is working — and its first words — at model speed. Long runs batch exactly as before, at a cost of at most two extra requests per run.
+</Update>
+
 <Update label="Jul 30, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI", "Performance"]}>
   ## A runner has a page of its own, and every list pages by cursor
 
