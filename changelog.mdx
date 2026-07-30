@@ -7,6 +7,32 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 31, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "Performance"]}>
+  ## Every runner lease says whose workspace it belongs to
+
+  A runner's lease list showed every workspace's work in one undifferentiated table, so an operator looking at a shared host could not tell their own fleet's runs from anyone else's. Each lease now names its workspace, and one click narrows the table to that workspace alone. The same release stops the runner pages re-reading a host's whole history on every load, and starts pruning that history so it cannot grow without bound.
+
+  ## Upgrading
+
+  - **Runner lease and activity history is pruned after 30 days.** A background sweep deletes settled leases and their activity records once they pass the window; a lease that is still running or renewing is never touched. The lifetime counts on the runner page are unaffected — they count transitions as they happen, not surviving rows — but if you read raw history older than 30 days through `GET /v1/fleets/runners/{id}/leases`, export it before upgrading.
+  - **Three migrations apply on startup.** They add a per-runner counter table, an index for the activity feed's filtered reads, and the delete grants the sweep needs. The counter table backfills itself from existing history inside the migration, so no step is manual and no existing row is rewritten.
+
+  ## What's new
+
+  - **The lease table has a Workspace column.** Each row links to that workspace's fleet wall and carries the full identifier in its tooltip; a funnel beside it narrows the table to that workspace alone.
+  - **The workspace filter lives in the address bar.** `?workspace=<id>` is deep-linkable, survives a reload, and Back steps out of it — so a narrowed view is something you can send to someone.
+
+  ## API reference
+
+  - `GET /v1/fleets/runners/{id}/leases?workspace_id=<uuid>` — new optional filter, still requiring `runner:read`. The response shape is unchanged and `total` narrows with the page. A malformed value answers `400` `UZ-REQ-001`; a well-formed identifier that owns nothing answers an empty page rather than an error, so a stale link reads as "no leases" instead of failing.
+
+  ## Bug fixes
+
+  - **A runner that refused a run no longer reads as a fleet missing instructions.** Both conditions reported the same startup class, so a sandbox, egress, or resource-control refusal on the host was blamed on the fleet's own configuration. The chat row now names the runner's reason.
+  - **Deleting an account unregisters its scheduled runs.** The purge removed the schedule rows but never told the upstream scheduler, so an erased tenant's cron kept firing at runners indefinitely. Teardown now unregisters upstream while those rows still exist, and counts a provider failure on `agentsfleet_account_teardown_unregister_failures_total` rather than swallowing it — erasure still completes either way.
+  - **The runner page no longer re-counts a host's whole history to show four numbers.** Acquired, succeeded, failed, and expired are maintained as each lease settles, so the page cost stays flat however long the host has been running.
+</Update>
+
 <Update label="Jul 31, 2026" tags={["Breaking", "What's new", "API", "UI", "Security"]}>
   ## The isolation you assign is the isolation the runner applies
 
