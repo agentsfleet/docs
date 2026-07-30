@@ -7,6 +7,27 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 31, 2026" tags={["Breaking", "What's new", "API", "UI", "Security"]}>
+  ## The isolation you assign is the isolation the runner applies
+
+  The sandbox tier picked in **Add Runner** used to be a label: the host read a different value from its own environment file, neither side compared the two, and a host that could not deliver its claimed isolation kept accepting work. Policy now flows one way — the dashboard assigns it, the runner row stores it, and every heartbeat delivers it to the host — while the host probes what its kernel can actually enforce and reports that back. A runner whose assignment exceeds its capability is marked **degraded**, receives no work on either side, and its row names the exact missing mechanism (for example `cgroup controllers not delegated`) instead of showing a green badge over a host that refuses every job.
+
+  ## Upgrading
+
+  - **`POST /v1/runners` takes the assignment envelope** — the body is `{host_id, assigned_policy: {sandbox_tier, network_policy, registry_allowlist[], worker_count}, labels[]}`; the old top-level `sandbox_tier` answers `400` `UZ-REQ-001`. The response echoes the assignment as stored (`worker_count` clamped into `[1, 64]`).
+  - **The runner environment collapses to the bootstrap pair** — `AGENTSFLEET_API_URL` and `AGENTSFLEET_RUNNER_TOKEN`, plus the optional host-local `RUNNER_STORAGE_HOME` (renamed from `RUNNER_WORKSPACE_BASE`). `RUNNER_HOST_ID`, `RUNNER_SANDBOX_TIER`, `RUNNER_NETWORK_POLICY`, `RUNNER_REGISTRY_ALLOWLIST`, `RUNNER_WORKER_COUNT`, and the `RUNNER_CP_*_MS` deadlines are removed, not deprecated — the daemon no longer reads them, so a stale env file cannot fork the truth again.
+  - **`macos_seatbelt` leaves the tier vocabulary** — it never had enforcement code, and a tier that cannot be applied must not be assignable. A stray stored value parses fail-closed and the runner refuses to lease. The assignable tiers are `landlock_full`, `container_nested`, and `dev_none` (dev builds only).
+  - **Existing runners read degraded until you assign them a policy** — pre-upgrade rows carry no assignment, so they show `degraded — no assigned policy` and receive no work. Open the runner and use **Edit policy**; the host applies it on its next heartbeat, no visit needed.
+  - **One migration applies on startup** — it adds the policy, capability, and verdict columns to `fleet.runners` and backfills the pre-upgrade rows as degraded. No manual step.
+
+  ## What's new
+
+  - **Add Runner assigns all four policy fields** — isolation, network policy (defaults `allow_all` until allowlist enforcement ships), registry allowlist, and worker count — with copy that says the host must satisfy the selection.
+  - **Edit policy on the runner page** — `PATCH /v1/fleets/runners/{id}` with `{assigned_policy: {…}}` re-assigns a live runner; the change reaches the host within one heartbeat, and the verdict is re-checked in the same request. Growing the worker count past what the daemon started with takes effect after a runner restart.
+  - **The runner row shows assigned against achievable** — the fleet list and detail reads carry `assigned_policy`, the host's reported `achievable` mechanisms, and `degraded` with its reason; a degraded row wears a badge and states what is missing.
+  - **A runner that recovers, recovers by itself** — a later heartbeat whose report satisfies the assignment clears the verdict and leasing resumes; `UZ-EXEC-017` names the refusal while it stands.
+</Update>
+
 <Update label="Jul 30, 2026" tags={["What's new", "Performance"]}>
   ## Follow-up — chat replies start streaming immediately
 
