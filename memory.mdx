@@ -48,6 +48,10 @@ KEY          CATEGORY    UPDATED
 <varies>     <varies>    <varies>
 ```
 
+The list is newest first and pages by cursor. `--starting-after <KEY>` resumes after a key an earlier page returned. When more entries remain, the table prints the command that fetches the next page, and `--json` carries `next_cursor` for scripts.
+
+The dashboard's memory panel follows the cursor to the end on its own, so it shows every entry.
+
 ## Limits
 
 One fleet can keep 1,000 entries. At the limit, `agentsfleet` removes the oldest non-core entry first.

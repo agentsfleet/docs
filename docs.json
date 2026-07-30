@@ -173,8 +173,10 @@
             "pages": [
               "POST /v1/runners",
               "GET /v1/fleets/runners",
+              "GET /v1/fleets/runners/{id}",
               "PATCH /v1/fleets/runners/{id}",
               "DELETE /v1/fleets/runners/{id}",
+              "GET /v1/fleets/runners/{id}/leases",
               "GET /v1/fleets/runners/{id}/events"
             ]
           },
