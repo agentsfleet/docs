@@ -7,6 +7,48 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Jul 30, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI", "Performance"]}>
+  ## A runner has a page of its own, and every list pages by cursor
+
+  A runner used to be a table row with a dialog of raw events behind an icon, and the only number on that dialog counted both halves of every execution — so a host that had run 4,000 events reported about 8,000 of something. Each runner is now an addressable page that opens on its leases: what it is working on right now, and for anything that failed, the reason in plain English with a link into the fleet whose work it was. Separately, no list in the platform pages by number any more. Page numbers silently repeat and skip rows whenever something is inserted mid-traversal, which on a host acquiring leases continuously is every few seconds.
+
+  ## Upgrading
+
+  - **`page` and `page_size` are removed from three reads** — `GET /v1/fleets/runners`, `GET /v1/fleets/runners/{runner_id}/events`, and `GET /v1/api-keys`. All three take `?starting_after=&limit=` and answer `{"items": [...], "total": N, "next_cursor": "..."}`; follow `next_cursor` until it is `null`. A request still sending either parameter answers `400` `UZ-REQ-001` rather than being silently ignored, so client and server upgrade together.
+  - **`sort` is removed from `GET /v1/fleets/runners`** — newest-first is the only order. Its non-default values existed to serve a sortable column on the table this release replaces, so the capability left with the control that used it. Sending `sort` answers `400` `UZ-REQ-001`.
+  - **The fleets list renames its cursor on both sides** — the request parameter `cursor` becomes `starting_after` and the response field `cursor` becomes `next_cursor` on `GET /v1/workspaces/{workspace_id}/fleets`. Both old spellings are refused, not translated.
+  - **The memory list envelope drops `request_id`** — it is now exactly `{"items": [...], "total": N, "next_cursor": "..."}`. Read the request identifier from the response header if you were consuming it from the body.
+  - **`agentsfleet api-key list` no longer takes `--page` or `--page-size`, and `agentsfleet list` no longer takes `--cursor`.** The paging flags are gone rather than deprecated: an invocation carrying one fails as an unknown option and makes no request. Use `--starting-after` on `agentsfleet list`; `api-key list` needs no flag, since it now returns every key.
+  - **Two index migrations apply on startup** — both add an index and touch no column, so no row is rewritten and no step is manual.
+
+  ## What's new
+
+  - **`/admin/runners` is a card wall, and each card is a link.** A card states what its host is working on in one line, or that it is idle, and shows administrative state before liveness so a cordoned host never reads as healthy.
+  - **`/admin/runners/{runner_id}` opens on Leases** — a metrics strip over the standard table, live leases first, each row carrying its outcome. A failed row reads the same plain-English sentence the fleet console uses, never the machine tag, with the daemon's detail line beneath it. Activating a row opens Review lease: fencing token, kind, provider, model, posture, token meters, and expiry.
+  - **Activity carries lifecycle records only.** Lease acquire and release are excluded because the lease table already states each of them once, with its outcome — which is what removes the doubled count.
+  - **An expired lease is never credited with someone else's success.** Outcome is computed from the lease's own status first, so a lease this host stopped renewing reads expired even after another host finished the same work. A lease whose fleet event is missing reads as not recorded rather than as a success.
+  - **`agentsfleet api-key list` returns every key you hold.** The list follows the cursor to the end instead of showing a first page, and the dashboard's key list drops its pagination footer while keeping column sorting.
+  - **`agentsfleet memory list` takes `--starting-after <KEY>`**, and the dashboard's memory panel now shows every entry a fleet has learned rather than the first page of them.
+
+  ## API reference
+
+  - `GET /v1/fleets/runners/{runner_id}` — requires `runner:read`. Returns the runner with derived liveness, `active_lease_count`, `active_fleet_count`, and lifetime `leases_acquired` / `leases_succeeded` / `leases_failed` / `leases_expired`, all computed from durable lease and event rows. Never returns `token_hash`. An unknown id answers `404` `UZ-RUN-014`.
+  - `GET /v1/fleets/runners/{runner_id}/leases?starting_after=&limit=` — requires `runner:read`. `limit` defaults to 50 and is refused above 100. Each item carries `outcome` (`running`, `succeeded`, `failed`, `expired`, or `unknown`), `failure_label` and `failure_detail` when it failed, `fencing_token`, `kind`, provider, model, posture, the three token meters, and the fleet and workspace identifiers plus the fleet name so a link needs no second read. Never returns `request_json`. An unparseable `starting_after`, or a limit outside the range, answers `400` `UZ-REQ-001`.
+  - `GET /v1/fleets/runners/{runner_id}/events?event_type=<tag>[,<tag>…]` — `event_type` now accepts a comma-separated set and returns the union. An unrecognised tag anywhere in the set answers `400` `UZ-REQ-001` and no partial result, so a typo can never read as "no such events".
+  - `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories?starting_after=&limit=` — all three query shapes (recent, category, and text search) page by cursor over creation order, so a filtered or searched list can no longer be silently truncated at the first page.
+
+  ## Bug fixes
+
+  - **The memory list's next-page hint is runnable.** It printed a command without `--fleet`, which `memory list` requires, so copying it produced a usage error instead of the next page. It now carries the fleet you asked about.
+  - **Paging a runner's leases no longer costs its whole history.** The lease table accumulates a row per claim and is never pruned, so reading one page had been sorting everything that host had ever done. Both of the read's access paths are indexed now, and page cost stays flat as the history grows.
+
+  ## CLI
+
+  - `agentsfleet list [--starting-after <ID>] [--limit <N>]`
+  - `agentsfleet memory list --fleet <ID> [--starting-after <KEY>] [--limit <N>] [--category <NAME>]`
+  - `agentsfleet api-key list [--sort <FIELD>]` — no paging flags
+</Update>
+
 <Update label="Jul 29, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI"]}>
   ## Replacing a secret means sending the secret you want stored
 
