@@ -28,6 +28,22 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **A runner that recovers, recovers by itself** — a later heartbeat whose report satisfies the assignment clears the verdict and leasing resumes; `UZ-EXEC-017` names the refusal while it stands.
 </Update>
 
+<Update label="Jul 31, 2026" tags={["Bug fixes", "CLI", "Security"]}>
+  ## Steer never misses the reply's opening words
+
+  `agentsfleet steer` now subscribes to the live event stream and confirms the subscription is established before it sends your message. A fast fleet could previously publish its first words before the terminal was listening — the command sat silent and recovered only the final text from history. The opening words now stream live on every run.
+
+  ## Bug fixes
+
+  - **Subscribe before send** — the steer turn opens its Server-Sent Events tail first and waits (up to 2 seconds) for the server to confirm the subscription; frames that arrive before the server names the event are buffered and replayed in order, and a tail that cannot open falls back to the previous post-then-poll behavior.
+  - **Cancel before send** — Ctrl-C that lands before the message goes out now interrupts the turn without sending; the fleet no longer executes a message you cancelled.
+  - **No stray connections** — every steer turn now provably closes its stream on success, failure, and interrupt alike.
+
+  ## Security
+
+  - **Dashboard toolchain refresh** — Next.js 16.2.12 clears three high-severity advisories (Server-Side Request Forgery in Server Actions, a middleware bypass, and a request-driven denial of service), and the dashboard now type-checks and builds on TypeScript 7's Go-native compiler.
+</Update>
+
 <Update label="Jul 30, 2026" tags={["What's new", "Performance"]}>
   ## Follow-up — chat replies start streaming immediately
 
