@@ -27,6 +27,15 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **The three isolation tiers sit on one row.** Two columns wrapped the third onto a row of its own.
 </Update>
 
+<Update label="Aug 01, 2026" tags={["API", "Breaking"]}>
+  ## The free trial ends per account, not on a calendar date
+
+  The trial boundary was a constant compiled into the server and both web surfaces. It passed at `2026-08-01T00:00:00Z` and flipped pricing for every tenant at once, with no deploy. The boundary now lives on each account — `billing.tenant_billing.free_trial_ends_at`, where `NULL` means open-ended — and every account today is open-ended: a trial ends when an end date is set on it, never on its own.
+
+  - **`free_trial.ends_at_ms` on `GET /v1/tenants/me/billing` is now nullable.** Null means the account's trial has no end date set — it is not a missing value. Render it as "no end date", never as an expiry at the epoch.
+  - **The pricing pages no longer print an end date.** The banner and hero pill read "Free during early access", and the Terms point at the Dashboard for an account's own boundary instead of naming a date that can go stale.
+</Update>
+
 <Update label="Jul 31, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "Performance"]}>
   ## Every runner lease says whose workspace it belongs to
 
