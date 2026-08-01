@@ -7,6 +7,26 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 01, 2026" tags={["Bug fixes", "UI"]}>
+  ## A runner you assign now runs the work
+
+  A host could show **Active** and **Online**, take an isolation assignment, and still fail every job handed to it. Two faults stacked: the daemon never enabled the resource controllers systemd had delegated to it, and the sandboxed child had no `HOME` from which to resolve its configuration — so each lease died at startup with `UZ-EXEC-012` and the journal named a code and no cause. Controllers are now enabled when the daemon starts rather than when its first assignment arrives, `agentsfleet-runner.service` supplies the `HOME` the child needs, and a host that cannot enforce limits is refused before it is given a runner at all.
+
+  ## Bug fixes
+
+  - **Every lease died at initialization when the service had no `HOME`.** systemd gives a service with no `User=` no home of its own, and the sandbox forwards `HOME` only when the daemon holds it, so the engine could not resolve a configuration directory. The unit now sets it to its own `RuntimeDirectory`, which `ProtectHome=yes` and `ProtectSystem=strict` leave reachable where `/root` would not be.
+  - **Resource controllers are enabled at daemon startup, not on the first assignment.** `Delegate=` makes `cpu memory pids` available to the unit, but writing `cgroup.subtree_control` is the delegatee's job and systemd never does it. Doing it at startup means a runner with no assignment yet still enables them, and the post-deploy check no longer races the first heartbeat.
+  - **A failed configuration load names its cause.** The error was discarded before it reached the log, leaving `UZ-EXEC-012` with nothing to act on; the record now carries the underlying failure.
+  - **Execution cgroups are removed when a lease ends.** Teardown used a recursive delete, which the kernel refuses because the control files inside a cgroup cannot be unlinked — so every reclaim failed and the directories accumulated on the host for the life of the runner.
+  - **An unrecognised runner failure is no longer blamed on the fleet.** A cause the chat surface could not classify fell back to "this fleet needs instructions" and appended the internal error name. A cause that is not operator-facing prose now reads as a runner failure, and the identifier is not shown. A fleet that genuinely has no instructions still says so.
+  - **A host that cannot enforce limits is refused before deployment.** The readiness check ran only after the runner was installed, and stopped at the first missing controller — so a host missing all three reported one. It now names every missing controller in a single run and verifies the kernel and `system.slice` before the deploy proceeds.
+
+  ## Assigning a policy
+
+  - **The policy dialog scrolls.** Its actions sat below the fold on a short viewport with no way to reach them, so assigning a policy required maximising the window.
+  - **The three isolation tiers sit on one row.** Two columns wrapped the third onto a row of its own.
+</Update>
+
 <Update label="Jul 31, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "Performance"]}>
   ## Every runner lease says whose workspace it belongs to
 
