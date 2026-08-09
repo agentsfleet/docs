@@ -338,6 +338,14 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. | Keep the GitHub App installed with required repository access. |
 | <span id="UZ-GH-002"></span>`UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). This is temporary. Retry shortly; if the error continues, check GitHub status and the App configuration. | Keep the GitHub App installed with required repository access. |
 
+### Repairs
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | A write-scoped repository token issues only when this run's event carries an approved repository-write gate. No card was answered for this event, or it resolved to something other than approved — the run continues read-only. Answer the approval card, then let the fleet retry. | Approve the repository-write card before the fleet writes. |
+| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | The fleet's repository binding no longer matches the one the approval card stated. Re-raise the approval so a human sees the current reach — the mint refuses rather than widening a decided answer. | Approve the repository-write card before the fleet writes. |
+| <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. The first shipped repair is the record; close the surplus Pull Request on GitHub. | Let one repair Pull Request carry each incident. |
+
 ### Connectors
 
 | Code | HTTP | Title | Why and fix | Prevent |

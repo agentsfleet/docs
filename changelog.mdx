@@ -7,6 +7,19 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 10, 2026" tags={["What's new", "Security", "Integrations"]}>
+  ## A fleet with write access always parks for a human
+
+  A fleet whose repository binding declares write access now parks every event at an approval card before anything runs — even when its configuration carries no gates block, and even when its gate rules match nothing. Gate rules are editable with the same permission that wakes the fleet, so they cannot hold this boundary; the write kind itself does. The card states the write blast radius (the repository and what one approval spends), and the evidence line is sealed so crafted backticks in model output cannot break out of its code span.
+
+  ## What's new
+
+  - **`incident-repairer` joins the fleet library.** It wakes on a failed deploy workflow run, reads the incident timeline and the repository at the exact verified head, authors a forward fix, then pushes one branch and opens one draft pull request over the GitHub API — no checkout, no git tooling. A human approves the write before any of it, and a human reviews the bytes on the pull-request diff before any merge.
+  - **A write-scoped GitHub token spends a recorded approval, never a live setting.** The mint checks the durable gate row for the run's own event — its status, its kind, and the repository binding stated on the card a human actually saw. No recorded approval → `403 UZ-REPAIR-010`. The binding drifted since the card was approved → `403 UZ-REPAIR-011`. Tokens never carry the `workflows` permission, so an approved fix cannot rewrite the pipelines that gate it.
+  - **A repair pull request is linked to its incident, then to its deploy result.** When the repair branch's pull request opens, the platform records the link in `core.repair_pr_links`; when the next deploy on that branch completes, the row is stamped with the outcome. The stamp matches the repository as well as the branch, so a run finishing on a same-named branch somewhere else cannot claim it. Rows are insert-only — a replayed webhook answers `duplicate_repair_link` (`UZ-REPAIR-012`) rather than overwriting history.
+  - **A fleet no longer wakes on its own repair.** Pull requests and workflow runs on a repair branch are the crew hearing itself, and a failed one used to look exactly like a fresh incident — so the fleet would set out to fix what it had just written, asking for another approval each time round. That traffic is now recognised and dropped on both webhook routes.
+</Update>
+
 <Update label="Aug 01, 2026" tags={["Bug fixes", "UI"]}>
   ## A runner you assign now runs the work
 
