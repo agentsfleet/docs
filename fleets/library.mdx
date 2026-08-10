@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-07-27
+verified: 2026-08-10
 product_version: 0.25.0
 executable: false
 ---
@@ -64,7 +64,7 @@ The dashboard protects edits with the row version loaded by the form. If another
 
 ## Prebuilt fleets
 
-Four fleets ship as platform entries. Each is a public repository under `agentsfleet`, and each installs by its identifier.
+Four fleets ship as their own public repository under `agentsfleet`. Each installs by its identifier.
 
 | Identifier | What it does | Secrets |
 | --- | --- | --- |
@@ -72,6 +72,13 @@ Four fleets ship as platform entries. Each is a public repository under `agentsf
 | `platform-ops` | Reads Fly.io app state and logs and Upstash Redis stats, correlates them, and posts a diagnosis to Slack. | `fly`, `upstash`, `slack`, `github` |
 | `zoho-sprint-daily-summarizer` | Summarizes the day's Zoho Sprints activity and posts a digest. | `zoho` |
 | `zoho-recruiter-daily-summarizer` | Summarizes the day's Zoho Recruit pipeline and posts a digest. | `zoho_recruit` |
+
+Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one by uploading its folder, not by naming a repository. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
+
+| Identifier | What it does | Secrets |
+| --- | --- | --- |
+| `incident-responder` | Sweeps Grafana and Elastic on a schedule, correlates the telemetry with recent repository history, and posts a diagnosis to Slack and Jira. Its GitHub token is minted read-only, so it can name a fix but cannot open a pull request. | `elastic`, `grafana`, `github`, `jira`, `slack` |
+| `incident-repairer` | Wakes on one failed deploy run, reads the repository at the verified head, writes the fix, and opens one draft pull request. It asks for repository write access, so every one of its events parks at an approval card first. | `elastic`, `grafana`, `github`, `slack` |
 
 A prebuilt fleet appears in your library only after an operator onboards and publishes it. Until then it does not show in the gallery.
 
