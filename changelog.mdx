@@ -7,6 +7,28 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 12, 2026" tags={["API", "Breaking", "Security"]}>
+  ## The secret store and the wallet get their own privileges
+
+  `api_runtime`, the role every API request runs as, held direct grants on `vault.secrets` and `billing.tenant_wallet`. Any handler could read every stored ciphertext and move any balance, so the trust boundary between the control plane and the data plane existed in prose and in nothing else. Those grants now sit on roles that do nothing else, and `api_runtime` holds membership it must name explicitly, for the span of one transaction.
+
+  ## Breaking
+
+  - **`GET /v1/tenants/me/billing` no longer returns `free_trial`.** The object carried `active` and `ends_at_ms`. Every other field is unchanged, and no path, status code, or request shape moves. Read the balance from `balance_nanos` and exhaustion from `is_exhausted` / `exhausted_at`.
+
+  ## Security
+
+  - **Reaching a secret or a balance requires assuming a role first.** `vault_runtime`, `billing_runtime`, and `metering_runtime` own the grants; membership is granted `WITH INHERIT FALSE, SET TRUE`, so the privileges stay dormant until a statement names one. An unelevated read is refused by PostgreSQL, not by application code.
+  - **Elevation ends with its transaction.** `SET LOCAL ROLE` means the server itself reverts the role at commit or rollback, so no reset can be forgotten. A connection that somehow returns to the pool still elevated is refused and destroyed rather than reused, under `UZ-INTERNAL-005`; a refused elevation reports `UZ-INTERNAL-004`.
+  - **Account erasure no longer leaves memory behind.** The purge captured the account's fleet identifiers, then deleted fleets with a live subquery — so a fleet created in between was erased while its rows in `memory.memory_entries`, which have no foreign key to cascade behind them, survived. The workspace read now takes `FOR UPDATE`, which a concurrent fleet insert must wait on.
+
+  ## Billing
+
+  - **The free trial is removed; the starter grant is the free allowance.** A new account still receives its starter credit at signup, and that balance is what covers early runs. The trial was a second mechanism that worked by zeroing every rate, and it never ended on its own: the column that would have ended it was never written, so every account read as permanently mid-trial and no stage was charged. Metered runs are now billed from the first slice.
+  - **A failed rate lookup can no longer price a run at zero.** Under the trial gate, an error loading the boundary read as "trial active", so the fenced statement wrote a zero charge and advanced the metering cursor in the same commit — leaving that slice permanently unbillable, with nothing in the logs. No pricing path consults a clock now.
+
+</Update>
+
 <Update label="Aug 10, 2026" tags={["What's new", "Security", "Integrations"]}>
   ## A fleet with write access always parks for a human
 
