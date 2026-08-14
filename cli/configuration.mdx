@@ -3,7 +3,7 @@ title: Client configuration
 description: Environment variables and value order for the agentsfleet client.
 type: reference
 audience: user
-verified: 2026-07-12
+verified: 2026-08-14
 product_version: 0.25.0
 executable: false
 ---
@@ -14,7 +14,9 @@ executable: false
 
 The client reads command options, environment variables, saved login data, and built-in defaults. A value earlier in the documented order wins.
 
-For authentication, `AGENTSFLEET_API_KEY` overrides the saved login token. The `login` command accepts `--token`, piped input, or browser approval.
+For authentication, `AGENTSFLEET_API_KEY` overrides the saved login credential. The `login` command approves in a browser. It accepts no token on the command line and reads no token from piped input.
+
+Login also records the server it signed into. Later commands reach that same server unless you name another one.
 
 ## Example with output
 
@@ -32,22 +34,26 @@ AGENTSFLEET_API_URL=https://api.agentsfleet.net agentsfleet --version
 |---|---|---|---|
 | `AGENTSFLEET_API_URL` | Sets the API base URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
 | `AGENTSFLEET_DASHBOARD_URL` | Sets the browser login URL. | `https://app.agentsfleet.net` | URL beginning with `http://` or `https://` |
-| `AGENTSFLEET_API_KEY` | Authenticates every request and overrides saved login data. | None | Valid tenant API key |
+| `AGENTSFLEET_API_KEY` | Authenticates every request and overrides saved login data. Nothing is written to disk. | None | Valid tenant API key starting with `agt_t` |
 | `AGENTSFLEET_STATE_DIR` | Stores local credentials, settings, and telemetry consent. | `~/.config/agentsfleet` | Writable directory path |
 | `NO_COLOR` | Disables coloured output when set to `1`. | Unset | `1` or unset |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
 | `DO_NOT_TRACK` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
 | `AGENTSFLEET_TELEMETRY_DEBUG` | Prints telemetry details to standard error when set to `1`. | Unset | `1` or unset |
 
-The API URL uses this order: `--api`, `AGENTSFLEET_API_URL`, `.env.local`, then the built-in URL.
+The API URL uses this order: `--api`, `AGENTSFLEET_API_URL`, the server recorded at login, then the built-in URL.
 
 ## Errors
 
-An invalid URL returns exit code `4`. A missing token returns exit code `1`.
+An invalid URL returns exit code `4`. A missing credential returns exit code `1`.
 
 A network failure returns exit code `2`. The client does not change saved login data after a network failure.
 
-Do not put tokens in command history. Use `AGENTSFLEET_API_KEY` through your secret manager for unattended commands.
+A saved credential that records no server returns exit code `1` with error code `DEPLOYMENT_UNKNOWN`. Nothing is sent. Pass `--api <API_URL>`, set `AGENTSFLEET_API_URL`, or run `agentsfleet login` again.
+
+The `logout` and `doctor` commands still run in that state. One ends a credential and the other explains the refusal.
+
+Do not put credentials in command history. Use `AGENTSFLEET_API_KEY` through your secret manager for unattended commands.
 
 ## Related pages
 

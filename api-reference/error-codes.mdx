@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-07-28
+verified: 2026-08-14
 product_version: 0.25.0
 executable: false
 ---
@@ -95,6 +95,9 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AUTH-019"></span>`UZ-AUTH-019` | 400 | Invalid ciphertext | ciphertext is missing or empty. Expect a base64url-encoded AES-256-GCM output. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-020"></span>`UZ-AUTH-020` | 400 | Invalid nonce | nonce is missing, empty, or the wrong length. Expect a base64url-encoded 12-byte value. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-022"></span>`UZ-AUTH-022` | 403 | Insufficient scope | You need an additional scope for that. Ask an agentsfleet admin to grant the scope this action requires. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-023"></span>`UZ-AUTH-023` | 401 | Command-line credential revoked | This credential was revoked — by a logout, by a newer login from the same machine, or from the dashboard. Run `agentsfleet login` to mint a new one. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-024"></span>`UZ-AUTH-024` | 404 | Command-line credential not found | No live credential of yours has that identifier. It may be revoked, or it may belong to someone else; the two answer alike on purpose. List your live ones with `GET /v1/cli-credentials`. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-025"></span>`UZ-AUTH-025` | 401 | Credential exchange failed | Login recovered a browser session but could not exchange it for a durable credential, so nothing was saved. The session lasts about a minute, so this usually means it expired before the exchange. Run `agentsfleet login` again. | Keep sign-in sessions and credentials current. |
 
 ### API
 
@@ -102,12 +105,6 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-API-001"></span>`UZ-API-001` | 429 | Too many requests | The API is handling its maximum number of requests. Wait for the Retry-After delay, then retry. | Limit concurrent requests and honor retry delays. |
 | <span id="UZ-API-002"></span>`UZ-API-002` | 503 | Activity stream capacity reached | The API is serving its maximum number of activity streams. Close unused dashboard tabs or retry shortly. | Limit concurrent requests and honor retry delays. |
-
-### Fleet keys
-
-| Code | HTTP | Title | Why and fix | Prevent |
-|---|---|---|---|---|
-| <span id="UZ-FLEETKEY-001"></span>`UZ-FLEETKEY-001` | 404 | Fleet key not found | Fleet key not found. Verify the fleet_key_id. | Use a current Fleet API key for the intended fleet. |
 
 ### Webhooks
 
@@ -152,6 +149,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. | Use fleet identifiers from the current workspace. |
+| <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. | Use fleet identifiers from the current workspace. |
 
 ### Schedules
 
@@ -284,6 +282,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-EXEC-014"></span>`UZ-EXEC-014` | 400 | Run settings invalid | The run settings are invalid. Check the fleet files before retrying. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-015"></span>`UZ-EXEC-015` | 402 | Run stopped: fleet limit reached | The run stopped because the fleet reached its configured limit. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-016"></span>`UZ-EXEC-016` | 401 | Runner token rejected | The control plane rejected this host's agt_r runner token (401/403) on the heartbeat. Retrying can't fix it — mint a fresh agt_r and issue the host's runner token again, then restart the runner. | Check runner settings and access before starting work. |
+| <span id="UZ-EXEC-017"></span>`UZ-EXEC-017` | 409 | Assignment exceeds host capability | The policy assigned to this runner needs an enforcement mechanism its host cannot deliver. The runner row names the missing mechanism; fix the host or relax the assignment from the dashboard. | Check runner settings and access before starting work. |
 
 ### Approvals
 
@@ -308,7 +307,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-APIKEY-001"></span>`UZ-APIKEY-001` | 401 | Invalid API key | API key is invalid or revoked. Mint a replacement with: `POST /v1/workspaces/{ws}/fleet-keys` | Use current API key identifiers and replace revoked keys. |
+| <span id="UZ-APIKEY-001"></span>`UZ-APIKEY-001` | 401 | Invalid API key | API key is invalid or revoked. Mint a replacement with: `POST /v1/api-keys` | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-003"></span>`UZ-APIKEY-003` | 404 | API key not found | We couldn't find that API key. It may have already been deleted — refresh the list. | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-004"></span>`UZ-APIKEY-004` | 401 | API key has been revoked | This key was revoked and can no longer authenticate. Mint a replacement with: POST /v1/api-keys | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-005"></span>`UZ-APIKEY-005` | 409 | Key name already exists in this tenant | An API key with that name already exists. Pick a different name for this tenant. | Use current API key identifiers and replace revoked keys. |
@@ -316,11 +315,21 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-APIKEY-007"></span>`UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | A revoked key can't be reactivated. Mint a new key instead. | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-008"></span>`UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke this key before deleting it. Revoke it first, then delete the revoked key. | Use current API key identifiers and replace revoked keys. |
 
+### Repository repair
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | A write-scoped repository token issues only when this lease's event carries an approved repository-write gate. No approval card was answered for this event, or it resolved to something other than approved. The run continues read-only. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | The fleet's repository binding no longer matches the one the approval card stated. Re-raise the approval so a human sees the current reach; the mint refuses rather than widening a decided answer. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. The first shipped repair is the record; close the surplus Pull Request on GitHub. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | This approval already funded 32 write-credential requests. Answer a new repository-write approval before another write-scoped token request. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-014"></span>`UZ-REPAIR-014` | 200 | Repair provenance refused | The repair branch did not resolve to an approved write gate with the same workspace, Fleet, event, installation, repository, and App author. The delivery is acknowledged without recording a link or waking a Fleet. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+
 ### Integration grants
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-GRANT-001"></span>`UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Request one with: `POST /v1/workspaces/{ws}/fleets/{id}/integration-requests` | Use active integration grants approved for the fleet. |
+| <span id="UZ-GRANT-001"></span>`UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. A grant is seeded when the fleet is installed, from the credentials its bundle declares; it becomes usable once its approval gate is resolved. Check the grant with: `GET /v1/workspaces/{ws}/fleets/{id}/integration-grants` | Use active integration grants approved for the fleet. |
 | <span id="UZ-GRANT-002"></span>`UZ-GRANT-002` | 404 | Integration grant not found | We couldn't find that grant request. It may have already been resolved — refresh the list. | Use active integration grants approved for the fleet. |
 | <span id="UZ-GRANT-003"></span>`UZ-GRANT-003` | 409 | Grant already resolved | Someone already resolved this. Refresh to see the outcome and who resolved it. | Use active integration grants approved for the fleet. |
 
@@ -337,14 +346,6 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. | Keep the GitHub App installed with required repository access. |
 | <span id="UZ-GH-002"></span>`UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). This is temporary. Retry shortly; if the error continues, check GitHub status and the App configuration. | Keep the GitHub App installed with required repository access. |
-
-### Repairs
-
-| Code | HTTP | Title | Why and fix | Prevent |
-|---|---|---|---|---|
-| <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | A write-scoped repository token issues only when this run's event carries an approved repository-write gate. No card was answered for this event, or it resolved to something other than approved — the run continues read-only. Answer the approval card, then let the fleet retry. | Approve the repository-write card before the fleet writes. |
-| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | The fleet's repository binding no longer matches the one the approval card stated. Re-raise the approval so a human sees the current reach — the mint refuses rather than widening a decided answer. | Approve the repository-write card before the fleet writes. |
-| <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. The first shipped repair is the record; close the surplus Pull Request on GitHub. | Let one repair Pull Request carry each incident. |
 
 ### Connectors
 

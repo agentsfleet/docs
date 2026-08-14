@@ -125,7 +125,10 @@
               "POST /v1/auth/sessions/{session_id}/verify",
               "DELETE /v1/auth/sessions/{session_id}",
               "DELETE /v1/auth/sessions/all",
-              "POST /v1/auth/identity-events/clerk"
+              "POST /v1/auth/identity-events/clerk",
+              "POST /v1/cli-credentials",
+              "GET /v1/cli-credentials",
+              "DELETE /v1/cli-credentials/{id}"
             ]
           },
           {

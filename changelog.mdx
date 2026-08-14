@@ -7,6 +7,31 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
+  ## Login saves a credential that outlives the browser session
+
+  `agentsfleet login` used to save the browser session token it recovered, and that token is valid for about a minute. A terminal went stale while its operator was still reading the success message, and no renewal path exists. Login now spends that minute on one call to `POST /v1/cli-credentials` and saves the durable `afc_` credential that comes back. The credential resolves to the person who signed in rather than to the tenant, so an audit trail records who ran a command instead of a free-text label.
+
+  ## Breaking changes
+
+  - **`agentsfleet login --token` is gone.** The flag is refused as an unknown option rather than ignored. Piped input goes with it: a login with no terminal attached and no `AGENTSFLEET_API_KEY` fails and names that variable. Unattended callers set `AGENTSFLEET_API_KEY` to a tenant API key, which authenticates every request and writes nothing to disk.
+  - **`agentsfleet logout` no longer ends your dashboard session.** It revokes this computer's credential, aborts any unfinished sign-in, and clears local state. A browser session is a different credential class that refreshes through the identity provider, so signing out of a terminal leaves the dashboard you are reading signed in. A revoke that cannot reach the server still clears local state, and warns that the credential stays live until you revoke it from the dashboard.
+  - **A deployment that sets `OIDC_PROVIDER=custom` is refused at boot.** The value selected a second ladder that read capability and workspace claims from `custom_claims`, `app_metadata`, and namespaced keys, none of which anything writes. `OIDC_PROVIDER=clerk` is unchanged, so no deployment that runs today needs editing.
+
+  ## What's new
+
+  - **One live credential per computer.** A second login from the same computer revokes what it left behind, and `core.cli_credentials` carries a partial unique index, so two live credentials for one person and computer cannot be recorded at all. Only a hash is stored. `GET /v1/cli-credentials` lists your live ones and `DELETE /v1/cli-credentials/{id}` revokes one.
+  - **A credential records the server that issued it.** Later commands reach that server with no flag and no environment variable. The order is `--api`, then `AGENTSFLEET_API_URL`, then the recorded server, then the built-in URL. A saved credential that records no server, dialed at a server nobody named, is refused before anything is sent, with error code `DEPLOYMENT_UNKNOWN` and exit code `1`. The `logout` and `doctor` commands still run, because one ends a credential and the other explains the refusal.
+  - **Three error codes name what went wrong.** `UZ-AUTH-023` says the credential was revoked, `UZ-AUTH-024` says no live credential of yours has that identifier, and `UZ-AUTH-025` says login recovered a session but could not exchange it, so nothing was saved. A `401` or `403` from the client now names the API URL the credential was presented to.
+
+  ## Security
+
+  - **Minting a credential takes a browser sign-in.** A credential still authenticates listing and revoking, so a terminal can end its own access without opening a browser, but it cannot mint a replacement. Minting used to accept an existing credential, which turned one stolen credential into an unbounded supply under machine names of the caller's choosing.
+  - **A stored value is checked against its whole shape.** The load path and the mint response both require `afc_` followed by exactly 64 lower-case hexadecimal characters. A prefix check passed values carrying trailing bytes.
+  - **A tenant API key carries its creator's capabilities.** An `agt_t` key resolves its capability set from the identity provider, keyed on the `created_by` subject the key already stored, instead of a nine-entry set compiled into the binary that no operator could narrow. Narrowing that person narrows every key they minted, on the next request past the cache window. A creator the provider no longer knows resolves to no capability, and an unreachable provider past the staleness ceiling reports unavailable rather than an empty grant.
+  - **Each claim is read from exactly one key.** The capability claim is `scopes` and nothing else. The reader used to try OAuth2's `scope` first, so a token carrying both would have supplied a capability set we never granted, on the authorisation path. The `scp` spelling and the `workspaceId` alias are unread.
+</Update>
+
 <Update label="Aug 10, 2026" tags={["What's new", "Security", "Integrations"]}>
   ## A fleet with write access always parks for a human
 
