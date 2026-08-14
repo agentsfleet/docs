@@ -14,13 +14,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Breaking changes
 
-  - **`GET /v1/tenants/me/billing` no longer returns `free_trial`.** The response carries `balance_nanos`, `is_exhausted`, and `exhausted_at`, which is the whole billing state a client needs. The member is gone from the published schema and from its `required` list, so a client that reads it must stop.
+  - **`GET /v1/tenants/me/billing` no longer returns `free_trial`.** The response carries `balance_nanos`, `updated_at`, `is_exhausted`, and `exhausted_at`, which is the whole billing state a client needs. The member is gone from the published schema and from its `required` list, so a client that reads it must stop.
 
   ## Bug fixes
 
   - **A metered platform stage is charged the catalogue rate.** Run time and all three token tiers — input, cached, and output — accrue against the credit pool at the rates the catalogue carries, instead of resolving to zero. A `self_managed` stage is unchanged: the run fee only, with token counts recorded and not charged.
   - **A model the catalogue does not price is refused rather than run for nothing.** The window answered ahead of the catalogue lookup, so a provider-and-model pair with no rate row priced at zero instead of failing. Renewal and settlement now fail closed on an unpriced pair; the lease estimate still admits the run, so an unrated model surfaces as a billing error rather than a silent free run.
   - **The budget gates can refuse a fleet.** A fleet budget is spent against real rates, so `credit_deducted_nanos` accrues from the first metered slice. While every charge was zero no budget was ever consumed and neither gate could stop anyone.
+  - **The free trial is named early access.** The pricing card reads "Early access", and the answer to "What am I actually paying for?" no longer describes an ending — it used to say metering began "after the trial". Free usage is the starter grant, which ends when the balance does rather than on a date. The rates themselves are unchanged.
   - **Deleting a fleet erases its memory.** Rows in `memory.memory_entries` are removed with the fleet they belong to. They used to survive it, and because every sweep is scoped by a fleet the caller can enumerate, memory whose fleet was already gone was unreachable by all of them — an erased account kept it indefinitely. The isolation boundary is unchanged: the memory role still holds no grant on `core` and cannot name `core.fleets` at all.
 </Update>
 
