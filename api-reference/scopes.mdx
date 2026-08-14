@@ -3,8 +3,8 @@ title: API scopes
 description: Permissions that an agentsfleet access token can carry.
 type: reference
 audience: user
-verified: 2026-07-12
-product_version: 0.25.0
+verified: 2026-08-14
+product_version: 0.26.2
 executable: false
 ---
 
@@ -40,8 +40,6 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `apikey:read` | Lists tenant API keys. | `apikey:write`, `apikey:admin` |
 | `apikey:write` | Creates and rotates tenant API keys. | `apikey:admin` |
 | `apikey:admin` | Revokes tenant API keys. | None |
-| `fleetkey:read` | Lists fleet keys. | `fleetkey:write` |
-| `fleetkey:write` | Creates and deletes fleet keys. | None |
 | `grant:read` | Lists integration grants. | `grant:write` |
 | `grant:write` | Revokes integration grants. | None |
 | `connector:read` | Reads connector state. | `connector:write` |
@@ -50,7 +48,7 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `workspace:admin` | Creates and lists workspaces. | None |
 | `library:write` | Adds an entry to a workspace library. | None |
 | `platform-library:write` | Adds an entry to the platform library. | None |
-| `approval:read` | Reads pending approvals. | None |
+| `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 
 Operator tokens may carry `runner:*`, `platform-key:*`, `platform-library:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.

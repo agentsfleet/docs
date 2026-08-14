@@ -3,8 +3,8 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-07-22
-product_version: 0.25.0
+verified: 2026-08-14
+product_version: 0.26.2
 executable: false
 ---
 
@@ -24,7 +24,9 @@ Use the API when a script or service needs direct access. Use the command-line c
 
 Most paths accept a bearer token in the `Authorization` header. Tenant API keys start with `agt_t` and are shown once when created.
 
-Interactive users can sign in with `agentsfleet login`. The login flow saves a short-lived JSON Web Token (JWT).
+Interactive users sign in with `agentsfleet login`. Login saves a durable command-line credential that starts with `afc_`. The credential resolves to the person who signed in.
+
+The credential stays valid until a logout, a newer login from the same computer, or a dashboard revoke ends it.
 
 Webhook and connector paths use provider signatures instead of bearer tokens. The OpenAPI security section on each operation states the required method.
 

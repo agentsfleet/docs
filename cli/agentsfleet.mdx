@@ -3,8 +3,8 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-07-12
-product_version: 0.25.0
+verified: 2026-08-14
+product_version: 0.26.2
 executable: false
 ---
 
@@ -63,8 +63,8 @@ Commands:
 
 | Command | Effect |
 |---|---|
-| `agentsfleet login` | Signs in through a browser or supplied token. |
-| `agentsfleet logout` | Revokes every active session and clears local credentials. |
+| `agentsfleet login` | Signs in through a browser and saves a durable credential for this computer. |
+| `agentsfleet logout` | Revokes this computer's credential and any unfinished sign-in, then clears local credentials. Browser sessions stay signed in. |
 | `agentsfleet auth status` | Shows the token source, claims, and server status. |
 | `agentsfleet doctor` | Checks client settings, authentication, and API access. |
 
@@ -78,9 +78,6 @@ Commands:
 | `agentsfleet workspace show [WORKSPACE_ID]` | Shows one workspace. |
 | `agentsfleet workspace secrets` | Prints the secret command and dashboard path. |
 | `agentsfleet workspace delete <WORKSPACE_ID>` | Removes one workspace from local client state. Remote data remains. |
-| `agentsfleet fleet-key create` | Creates a key bound to one fleet. The raw key appears once. |
-| `agentsfleet fleet-key list` | Lists fleet keys without raw values. |
-| `agentsfleet fleet-key delete <FLEET_KEY_ID>` | Revokes a fleet key. Calls using that key fail. |
 | `agentsfleet api-key create` | Creates a tenant API key. The raw key appears once. |
 | `agentsfleet api-key list` | Lists tenant API keys. |
 | `agentsfleet api-key revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
