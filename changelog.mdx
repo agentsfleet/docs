@@ -10,7 +10,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
   ## Login saves a credential that outlives the browser session
 
-  `agentsfleet login` used to save the browser session token it recovered, and that token is valid for about a minute. A terminal went stale while its operator was still reading the success message, and no renewal path exists. Login now spends that minute on one call to `POST /v1/cli-credentials` and saves the durable `afc_` credential that comes back. The credential resolves to the person who signed in rather than to the tenant, so an audit trail records who ran a command instead of a free-text label.
+  `agentsfleet login` used to save the browser session token it recovered, and that token is valid for about a minute. A terminal went stale while its operator was still reading the success message, and no renewal path exists. Login now spends that minute exchanging the session for a durable `afc_` credential, and the credential is what reaches disk. It resolves to the person who signed in rather than to the tenant, so an audit trail records who ran a command instead of a free-text label.
 
   ## Breaking changes
 
@@ -20,7 +20,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **One live credential per computer.** A second login from the same computer revokes what it left behind, and `core.cli_credentials` carries a partial unique index, so two live credentials for one person and computer cannot be recorded at all. Only a hash is stored. `GET /v1/cli-credentials` lists your live ones and `DELETE /v1/cli-credentials/{id}` revokes one.
+  - **One live credential per computer.** A second login from the same computer revokes what it left behind, and `core.cli_credentials` carries a partial unique index, so two live credentials for one person and computer cannot be recorded at all. Only a hash is stored, so the credential cannot be read back from anywhere. `agentsfleet logout` is how a computer ends its own.
   - **A credential records the server that issued it.** Later commands reach that server with no flag and no environment variable. The order is `--api`, then `AGENTSFLEET_API_URL`, then the recorded server, then the built-in URL. A saved credential that records no server, dialed at a server nobody named, is refused before anything is sent, with error code `DEPLOYMENT_UNKNOWN` and exit code `1`. The `logout` and `doctor` commands still run, because one ends a credential and the other explains the refusal.
   - **Three error codes name what went wrong.** `UZ-AUTH-023` says the credential was revoked, `UZ-AUTH-024` says no live credential of yours has that identifier, and `UZ-AUTH-025` says login recovered a session but could not exchange it, so nothing was saved. A `401` or `403` from the client now names the API URL the credential was presented to.
 
