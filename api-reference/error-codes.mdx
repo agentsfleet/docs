@@ -51,7 +51,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-UUIDV7-009"></span>`UZ-UUIDV7-009` | 400 | Invalid identifier shape | The supplied identifier does not match the expected version 7 universally unique identifier shape. | Use identifiers returned by agentsfleet. |
+| <span id="UZ-UUIDV7-009"></span>`UZ-UUIDV7-009` | 400 | Invalid identifier shape | The identifier is not a valid version 7 universally unique identifier (UUID). | Use identifiers returned by agentsfleet. |
 
 ### Service failures
 
@@ -84,10 +84,10 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AUTH-004"></span>`UZ-AUTH-004` | 503 | Authentication service unavailable | Authentication service is temporarily unavailable. Retry shortly. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-005"></span>`UZ-AUTH-005` | 404 | Session not found | Session was not found. It may have expired or been invalidated. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-006"></span>`UZ-AUTH-006` | 401 | Session expired | Your session has expired. Please sign in again. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-011"></span>`UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit verification code did not match what the dashboard issued. Double-check the code shown in your browser and try again. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-011"></span>`UZ-AUTH-011` | 400 | Verification code did not match | The 6-digit code does not match the one shown in your browser. Re-enter it and try again. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-012"></span>`UZ-AUTH-012` | 410 | Login session already consumed | This login session has already been consumed. Start over with `agentsfleet login`. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-013"></span>`UZ-AUTH-013` | 410 | Login session aborted | This login session was aborted (too many wrong codes, explicit cancel, or replaced by a newer session). Start over with `agentsfleet login`. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-014"></span>`UZ-AUTH-014` | 409 | Login session not approved | This login session has not been approved in the dashboard yet. Approve it in your browser before submitting a verification code. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-013"></span>`UZ-AUTH-013` | 410 | Login session aborted | This login session was aborted: too many wrong codes, a cancel, or a newer session. Start over with `agentsfleet login`. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-014"></span>`UZ-AUTH-014` | 409 | Login session not approved | This login session is not approved yet. Approve it in your browser, then submit the code. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-015"></span>`UZ-AUTH-015` | 409 | Login session already approved | This login session has already been approved. Do not call /approve a second time. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-016"></span>`UZ-AUTH-016` | 400 | Invalid command-line public key | The supplied public_key is malformed. Expect base64url-encoded P-256 SubjectPublicKeyInfo. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-017"></span>`UZ-AUTH-017` | 400 | Invalid token name | token_name must contain 1 to 64 characters from space through tilde. | Keep sign-in sessions and credentials current. |
@@ -95,16 +95,16 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AUTH-019"></span>`UZ-AUTH-019` | 400 | Invalid ciphertext | ciphertext is missing or empty. Expect a base64url-encoded AES-256-GCM output. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-020"></span>`UZ-AUTH-020` | 400 | Invalid nonce | nonce is missing, empty, or the wrong length. Expect a base64url-encoded 12-byte value. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-022"></span>`UZ-AUTH-022` | 403 | Insufficient scope | You need an additional scope for that. Ask an agentsfleet admin to grant the scope this action requires. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-023"></span>`UZ-AUTH-023` | 401 | Command-line credential revoked | This credential was revoked — by a logout, by a newer login from the same machine, or from the dashboard. Run `agentsfleet login` to mint a new one. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-024"></span>`UZ-AUTH-024` | 404 | Command-line credential not found | No live credential of yours has that identifier. It may be revoked, or it may belong to someone else; the two answer alike on purpose. | Keep sign-in sessions and credentials current. |
-| <span id="UZ-AUTH-025"></span>`UZ-AUTH-025` | 401 | Credential exchange failed | Login recovered a browser session but could not exchange it for a durable credential, so nothing was saved. The session lasts about a minute, so this usually means it expired before the exchange. Run `agentsfleet login` again. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-023"></span>`UZ-AUTH-023` | 401 | Command-line credential revoked | This credential was revoked by a logout or by a newer login from this machine. Run `agentsfleet login` to get a new one. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-024"></span>`UZ-AUTH-024` | 404 | Command-line credential not found | You have no live credential with that identifier. It may be revoked, or it may not be yours. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-025"></span>`UZ-AUTH-025` | 401 | Credential exchange failed | Login could not exchange the browser session for a durable credential, so nothing was saved. The session likely expired. Run `agentsfleet login` again. | Keep sign-in sessions and credentials current. |
 
 ### API
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-API-001"></span>`UZ-API-001` | 429 | Too many requests | The API is handling its maximum number of requests. Wait for the Retry-After delay, then retry. | Limit concurrent requests and honor retry delays. |
-| <span id="UZ-API-002"></span>`UZ-API-002` | 503 | Activity stream capacity reached | The API is serving its maximum number of activity streams. Close unused dashboard tabs or retry shortly. | Limit concurrent requests and honor retry delays. |
+| <span id="UZ-API-001"></span>`UZ-API-001` | 429 | Too many requests | The API is at its request limit. Wait for the Retry-After delay, then retry. | Limit concurrent requests and honor retry delays. |
+| <span id="UZ-API-002"></span>`UZ-API-002` | 503 | Activity stream capacity reached | The API is at its activity-stream limit. Close unused dashboard tabs or retry shortly. | Limit concurrent requests and honor retry delays. |
 
 ### Webhooks
 
@@ -112,22 +112,22 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-WH-001"></span>`UZ-WH-001` | 404 | Fleet not found for webhook | No fleet is registered for this webhook endpoint. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-002"></span>`UZ-WH-002` | 400 | Malformed webhook | Webhook payload could not be parsed. Check Content-Type and body. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-010"></span>`UZ-WH-010` | 401 | Invalid webhook signature | Webhook signature verification failed. Confirm the signing secret stored for this provider (Slack/Clerk/other) matches the one configured upstream. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-011"></span>`UZ-WH-011` | 401 | Stale webhook timestamp | Webhook request timestamp is outside the allowed 5-minute drift window. This may indicate a replay attack or clock skew. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | Create a random webhook secret with at least 32 bytes. Store it as this source's webhook_secret, configure the same value upstream, then resend. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-021"></span>`UZ-WH-021` | 404 | Connector installation is not mapped | Reconnect the provider App to the intended workspace before redelivering the event. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-010"></span>`UZ-WH-010` | 401 | Invalid webhook signature | The webhook signature did not verify. The stored signing secret must match the one configured upstream. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-011"></span>`UZ-WH-011` | 401 | Stale webhook timestamp | The webhook timestamp is more than 5 minutes off. That means a replay or clock skew. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | Create a random webhook secret of at least 32 bytes. Store it as this source's webhook_secret, set the same value upstream, then resend. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-021"></span>`UZ-WH-021` | 404 | Connector installation is not mapped | Reconnect the provider App to the intended workspace, then redeliver the event. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-022"></span>`UZ-WH-022` | 404 | No fleet subscription matched | Bind the repository and event to an active fleet with an approved integration grant. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-030"></span>`UZ-WH-030` | 413 | Webhook payload too large | Webhook body exceeds the 1 MiB ingest limit. Reduce the payload size or filter at the source. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-030"></span>`UZ-WH-030` | 413 | Webhook payload too large | The webhook body exceeds the 1 MiB limit. Reduce the payload size. | Keep webhook signing secrets matched and service clocks synchronized. |
 
 ### Slack
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-SLK-010"></span>`UZ-SLK-010` | 401 | Invalid Slack signature | The Slack request signature did not verify. Confirm the platform Slack app signing secret matches the one vaulted at slack-app/signing_secret. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-011"></span>`UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack request timestamp is outside the allowed 5-minute drift window — a replay attempt or a skewed server clock. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-020"></span>`UZ-SLK-020` | 200 | Slack team not installed | The Slack team that sent this event has no connector install, so the event is acknowledged (200) and ignored. Re-run Connect Slack in the dashboard to (re)install. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-022"></span>`UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if the error continues, verify the platform Slack app credentials. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-030"></span>`UZ-SLK-030` | 502 | Slack answer post failed | The channel bot's answer could not be delivered to Slack (missing chat:write, a 429, or a Slack outage). It is logged and retried with backoff; the run itself never fails. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-010"></span>`UZ-SLK-010` | 401 | Invalid Slack signature | The Slack signature did not verify. The Slack app's signing secret must match the one vaulted at slack-app/signing_secret. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-011"></span>`UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack timestamp is more than 5 minutes off. That means a replay or clock skew. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-020"></span>`UZ-SLK-020` | 200 | Slack team not installed | This Slack team has no connector install; the event is acknowledged and ignored. Re-run Connect Slack from the dashboard. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-022"></span>`UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it continues, check the Slack app credentials. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-030"></span>`UZ-SLK-030` | 502 | Slack answer post failed | The answer could not be posted to Slack: missing chat:write, a 429, or an outage. It retries with backoff; the run does not fail. | Keep Slack app credentials, permissions, and clocks current. |
 
 ### Tools
 
@@ -261,7 +261,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-RUN-012"></span>`UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant balance cannot cover another run slice. The lease does not renew, and the run stops cleanly. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed. Token counts become zero, but the renewed slice still charges for runtime. The lease still renews. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
-| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`. The lease cannot renew, so the run stops. This differs from UZ-RUN-012, which reports a low tenant balance. | Keep runner settings and lease health within configured limits. |
+| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`, so the run stops. The tenant balance is fine; this is the fleet's own budget. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. | Keep runner settings and lease health within configured limits. |
 
 ### Runs
@@ -281,8 +281,8 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-EXEC-013"></span>`UZ-EXEC-013` | 500 | Runner fleet run failed | The runner could not finish the fleet run. Check the activity stream. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-014"></span>`UZ-EXEC-014` | 400 | Run settings invalid | The run settings are invalid. Check the fleet files before retrying. | Check runner settings and access before starting work. |
 | <span id="UZ-EXEC-015"></span>`UZ-EXEC-015` | 402 | Run stopped: fleet limit reached | The run stopped because the fleet reached its configured limit. | Check runner settings and access before starting work. |
-| <span id="UZ-EXEC-016"></span>`UZ-EXEC-016` | 401 | Runner token rejected | The control plane rejected this host's agt_r runner token (401/403) on the heartbeat. Retrying can't fix it — mint a fresh agt_r and issue the host's runner token again, then restart the runner. | Check runner settings and access before starting work. |
-| <span id="UZ-EXEC-017"></span>`UZ-EXEC-017` | 409 | Assignment exceeds host capability | The policy assigned to this runner needs an enforcement mechanism its host cannot deliver. The runner row names the missing mechanism; fix the host or relax the assignment from the dashboard. | Check runner settings and access before starting work. |
+| <span id="UZ-EXEC-016"></span>`UZ-EXEC-016` | 401 | Runner token rejected | The control plane rejected this host's runner token. Retrying cannot fix it: mint a fresh agt_r token, re-issue the host's runner token, and restart the runner. | Check runner settings and access before starting work. |
+| <span id="UZ-EXEC-017"></span>`UZ-EXEC-017` | 409 | Assignment exceeds host capability | The assigned policy needs an enforcement mechanism this host cannot deliver. The runner row names it. Fix the host or relax the assignment. | Check runner settings and access before starting work. |
 
 ### Approvals
 
@@ -299,7 +299,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-MEM-002"></span>`UZ-MEM-002` | 404 | Fleet not found for memory op | The fleet_id does not exist or does not belong to the requesting workspace. Verify the fleet_id and workspace scope. | Use an existing fleet and a valid memory category. |
+| <span id="UZ-MEM-002"></span>`UZ-MEM-002` | 404 | Fleet not found for memory op | The fleet_id does not exist or is not in this workspace. Verify both. | Use an existing fleet and a valid memory category. |
 | <span id="UZ-MEM-003"></span>`UZ-MEM-003` | 503 | Saved memory unavailable | Saved memory is unavailable. The fleet uses temporary workspace memory until the service recovers. | Use an existing fleet and a valid memory category. |
 | <span id="UZ-MEM-004"></span>`UZ-MEM-004` | 404 | Memory entry not found | That memory entry is already gone — the fleet isn't holding anything under that key. | Use an existing fleet and a valid memory category. |
 
@@ -313,23 +313,23 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-APIKEY-005"></span>`UZ-APIKEY-005` | 409 | Key name already exists in this tenant | An API key with that name already exists. Pick a different name for this tenant. | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-006"></span>`UZ-APIKEY-006` | 409 | API key is already revoked | That API key is already revoked. Refresh the list to see its current state. | Use current API key identifiers and replace revoked keys. |
 | <span id="UZ-APIKEY-007"></span>`UZ-APIKEY-007` | 409 | active cannot be set to true; mint a new key instead | A revoked key can't be reactivated. Mint a new key instead. | Use current API key identifiers and replace revoked keys. |
-| <span id="UZ-APIKEY-008"></span>`UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | Revoke this key before deleting it. Revoke it first, then delete the revoked key. | Use current API key identifiers and replace revoked keys. |
+| <span id="UZ-APIKEY-008"></span>`UZ-APIKEY-008` | 409 | Active API key must be revoked before deletion | This key is still active. Revoke it first, then delete it. | Use current API key identifiers and replace revoked keys. |
 
 ### Repository repair
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | A write-scoped repository token issues only when this lease's event carries an approved repository-write gate. No approval card was answered for this event, or it resolved to something other than approved. The run continues read-only. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
-| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | The fleet's repository binding no longer matches the one the approval card stated. Re-raise the approval so a human sees the current reach; the mint refuses rather than widening a decided answer. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
-| <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. The first shipped repair is the record; close the surplus Pull Request on GitHub. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
-| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | This approval already funded 32 write-credential requests. Answer a new repository-write approval before another write-scoped token request. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
-| <span id="UZ-REPAIR-014"></span>`UZ-REPAIR-014` | 200 | Repair provenance refused | The repair branch did not resolve to an approved write gate with the same workspace, Fleet, event, installation, repository, and App author. The delivery is acknowledged without recording a link or waking a Fleet. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | No repository-write approval was answered for this event, so no write-scoped token issues. The run continues read-only. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | The fleet's repository binding no longer matches the approved card. Re-raise the approval so a human sees the current reach. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. Close the surplus Pull Request on GitHub. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | This approval already funded 32 write-credential requests. Answer a new repository-write approval first. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
+| <span id="UZ-REPAIR-014"></span>`UZ-REPAIR-014` | 200 | Repair provenance refused | The repair branch does not match an approved write gate on workspace, Fleet, event, installation, repository, and App author. The delivery is acknowledged and nothing is recorded. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
 
 ### Integration grants
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-GRANT-001"></span>`UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. A grant is seeded when the fleet is installed, from the credentials its bundle declares; it becomes usable once its approval gate is resolved. Check the grant with: `GET /v1/workspaces/{ws}/fleets/{id}/integration-grants` | Use active integration grants approved for the fleet. |
+| <span id="UZ-GRANT-001"></span>`UZ-GRANT-001` | 403 | No integration grant for service | This fleet has no approved grant for the target service. Check it with `GET /v1/workspaces/{ws}/fleets/{id}/integration-grants` and resolve its approval. | Use active integration grants approved for the fleet. |
 | <span id="UZ-GRANT-002"></span>`UZ-GRANT-002` | 404 | Integration grant not found | We couldn't find that grant request. It may have already been resolved — refresh the list. | Use active integration grants approved for the fleet. |
 | <span id="UZ-GRANT-003"></span>`UZ-GRANT-003` | 409 | Grant already resolved | Someone already resolved this. Refresh to see the outcome and who resolved it. | Use active integration grants approved for the fleet. |
 
@@ -338,14 +338,14 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
 | <span id="UZ-CRED-001"></span>`UZ-CRED-001` | 404 | Integration not connected | That integration isn't connected. Connect it from the Integrations page, then try again. | Create required workspace secrets before starting a run. |
-| <span id="UZ-CRED-002"></span>`UZ-CRED-002` | 503 | Credential broker not configured | The on-demand credential broker is not wired on this deployment (a boot-time misconfiguration, not a client error). An operator must configure it before runners can mint credentials. | Create required workspace secrets before starting a run. |
+| <span id="UZ-CRED-002"></span>`UZ-CRED-002` | 503 | Credential broker not configured | The on-demand credential broker is not configured on this deployment. An operator must set it up before runners can mint credentials. | Create required workspace secrets before starting a run. |
 
 ### GitHub
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation is gone (uninstalled or revoked), so no token can be minted. Reconnect GitHub from the dashboard — the fleet stays blocked until the App is reinstalled. | Keep the GitHub App installed with required repository access. |
-| <span id="UZ-GH-002"></span>`UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token (upstream 5xx, network, or a malformed exchange response). This is temporary. Retry shortly; if the error continues, check GitHub status and the App configuration. | Keep the GitHub App installed with required repository access. |
+| <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation was uninstalled or revoked, so no token can be minted. Reconnect GitHub from the dashboard. | Keep the GitHub App installed with required repository access. |
+| <span id="UZ-GH-002"></span>`UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token. Retry shortly; if it continues, check GitHub status and the App configuration. | Keep the GitHub App installed with required repository access. |
 
 ### Connectors
 
