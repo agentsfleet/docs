@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-08-14
+verified: 2026-08-15
 product_version: 0.26.2
 executable: false
 ---
@@ -114,7 +114,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-WH-002"></span>`UZ-WH-002` | 400 | Malformed webhook | Webhook payload could not be parsed. Check Content-Type and body. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-010"></span>`UZ-WH-010` | 401 | Invalid webhook signature | The webhook signature did not verify. The stored signing secret must match the one configured upstream. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-011"></span>`UZ-WH-011` | 401 | Stale webhook timestamp | The webhook timestamp is more than 5 minutes off. That means a replay or clock skew. | Keep webhook signing secrets matched and service clocks synchronized. |
-| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | Create a random webhook secret of at least 32 bytes. Store it as this source's webhook_secret, set the same value upstream, then resend. | Keep webhook signing secrets matched and service clocks synchronized. |
+| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | This source is not a recognized webhook provider, or the workspace holds no webhook secret for it. Create a random secret of at least 32 bytes, store it as the source's webhook_secret, set the same value upstream, then resend. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-021"></span>`UZ-WH-021` | 404 | Connector installation is not mapped | Reconnect the provider App to the intended workspace, then redeliver the event. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-022"></span>`UZ-WH-022` | 404 | No fleet subscription matched | Bind the repository and event to an active fleet with an approved integration grant. | Keep webhook signing secrets matched and service clocks synchronized. |
 | <span id="UZ-WH-030"></span>`UZ-WH-030` | 413 | Webhook payload too large | The webhook body exceeds the 1 MiB limit. Reduce the payload size. | Keep webhook signing secrets matched and service clocks synchronized. |

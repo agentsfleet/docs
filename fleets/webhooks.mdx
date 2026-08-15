@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-08-15
 product_version: 0.26.2
 executable: false
 ---
@@ -76,7 +76,7 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 | `UZ-WH-001` | The fleet URL is wrong or deleted. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The workspace lacks the named secret. | Create the `secret_ref` name. |
+| `UZ-WH-020` | The trigger's `source` is not a supported provider, or the workspace has no secret for it. | Use a supported `source`. Create the workspace secret named by `credential_name`, which defaults to the `source` name. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.
