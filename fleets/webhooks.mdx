@@ -76,7 +76,7 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 | `UZ-WH-001` | The fleet URL is wrong or deleted. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The trigger's `source` is not a supported provider, or the workspace has no secret for it. | Use a supported `source`. Create the workspace secret named by `credential_name`, which defaults to the `source` name. |
+| `UZ-WH-020` | The trigger's `source` is not a supported provider, or the workspace has no secret for it. | Supported sources are `github`, `slack`, and `linear`. Create the workspace secret named by `credential_name`, which defaults to the `source` name, and put the signing value in its `webhook_secret` field. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.
