@@ -44,9 +44,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
     provider. Rates are charged under platform-managed posture only; a
     self-managed credential is billed by your own provider account, so an
     unpriced row shows a dash.
+  - **`--model` is checked too**, against that provider's models only. It used
+    to be validated nowhere, so a typo stored a credential that reported
+    success and failed at the first event. The rejection lists what the
+    provider serves.
   - **Provider ids match without case.** `--provider Anthropic` stores
     `anthropic` — the catalogue's spelling, which is what the runtime compares
-    against.
+    against. Model ids are matched exactly: they belong to the provider, and
+    several are case-sensitive.
   - **An empty or unreachable catalogue accepts the value.** A newly deployed
     server has no catalogue until an administrator primes it, and a catalogue
     outage is not a reason to refuse a credential. The server validates either

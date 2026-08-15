@@ -44,7 +44,7 @@ The provider column supplies `--provider` and the model column supplies
 1. Store the provider credential. The provider id, API key, and model are all required.
 
    ```bash
-   agentsfleet secret create my-openai --provider openai --api-key sk-... --model gpt-5
+   agentsfleet secret create my-openai --provider openai --api-key sk-... --model gpt-5.6-sol
    ```
 
    ```text
@@ -54,6 +54,11 @@ The provider column supplies `--provider` and the model column supplies
    Provider ids are matched without case: `--provider Anthropic` stores
    `anthropic`, the catalogue's own spelling. A provider the catalogue does not
    price is refused, and the message names what it does price.
+
+   `--model` is checked the same way, against that provider's models only.
+   Model ids are matched exactly — they belong to the provider, and several are
+   case-sensitive (`MiniMaxAI/MiniMax-M3`), so a wrong-case model is refused
+   rather than silently corrected.
 
 2. Select the stored credential as the tenant provider.
 
@@ -75,7 +80,7 @@ The provider column supplies `--provider` and the model column supplies
    FIELD               VALUE
    mode                self_managed
    provider            openai
-   model               gpt-5
+   model               gpt-5.6-sol
    context_cap_tokens  <varies>
    secret_ref          my-openai
    ```
@@ -112,6 +117,9 @@ that carry no API key, so a stored credential could never reach them. The
 `openai-compatible` form does not help here — these tools have no endpoint.
 
 `--api-key` or `--model` without `--provider` is refused. The three flags describe one credential and travel together.
+
+A `--model` the provider does not serve is refused, and the message lists that
+provider's models. Run `agentsfleet models --provider <ID>` for the list.
 
 `--base-url` with a named provider is refused. A named provider carries its own endpoint; the flag belongs to `openai-compatible` alone.
 
