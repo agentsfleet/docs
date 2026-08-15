@@ -14,11 +14,30 @@ executable: false
 
 Fleets run on the platform's model by default. Your tenant can run them on a model you pay for instead. Store a provider credential in the workspace vault, then select it as the tenant provider.
 
-`--provider` accepts only provider names the runtime can dial. A name it cannot dial is refused before anything is sent, so a credential that could never work is never stored.
+`--provider` is checked against the model catalogue your server serves, so a
+credential that could never work is never stored. Run `agentsfleet models` to
+see that catalogue — the dashboard's model picker reads the same one.
 
 ## Before you begin
 
-Select the workspace that should own the credential. Have the provider's API key and the model name you want as the default.
+Select the workspace that should own the credential. Have the provider's API
+key ready, and run `agentsfleet models` to pick a provider id and model this
+server serves:
+
+```bash
+agentsfleet models --provider anthropic
+```
+
+```text
+PROVIDER   MODEL              CONTEXT  IN/MTOK  OUT/MTOK
+anthropic  claude-fable-5     1000k    $10.00   $50.00
+anthropic  claude-haiku-4-5   200k     $1.00    $5.00
+anthropic  claude-opus-4-8    1000k    $5.00    $25.00
+anthropic  claude-sonnet-5    1000k    $3.00    $15.00
+```
+
+The provider column supplies `--provider` and the model column supplies
+`--model` in the next step.
 
 ## Steps
 
@@ -32,7 +51,9 @@ Select the workspace that should own the credential. Have the provider's API key
    ✓ Secret 'my-openai' stored in vault.
    ```
 
-   Provider ids are matched without case: `--provider Anthropic` stores `anthropic`. An unknown id exits with code `2` and lists every accepted id.
+   Provider ids are matched without case: `--provider Anthropic` stores
+   `anthropic`, the catalogue's own spelling. A provider the catalogue does not
+   price is refused, and the message names what it does price.
 
 2. Select the stored credential as the tenant provider.
 
@@ -80,9 +101,15 @@ Run `agentsfleet tenant provider show` and check it names your secret. Then stee
 
 ## Common problems
 
-An unknown `--provider` value exits with code `2` and lists the accepted ids. Check the spelling against that list.
+A `--provider` value your catalogue does not price is refused, and the message
+names what it does price. Run `agentsfleet models` for the full list. To use a
+provider the catalogue does not carry, point at it directly:
+`--provider openai-compatible --base-url https://host/v1 --model <MODEL>`.
 
-The ids `claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and `claude-code` are refused with their own message. They name local coding tools that carry no API key, so a stored credential could never reach them.
+The ids `claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and
+`claude-code` are refused with their own message. They name local coding tools
+that carry no API key, so a stored credential could never reach them. The
+`openai-compatible` form does not help here — these tools have no endpoint.
 
 `--api-key` or `--model` without `--provider` is refused. The three flags describe one credential and travel together.
 

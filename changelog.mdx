@@ -8,22 +8,57 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 </Tip>
 
 <Update label="Aug 15, 2026" tags={["Breaking", "What's new", "CLI"]}>
-  ## `--provider` accepts only names the runtime can dial
+  ## `--provider` is checked against the model catalogue your server serves
 
-  A provider credential could name any string, the save reported success, and the failure surfaced later as a fleet that could not reach any model. `agentsfleet secret create` and `secret update` now check `--provider` at parse time against the runtime's own dial tables — 116 ids — so an undialable name exits with code `2` before anything is sent, and lists every accepted id.
+  A provider credential could name any string, the save reported success, and
+  the failure surfaced later as a fleet that could not reach any model.
+  `agentsfleet secret create` and `secret update` now check `--provider`
+  against `GET /v1/models` — the same catalogue the dashboard's model picker
+  reads — so a name your server has no models for is refused before the
+  credential is stored.
+
+  The client carries no provider list of its own. A provider becomes available
+  by being added to the catalogue, not by upgrading the client, so the terminal
+  and the dashboard always offer the same set.
 
   ## Breaking changes
 
-  - **An unknown `--provider` value is refused.** Exit code `2`, no network call, and the full accepted list in the message. Free-form `--data` bodies are unchanged and stay unvalidated.
-  - **The typed form requires `--provider`.** `--api-key` with `--model` and no provider used to store a credential whose provider was the empty string — recorded as a provider key that could never dial. It is now refused with the pairing rule in the message.
-  - **`claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and `claude-code` are refused by name.** Each names a local coding tool that carries no API key, so a stored key-bearing credential could never reach it. The refusal says so instead of listing 116 ids.
+  - **A provider your catalogue does not price is refused.** The message names
+    what your server does price, and points at the custom-endpoint form for
+    anything it does not. Free-form `--data` bodies are unchanged and stay
+    unvalidated.
+  - **The typed form requires `--provider`.** `--api-key` with `--model` and no
+    provider used to store a credential whose provider was the empty string —
+    recorded as a provider key that could never dial. It is now refused with
+    the pairing rule in the message.
+  - **`claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and
+    `claude-code` are refused by name.** Each names a local coding tool that
+    carries no API key, so a stored key-bearing credential could never reach
+    it. The refusal says so, and does not offer the custom-endpoint form —
+    these tools have no endpoint to point at.
 
   ## What's new
 
-  - **Provider ids match without case.** `--provider Anthropic` stores `anthropic`; the stored spelling is always the canonical id.
-  - **`--help` names four example ids and the live count** instead of printing the full list; the unknown-value error is where the complete list appears.
-  - **The credential store reads the caller's environment.** `AGENTSFLEET_STATE_DIR` handed to the process now reaches every read and write, including the ones behind commands, instead of only the ones that consulted the process environment directly.
-  - **An unreadable `credentials.json` warns instead of impersonating logged-out.** A permission or disk error prints `warning: could not read credentials.json` with the cause, then the command continues as logged out. A missing file stays silent, as before.
+  - **`agentsfleet models` lists the catalogue.** Provider, model id, context
+    window, and per-million-token rates. `--provider <id>` scopes it to one
+    provider. Rates are charged under platform-managed posture only; a
+    self-managed credential is billed by your own provider account, so an
+    unpriced row shows a dash.
+  - **Provider ids match without case.** `--provider Anthropic` stores
+    `anthropic` — the catalogue's spelling, which is what the runtime compares
+    against.
+  - **An empty or unreachable catalogue accepts the value.** A newly deployed
+    server has no catalogue until an administrator primes it, and a catalogue
+    outage is not a reason to refuse a credential. The server validates either
+    way.
+  - **The credential store reads the caller's environment.**
+    `AGENTSFLEET_STATE_DIR` handed to the process now reaches every read and
+    write, including the ones behind commands, instead of only the ones that
+    consulted the process environment directly.
+  - **An unreadable `credentials.json` warns instead of impersonating
+    logged-out.** A permission or disk error prints `warning: could not read
+    credentials.json` with the cause, then the command continues as logged out.
+    A missing file stays silent, as before.
 </Update>
 
 <Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
@@ -929,208 +964,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **`UZ-CONN-004`** (404) — the `{provider}` matches no provider on this deployment; the body names it.
 </Update>
 
-<Update label="Jun 30, 2026" tags={["Breaking", "What's new", "API", "UI", "CLI"]}>
-  ## Bring your own Fleet templates
-
-  Onboard your own Fleet templates alongside the curated platform catalogue. Templates are stored once, content-addressed, and shared across the fleets you spin up from them.
-
-  ## Upgrading
-
-  - **Install is template-only.** `agentsfleet install --from <path>` has been removed. Install by id instead: `agentsfleet install --template <id>`. To run a fleet you authored, onboard its `SKILL.md`/`TRIGGER.md` as a template first. To push local edits onto an already-installed fleet, use `agentsfleet fleet update <fleet_id> --from <path>` (unchanged). Upgrade the CLI and server together.
-  - **Fleet-create takes a template id, not a bundle.** `POST /v1/workspaces/{workspace_id}/fleets` accepts exactly one of `{platform_template_id}` or `{tenant_template_id}`, plus an optional `name`. Raw `source_markdown`, the per-workspace `bundle_id`, and the github-import-at-create body are rejected.
-  - **Bundle import/snapshot endpoints removed.** `POST /v1/workspaces/{workspace_id}/fleets/bundles/snapshots` and the snapshot-detail read no longer exist.
-
-  ## What's new
-
-  - **Two tiers** — onboard a template into the global platform catalogue or into your own workspace; workspace templates are visible only to your workspace.
-  - **One gallery, both tiers** — the install gallery unions the platform catalogue with your workspace's own templates.
-  - **Templates explain their credentials** — entries carry a description and per-credential "why this is needed" copy.
-
-  ## API reference
-
-  - **`GET /v1/workspaces/{workspace_id}/fleet-templates`** — the workspace gallery. Each entry carries `id`, `name`, `description`, `visibility` (`"platform"` or `"tenant"`), `source_ref`, `requirements`, `required_credentials_reasons`, and support-file summaries — never an object-store key.
-  - **`POST /v1/admin/fleet-templates`** (scope `platform-template:write`) and **`POST /v1/workspaces/{workspace_id}/fleet-templates`** (scope `template:write` + workspace ownership) — onboard from a GitHub source. The canonical bundle is written to object storage keyed by content hash; the response is metadata only.
-  - **`UZ-BUNDLE-002`** now reads "No installable template or stored snapshot matches the request in this workspace."
-
-  ## CLI
-
-  - **`agentsfleet install --template <id>`** resolves the template in your gallery and installs it by tier. `--from <path>` has been removed from `install`.
-  - **`agentsfleet fleet update <fleet_id> --from <path>`** is unchanged.
-</Update>
-
-<Update label="Jun 30, 2026" tags={["What's new", "API"]}>
-  ## Authorization is now scope-based
-
-  Every capability a token holds is an explicit `resource:action` scope read off the token, replacing the old `user`/`operator`/`admin` roles and the `platform_admin` flag. A correctly-configured principal sees no change.
-
-  ## API reference
-
-  - **`scopes` claim** — the session token and tenant API key carry a space-delimited `scopes` list (e.g. `fleet:admin credential:write workspace:admin`), set automatically for a workspace owner at signup.
-  - **`403 UZ-AUTH-022` "Insufficient scope"** — a denial names the required scope in the detail (`Requires scope fleet:admin`).
-  - **`read < write < admin` hierarchy** — per resource, `admin` satisfies `write` satisfies `read`.
-
-  See the [error-codes reference](/api-reference/error-codes) for `UZ-AUTH-022`.
-</Update>
-
-<Update label="Jun 28, 2026" tags={["What's new", "UI", "API", "Bug fixes"]}>
-  ## Template installs explain why a credential is needed
-
-  A missing required credential now tells you *why* — "this fleet needs github to review your pull requests" — instead of a bare "connect github".
-
-  ## What's new
-
-  - **Purpose-driven connect step** — the install gate reads a per-credential reason from the template; templates without reason copy fall back to the generic prompt.
-  - **No skippable installs** — the dashboard no longer offers a way past a missing credential.
-  - **Fleets empty state is the gallery** — the first-run page shows the full-width template gallery.
-  - **Custom secrets copy** — values are encrypted and write-only once saved: replaceable, never viewable.
-
-  ## API reference
-
-  ```
-  GET /v1/fleets/bundles   each template row now carries required_credentials_reasons
-  ```
-
-  - **`required_credentials_reasons`** is an optional object keyed by credential name — `{ "github": "review your pull requests" }` — carrying display-only copy. It does **not** replace `required_credentials`: install validation still reads that array.
-  - **Installing with a missing credential** still returns `UZ-BUNDLE-003` (424) with a `missing_credentials` list.
-
-  ## Bug fixes
-
-  - **Billing empty state** reads "No charges yet" instead of "No billable events yet".
-  - **Dashboard loading states** keep each route's real title while data loads.
-
-  ## CLI
-
-  - No command or flag changed. `agentsfleet templates --json` passes `required_credentials_reasons` straight through.
-</Update>
-
-<Update label="Jun 28, 2026" tags={["What's new", "UI", "API"]}>
-  ## Models and Keys is one page, and credentials say what they are
-
-  Model and key management is a single **Models & Keys** page. The standalone Credentials page is gone — `/credentials` redirects here.
-
-  ## What's new
-
-  - **One Models & Keys page** — the active model shows as a hero (`model · via <credential> · LIVE`); switching sets that credential's saved model with no key re-entry.
-  - **Credentials are classified server-side** — each row carries its `kind` plus non-secret provider, model, and base URL. The API key is never returned.
-  - **Replace a key in place** — rotating a provider key updates only the secret and keeps model, provider, and endpoint.
-  - **Custom secrets keep their own section** — `NAME=value` secrets a SKILL reads by name stay listed apart from model-provider keys.
-
-  ## API reference
-
-  ```
-  GET   /v1/workspaces/{ws}/credentials          each row carries kind + non-secret provider/model/base_url; never api_key
-  PATCH /v1/workspaces/{ws}/credentials/{name}   body {api_key} — rotate the key only, preserving provider/model/base_url
-  ```
-
-  - **`kind` is derived server-side** from the stored provider field — `provider_key`, `custom_endpoint`, or `custom_secret` — never from the user-chosen name. An unreadable legacy body lists as a custom secret and the call still returns 200.
-  - **Rotate errors** — a missing credential returns `UZ-VAULT-003` (404); an empty key returns `UZ-REQ-001` (400).
-</Update>
-
-<Update label="Jun 25, 2026" tags={["Security", "Breaking"]}>
-  ## The sandboxed agent runner is hardened for general availability
-
-  ## Upgrading
-
-  - **Egress now fails closed by default.** A runner with `RUNNER_NETWORK_POLICY` unset no longer shares the host network. To keep the previous open-by-default posture, set `RUNNER_NETWORK_POLICY=allow_all` explicitly; typos and unrecognized values also fail closed.
-
-  ## What's new
-
-  - **Complete secret redaction on the live tail** — the model API key and every custom secret field become their `${secrets.NAME.FIELD}` placeholder before any progress frame leaves the run, even when a secret is split across two streaming chunks. On a memory failure the frame is dropped, never sent raw.
-  - **Server-Side Request Forgery (SSRF) protection for tenant hosts** — a tool dialing a tenant-configured host pins the resolved address and rejects private, loopback, and link-local targets, including the cloud metadata endpoint.
-  - **Bounded retries and call deadlines** — runner backoff is capped with jitter, and a call whose watchdog cannot start fails fast.
-  - **Proven kernel enforcement** — seccomp syscall traps, Landlock filesystem denial, and cgroup process and memory limits are verified against a real kernel.
-</Update>
-
-<Update label="Jun 25, 2026" tags={["What's new", "API", "UI"]}>
-  ## Build the model catalogue and set the priced default from the dashboard
-
-  Platform operators build the priced catalogue and choose the one active default model and key in the dashboard — no SQL seed, no redeploy.
-
-  ## What's new
-
-  - **Model catalogue** — `/admin/models` lists every priced model and adds one through a dialog (provider, model id, context cap, and per-million-token input / cached-input / output rates). Edits and deletes repopulate the in-process rate cache with no restart.
-  - **Platform default** — a Platform Default card activates one model, pairing it with the key's source workspace and an optional OpenAI-compatible base URL. Exactly one default is active at a time.
-  - **Catalogue-curated onboarding** — the catalogue ships empty and admins populate it.
-
-  ## API reference
-
-  Every route requires the `platform_admin` claim; a per-tenant admin role returns `UZ-AUTH-021`.
-
-  ```
-  GET    /v1/admin/models          list the catalogue (each row carries its uid)
-  POST   /v1/admin/models          add a priced row
-  PATCH  /v1/admin/models/{uid}    update a row's caps/rates
-  DELETE /v1/admin/models/{uid}    remove a row
-  PUT    /v1/admin/platform-keys   set the one active default
-  ```
-
-  Rows are keyed by `uid` in the URL, not `provider/model_id` — a model id can contain `/`. A create body:
-
-  ```json
-  {
-    "provider": "fireworks",
-    "model_id": "accounts/fireworks/models/kimi-k2.6",
-    "context_cap_tokens": 256000,
-    "input_nanos_per_mtok": 950000000,
-    "cached_input_nanos_per_mtok": 100000000,
-    "output_nanos_per_mtok": 4000000000
-  }
-  ```
-
-  `PUT /v1/admin/platform-keys` takes `{"provider", "source_workspace_id", "model", "base_url"?}`. The context cap is read from the catalogue row, never the body, and the default's `(provider, model)` must already be a priced row (rejected with `UZ-PROVIDER-004`). New codes: `UZ-PROVIDER-006` (no catalogue row for that uid), `UZ-PROVIDER-007` (the model is the active default — repoint before deleting), `UZ-PROVIDER-008` (duplicate `(provider, model_id)`).
-</Update>
-
-<Update label="Jun 24, 2026" tags={["What's new", "Bug fixes", "UI", "CLI", "API", "Security"]}>
-  ## One terminal-native dashboard, and any OpenAI-compatible endpoint
-
-  The dashboard reads as one product: one tab style, one content width, a description under each page title. Own-key model setup also drops its named-provider limit.
-
-  ## What's new
-
-  - **Billing** — a balance card with a full-width consumption meter and a terminal-style ledger (`date · amount · type · description`). The per-seat grid is replaced by a single "Pay as you go" row.
-  - **Models and Credentials are two destinations** — `Models` (`/settings/models`) and `Credentials` (`/credentials`).
-  - **A credentials vault** — `/credentials` groups model-provider keys, custom `NAME=value` secrets, and integrations. Provider keys stay write-only and masked (Replace, never reveal).
-  - **Custom — OpenAI-compatible model setup** — add a credential with a base URL and an optional key, then point own-key setup at it.
-  - **One install flow** — Dashboard and Fleets share one install screen, taking a template, an `owner/repo` GitHub source, or pasted `SKILL.md`.
-
-  ## API reference
-
-  A self-managed credential may carry an OpenAI-compatible endpoint in its stored JSON. The `PUT /v1/tenants/me/provider` body is unchanged — the URL lives in the referenced credential:
-
-  ```json
-  {
-    "provider": "openai-compatible",
-    "api_key":  "<optional — omit for a keyless gateway>",
-    "model":    "<model id>",
-    "base_url": "https://host/v1"
-  }
-  ```
-
-  - **`base_url` is validated before any run** — it must be `https` and resolve to a public host. A loopback, private, link-local, or cloud-metadata target is rejected with `UZ-PROVIDER-005` and never dialed. A `base_url` set on a named provider is rejected too.
-
-  ## Bug fixes
-
-  - **Custom endpoints now activate** — self-managed endpoints bill against your own provider, so they no longer require a catalogued model.
-  - **Account-modal email is readable in dark mode.**
-  - **Outbound model calls pin the validated address** — the non-streaming provider dial connects to the address checked at validation time instead of re-resolving, closing a DNS-rebinding gap.
-
-  ## CLI
-
-  - **`agentsfleet credential add`** accepts `--provider openai-compatible --base-url <url> --model <m> [--api-key <key>]` — the key is optional, the model required, and a non-`https` `--base-url` is rejected at parse time with no network call. **`agentsfleet tenant provider add --credential <name>`** then activates it. Tool secrets keep the existing `credential add <name> --data=@-` form.
-</Update>
-
-<Update label="Jun 23, 2026" tags={["What's new", "Bug fixes", "Observability"]}>
-  ## Metrics export to Grafana Cloud
-
-  `agentsfleetd` pushes metrics to Grafana Cloud, completing the OpenTelemetry triad next to traces and logs. Billing is untouched: the wallet, charge ledger, and per-event breakdowns stay in Postgres, and a metric is emitted only after its charge commits.
-
-  ## What's new
-
-  - **Three series** — credit drained (by posture and model), token throughput (by direction: input, cached, output), and a run-latency histogram, plus a `samples_dropped` counter reporting the exporter's own health.
-  - **One credential triple** — `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` enable traces, logs, and metrics together. Unset, the exporter stays off and says so in one startup log line.
-  - **Collector requirement** — metrics use OpenTelemetry Protocol (OTLP) delta temporality; run an OpenTelemetry Collector with the `deltatocumulative` processor in front of Grafana Cloud Mimir.
-
-  ## Bug fixes
-
-  - **Traces and logs** — span names, attributes, and log bodies were emitted with a stray extra quote that produced invalid JSON, so Tempo and Loki could reject them.
+<Update label="Before Jul 1, 2026" tags={["Archive"]}>
+  ## Earlier entries
+
+  Entries before July 1, 2026 covered the pre-release period when the API,
+  the CLI, and the data model were still changing shape weekly. They described
+  behaviour that later entries have superseded, so they are no longer a useful
+  guide to the product and have been removed from this page.
+
+  The full record is in version control:
+  [`changelog.mdx` history](https://github.com/agentsfleet/docs/commits/main/changelog.mdx).
 </Update>
