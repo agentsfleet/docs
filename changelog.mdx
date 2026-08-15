@@ -7,6 +7,25 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 15, 2026" tags={["Breaking", "What's new", "CLI"]}>
+  ## `--provider` accepts only names the runtime can dial
+
+  A provider credential could name any string, the save reported success, and the failure surfaced later as a fleet that could not reach any model. `agentsfleet secret create` and `secret update` now check `--provider` at parse time against the runtime's own dial tables — 116 ids — so an undialable name exits with code `2` before anything is sent, and lists every accepted id.
+
+  ## Breaking changes
+
+  - **An unknown `--provider` value is refused.** Exit code `2`, no network call, and the full accepted list in the message. Free-form `--data` bodies are unchanged and stay unvalidated.
+  - **The typed form requires `--provider`.** `--api-key` with `--model` and no provider used to store a credential whose provider was the empty string — recorded as a provider key that could never dial. It is now refused with the pairing rule in the message.
+  - **`claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and `claude-code` are refused by name.** Each names a local coding tool that carries no API key, so a stored key-bearing credential could never reach it. The refusal says so instead of listing 116 ids.
+
+  ## What's new
+
+  - **Provider ids match without case.** `--provider Anthropic` stores `anthropic`; the stored spelling is always the canonical id.
+  - **`--help` names four example ids and the live count** instead of printing the full list; the unknown-value error is where the complete list appears.
+  - **The credential store reads the caller's environment.** `AGENTSFLEET_STATE_DIR` handed to the process now reaches every read and write, including the ones behind commands, instead of only the ones that consulted the process environment directly.
+  - **An unreadable `credentials.json` warns instead of impersonating logged-out.** A permission or disk error prints `warning: could not read credentials.json` with the cause, then the command continues as logged out. A missing file stays silent, as before.
+</Update>
+
 <Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
   ## Login saves a credential that outlives the browser session
 

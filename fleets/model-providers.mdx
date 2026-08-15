@@ -1,0 +1,108 @@
+---
+title: Use your own model provider
+description: Store a model-provider credential and run fleets on it instead of the platform default.
+type: how-to
+audience: user
+verified: 2026-08-15
+product_version: 0.26.2
+executable: false
+---
+
+# Use your own model provider
+
+## What this does
+
+Fleets run on the platform's model by default. Your tenant can run them on a model you pay for instead. Store a provider credential in the workspace vault, then select it as the tenant provider.
+
+`--provider` accepts only provider names the runtime can dial. A name it cannot dial is refused before anything is sent, so a credential that could never work is never stored.
+
+## Before you begin
+
+Select the workspace that should own the credential. Have the provider's API key and the model name you want as the default.
+
+## Steps
+
+1. Store the provider credential. The provider id, API key, and model are all required.
+
+   ```bash
+   agentsfleet secret create my-openai --provider openai --api-key sk-... --model gpt-5
+   ```
+
+   ```text
+   ✓ Secret 'my-openai' stored in vault.
+   ```
+
+   Provider ids are matched without case: `--provider Anthropic` stores `anthropic`. An unknown id exits with code `2` and lists every accepted id.
+
+2. Select the stored credential as the tenant provider.
+
+   ```bash
+   agentsfleet tenant provider create --secret my-openai
+   ```
+
+   ```text
+   Tenant provider added: mode=self_managed secret=my-openai
+   ```
+
+3. Confirm the active provider.
+
+   ```bash
+   agentsfleet tenant provider show
+   ```
+
+   ```text
+   FIELD               VALUE
+   mode                self_managed
+   provider            openai
+   model               gpt-5
+   context_cap_tokens  <varies>
+   secret_ref          my-openai
+   ```
+
+Fleets you install or resume after this point run on your provider.
+
+## Point at your own endpoint
+
+A gateway or self-hosted server that speaks the OpenAI API takes the `openai-compatible` form. `--base-url` must be `https`; a plain `http` URL is refused before any request. The API key is optional, because some private gateways take none.
+
+```bash
+agentsfleet secret create my-gateway --provider openai-compatible \
+  --base-url https://vllm.corp.example/v1 --model qwen2.5-coder --api-key sk-...
+```
+
+```text
+✓ Secret 'my-gateway' stored in vault.
+```
+
+## Verify it works
+
+Run `agentsfleet tenant provider show` and check it names your secret. Then steer any fleet; its responses now come from your provider, and its usage lands on your provider account.
+
+## Common problems
+
+An unknown `--provider` value exits with code `2` and lists the accepted ids. Check the spelling against that list.
+
+The ids `claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and `claude-code` are refused with their own message. They name local coding tools that carry no API key, so a stored credential could never reach them.
+
+`--api-key` or `--model` without `--provider` is refused. The three flags describe one credential and travel together.
+
+`--base-url` with a named provider is refused. A named provider carries its own endpoint; the flag belongs to `openai-compatible` alone.
+
+## Remove or undo
+
+Return to the platform default:
+
+```bash
+agentsfleet tenant provider delete
+```
+
+```text
+Custom LLM provider removed — events will now run on agentsfleet's platform default.
+```
+
+The stored credential stays in the vault. Delete it with `agentsfleet secret delete my-openai` when no fleet needs it.
+
+## Related pages
+
+- [Manage secrets](/fleets/secrets)
+- [Install a fleet](/fleets/install)

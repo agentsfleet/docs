@@ -111,7 +111,8 @@ Commands:
 | Command | Effect |
 |---|---|
 | `agentsfleet secret create <NAME>` | Stores a JSON object in the workspace vault under a name that is free. A name already in use is reported as skipped, and nothing is written. |
-| `agentsfleet secret update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data options as `agentsfleet secret create`. |
+| `agentsfleet secret create <NAME> --provider <ID> --api-key <KEY> --model <MODEL>` | Stores a model-provider credential. `--provider` accepts only ids the runtime can dial; an unknown id exits with code `2` and lists them. `--provider openai-compatible` adds a required `https` `--base-url` and makes `--api-key` optional. |
+| `agentsfleet secret update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data and provider options as `agentsfleet secret create`. |
 | `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
 | `agentsfleet secret list` | Lists secret names and metadata. |
 | `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
