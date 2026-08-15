@@ -7,6 +7,22 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 15, 2026" tags={["Security", "Bug fixes"]}>
+  ## Sign-in events record the caller's address, not the proxy's
+
+  `X-Forwarded-For` and `Fly-Client-IP` were read under capitalised names. httpz lowercases header names in place while parsing and `req.header` is an exact lookup with no case folding, so both reads returned nothing on every request and the derivation fell through to the raw connection peer. That is the correct answer for a deploy with no proxy in front of it, so the address chain read as healthy while recording the load balancer on every event.
+
+  ## Security
+
+  - **A forged `X-Forwarded-For` is caught again.** When the forwarded chain and `Fly-Client-IP` disagree, the Fly value wins and the request is marked divergent. Two unreadable headers meant that comparison ran on two empty values, so `client_ip_divergent` was false on every event ever emitted.
+  - **A replayed session is refused when it arrives from another address.** The consume path keys idempotency on `sha256(address || user-agent || session id)` — a matching fingerprint within 60 seconds returns the cached payload, any other fingerprint is terminal. With the address pinned to the proxy it separated nobody, so a session presented from elsewhere behind the same proxy, under a matching user agent, fingerprinted identically and was handed the cached payload instead of being refused.
+
+  ## Bug fixes
+
+  - **`client_ip` and `client_ip_source` name the caller and the header it came from.** The seven session audit events — created, approved, verified, verify-failed, consumed, consumed-replay, aborted — carry the derived address. `client_ip_source` read `tcp_peer` on all of them whatever the request actually carried.
+  - **`created_from_address` records where a credential was minted.** The `core.cli_credentials` column holds the address the operator signed in from rather than the proxy's, so it can identify a machine.
+</Update>
+
 <Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
   ## Login saves a credential that outlives the browser session
 
