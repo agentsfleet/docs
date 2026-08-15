@@ -10,60 +10,22 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Aug 15, 2026" tags={["Breaking", "What's new", "CLI"]}>
   ## `--provider` is checked against the model catalogue your server serves
 
-  A provider credential could name any string, the save reported success, and
-  the failure surfaced later as a fleet that could not reach any model.
-  `agentsfleet secret create` and `secret update` now check `--provider`
-  against `GET /v1/models` — the same catalogue the dashboard's model picker
-  reads — so a name your server has no models for is refused before the
-  credential is stored.
-
-  The client carries no provider list of its own. A provider becomes available
-  by being added to the catalogue, not by upgrading the client, so the terminal
-  and the dashboard always offer the same set.
+  A provider credential could name any string, and the failure surfaced later as a fleet that could not reach any model. `agentsfleet secret create` and `secret update` now check `--provider` against `GET /v1/models`, the same catalogue the dashboard's model picker reads. The client carries no provider list of its own, so a provider becomes available by being added to the catalogue rather than by upgrading the client.
 
   ## Breaking changes
 
-  - **A provider your catalogue does not price is refused.** The message names
-    what your server does price, and points at the custom-endpoint form for
-    anything it does not. Free-form `--data` bodies are unchanged and stay
-    unvalidated.
-  - **The typed form requires `--provider`.** `--api-key` with `--model` and no
-    provider used to store a credential whose provider was the empty string —
-    recorded as a provider key that could never dial. It is now refused with
-    the pairing rule in the message.
-  - **`claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and
-    `claude-code` are refused by name.** Each names a local coding tool that
-    carries no API key, so a stored key-bearing credential could never reach
-    it. The refusal says so, and does not offer the custom-endpoint form —
-    these tools have no endpoint to point at.
+  - **A provider your catalogue does not price is refused.** The message names what your server does price and points at the custom-endpoint form for anything it does not. Free-form `--data` bodies stay unvalidated.
+  - **The typed form requires `--provider`.** `--api-key` with `--model` and no provider used to store a credential whose provider was the empty string — a provider key that could never dial.
+  - **`claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and `claude-code` are refused by name.** Each names a local coding tool that carries no API key. The refusal says so and does not offer the custom-endpoint form — these tools have no endpoint to point at.
 
   ## What's new
 
-  - **`agentsfleet models` lists the catalogue.** Provider, model id, context
-    window, and per-million-token rates. `--provider <id>` scopes it to one
-    provider. Rates are charged under platform-managed posture only; a
-    self-managed credential is billed by your own provider account, so an
-    unpriced row shows a dash.
-  - **`--model` is checked too**, against that provider's models only. It used
-    to be validated nowhere, so a typo stored a credential that reported
-    success and failed at the first event. The rejection lists what the
-    provider serves.
-  - **Provider ids match without case.** `--provider Anthropic` stores
-    `anthropic` — the catalogue's spelling, which is what the runtime compares
-    against. Model ids are matched exactly: they belong to the provider, and
-    several are case-sensitive.
-  - **An empty or unreachable catalogue accepts the value.** A newly deployed
-    server has no catalogue until an administrator primes it, and a catalogue
-    outage is not a reason to refuse a credential. The server validates either
-    way.
-  - **The credential store reads the caller's environment.**
-    `AGENTSFLEET_STATE_DIR` handed to the process now reaches every read and
-    write, including the ones behind commands, instead of only the ones that
-    consulted the process environment directly.
-  - **An unreadable `credentials.json` warns instead of impersonating
-    logged-out.** A permission or disk error prints `warning: could not read
-    credentials.json` with the cause, then the command continues as logged out.
-    A missing file stays silent, as before.
+  - **`agentsfleet models` lists the catalogue** — provider, model id, context window, and per-million-token rates, with `--provider <id>` scoping it to one provider. Rates are charged under platform-managed posture only; a self-managed credential is billed by your own provider account, so an unpriced row shows a dash.
+  - **`--model` is checked too**, against that provider's models only. It used to be validated nowhere, so a typo stored a credential that failed at the first event.
+  - **Provider ids match without case.** `--provider Anthropic` stores `anthropic`, the catalogue's spelling and what the runtime compares against. Model ids are matched exactly — they belong to the provider, and several are case-sensitive.
+  - **An empty or unreachable catalogue accepts the value.** A newly deployed server has no catalogue until an administrator primes it, and an outage is not a reason to refuse a credential. The server validates either way.
+  - **The credential store reads the caller's environment.** `AGENTSFLEET_STATE_DIR` handed to the process now reaches every read and write, not only the ones that consulted the process environment directly.
+  - **An unreadable `credentials.json` warns instead of impersonating logged-out.** A permission or disk error prints `warning: could not read credentials.json` with the cause, then continues as logged out. A missing file stays silent, as before.
 </Update>
 
 <Update label="Aug 14, 2026" tags={["Breaking", "Security", "What's new"]}>
@@ -74,27 +36,27 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## Breaking changes
 
   - **`agentsfleet login --token` is gone.** The flag is refused as an unknown option rather than ignored. Piped input goes with it: a login with no terminal attached and no `AGENTSFLEET_API_KEY` fails and names that variable. Unattended callers set `AGENTSFLEET_API_KEY` to a tenant API key, which authenticates every request and writes nothing to disk.
-  - **`agentsfleet logout` no longer ends your dashboard session.** It revokes this computer's credential, aborts any unfinished sign-in, and clears local state. A browser session is a different credential class that refreshes through the identity provider, so signing out of a terminal leaves the dashboard you are reading signed in. A revoke that cannot reach the server still clears local state, and warns that the credential stays live until you revoke it from the dashboard.
+  - **`agentsfleet logout` no longer ends your dashboard session.** It revokes this computer's credential, aborts any unfinished sign-in, and clears local state. A browser session is a different credential class refreshed through the identity provider, so signing out of a terminal leaves the dashboard signed in. A revoke that cannot reach the server still clears local state, warning that the credential stays live until you revoke it from the dashboard.
   - **A deployment that sets `OIDC_PROVIDER=custom` is refused at boot.** The value selected a second ladder that read capability and workspace claims from `custom_claims`, `app_metadata`, and namespaced keys, none of which anything writes. `OIDC_PROVIDER=clerk` is unchanged, so no deployment that runs today needs editing.
 
   ## What's new
 
   - **One live credential per computer.** A second login from the same computer revokes what it left behind, and `core.cli_credentials` carries a partial unique index, so two live credentials for one person and computer cannot be recorded at all. Only a hash is stored, so the credential cannot be read back from anywhere. `agentsfleet logout` is how a computer ends its own.
-  - **A credential records the server that issued it.** Later commands reach that server with no flag and no environment variable. The order is `--api`, then `AGENTSFLEET_API_URL`, then the recorded server, then the built-in URL. A saved credential that records no server, dialed at a server nobody named, is refused before anything is sent, with error code `DEPLOYMENT_UNKNOWN` and exit code `1`. The `logout` and `doctor` commands still run, because one ends a credential and the other explains the refusal.
+  - **A credential records the server that issued it.** Later commands reach that server with no flag and no environment variable, resolving `--api`, then `AGENTSFLEET_API_URL`, then the recorded server, then the built-in URL. A saved credential recording no server, dialed at a server nobody named, is refused before anything is sent with `DEPLOYMENT_UNKNOWN` and exit code `1`. `logout` and `doctor` still run — one ends a credential, the other explains the refusal.
   - **Three error codes name what went wrong.** `UZ-AUTH-023` says the credential was revoked, `UZ-AUTH-024` says no live credential of yours has that identifier, and `UZ-AUTH-025` says login recovered a session but could not exchange it, so nothing was saved. A `401` or `403` from the client now names the API URL the credential was presented to.
 
   ## Security
 
   - **Minting a credential takes a browser sign-in.** A credential still authenticates listing and revoking, so a terminal can end its own access without opening a browser, but it cannot mint a replacement. Minting used to accept an existing credential, which turned one stolen credential into an unbounded supply under machine names of the caller's choosing.
   - **A stored value is checked against its whole shape.** The load path and the mint response both require `afc_` followed by exactly 64 lower-case hexadecimal characters. A prefix check passed values carrying trailing bytes.
-  - **A tenant API key carries its creator's capabilities.** An `agt_t` key resolves its capability set from the identity provider, keyed on the `created_by` subject the key already stored, instead of a nine-entry set compiled into the binary that no operator could narrow. Narrowing that person narrows every key they minted, on the next request past the cache window. A creator the provider no longer knows resolves to no capability, and an unreachable provider past the staleness ceiling reports unavailable rather than an empty grant.
+  - **A tenant API key carries its creator's capabilities.** An `agt_t` key resolves its capability set from the identity provider, keyed on the `created_by` subject it already stored, replacing a nine-entry set compiled into the binary that no operator could narrow. Narrowing that person narrows every key they minted, on the next request past the cache window. A creator the provider no longer knows resolves to no capability; an unreachable provider past the staleness ceiling reports unavailable rather than an empty grant.
   - **Each claim is read from exactly one key.** The capability claim is `scopes` and nothing else. The reader used to try OAuth2's `scope` first, so a token carrying both would have supplied a capability set we never granted, on the authorisation path. The `scp` spelling and the `workspaceId` alias are unread.
 </Update>
 
 <Update label="Aug 13, 2026" tags={["Breaking", "Bug fixes", "API"]}>
   ## Metered runs are priced from the model catalogue
 
-  A promotional window sat in front of every price. It was a per-tenant timestamp that was nullable with no default, nothing in the product ever wrote it, and an empty value read as "the window is still open" — so every account held it empty and every metered stage priced to zero for the whole life of the account. The window is deleted rather than repaired: pricing resolves from the model catalogue and the execution posture alone, and no rate resolver takes a clock, so a price cannot drift with wall time. Free usage is the starter grant and the balance that drains from it, bounded by `exhausted_at` — the mechanism the product already describes, and now the only one.
+  A promotional window sat in front of every price: a per-tenant timestamp, nullable with no default, that nothing ever wrote, where empty read as "still open". Every account held it empty, so every metered stage priced to zero for the life of the account. The window is deleted rather than repaired — pricing resolves from the model catalogue and the execution posture alone, and no rate resolver takes a clock, so a price cannot drift with wall time. Free usage is the starter grant and the balance draining from it, bounded by `exhausted_at`.
 
   ## Breaking changes
 
@@ -103,16 +65,16 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## Bug fixes
 
   - **A metered platform stage is charged the catalogue rate.** Run time and all three token tiers — input, cached, and output — accrue against the credit pool at the rates the catalogue carries, instead of resolving to zero. A `self_managed` stage is unchanged: the run fee only, with token counts recorded and not charged.
-  - **A model the catalogue does not price is refused rather than run for nothing.** The window answered ahead of the catalogue lookup, so a provider-and-model pair with no rate row priced at zero instead of failing. Renewal and settlement now fail closed on an unpriced pair; the lease estimate still admits the run, so an unrated model surfaces as a billing error rather than a silent free run.
+  - **A model the catalogue does not price is refused rather than run for nothing.** The window answered ahead of the catalogue lookup, so a provider-and-model pair with no rate row priced at zero instead of failing. Renewal and settlement now fail closed on an unpriced pair; the lease estimate still admits the run, so it surfaces as a billing error rather than a silent free run.
   - **The budget gates can refuse a fleet.** A fleet budget is spent against real rates, so `credit_deducted_nanos` accrues from the first metered slice. While every charge was zero no budget was ever consumed and neither gate could stop anyone.
   - **The free trial is named early access.** The pricing card reads "Early access", and the answer to "What am I actually paying for?" no longer describes an ending — it used to say metering began "after the trial". Free usage is the starter grant, which ends when the balance does rather than on a date. The rates themselves are unchanged.
-  - **Deleting a fleet erases its memory.** Rows in `memory.memory_entries` are removed with the fleet they belong to. They used to survive it, and because every sweep is scoped by a fleet the caller can enumerate, memory whose fleet was already gone was unreachable by all of them — an erased account kept it indefinitely. The isolation boundary is unchanged: the memory role still holds no grant on `core` and cannot name `core.fleets` at all.
+  - **Deleting a fleet erases its memory.** Rows in `memory.memory_entries` go with the fleet they belong to. They used to survive it, and because every sweep is scoped by an enumerable fleet, memory whose fleet was already gone was unreachable by all of them — an erased account kept it indefinitely. The isolation boundary is unchanged: the memory role holds no grant on `core` and cannot name `core.fleets`.
 </Update>
 
 <Update label="Aug 10, 2026" tags={["What's new", "Security", "Integrations"]}>
   ## A fleet with write access always parks for a human
 
-  A fleet whose repository binding declares write access now parks every event at an approval card before anything runs — even when its configuration carries no gates block, and even when its gate rules match nothing. Gate rules are editable with the same permission that wakes the fleet, so they cannot hold this boundary; the write kind itself does. The card states the write blast radius (the repository and what one approval spends), and the evidence line is sealed so crafted backticks in model output cannot break out of its code span.
+  A fleet whose repository binding declares write access now parks every event at an approval card before anything runs — even with no gates block, and even when its gate rules match nothing. Gate rules are editable with the same permission that wakes the fleet, so they cannot hold this boundary; the write kind itself does. The card states the write blast radius (the repository and what one approval spends), and the evidence line is sealed so crafted backticks in model output cannot break out of its code span.
 
   ## What's new
 
@@ -125,7 +87,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Aug 01, 2026" tags={["Bug fixes", "UI"]}>
   ## A runner you assign now runs the work
 
-  A host could show **Active** and **Online**, take an isolation assignment, and still fail every job handed to it. Two faults stacked: the daemon never enabled the resource controllers systemd had delegated to it, and the sandboxed child had no `HOME` from which to resolve its configuration — so each lease died at startup with `UZ-EXEC-012` and the journal named a code and no cause. Controllers are now enabled when the daemon starts rather than when its first assignment arrives, `agentsfleet-runner.service` supplies the `HOME` the child needs, and a host that cannot enforce limits is refused before it is given a runner at all.
+  A host could show **Active** and **Online**, take an isolation assignment, and still fail every job. Two faults stacked: the daemon never enabled the resource controllers systemd had delegated to it, and the sandboxed child had no `HOME` from which to resolve its configuration — so each lease died at startup with `UZ-EXEC-012`, and the journal named a code and no cause. Controllers are now enabled at daemon start rather than on first assignment, `agentsfleet-runner.service` supplies the `HOME`, and a host that cannot enforce limits is refused before it is given a runner.
 
   ## Bug fixes
 
@@ -154,11 +116,11 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 31, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "Performance"]}>
   ## Every runner lease says whose workspace it belongs to
 
-  A runner's lease list showed every workspace's work in one undifferentiated table, so an operator looking at a shared host could not tell their own fleet's runs from anyone else's. Each lease now names its workspace, and one click narrows the table to that workspace alone. The same release stops the runner pages re-reading a host's whole history on every load, and starts pruning that history so it cannot grow without bound.
+  A runner's lease list showed every workspace's work in one table, so an operator on a shared host could not tell their own fleet's runs from anyone else's. Each lease now names its workspace, and one click narrows the table to it. The same release stops the runner pages re-reading a host's whole history on every load, and starts pruning that history so it cannot grow without bound.
 
   ## Upgrading
 
-  - **Runner lease history is pruned 30 days after settlement.** A background sweep deletes a settled lease once 30 days pass from the moment it settled — not from when it started — along with the two per-lease activity records that describe it. A lease still running or renewing is never touched, and the runner's lifecycle activity (the Activity feed) is kept at any age, so a long-lived host never shows an empty feed. A lease whose runner died without reporting, on a fleet that is never used again, is marked expired once it passes the same window and then keeps its own window like any settled lease. The lifetime counts on the runner page are unaffected — they count transitions as they happen, not surviving rows — but if you read raw lease history older than 30 days through `GET /v1/fleets/runners/{id}/leases`, export it before upgrading.
+  - **Runner lease history is pruned 30 days after settlement.** A sweep deletes a settled lease 30 days from when it settled — not from when it started — with the two per-lease activity records describing it. A lease still running or renewing is untouched, and the runner's lifecycle activity (the Activity feed) is kept at any age, so a long-lived host never shows an empty feed. A lease whose runner died without reporting is marked expired at the same window, then keeps its own. Lifetime counts on the runner page are unaffected — they count transitions, not surviving rows — but export raw lease history older than 30 days from `GET /v1/fleets/runners/{id}/leases` before upgrading.
   - **Four migrations apply on startup.** They add a per-runner counter table, an index for the activity feed's filtered reads, the delete grants the sweep needs, and two indexes that keep the sweep itself off whole-table scans. The counter table backfills itself from existing history inside the migration, so no step is manual and no existing row is rewritten.
 
   ## What's new
@@ -183,14 +145,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 31, 2026" tags={["Breaking", "What's new", "API", "UI", "Security"]}>
   ## The isolation you assign is the isolation the runner applies
 
-  The sandbox tier picked in **Add Runner** used to be a label: the host read a different value from its own environment file, neither side compared the two, and a host that could not deliver its claimed isolation kept accepting work. Policy now flows one way — the dashboard assigns it, the runner row stores it, and every heartbeat delivers it to the host — while the host probes what its kernel can actually enforce and reports that back. A runner whose assignment exceeds its capability is marked **degraded**, receives no work on either side, and its row names the exact missing mechanism (for example `cgroup controllers not delegated`) instead of showing a green badge over a host that refuses every job.
+  The sandbox tier picked in **Add Runner** used to be a label: the host read a different value from its own environment file, neither side compared the two, and a host that could not deliver its claimed isolation kept accepting work. Policy now flows one way — the dashboard assigns it, the runner row stores it, every heartbeat delivers it — while the host probes what its kernel can enforce and reports that back. A runner whose assignment exceeds its capability is marked **degraded**, receives no work, and its row names the missing mechanism (for example `cgroup controllers not delegated`) instead of showing a green badge over a host that refuses every job.
 
   ## Upgrading
 
   - **`POST /v1/runners` takes the assignment envelope** — the body is `{host_id, assigned_policy: {sandbox_tier, network_policy, registry_allowlist[], worker_count}, labels[]}`; the old top-level `sandbox_tier` answers `400` `UZ-REQ-001`. The response echoes the assignment as stored (`worker_count` clamped into `[1, 64]`).
   - **The runner environment collapses to the bootstrap pair** — `AGENTSFLEET_API_URL` and `AGENTSFLEET_RUNNER_TOKEN`, plus the optional host-local `RUNNER_STORAGE_HOME` (renamed from `RUNNER_WORKSPACE_BASE`). `RUNNER_HOST_ID`, `RUNNER_SANDBOX_TIER`, `RUNNER_NETWORK_POLICY`, `RUNNER_REGISTRY_ALLOWLIST`, `RUNNER_WORKER_COUNT`, and the `RUNNER_CP_*_MS` deadlines are removed, not deprecated — the daemon no longer reads them, so a stale env file cannot fork the truth again.
   - **`macos_seatbelt` leaves the tier vocabulary** — it never had enforcement code, and a tier that cannot be applied must not be assignable. A stray stored value parses fail-closed and the runner refuses to lease. The assignable tiers are `landlock_full`, `container_nested`, and `dev_none` (dev builds only).
-  - **Existing runners read degraded once repaired** — pre-upgrade rows carry no assignment. A live, upgraded host marks its own row `degraded — no assigned policy` on its first heartbeat; a host that is down, or still running the pre-upgrade daemon, keeps a healthy-looking row until the manual statement below runs. Either way the fix is the same: open the runner and use **Edit policy**; the host applies it on its next heartbeat, no visit needed.
+  - **Existing runners read degraded once repaired** — pre-upgrade rows carry no assignment. A live, upgraded host marks its own row `degraded — no assigned policy` on its first heartbeat; a host that is down, or still on the pre-upgrade daemon, keeps a healthy-looking row until the manual statement below runs. The fix is the same either way: open the runner, use **Edit policy**, and the host applies it on its next heartbeat.
   - **One migration applies on startup, one statement runs by hand** — the migration adds the policy, capability, and verdict columns to `fleet.runners` and rewrites no rows. Right after deploying, mark the pre-upgrade rows degraded yourself (idempotent; it only matches rows without an assignment): `UPDATE fleet.runners SET degraded = TRUE, degraded_reason = 'no assigned policy' WHERE network_policy IS NULL;`
 
   ## What's new
@@ -226,7 +188,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 30, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI", "Performance"]}>
   ## A runner has a page of its own, and every list pages by cursor
 
-  A runner used to be a table row with a dialog of raw events behind an icon, and the only number on that dialog counted both halves of every execution — so a host that had run 4,000 events reported about 8,000 of something. Each runner is now an addressable page that opens on its leases: what it is working on right now, and for anything that failed, the reason in plain English with a link into the fleet whose work it was. Separately, no list in the platform pages by number any more. Page numbers silently repeat and skip rows whenever something is inserted mid-traversal, which on a host acquiring leases continuously is every few seconds.
+  A runner used to be a table row with a dialog of raw events behind an icon, and that dialog's only number counted both halves of every execution — a host that had run 4,000 events reported about 8,000 of something. Each runner is now an addressable page opening on its leases: what it is working on now, and for anything that failed, the reason in plain English linked to the fleet whose work it was. Separately, no list pages by number any more — page numbers repeat and skip rows whenever something is inserted mid-traversal, which on a host acquiring leases continuously is every few seconds.
 
   ## Upgrading
 
@@ -268,7 +230,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 29, 2026" tags={["Breaking", "What's new", "API", "CLI", "UI"]}>
   ## Replacing a secret means sending the secret you want stored
 
-  A stored secret can never be read back, so changing one field by field could not be checked by the caller — and on most secret shapes the old field patch silently did nothing at all. Replacement is now total on every surface: the API takes the whole body, the client gets `agentsfleet secret update`, and the dashboard's Edit dialog is the same form as Add, prefilled.
+  A stored secret can never be read back, so a field-by-field change could not be checked by the caller — and on most secret shapes the old field patch silently did nothing. Replacement is now total everywhere: the API takes the whole body, the client gets `agentsfleet secret update`, and the dashboard's Edit dialog is the Add form, prefilled.
 
   ## Upgrading
 
@@ -298,12 +260,12 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 <Update label="Jul 28, 2026" tags={["Breaking", "What's new", "Bug fixes", "API", "UI", "CLI"]}>
   ## The dashboard loads the page you asked for, and a failed read says so
 
-  The Fleet library gallery and the Models registry used to read everything they held before painting, then render a failed read as an empty one — a workspace whose library was merely unreachable was told it had none, with no retry and no way to tell the two apart. Both now load one page at a time, keep what is already on screen when a read fails, and state what they have not loaded. Creating a workspace secret has also stopped overwriting a secret that already holds the name.
+  The Fleet library gallery and the Models registry used to read everything they held before painting, then render a failed read as an empty one — a workspace whose library was merely unreachable was told it had none, with no retry and no way to tell the two apart. Both now load one page at a time, keep what is on screen when a read fails, and state what they have not loaded. Creating a workspace secret has also stopped overwriting a secret that already holds the name.
 
   ## Upgrading
 
   - **Creating a secret no longer overwrites one that exists** — `POST /v1/workspaces/{workspace_id}/secrets` answers `409` `UZ-VAULT-005` when the name is already held, and writes nothing. Rotate with `PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}` instead. The database decides, so two concurrent creates on one name resolve to one `201` and one `409`. Reconnecting a provider and refreshing its token are unaffected — those are rotations, not creations.
-  - **`agentsfleet secret create --force` is gone** — it relied on the endpoint upserting, which it no longer does, so the flag could only have failed. Passing it now exits non-zero before anything is sent. Creating a name that already exists reports `skipped` and exits `0`. Rotate in place with `PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}`, which holds the name for the whole call. The client has no rotate command yet, and deleting then creating through it leaves the name absent between the two calls — any fleet requiring it fails during that gap.
+  - **`agentsfleet secret create --force` is gone** — it relied on the endpoint upserting, so it could only have failed. Passing it exits non-zero before anything is sent; creating an existing name reports `skipped` and exits `0`. Rotate in place with `PATCH /v1/workspaces/{workspace_id}/secrets/{secret_name}`, which holds the name for the whole call. The client has no rotate command yet, and delete-then-create leaves the name absent between the two calls — any fleet requiring it fails in that gap.
   - **`?q=` is gone from `GET /v1/models` and `GET /v1/workspaces/{workspace_id}/fleet-libraries`** — the substring filter published on Jul 27, 2026 had no caller on any plane. A request that still sends it is answered as though it were absent, so you get a page rather than an error. Page with `next_cursor` and filter client-side.
   - **`support_files` has left every API response** — the admin catalog was the last surface carrying it. The manifest is still written and stored on import, and the content-addressed bundle tar remains the authoritative file list, so no install behaviour changes.
 
