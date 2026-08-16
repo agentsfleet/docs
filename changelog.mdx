@@ -7,6 +7,16 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 16, 2026" tags={["Security", "Bug fixes"]}>
+  ## A revoked integration grant stays revoked
+
+  Revoking a grant only ever wrote to the grant itself — it had no reason to know about the fleet's approval gate. A gate raised before the revoke and left unanswered was still pending, and resolving it later, even as an ordinary approval, matched the grant by fleet and service alone with no check on its current status. The revoke was silently reversed, with no error and no record that it happened.
+
+  ## Security
+
+  - **A stale gate can no longer resurrect a revoked grant.** Gate resolution now leaves an already-revoked grant alone, whatever decision the gate carries. Re-authorizing a service goes back through the install flow, which raises a fresh gate.
+</Update>
+
 <Update label="Aug 15, 2026" tags={["Breaking", "What's new", "CLI"]}>
   ## `--provider` is checked against the model catalogue your server serves
 
