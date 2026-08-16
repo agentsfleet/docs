@@ -219,7 +219,9 @@
               "GET /v1/workspaces/{workspace_id}/connectors",
               "POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect",
               "GET /v1/workspaces/{workspace_id}/connectors/{provider}",
+              "DELETE /v1/workspaces/{workspace_id}/connectors/{provider}",
               "GET /v1/connectors/{provider}/callback",
+              "POST /v1/connectors/{provider}/callback",
               "POST /v1/connectors/slack/events"
             ]
           },
