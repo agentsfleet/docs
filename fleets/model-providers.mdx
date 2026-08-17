@@ -41,7 +41,9 @@ The provider column supplies `--provider` and the model column supplies
 
 ## Steps
 
-1. Store the provider credential. The provider id, API key, and model are all required.
+1. Store the provider credential. The provider id and model are always required.
+   So is the API key, unless the provider is a custom endpoint or a model server
+   you run yourself — both are covered below.
 
    ```bash
    agentsfleet secret create my-openai --provider openai --api-key sk-... --model gpt-5.6-sol
@@ -100,6 +102,32 @@ agentsfleet secret create my-gateway --provider openai-compatible \
 ✓ Secret 'my-gateway' stored in vault.
 ```
 
+## Point at a model server you run
+
+A model server on your own hardware takes its own provider id: `ollama`,
+`vllm`, `llama.cpp`, `lm-studio`, `sglang`, `litellm`, or `osaurus`. Name the
+model exactly as your server serves it — whatever `ollama pull` wrote, or
+whatever you passed to `--served-model-name`.
+
+```bash
+agentsfleet secret create my-ollama --provider ollama --model llama-3.3-70b-my-finetune
+```
+
+```text
+✓ Secret 'my-ollama' stored in vault.
+```
+
+No `--api-key`: a server on your own hardware authenticates nobody, so none is
+required. Pass one and it is stored, in case your server checks it.
+
+No `--base-url` either, and it is refused here. These providers dial a fixed
+local address, so the endpoint is not yours to choose. Use the
+`openai-compatible` form above for a server on a URL you pick.
+
+Your model is not checked against the catalogue for these providers — it cannot
+be, since the set of models you might load is yours. A typo is accepted and
+fails when the fleet first runs, so check the spelling.
+
 ## Verify it works
 
 Run `agentsfleet tenant provider show` and check it names your secret. Then steer any fleet; its responses now come from your provider, and its usage lands on your provider account.
@@ -119,7 +147,8 @@ that carry no API key, so a stored credential could never reach them. The
 `--api-key` or `--model` without `--provider` is refused. The three flags describe one credential and travel together.
 
 A `--model` the provider does not serve is refused, and the message lists that
-provider's models. Run `agentsfleet models --provider <ID>` for the list.
+provider's models. Run `agentsfleet models --provider <ID>` for the list. This
+check does not apply to a model server you run yourself — see above.
 
 `--base-url` with a named provider is refused. A named provider carries its own endpoint; the flag belongs to `openai-compatible` alone.
 
