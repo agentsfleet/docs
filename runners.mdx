@@ -1,0 +1,86 @@
+---
+title: Runners
+description: What a runner does, the policy you assign it, and when it stops taking work.
+type: explanation
+audience: operator
+verified: 2026-08-18
+product_version: 0.26.2
+executable: false
+---
+
+# Runners
+
+## What it is
+
+A runner is a host that runs your fleets. It takes work from `agentsfleetd`, runs it inside a sandbox, and reports the result back.
+
+You enrol every runner from the dashboard. The host holds one token and nothing else. It never holds a database credential, a cache credential, or vault access.
+
+## Why it exists
+
+Fleet code has to run on a machine somewhere. Keeping that machine outside the control plane means a compromised host cannot read another tenant's data.
+
+Runners are replaceable. When one stops answering, its unfinished work goes to another runner, so no event is lost.
+
+## How it behaves
+
+### Enrolling a host
+
+Open **Admin → Runners → Add runner** and fill in the policy. `agentsfleetd` mints a runner token and shows it once. Copy it before you close the dialog, because it is never shown again.
+
+Put that token on the host, then start `agentsfleet-runner`. The host reads two variables:
+
+| Variable | What it sets | Default | Valid values |
+|---|---|---|---|
+| `AGENTSFLEET_API_URL` | The control plane the runner asks for work. | none, required | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
+| `RUNNER_STORAGE_HOME` | Where the host keeps its own scratch files. | a host-local path | An absolute directory path |
+
+No policy value is read from the host. A runner that carried its own isolation setting could disagree with the dashboard, and nothing would compare the two.
+
+### The policy you assign
+
+Policy travels down from the dashboard. Change it under **Admin → Runners → Edit policy** and the host applies it on its next heartbeat. Nobody logs in to the host.
+
+| Field | What it sets | Default | Valid values |
+|---|---|---|---|
+| Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
+| Network policy | What the sandbox may reach on the network. | Allow all egress | Allow all egress, No egress, Allowlist egress |
+| Allowlist | Registry hosts the sandbox may reach, as `host` or `host:port`. | empty | Up to 32 comma-separated host names |
+| Workers | How many events the host runs at once. | 1 | 1 to 64 |
+| Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
+
+The three isolation settings differ in what enforces the boundary:
+
+| Isolation | What it means |
+|---|---|
+| Landlock | The Linux kernel restricts which files the fleet can touch. |
+| Nested container | The fleet runs inside a container on a Linux host or virtual machine. |
+| None | No sandbox. Development builds only. |
+
+### When a runner stops taking work
+
+A runner reports what its kernel can actually enforce on every heartbeat. `agentsfleetd` compares that report against the policy you assigned.
+
+When the host cannot meet the assignment, the runner is marked **degraded** and is sent no work. The reason names the one missing piece, such as cgroup controllers not delegated. Fix that piece, or lower the assignment, and the next heartbeat clears the mark.
+
+You can also stop a runner deliberately:
+
+- **Cordon** stops new work reaching it.
+- **Drain** lets its current work finish, then leaves it idle.
+- **Revoke** ends its token, so the host's next request is refused.
+
+A runner that simply disappears needs no action. Its work expires and another runner takes it. Work already reported is never run twice.
+
+## Limits
+
+- **Allowlist egress is not enforced yet.** A runner assigned it reads degraded and takes no work until that enforcement ships. Use No egress or Allow all egress today.
+- **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
+- **Raising Workers past the count the host started with needs a restart.** Lowering it takes effect on the next heartbeat.
+- **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
+
+## Related pages
+
+- [Install a fleet](/fleets/install)
+- [Run and control a fleet](/fleets/running)
+- [Manage secrets](/fleets/secrets)

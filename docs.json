@@ -75,6 +75,12 @@
             ]
           },
           {
+            "group": "Runners",
+            "pages": [
+              "runners"
+            ]
+          },
+          {
             "group": "Cost control",
             "pages": [
               "billing/budgets"
