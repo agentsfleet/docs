@@ -7,6 +7,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 19, 2026" tags={["What's new", "Bug fixes"]}>
+  ## A hardened runner completes credentialed work again
+
+  On runners with the full sandbox tier, every model call that carried a credential failed within milliseconds. The sandbox granted its scratch space as read-only while the mount beneath it was writable, and the engine writes each call's authorization header to a private scratch file — so the very first credentialed call died. Both layers now read one shared list of writable paths, so they cannot disagree again.
+
+  ## What's new
+
+  - **Run checks can catch this class of fault.** The runner's check panel gains a fourth line: the scratch dir accepts a write inside the sandbox. It runs under the same restrictions your work runs under, so a sandbox that would fail your fleets fails the check first.
+  - **The runner page reads plainer.** The lease filter is labeled `Filter` with an `Apply` button, the filter accepts `workspace:<id> and fleet:<name or id>` written exactly as its hint shows, and the lease and activity tables use the same `Time` and `Duration` column names as the events list.
+  - **Every runner action carries an icon,** and **Cordon** and **Drain** show as disabled with the reason "Not active yet" until they are ready to use.
+  - **A refresh button re-reads the runner page** on your click — after you request checks, the verdict appears without a full page reload.
+  - **Runner states are explained where they show.** The state chip links to [the states a runner shows](/runners#the-states-a-runner-shows), and that section now defines every admin state and liveness value on the page.
+
+  ## Bug fixes
+
+  - **The check panel's relative timestamp shows the absolute time on hover,** matching the lease table's time column.
+</Update>
+
 <Update label="Aug 18, 2026" tags={["What's new", "Bug fixes"]}>
   ## Installing a fleet is one step
 
