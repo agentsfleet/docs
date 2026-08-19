@@ -7,6 +7,25 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 18, 2026" tags={["What's new", "Bug fixes"]}>
+  ## Installing a fleet is one step
+
+  The install flow asked you to name the fleet, then asked again to confirm it. A name already in use failed the whole install at that second step. Install now runs from the card straight through to the live states, and the server renames a taken default for you by adding a three-digit suffix. Asking for a duplicate name yourself is still refused with `UZ-AGT-006`, because that one you meant.
+
+  ## What's new
+
+  - **A renamed install tells you its new name.** The response carries the name that was stored, and the dashboard shows that name rather than the one it started from.
+  - **The platform fleet library takes a bundle from your computer.** **Admin → Fleet library → Create fleet library** now offers the same GitHub and upload sources the workspace dialog already had. An uploaded entry records no repository and still lands as a draft, so publishing stays a separate act.
+  - **A runner policy dialog shows what is already mounted.** The paths `agentsfleetd` mounts on its own are listed as read-only rows, so you can see the baseline before adding to it. The screen says "mounts" throughout; the wire field is unchanged.
+  - **Model prices read as `Input`, `Cached`, and `Output`,** in United States dollars per 1 million tokens.
+  - **Runners have a page.** [Runners](/runners) covers enrolment, every policy field with its default and range, and what makes a runner stop taking work.
+
+  ## Bug fixes
+
+  - **A development runner no longer fails every lease with `runner_crash/HostResolutionFailed`.** The sandbox's readable-path set is derived from the same bind list the child is handed, so the files needed to resolve a host name are inside the sandbox. Operator mounts also reach the child at the mode they were assigned, read-only or read-write.
+  - **Dialog buttons say `Create`.** The button that opens the dialog keeps its noun, such as **Create fleet library**, so the two are no longer the same words in two places.
+</Update>
+
 <Update label="Aug 16, 2026" tags={["Security", "Bug fixes"]}>
   ## A revoked integration grant stays revoked
 
