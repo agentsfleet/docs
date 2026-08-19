@@ -58,6 +58,29 @@ The three isolation settings differ in what enforces the boundary:
 | Nested container | The fleet runs inside a container on a Linux host or virtual machine. |
 | None | No sandbox. Development builds only. |
 
+### The states a runner shows
+
+The runner page shows two facts side by side: what you have told the runner to do, and whether the host is answering.
+
+The first is the admin state. You set it with the actions below; it never changes on its own.
+
+| Admin state | Meaning |
+|---|---|
+| `active` | Takes work. The normal state. |
+| `cordoned` | Takes no new work. Its running work stays fenced until it expires or moves. |
+| `draining` | Takes no new work and finishes what it has. |
+| `drained` | Finished draining. Idle until you change its state. |
+| `revoked` | Its token is blocked. This is terminal for the enrolled host. |
+
+The second is liveness. The host reports it through its heartbeat; you cannot set it.
+
+| Liveness | Meaning |
+|---|---|
+| `registered` | Enrolled, but no heartbeat has arrived yet. |
+| `online` | Heartbeating and idle. |
+| `busy` | Heartbeating and running work. |
+| `offline` | Heartbeats stopped. Its work expires and another runner takes it. |
+
 ### When a runner stops taking work
 
 A runner reports what its kernel can actually enforce on every heartbeat. `agentsfleetd` compares that report against the policy you assigned.
