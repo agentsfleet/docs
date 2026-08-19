@@ -151,11 +151,32 @@ credential.
 |---|---|
 | `0` | The command succeeded. |
 | `1` | Authentication, session, or unexpected failure. |
-| `2` | Network failure, rate limit, or invalid command input. |
+| `2` | Network failure or rate limit. |
 | `3` | The API returned a server failure. |
-| `4` | A supplied value failed validation. |
+| `4` | The invocation was rejected: a missing argument, a missing or unrecognized flag, a value that failed validation, or an unknown command. |
 | `5` | Local configuration is missing or invalid. |
 | `130` | You interrupted the command. |
+
+A rejected invocation is answered before any request is sent, and always in the same form: what is missing, then the command that supplies it.
+
+```
+$ agentsfleet events
+✕ error: missing required argument 'fleet_id'
+  Suggestion: usage: agentsfleet events [options] <fleet_id>
+```
+
+Under `--json` the same rejection is a parseable envelope on standard error, carrying a stable `code` you can switch on:
+
+```json
+{
+  "error": {
+    "code": "MISSING_ARGUMENT",
+    "message": "missing required argument 'fleet_id'"
+  }
+}
+```
+
+The codes are `MISSING_ARGUMENT`, `MISSING_OPTION_VALUE`, `MISSING_REQUIRED_OPTION`, `UNKNOWN_COMMAND`, `UNKNOWN_OPTION`, `INVALID_ARGUMENT`, and `EXCESS_ARGUMENTS`.
 
 API failures include a stable error code and request identifier when the server supplies them. Use both values when reporting a problem.
 

@@ -7,6 +7,21 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Aug 19, 2026" tags={["What's new"]}>
+  ## Every command answers a mistyped invocation the same way
+
+  A missing argument used to be reported one of two ways depending on which command you ran. `agentsfleet logs` named what was missing and exited `4`; `agentsfleet events` printed a bare parser message, offered no way to fix it, and exited `2` — the same code a network failure returns, so a script could not tell a typo from an unreachable daemon. Every command now prints what is missing and the command that supplies it, and every rejected invocation exits `4`. Exit `2` means a network failure and nothing else.
+
+  ## What's new
+
+  - **A rejection names the fix, not just the fault.** `agentsfleet events` answers `✕ error: missing required argument 'fleet_id'` followed by `Suggestion: usage: agentsfleet events [options] <fleet_id>`.
+  - **An unknown command still suggests the nearest match** and points at the command list it belongs to.
+  - **`--json` rejections are parseable.** A rejected invocation emits `{"error":{"code","message"}}` on standard error with a stable `code` — `MISSING_ARGUMENT`, `MISSING_OPTION_VALUE`, `MISSING_REQUIRED_OPTION`, `UNKNOWN_COMMAND`, `UNKNOWN_OPTION`, `INVALID_ARGUMENT`, or `EXCESS_ARGUMENTS`. It printed human text before.
+  - **A command group run bare prints help on standard output,** so `agentsfleet workspace | less` is no longer empty. It went to standard error while exiting `0`.
+  - **`agentsfleet logs` stops repeating itself.** Its suggestion line said the same sentence as the error above it; it now carries the runnable usage line, as `grant list` now does too.
+  - **The published exit-code table is what the client does.** [The command reference](/cli/agentsfleet#errors) listed `2` as covering invalid input as well as network failure; that row is now network failure alone.
+</Update>
+
 <Update label="Aug 19, 2026" tags={["What's new", "Bug fixes"]}>
   ## A hardened runner completes credentialed work again
 
