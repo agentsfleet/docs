@@ -62,14 +62,14 @@ The three isolation settings differ in what enforces the boundary:
 
 The runner page shows two facts side by side: what you have told the runner to do, and whether the host is answering.
 
-The first is the admin state. You set it with the actions below; it never changes on its own.
+The first is the admin state. You set it with the actions below. It moves on its own in one case only: a draining runner becomes `drained` once its last lease finishes.
 
 | Admin state | Meaning |
 |---|---|
 | `active` | Takes work. The normal state. |
 | `cordoned` | Takes no new work. Its running work stays fenced until it expires or moves. |
-| `draining` | Takes no new work and finishes what it has. |
-| `drained` | Finished draining. Idle until you change its state. |
+| `draining` | Takes no new work and finishes what it has. Becomes `drained` on its own once the last lease ends. |
+| `drained` | Finished draining. Idle, and stays there until you change it. |
 | `revoked` | Its token is blocked. This is terminal for the enrolled host. |
 
 The second is liveness. The host reports it through its heartbeat; you cannot set it.
