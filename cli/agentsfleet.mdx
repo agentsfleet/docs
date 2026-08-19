@@ -157,7 +157,7 @@ credential.
 | `5` | Local configuration is missing or invalid. |
 | `130` | You interrupted the command. |
 
-A rejected invocation is answered before any request is sent, and always in the same form: what is missing, then the command that supplies it.
+A rejected invocation is answered before any request is sent. The form is always the same: what is wrong, then the command that puts it right. What is wrong may be an absent argument, a value that failed validation, or an unrecognized command.
 
 ```
 $ agentsfleet events
