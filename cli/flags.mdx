@@ -51,6 +51,8 @@ Invalid command input returns `4`. Local configuration failures return `5`.
 
 An interrupted browser login returns `130`.
 
+A command group run without a subcommand prints its help on standard output and exits `0`, so `agentsfleet workspace | less` shows the same body `agentsfleet workspace --help` does.
+
 JSON errors include the stable product error identifier when the API supplies one. See the [error registry](/api-reference/error-codes).
 
 ## Related pages
