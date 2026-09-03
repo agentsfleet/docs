@@ -7,6 +7,25 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 2, 2026" tags={["What's new", "Observability"]}>
+  ## The daemon exports traces, metrics, and logs over OTLP
+
+  `agentsfleetd` now sends all three signals to one OpenTelemetry Protocol (OTLP) endpoint, named by the OpenTelemetry specification's own variables. With no endpoint set, the daemon starts, serves, and exports nothing. With an unreachable endpoint, requests are unaffected: batches drop and a counter records the loss.
+
+  ## What's new
+
+  - **`OTEL_EXPORTER_OTLP_ENDPOINT` names the collector** — traces post to `/v1/traces`, metrics to `/v1/metrics`, and logs to `/v1/logs` under it. No default. Unset means no export.
+  - **`OTEL_EXPORTER_OTLP_HEADERS` adds request headers** — comma-separated `key=value` pairs. A pair without `=` stops the daemon from starting. No default.
+  - **`OTEL_EXPORTER_OTLP_PROTOCOL` picks the encoding** — `http/protobuf` (default) or `http/json`. Any other value, `grpc` included, stops the daemon from starting.
+  - **`OTEL_EXPORTER_OTLP_TIMEOUT` bounds one export** — whole milliseconds, default `10000`. Zero or an unreadable value stops the daemon from starting.
+  - **`GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`, and `GRAFANA_OTLP_API_KEY` still work** — the endpoint is read when the standard variable is unset, and the pair becomes a basic `Authorization` header. A standard header of the same name replaces it. These names retire with the previous daemon.
+  - **Metrics are collected every 5 seconds** — the interval the previous daemon used, so a series keeps its rate across the switch.
+  - **Lost telemetry is counted, never retried** — spans, log records, and metric collection cycles that failed to send are counted in the process. A resent window would double-count delta families.
+  - **The log signal counts without logging** — a warning about a failed log export would become a log record handed back to the exporter that just failed it. For logs the count is the whole report.
+  - **A family this build does not produce is named at start-up** — each is logged once, at `debug` level, with the reason, rather than exported as zeros.
+  - **The start-up line names where the endpoint came from, never its value** — `startup_otel_enabled` carries `source=OTEL_EXPORTER_OTLP_ENDPOINT` or `source=GRAFANA_OTLP_ENDPOINT`, because the header beside the endpoint carries a credential.
+</Update>
+
 <Update label="Aug 19, 2026" tags={["What's new"]}>
   ## Every command answers a mistyped invocation the same way
 

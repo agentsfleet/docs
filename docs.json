@@ -119,8 +119,7 @@
             "group": "Health",
             "pages": [
               "GET /healthz",
-              "GET /readyz",
-              "GET /metrics"
+              "GET /readyz"
             ]
           },
           {
@@ -181,11 +180,26 @@
             "pages": [
               "POST /v1/runners",
               "GET /v1/fleets/runners",
-              "GET /v1/fleets/runners/{id}",
-              "PATCH /v1/fleets/runners/{id}",
-              "DELETE /v1/fleets/runners/{id}",
-              "GET /v1/fleets/runners/{id}/leases",
-              "GET /v1/fleets/runners/{id}/events"
+              "GET /v1/fleets/runners/{runner_id}",
+              "PATCH /v1/fleets/runners/{runner_id}",
+              "DELETE /v1/fleets/runners/{runner_id}",
+              "GET /v1/fleets/runners/{runner_id}/leases",
+              "GET /v1/fleets/runners/{runner_id}/events"
+            ]
+          },
+          {
+            "group": "Runner plane",
+            "pages": [
+              "GET /v1/runners/me",
+              "POST /v1/runners/me/heartbeats",
+              "POST /v1/runners/me/leases",
+              "POST /v1/runners/me/leases/{lease_id}/renew",
+              "POST /v1/runners/me/leases/{lease_id}/activity",
+              "POST /v1/runners/me/reports",
+              "POST /v1/runners/me/credentials/mint",
+              "GET /v1/runners/me/bundles/{content_hash}",
+              "GET /v1/runners/me/memory/{fleet_id}",
+              "POST /v1/runners/me/memory/{fleet_id}"
             ]
           },
           {
@@ -215,8 +229,8 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/secrets",
               "POST /v1/workspaces/{workspace_id}/secrets",
-              "PUT /v1/workspaces/{workspace_id}/secrets/{secret_name}",
-              "DELETE /v1/workspaces/{workspace_id}/secrets/{secret_name}"
+              "PUT /v1/workspaces/{workspace_id}/secrets/{name}",
+              "DELETE /v1/workspaces/{workspace_id}/secrets/{name}"
             ]
           },
           {
@@ -228,7 +242,7 @@
               "DELETE /v1/workspaces/{workspace_id}/connectors/{provider}",
               "GET /v1/connectors/{provider}/callback",
               "POST /v1/connectors/{provider}/callback",
-              "POST /v1/connectors/slack/events"
+              "POST /v1/connectors/{provider}/events"
             ]
           },
           {
@@ -236,8 +250,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/approvals",
               "GET /v1/workspaces/{workspace_id}/approvals/{gate_id}",
-              "POST /v1/workspaces/{workspace_id}/approvals/{gate_id}:approve",
-              "POST /v1/workspaces/{workspace_id}/approvals/{gate_id}:deny"
+              "POST /v1/workspaces/{workspace_id}/approvals/{gate_id}/{decision}"
             ]
           },
           {
@@ -265,6 +278,7 @@
           {
             "group": "Fleet messages",
             "pages": [
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages",
               "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages"
             ]
           },
@@ -283,7 +297,7 @@
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
-              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}:sync",
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}/sync",
               "POST /v1/ingress/qstash/schedules"
             ]
           },
@@ -309,8 +323,7 @@
               "POST /v1/webhooks/svix/{fleet_id}",
               "POST /v1/webhooks/{fleet_id}",
               "POST /v1/webhooks/{fleet_id}/approval",
-              "POST /v1/webhooks/{fleet_id}/github",
-              "POST /v1/webhooks/{fleet_id}/grant-approval"
+              "POST /v1/webhooks/{fleet_id}/github"
             ]
           },
           {
