@@ -26,6 +26,17 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **The start-up line names where the endpoint came from, never its value** — `startup_otel_enabled` carries `source=OTEL_EXPORTER_OTLP_ENDPOINT` or `source=GRAFANA_OTLP_ENDPOINT`, because the header beside the endpoint carries a credential.
 </Update>
 
+<Update label="Aug 31, 2026" tags={["Bug fixes"]}>
+  ## An unreadable PostgreSQL certificate file names itself at startup
+
+  An unreadable certificate path in `DATABASE_URL_MIGRATOR` used to surface only as `No such file or directory` after the database server answered. The error now names the variable, certificate parameter, and path before `agentsfleetd migrate` opens a database connection.
+
+  ## Bug fixes
+
+  - **Certificate file errors identify the setting** — `sslrootcert`, `sslcert`, and `sslkey` failures name `DATABASE_URL_MIGRATOR`, the canonical parameter, and the unreadable path under `UZ-INTERNAL-001`.
+  - **Malformed inline certificate data stays out of errors** — PEM-like values are redacted instead of being printed as file paths.
+</Update>
+
 <Update label="Aug 19, 2026" tags={["What's new"]}>
   ## Every command answers a mistyped invocation the same way
 
