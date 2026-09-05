@@ -7,6 +7,20 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 5, 2026" tags={["What's new", "UI", "Performance"]}>
+  ## The dashboard changes the screen at the click, and a chat stays put while a run finishes
+
+  Deleting a secret, cordoning or revoking a runner, and approving or denying a gate now change the screen as soon as you confirm. The server confirms in the background. A refused change puts the row or badge back and shows the reason beside it. A run that completes on a fleet chat now updates the summary strip through one small read, so the transcript no longer re-renders, flickers, or scrolls.
+
+  ## What's new
+
+  - **Secrets, runner state, and approvals paint at the click** — the row leaves or the badge changes when you confirm, before the server answers. A refusal restores it and shows the error next to the control.
+  - **A completed run refreshes the chat summary in place** — status, latest outcome, tokens, spend, duration, and the pending-approval count reload through one request when a run reaches a final state. The transcript is untouched. When the run changed the fleet's status, the page re-renders once so the Stop, Resume, and Kill controls follow.
+  - **Dashboard reads retry transient failures** — a read answered with `408`, `425`, `429`, `502`, `503`, or `504`, or failed by the network, is retried up to 3 attempts. The wait starts at 250 ms, doubles each time, is capped at 2 s, and honours a `Retry-After` header. Writes are sent once.
+  - **Every dashboard request times out** — a request with no answer after 10 seconds fails and, for a read, is retried like any other transient failure. A stalled backend no longer holds a page open.
+  - **Runner detail and the platform model library load one round-trip sooner** — each page starts its two reads together instead of one after the other.
+</Update>
+
 <Update label="Sep 2, 2026" tags={["What's new", "Observability"]}>
   ## The daemon exports traces, metrics, and logs over OTLP
 
