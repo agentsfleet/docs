@@ -1,71 +1,83 @@
-/*
- * agentsfleet Mintlify overrides — Operational Restraint.
- *
- * Mintlify's docs.json owns the bulk of the theming (colors, fonts,
- * code-block syntax theme). This file owns only the bits the schema
- * can't express. Filename is `style.css` per Mintlify's documented
- * convention for cloud-build custom CSS pickup.
- *
- * Source-of-truth tokens live in
- * ~/Projects/agentsfleet/ui/packages/design-system/src/tokens.css.
- * Hex literals here are mirrored from there — change upstream first,
- * land here in the same release window.
- */
-
-/*
- * Variable-axis @font-face for Instrument Sans body.
- *
- * Mintlify's docs.json `fonts.body.weight` is schema-typed as a single
- * number, so its build-time @font-face registers only weight 400 —
- * `<strong>` and `font-weight: 700` would fall back to system. The
- * woff2 we ship is the wght-axis variable file (covers 400–700), so
- * we re-register the same family here with the full range. Browsers
- * resolve font-face entries by font-weight match; the bold range
- * picks our declaration when the requested weight is > 400.
+/* agentsfleet docs: Clear Signal.
+ * Colors mirror ui/packages/design-system/src/tokens.css in the product repo.
+ * docs.json owns the palette, page background, and heading/body font sources.
+ * Custom CSS supplies variable weights, technical type, and reading rhythm.
  */
 @font-face {
   font-family: "Instrument Sans";
-  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2-variations"),
-       url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
+  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
   font-weight: 400 700;
   font-style: normal;
   font-display: swap;
 }
 
-/*
- * Primary navbar button — "Install" CTA.
- *
- * The fill comes from `colors.primary` in docs.json (#14B8A6 cyan-mint,
- * `--pulse` light-mode value). Mintlify auto-computes the foreground
- * by contrast and lands on white, but the design system's --on-pulse
- * token is THEME-FIXED dark (#0A0D0E) in both modes — that's the
- * canonical foreground for content layered on the pulse surface
- * (per ui/packages/design-system/src/tokens.css). Force it.
- *
- * Selector targets the navbar primary button by its href; this is
- * stable against Mintlify's class-name churn between minor releases.
- */
-a[href="https://app.agentsfleet.net"],
-a[href="https://app.agentsfleet.net"] *,
-[data-mintlify-primary-button] {
-  color: #0a0d0e;
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
 }
 
-/*
- * Dark-mode page background — mirror the design-system source of truth.
- *
- * Upstream token is --z-bg-0 = #05080D in
- * ui/packages/design-system/src/tokens.css, bridged to --background in
- * theme.css and consumed by both the marketing site and the app. Mintlify
- * ships --background-dark = "11 14 15" (#0B0E0F); we override to match
- * the upstream token so all three surfaces (marketing, app, docs) sit on
- * the same base color.
- *
- * Selector covers both <html class="dark"> (today's Mintlify) and any
- * descendant scoping in case Mintlify moves the toggle class downward.
- */
-:root.dark,
-html.dark,
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-mono: "Commit Mono", ui-monospace, monospace;
+  --docs-bg: #f7faf9;
+  --docs-text: #435d52;
+  --docs-cta: #14251f;
+  --docs-cta-text: #ffffff;
+}
+
 .dark {
-  --background-dark: 5 8 13;
+  --docs-bg: #131d21;
+  --docs-text: #c6d2d5;
+  --docs-cta: #5eead4;
+  --docs-cta-text: #0a0d0e;
+}
+
+body {
+  background-color: var(--docs-bg);
+}
+
+/* The navbar button has an inset fill; its text remains above that layer. */
+a[href="https://accounts.agentsfleet.net/waitlist"][target="_blank"] {
+  background-color: var(--docs-cta);
+  color: var(--docs-cta-text);
+  border-radius: 8px;
+}
+
+a[href="https://accounts.agentsfleet.net/waitlist"][target="_blank"] * {
+  color: inherit;
+}
+
+a[href="https://accounts.agentsfleet.net/waitlist"][target="_blank"] > span {
+  background-color: var(--docs-cta);
+  border-radius: inherit;
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* Reading sections use the interface face; display type stays on page titles. */
+#content-area :is(h2, h3, h4, h5, h6) {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+}
+
+#content-area :is(p, li) {
+  line-height: 1.7;
+  color: var(--docs-text);
+}
+
+/* MDX prose may be plain span text, so style its container as well as lists. */
+#content {
+  color: var(--docs-text);
+  line-height: 1.7;
 }

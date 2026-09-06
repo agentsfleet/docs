@@ -6,16 +6,16 @@
     "default": "dark"
   },
   "colors": {
-    "primary": "#14b8a6",
+    "primary": "#087568",
     "light": "#5eead4",
-    "dark": "#5eead4"
+    "dark": "#087568"
   },
   "fonts": {
     "heading": {
-      "family": "Commit Mono",
-      "source": "/fonts/CommitMono-Medium.woff2",
+      "family": "Bricolage Grotesque",
+      "source": "/fonts/BricolageGrotesque-Variable.woff2",
       "format": "woff2",
-      "weight": 500
+      "weight": 600
     },
     "body": {
       "family": "Instrument Sans",
@@ -404,5 +404,11 @@
     "thumbsRating": true,
     "suggestEdits": true,
     "raiseIssue": true
+  },
+  "background": {
+    "color": {
+      "light": "#f7faf9",
+      "dark": "#131d21"
+    }
   }
 }
