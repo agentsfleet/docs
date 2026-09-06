@@ -92,7 +92,7 @@ Budget: <varies>
 
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
 
-Network failures are not retried by lifecycle commands. Check `agentsfleet doctor`, then run the command again.
+A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
 
 ## Remove or undo
 
