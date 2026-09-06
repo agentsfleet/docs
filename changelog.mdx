@@ -7,6 +7,23 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 06, 2026" tags={["API", "Bug fixes"]}>
+  ## Session verification bounds stale signing keys
+
+  Browser session verification stops using signing keys more than six hours and fifteen minutes after their last successful refresh. A provider outage beyond that ceiling returns `503` with `UZ-AUTH-004`; verification recovers when a refresh succeeds.
+
+  ## Upgrading
+
+  - **Fleet versions** — use stable `MAJOR.MINOR.PATCH` values. Import now refuses prerelease and build suffixes that installation cannot accept.
+
+  ## Bug fixes
+
+  - **Signing-key restrictions** — session verification refuses incompatible key usage or algorithm metadata and ambiguous signing-key identifiers.
+  - **Capability outages** — repeated requests retain the documented stale capability fallback without extending its age.
+  - **Malformed URL escapes** — memory paths reject escapes such as `%+a` instead of decoding them as bytes.
+  - **Extreme dates** — timestamps beyond the supported calendar range display their original millisecond value as text.
+</Update>
+
 <Update label="Sep 06, 2026" tags={["Website", "Bug fixes"]}>
   ## Website access links open the waitlist
 
