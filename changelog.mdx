@@ -7,6 +7,23 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 5, 2026" tags={["What's new", "UI", "API", "Performance"]}>
+  ## A fleet chat follows its runs from the live tail, and the dashboard changes the screen at the click
+
+  The daemon now announces every run on the fleet's live tail: one frame when a run starts, and one when it ends that carries the finished row, the fleet's status, and how many approvals are waiting. A chat you are watching reads nothing to follow it. The summary strip moves the instant a run ends, the "approvals waiting" link appears when a gate opens and disappears when someone answers it, and the transcript never re-renders, flickers, or scrolls. Deleting a secret, cordoning or revoking a runner, and approving or denying a gate change the screen as soon as you confirm; the server confirms in the background, and a refused change puts the row or badge back with the reason beside it.
+
+  ## What's new
+
+  - **The daemon brackets every run on the live tail** — `event_received` when a run's row is written, including the run an approval continues, and `event_complete` when a report or a refusal closes it. The completion carries the row as the events list serves it (status, outcome, tokens, duration, spend) without `fleet_id` and `workspace_id`, which the stream names, plus `fleet_status` and `pending_approvals`. A gate opening, a decision, and a sweep publish `gate_opened` and `gate_resolved` with the count; `gate_resolved.event_id` is `null` for a gate raised outside a run. The API reference for both event streams now lists every frame kind. The CLI's steer tail, which always waited for `event_complete`, now receives it.
+  - **The chat summary is a view over the stream** — the strip's figures and its pending count come from the frames, not from a request. A run that pauses or kills the fleet re-renders the page once so the Stop, Resume, and Kill controls follow; nothing else does.
+  - **The fleet detail carries `pending_approvals`** — `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}` counts the gates waiting on a human, so a console opens on the fleet and its thread alone instead of paging the approvals inbox to render a number.
+  - **Secrets, runner state, and approvals paint at the click** — the row leaves or the badge changes when you confirm, before the server answers. The confirm dialog stays disabled until the write settles. A refusal restores the row and shows the error next to the control. A secret delete re-reads the list only when the outcome is unknown: a timeout, a network fault, or a server error.
+  - **Dashboard reads retry transient failures** — a read answered with `408`, `425`, `429`, `502`, `503`, or `504`, or failed by the network, is retried up to 3 attempts. The wait starts at 250 ms, doubles each time, is capped at 2 s, and honours a `Retry-After` header. Writes are sent once: a write that timed out is never replayed, because the server may have processed it.
+  - **Every dashboard request times out** — a request with no answer after 10 seconds fails and, for a read, is retried like any other transient failure. A hung approval resolve times out instead of pending forever. A stalled backend no longer holds a page open.
+  - **Runner detail and the platform model library load one round-trip sooner** — each page starts its two reads together instead of one after the other.
+  - **The approvals inbox stops polling while its tab is hidden** — and reads once when you look at it again.
+</Update>
+
 <Update label="Sep 2, 2026" tags={["What's new", "Observability"]}>
   ## The daemon exports traces, metrics, and logs over OTLP
 
