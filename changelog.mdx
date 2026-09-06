@@ -18,6 +18,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Failure classes** — a `408` or `425` is reported as its own class, no longer as a server error, and a socket failure is read from Node's error cause rather than its message.
   ## CLI
   - **Writes sent once** — `agentsfleet` no longer replays a `POST` after its own 15 second timeout or after a socket reset. A `POST` refused at connect is still sent again.
+  - **`Retry-After` cap** — `agentsfleet` waits at most 10 seconds for a `Retry-After`; a longer ask fails at once with the answer.
 </Update>
 <Update label="Sep 06, 2026" tags={["Website", "Bug fixes"]}>
   ## Website access links open the waitlist
