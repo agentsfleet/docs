@@ -4,6 +4,7 @@
     { "pattern": "^https://discord.gg" },
     { "pattern": "^https://agentsfleet.net" },
     { "pattern": "^https://app.agentsfleet.net" },
+    { "pattern": "^https://accounts\\.agentsfleet\\.net/waitlist/?$" },
     { "pattern": "^mailto:" }
   ],
   "retryOn429": true,
