@@ -24,6 +24,20 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Extreme dates** — timestamps beyond the supported calendar range display their original millisecond value as text.
 </Update>
 
+<Update label="Sep 06, 2026" tags={["UI", "CLI", "Bug fixes", "Performance"]}>
+  ## Dashboard reads stop retrying at a deadline, and a write is never sent twice
+  A dashboard page read gives up after 20 seconds of retries instead of holding the page, and any approve or steer waiting behind it, for half a minute. A write that may have reached the server is never sent again.
+  ## Bug fixes
+  - **Retry deadline** — a read stops retrying 20 seconds after its first attempt, whatever the attempt ceiling says.
+  - **`Retry-After` cap** — a `429` asking the dashboard to wait more than 10 seconds fails at once with the `429`; a shorter wait is obeyed exactly.
+  - **Writes sent once** — a `POST` is sent again only when the connection was refused or the server declined to run it. A reset after sending, a timeout, or a gateway `502`, `503` or `504` surfaces the error instead, so a steer never becomes two events.
+  - **Spread retries** — retries after a shared blip spread across the full backoff window instead of landing together.
+  - **Failure classes** — a `408` or `425` is reported as its own class, no longer as a server error, and a socket failure is read from Node's error cause rather than its message.
+  ## CLI
+  - **Writes sent once** — `agentsfleet` no longer replays a `POST` after its own 15 second timeout or after a socket reset. A `POST` refused at connect is still sent again.
+  - **`Retry-After` cap** — `agentsfleet` waits at most 10 seconds for a `Retry-After`; a longer ask fails at once with the answer.
+</Update>
+
 <Update label="Sep 06, 2026" tags={["Website", "Bug fixes"]}>
   ## Website access links open the waitlist
 
