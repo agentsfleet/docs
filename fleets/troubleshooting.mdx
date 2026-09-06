@@ -58,7 +58,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 4. Retry the original event once.
 
-   Lifecycle commands do not retry network failures. Provider webhooks follow the provider's own retry policy.
+   Lifecycle commands send a write again only when the connection was refused or the server declined to run it. A reset after sending or a timeout surfaces the error. Provider webhooks follow the provider's own retry policy.
 
 ## How to prevent it
 
