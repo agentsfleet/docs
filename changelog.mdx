@@ -7,6 +7,19 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 07, 2026" tags={["Internal", "Performance"]}>
+  ## Four benchmark lanes measure what steer, lease and delivery sustain
+
+  `make bench-steer`, `make bench-lease`, `make bench-outbound` and `make bench-cardinality` drive the production paths against the compose Postgres and Redis and write one JSON result each under `bench/results/`. `make bench-compare LANE=<lane> PROFILE=rig` prints the delta against the committed baseline in `bench/baselines/` and always exits `0` — no build fails on a throughput number.
+
+  - **Profiles** — `PROFILE=rig` is unbounded against the compose stack; `dev` and `prod` carry caps and refuse a parameter above them before opening a connection. `prod` also refuses without `BENCH_LOAD_PRODUCTION=i-accept-the-blast-radius`.
+  - **Attribution** — every result carries Redis commands and Postgres round trips separately, read from the servers' own counters, so a saturation is attributed rather than guessed.
+  - **Idle lease poll** — 1 Redis command and 0 Postgres round trips, so idle cost scales with runners and not with fleets.
+  - **Delivery head-of-line** — with one destination in sixteen answering in 250 ms, the other fifteen's p95 rose to 3.7 s: one stream, one worker, one queue position at a time.
+  - **Cardinality** — about 4.6 KB of Redis per idle fleet, flat from 10 to 10 000 fleets; a million idle fleets is roughly 4.6 GB.
+  - **Sweep** — a run creates only under its own prefix and removes everything it created on every exit path, reporting `created` against `swept` in the result.
+</Update>
+
 <Update label="Sep 06, 2026" tags={["API", "Bug fixes"]}>
   ## Session verification bounds stale signing keys
 
