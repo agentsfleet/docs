@@ -3,7 +3,7 @@ title: Author a fleet
 description: Create the two files that define a fleet.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-09-06
 product_version: 0.26.2
 executable: false
 ---
@@ -33,6 +33,8 @@ Create an empty directory. Choose a lowercase fleet name with letters, numbers, 
    Report failed checks with their source URL.
    Never change a service.
    ```
+
+   Use a stable version such as `1.2.3`: three decimal components, each no greater than `18446744073709551615`, with no leading zeros. Prerelease suffixes (`-beta`) and build suffixes (`+build`) are refused during import.
 
 2. Create `TRIGGER.md` with the same name. `agentsfleet` takes the library identifier from `name`, not from the repository path, so name the repository to match as well.
 

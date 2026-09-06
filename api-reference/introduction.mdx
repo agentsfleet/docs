@@ -3,7 +3,7 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-08-14
+verified: 2026-09-06
 product_version: 0.26.2
 executable: false
 ---
@@ -27,6 +27,10 @@ Most paths accept a bearer token in the `Authorization` header. Tenant API keys 
 Interactive users sign in with `agentsfleet login`. Login saves a durable command-line credential that starts with `afc_`. The credential resolves to the person who signed in.
 
 The credential stays valid until a logout, a newer login from the same computer, or a dashboard revoke ends it.
+
+Browser session tokens use the identity provider’s published signing keys. Keys refresh after six hours. If the provider is unavailable, previously confirmed keys remain usable for at most fifteen more minutes.
+
+After that ceiling, session verification returns HTTP `503` with `UZ-AUTH-004` until a refresh succeeds. Token expiry still applies throughout.
 
 Webhook and connector paths use provider signatures instead of bearer tokens. The OpenAPI security section on each operation states the required method.
 
