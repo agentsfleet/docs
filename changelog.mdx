@@ -7,6 +7,18 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 08, 2026" tags={["API", "UI", "Bug fixes"]}>
+  ## Connecting GitHub completes again
+
+  Pressing **Connect** on GitHub now finishes and the connector reads **Connected**. Connect authorized the account and obtained its grant, then failed while asking GitHub which App installations the account can reach; the connection was never written.
+
+  A refusal at that step now answers `502` with `UZ-CONN-009`, separately from the token exchange. The two shared `UZ-CONN-006`, so a connect that had already obtained its grant reported a failed exchange and pointed at credentials that were working.
+
+  ## Bug fixes
+
+  - **Sidebar toggle** — the collapse control sits in the sidebar column, aligned to the navigation beneath it, and centres in the rail when collapsed.
+</Update>
+
 <Update label="Sep 07, 2026" tags={["Internal", "Performance"]}>
   ## Four benchmark lanes measure what steer, lease and delivery sustain
 
