@@ -359,6 +359,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-CONN-006"></span>`UZ-CONN-006` | 502 | Connector OAuth exchange failed | That connection didn't go through. Try connecting again from the dashboard. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-007"></span>`UZ-CONN-007` | 500 | Connector catalog lookup failed | We couldn't load your connectors right now. Try refreshing — if it keeps failing, contact support. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-008"></span>`UZ-CONN-008` | 403 | Connector installation ownership not verified | We couldn't verify that this GitHub installation belongs to you. Sign in with the owning GitHub account and try again. | Check the provider connection before sending requests. |
+| <span id="UZ-CONN-009"></span>`UZ-CONN-009` | 502 | Connector installation listing failed | GitHub wouldn't tell us which installations you can reach. Try connecting again from the dashboard. | The authorization code was already redeemed, so the client secret and the registered redirect address are not the cause. Check what `api.github.com` answered. |
 
 ## Related pages
 
