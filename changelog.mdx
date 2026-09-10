@@ -7,6 +7,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 11, 2026" tags={["API", "UI"]}>
+  ## Every live frame carries the fleet's counters
+
+  Each frame a fleet publishes on its live tail now carries `events_processed` and `budget_used_nanos` as an absolute snapshot, and the workspace stream's `hello` carries a `counters` map keyed by fleet id. The Fleets wall assigns each tile's event count and spend from whichever frame arrived last and never adds to them, so a dropped, duplicated or late frame cannot leave a tile wrong. A tile is correct before its first event: the `hello` reports where each fleet stands at subscribe time.
+
+  - **Frames** — `event_received`, `event_complete`, `gate_opened` and `gate_resolved` all carry the pair. A frame the daemon could not fill omits both fields rather than sending zeros; a client leaves the figures it has standing.
+  - **`hello`** — `{"kind":"hello","fleet_ids":[…],"counters":{"<fleet_id>":{"events_processed":n,"budget_used_nanos":n}}}`. A fleet that has never run answers with zeros; a fleet the read could not answer for is omitted.
+  - **Wall** — the tile footer no longer derives its figures from the streamed rows, and the wall no longer re-reads the fleet list when a row arrives without a price. A run that parks behind an approval shows the event it counted.
+
+  ## Dashboard
+
+  - **Navigation** — items are symmetric pills with no accent rail; the four groups share one 16px eyebrow rhythm.
+  - **Tables** — a paginated table lets the page scroll rather than opening a second scroll region; cells sit on the 4px scale and the page controls align with the body's right edge.
+  - **Buttons** — one primary action per surface renders the default variant; every other non-destructive action is `ghost`.
+  - **Runs strip** — a processed run whose list row carries no body reads `Completed.`; only the event detail, which holds the body, says when no reply was recorded.
+  - **Admin leases** — the Fleet column names the agent by callsign, as every other agent column does, and keeps the fleet id on hover.
+</Update>
+
 <Update label="Sep 08, 2026" tags={["API", "UI", "Bug fixes"]}>
   ## Connecting GitHub completes again
 
