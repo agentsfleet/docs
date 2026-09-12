@@ -7,6 +7,36 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 12, 2026" tags={["UI", "Website", "Bug fixes"]}>
+  ## The credit balance shows on every page
+
+  Every dashboard page now shows what is left to spend. A **Credits** chip sits in the header beside the workspace switcher and links to **Settings → Billing**. When the balance is exhausted the chip turns red, because that is the state that blocks the next run.
+
+  - **Precision** — the chip rounds to cents. A balance under one cent keeps four decimals, and a smaller one reads `<$0.0001`. A live balance never shows as `$0.00`.
+  - **Freshness** — the figure is rendered with the page rather than polled. A tab left open overnight shows last night's figure; **Settings → Billing** holds the live one.
+  - **Billing outage** — the chip renders nothing rather than a wrong number, and the rest of the dashboard still loads.
+  - **Narrow screens** — the chip is hidden below 640px, where the header has no room for it.
+
+  ## What's new
+
+  - **Fleet and runner consoles** — each console renders one section strip at every width. The 224px navigation rail that appeared on wide screens read as a second sidebar and took that width from the transcript.
+  - **Status line** — the metric cards under each strip are now one monospace line. On a fleet it sits under the composer; on a runner it sticks to the foot of the canvas. It carries the same figures the cards did.
+  - **Runner checks** — the checks card is now a verdict on the runner's identity line. It reads **checks passed**, **N checks failed**, **checks stale**, **checks pending**, or **checks never run**. A failure is the one state painted red, and the verdict opens the full report in a dialog named after the host.
+  - **Tabs** — the fleet and runner section strips use the underlined tab style that Billing and the settings sections already use.
+  - **Fleet transcript** — a fleet's replies read at 18px instead of 15px, the reading size rather than the interface size.
+  - **Core capabilities** — the landing section shows one divided list at every width. It stacked a three-across card grid on a four-across card grid, rendering the same seven items twice.
+  - **Landing hero** — the kicker above the headline is gone. It rearranged the words of the headline beneath it.
+
+  ## Bug fixes
+
+  - **Fleet library import** — importing a bundle from GitHub now has 30 seconds instead of 10. A repository that GitHub served slowly failed in the dialog while `agentsfleetd` was still fetching it. The two pages that host the action declare a 60 second server ceiling, so the dialog's message arrives instead of a gateway `504`.
+  - **Balance card caption** — the billing balance card drops its `spent $X · N events` caption. It summed only the charge rows the page had loaded, so page two reported a different figure for the same account.
+  - **Landing page headings** — five sections opened with a 12px eyebrow marked as a heading, above their real heading. A screen reader heard ten headings where there are five sections.
+  - **Approvals link** — the link in the fleet status line underlines on keyboard focus, not only on hover. Its target is a finger's height rather than 12px.
+  - **Admin lease filter** — the filter fits a phone screen. It carried a 720px minimum width that the fixed shell clipped.
+  - **Header edge** — the brand and the avatar sit the same distance from the window edge. The header's trailing side followed the canvas gutter plus whatever scrollbar the platform reserved. At 1920px the avatar sat 48px in from the right, the brand 22px in from the left.
+</Update>
+
 <Update label="Sep 11, 2026" tags={["API", "UI"]}>
   ## Every live frame carries the fleet's counters
 

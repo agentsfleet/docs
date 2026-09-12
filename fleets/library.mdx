@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-08-10
+verified: 2026-09-12
 product_version: 0.26.2
 executable: false
 ---
@@ -23,6 +23,8 @@ The library gives each installation a known source. It also lets `agentsfleet` c
 ## How it behaves
 
 Platform administrators create platform entries. Authorized workspace members create workspace entries from a GitHub repository through the dashboard or API.
+
+The dashboard waits 30 seconds for an import, then reports a timeout in the dialog. `agentsfleetd` allows its own GitHub fetch 60 seconds, so a large bundle over a slow link can outlast that wait. Reload the library to see whether the entry arrived, then import again.
 
 Re-adding identical content to one workspace returns the existing content identity. Installing an entry creates a separate fleet owned by that workspace.
 
