@@ -3,8 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-08-18
-product_version: 0.26.2
+verified: 2026-09-12
 executable: false
 ---
 
@@ -86,6 +85,8 @@ The second is liveness. The host reports it through its heartbeat; you cannot se
 A runner reports what its kernel can actually enforce on every heartbeat. `agentsfleetd` compares that report against the policy you assigned.
 
 When the host cannot meet the assignment, the runner is marked **degraded** and is sent no work. The reason names the one missing piece, such as cgroup controllers not delegated. Fix that piece, or lower the assignment, and the next heartbeat clears the mark.
+
+The runner page carries the verdict of those checks beside the runner's state and labels. It reads **checks passed**, **N checks failed**, **checks stale**, **checks pending**, or **checks never run**. Select it to read the full report, check by check.
 
 You can also stop a runner deliberately:
 

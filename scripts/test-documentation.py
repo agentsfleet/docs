@@ -24,7 +24,6 @@ description: A small test page.
 type: explanation
 audience: user
 verified: 2026-07-12
-product_version: 0.26.2
 executable: false
 ---
 

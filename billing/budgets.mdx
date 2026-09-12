@@ -3,8 +3,7 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-07-12
-product_version: 0.26.2
+verified: 2026-09-12
 executable: false
 ---
 
@@ -25,6 +24,8 @@ budget:
 ## Why it exists
 
 Every workspace under one tenant shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
+
+The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher. It appears on screens at least 640px wide. Select the chip to open **Settings → Billing**, which holds the live figure and the charge history.
 
 The fleet owns its budget. Updating the fleet replaces the limits, and deleting the fleet removes them.
 
