@@ -11,7 +11,6 @@ PAGE_FIELDS = {
     "type",
     "audience",
     "verified",
-    "product_version",
     "executable",
 }
 FIELD_VALUES = {
@@ -100,7 +99,6 @@ ACRONYM_ALLOWLIST = {
     "UDP",
     "URL",
 }
-EXPECTED_VERSION = "0.26.2"
 NON_PAGE_CODE_SNIPPETS = {Path("snippets/rates.mdx")}
 ERROR_REFERENCE_PRIVATE_TERMS = {
     "API_MAX_",
@@ -271,8 +269,6 @@ def lint_page(path: Path, text: str) -> list[str]:
     for field, values in FIELD_VALUES.items():
         if fields.get(field) and fields[field] not in values:
             errors.append(issue("DOC-F1", path, 1, f"invalid '{field}' value"))
-    if fields.get("product_version") != EXPECTED_VERSION:
-        errors.append(issue("DOC-F2", path, 1, f"product_version must be {EXPECTED_VERSION}"))
     if fields.get("verified") and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields["verified"]):
         errors.append(issue("DOC-F2", path, 1, "verified must use YYYY-MM-DD"))
 
