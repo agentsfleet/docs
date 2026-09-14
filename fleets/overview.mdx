@@ -3,7 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-07-21
+verified: 2026-09-14
+product_version: 0.31.2
 executable: false
 ---
 
@@ -46,9 +47,15 @@ Each Chat entry shows its sender, the time, and what happened. Your own messages
 
 An event from a connected app shows what it carried. Its full payload is one click away. An event with no reply says whether it is still working, is waiting for approval, or failed.
 
-Chat retries a lost connection quickly at first, with delays from one to 15 seconds. It then reports the feed as not live and keeps retrying every 30 seconds. It also reconnects as soon as the tab returns to the foreground or the network comes back.
+Chat renews quiet connections automatically. After a stable connection closes, Chat allows 25 seconds for recovery before showing a connection warning.
 
-Choose **Retry** in Chat to reconnect without waiting. Missed activity is backfilled after reconnecting. A message the server refuses is marked as not sent, with a retry beside it.
+A connection attempt that stalls for 30 seconds is retried. Chat also retries an open connection after 45 seconds without activity or a server heartbeat to recover from silent network failures.
+
+Chat retries failures quickly at first, with delays from one to 15 seconds. After five fast retries, it reports the feed as unavailable and keeps retrying every 30 seconds. Returning to the tab or restoring the network starts recovery immediately when the connection is missing or stale.
+
+Choose **Retry now** in the connection notice to retry without waiting. Automatic recovery continues without clicking it. Chat fetches recent durable activity after reconnecting; transient streaming fragments cannot always be recovered.
+
+A message the server refuses is marked as not sent, with a retry beside it.
 
 Provider webhook registration stays in the install output. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
 
