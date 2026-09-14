@@ -3,7 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-07-21
+verified: 2026-09-14
+product_version: 0.31.3
 executable: false
 ---
 
@@ -43,6 +44,10 @@ Use the fleet navigation for one task at a time:
 - **Settings** contains stop, resume, kill, and delete controls.
 
 Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
+
+When you send a message, Chat moves to the latest turn and shows a paw with **Working…** beside the fleet's reply. The cue clears when the reply starts. The message field grows for longer drafts and scrolls within the field when full.
+
+New activity leaves your place in older messages alone. Use **Jump to latest** above the message field to return to the newest turn. On narrow screens, the fleet tabs scroll sideways and the status figures wrap.
 
 An event from a connected app shows what it carried. Its full payload is one click away. An event with no reply says whether it is still working, is waiting for approval, or failed.
 
