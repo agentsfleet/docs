@@ -14,7 +14,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **`operation_id`** — an optional string on the steer body, your own name for the operation, repeated across its retries. A retry carrying a value already seen is answered with the first attempt's event rather than starting a second run.
+  - **`operation_id`** — an optional, nullable string on the steer body, your own name for the operation, repeated across its retries. A retry carrying a value already seen is answered with the first attempt's event rather than starting a second run.
   - **Why the caller supplies it** — a timeout does not prove the request failed, and the server cannot tell a retried `POST` from a person pressing send twice, because the bytes are identical. Only the caller knows which one it is.
   - **Leaving it out** — omit it and every message is its own operation, so two identical messages start two runs. That is what a person pressing send twice expects, and it is why the field is optional rather than required.
 </Update>
