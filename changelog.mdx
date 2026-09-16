@@ -14,7 +14,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## Bug fixes
 
-  - **Runner polls** — a fleet with an unreadable configuration answers the documented no-work response instead of `500` `UZ-INTERNAL-003`. The runner moves on and takes the next fleet.
+  - **Runner polls** — a fleet with an unreadable configuration answers `200` with `{"lease": null, "retry_after_ms": 1000}`, the same empty answer a poll gets when no fleet holds work, instead of `500` `UZ-INTERNAL-003`. The runner waits out the hint and polls again.
   - **`config_unreadable`** — a new `failure_label` on the refused event, returned beside `failure_detail`, so the fleet needing attention is named rather than inferred from a log.
   - **Refused events close** — the refusal writes the terminal `gate_blocked` row and publishes the closing bracket, so a watcher on that fleet's stream sees the event end instead of hanging.
 </Update>
