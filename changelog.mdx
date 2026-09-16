@@ -7,6 +7,18 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 16, 2026" tags={["Bug fixes", "API"]}>
+  ## One fleet's broken configuration stops that fleet, not your runners
+
+  A fleet whose stored configuration cannot be read now ends its own event and leaves every other fleet leasable. Before, a runner poll that landed on such a fleet answered `500` `UZ-INTERNAL-003`, so one unreadable document could fail polls across a whole deployment.
+
+  ## Bug fixes
+
+  - **Runner polls** — a fleet with an unreadable configuration answers `200` with `{"lease": null, "retry_after_ms": 1000}`, the same empty answer a poll gets when no fleet holds work, instead of `500` `UZ-INTERNAL-003`. The runner waits out the hint and polls again.
+  - **`config_unreadable`** — a new `failure_label` on the refused event, returned beside `failure_detail`, so the fleet needing attention is named rather than inferred from a log.
+  - **Refused events close** — the refusal writes the terminal `gate_blocked` row and publishes the closing bracket, so a watcher on that fleet's stream sees the event end instead of hanging.
+</Update>
+
 <Update label="Sep 14, 2026" tags={["UI", "Bug fixes"]}>
   ## Chat keeps your place while work continues
 
