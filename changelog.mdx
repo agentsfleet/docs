@@ -7,6 +7,30 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 16, 2026" tags={["API", "Bug fixes"]}>
+  ## A quiet fleet stops reading "Connecting…"
+
+  `GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events/stream` opens with a `hello` frame as soon as the subscription attaches. A fleet with nothing happening sent nothing until the first heartbeat fifteen seconds later, so a surface that reports itself live off the first frame showed "Connecting…" while nothing was wrong.
+
+  ## Bug fixes
+
+  - **`hello` on a fleet's stream** — `event: hello` carrying `{"kind":"hello","fleet_ids":["<fleet_id>"],"counters":{}}`, naming the one fleet this connection serves. The workspace stream has always opened this way; the per-fleet route is what lacked it.
+  - **The sequence is undisturbed** — the frame uses identifier `0` and does not advance the activity sequence, so a client may report the stream live without waiting for a heartbeat.
+  - **When no `hello` arrives** — an instance holding no publish/subscribe connection sends none. The route still serves; it has nothing to say hello about.
+</Update>
+
+<Update label="Sep 16, 2026" tags={["API"]}>
+  ## A repeated report charges nothing
+
+  `POST /v1/runners/me/reports` takes the lease id as its idempotency key, so it accepts no `Idempotency-Key` header. Send the same report again after a lost response and the stored outcome comes back.
+
+  ## What's new
+
+  - **The lease id is the key** — one lease carries one terminal result, so the identifier already in the request is what makes a repeat safe. Nothing extra to send.
+  - **A repeat costs nothing** — the second call returns the first call's stored outcome, charges nothing, and counts the run once.
+  - **A superseded holder still writes nothing** — a report from a holder the fleet has already replaced is refused by the fence, so a stale writer cannot land a partial finalize on the current holder's run.
+</Update>
+
 <Update label="Sep 16, 2026" tags={["API"]}>
   ## A retried steer runs once
 
