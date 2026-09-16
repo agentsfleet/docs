@@ -48,7 +48,7 @@ An event from a connected app shows what it carried. Its full payload is one cli
 
 Chat renews quiet connections automatically. After a stable connection closes, Chat allows 25 seconds for recovery before showing a connection warning.
 
-A connection attempt that stalls for 30 seconds is retried. Chat also retries an open connection after 45 seconds without activity or a server heartbeat to recover from silent network failures.
+A connection attempt that stalls for 30 seconds is retried. Chat also retries an open connection after 45 seconds without activity or a server heartbeat to recover from silent network failures. Deploy the server heartbeat before enabling the browser's silence watchdog.
 
 Chat retries failures quickly at first, with delays from one to 15 seconds. After five fast retries, it reports the feed as unavailable and keeps retrying every 30 seconds. Returning to the tab or restoring the network starts recovery immediately when the connection is missing or stale.
 
