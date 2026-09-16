@@ -24,6 +24,19 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Status line** — figures wrap, and a long outcome shortens to fit the available width.
 </Update>
 
+<Update label="Sep 14, 2026" tags={["Bug fixes", "UI"]}>
+  ## Quiet chats renew their connection automatically
+
+  Brief connection renewals no longer interrupt a quiet chat with a reconnect warning.
+
+  ## Bug fixes
+
+  - **Connection recovery** — long-lived quiet connections no longer accumulate failures across routine renewals.
+  - **Silent failures** — stalled connection attempts time out. Chat detects connections without activity or a server heartbeat after 45 seconds of silence and retries automatically.
+  - **Connection notice** — sustained failures explain that automatic retries continue. **Retry now** starts an immediate attempt when you want one.
+  - **Overlapping recovery** — callbacks from a replaced connection cannot close its replacement or change the conversation.
+</Update>
+
 <Update label="Sep 12, 2026" tags={["UI", "Website", "Bug fixes"]}>
   ## The credit balance shows on every page
 
