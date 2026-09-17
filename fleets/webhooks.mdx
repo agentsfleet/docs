@@ -57,17 +57,15 @@ GitHub App and a fleet URL are alternatives, not steps in one procedure.
 
 ### A connected GitHub App
 
+Install first. A grant belongs to a fleet, so the fleet has to exist before its
+grant can be approved.
+
 1. Connect the provider once per workspace.
 
    Open **Settings → Integrations**, choose GitHub, and approve the access
    GitHub requests. The workspace owns the connection.
 
-2. Approve the fleet's integration grant.
-
-   Each fleet needs its own approved grant before it receives events. The same
-   **Settings → Integrations** page lists the fleets waiting on one.
-
-3. Name the repositories in `TRIGGER.md`, as above, and install the fleet.
+2. Install the fleet.
 
    ```bash
    agentsfleet install --library github-pr-reviewer
@@ -78,8 +76,27 @@ GitHub App and a fleet URL are alternatives, not steps in one procedure.
      Fleet ID: <varies>
    ```
 
-   Register nothing on the repository. The App already delivers, and its events
-   reach the fleets whose `repositories` name that repository.
+3. Name your repositories.
+
+   A library entry ships its own `TRIGGER.md` and cannot know your repository,
+   so `--library` alone leaves the fleet subscribed to nothing. Edit `TRIGGER.md`
+   in a local bundle as shown above, then push it to the installed fleet.
+
+   ```bash
+   agentsfleet fleet update <FLEET_ID> --from ./my-bundle
+   ```
+
+   ```text
+   <varies>
+   ```
+
+4. Approve the fleet's integration grant.
+
+   Each fleet needs its own approved grant before it receives events. The fleet
+   appears in **Settings → Integrations** once it is installed.
+
+Register nothing on the repository. The App already delivers, and its events
+reach the fleets whose `repositories` name that repository.
 
 ### A fleet URL
 
