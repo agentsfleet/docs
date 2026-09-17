@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-08-15
+verified: 2026-09-17
 executable: false
 ---
 
@@ -24,10 +24,26 @@ x-agentsfleet:
   triggers:
     - type: webhook
       source: github
+      repositories:
+        - owner/repository
       events:
         - pull_request
       credential_name: github
 ```
+
+<Warning>
+`repositories` is required when the event arrives through a connected GitHub
+App. One App delivery is offered to every fleet in the workspace. A fleet that
+names no repository has subscribed to nothing.
+
+Leaving it out is silent. The delivery succeeds and no run starts.
+
+A fleet you post to directly at `/v1/webhooks/{fleet_id}` does not need it. That
+URL already names the fleet, so the sender chose it.
+</Warning>
+
+`events` works the other way round. Omit it and the fleet accepts every event
+type from that source. Name one or more and it accepts only those.
 
 ## Steps
 

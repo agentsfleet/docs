@@ -3,7 +3,7 @@ title: Troubleshoot a fleet
 description: Find and fix common fleet failures.
 type: troubleshooting
 audience: user
-verified: 2026-07-12
+verified: 2026-09-17
 executable: false
 ---
 
@@ -15,6 +15,7 @@ executable: false
 |---|---|
 | Every command fails | Run `agentsfleet doctor`. |
 | A webhook does not create a run | Read recent webhook events. |
+| A connected GitHub App sends nothing | Check `repositories` in `TRIGGER.md`. |
 | A run starts and fails | Read the activity stream error. |
 | A fleet returns the wrong result | Compare tool calls with `SKILL.md`. |
 | New runs are blocked | Check fleet state and budgets. |
@@ -55,7 +56,25 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
    `UZ-WH-010` points to a signature mismatch. `UZ-AGT-012` points to a fleet that cannot accept work.
 
-4. Retry the original event once.
+4. When a connected GitHub App sends nothing, check the subscription.
+
+   An App delivery reaches every fleet in the workspace, so each fleet says
+   which repositories it wants. A fleet that names none subscribes to none, and
+   `agentsfleet events` stays empty because no run was ever created.
+
+   ```bash
+   agentsfleet get <FLEET_ID> --json
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   The fleet's `TRIGGER.md` needs `repositories` beside `source: github`, spelled
+   `owner/repository`. Case does not matter. The fleet also needs an approved
+   integration grant for the provider, which **Settings → Integrations** shows.
+
+5. Retry the original event once.
 
    Lifecycle commands send a write again only when the connection was refused or the server declined to run it. A reset after sending or a timeout surfaces the error. Provider webhooks follow the provider's own retry policy.
 
