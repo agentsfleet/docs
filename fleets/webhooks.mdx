@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-08-15
+verified: 2026-09-17
 executable: false
 ---
 
@@ -24,12 +24,83 @@ x-agentsfleet:
   triggers:
     - type: webhook
       source: github
+      repositories:
+        - owner/repository
       events:
         - pull_request
       credential_name: github
 ```
 
+<Warning>
+`repositories` is required when the event arrives through a connected GitHub
+App. One App delivery is offered to every fleet in the workspace. A fleet that
+names no repository has subscribed to nothing.
+
+The delivery is then answered `200` with `{"ignored": "UZ-WH-022"}`, so GitHub
+records it as successful and no run starts. Read the body, not the status.
+
+A fleet you post to directly at `/v1/webhooks/{fleet_id}` does not need it. That
+URL already names the fleet, so the sender chose it.
+</Warning>
+
+`events` works the other way round. Omit it and the fleet accepts every event
+type that the path supports. Name one or more and it accepts only those.
+
+Managed App ingress supports `pull_request`, `workflow_run` and
+`deployment_status`. Naming anything else, or omitting `events` and expecting
+`push` or `issues`, delivers nothing.
+
 ## Steps
+
+Pick the path that matches how the provider reaches `agentsfleet`. A connected
+GitHub App and a fleet URL are alternatives, not steps in one procedure.
+
+### A connected GitHub App
+
+Install first. A grant belongs to a fleet, so the fleet has to exist before its
+grant can be approved.
+
+1. Connect the provider once per workspace.
+
+   Open **Settings → Integrations**, choose GitHub, and approve the access
+   GitHub requests. The workspace owns the connection.
+
+2. Install the fleet.
+
+   ```bash
+   agentsfleet install --library github-pr-reviewer
+   ```
+
+   ```text
+   ✓ github-pr-reviewer is live.
+     Fleet ID: <varies>
+   ```
+
+3. Name your repositories.
+
+   A library entry ships its own `TRIGGER.md` and cannot know your repository,
+   so `--library` alone leaves the fleet subscribed to nothing. Edit `TRIGGER.md`
+   in a local bundle as shown above, then push it to the installed fleet.
+
+   ```bash
+   agentsfleet fleet update <FLEET_ID> --from ./my-bundle
+   ```
+
+   ```text
+   <varies>
+   ```
+
+4. Approve the fleet's integration grant.
+
+   Each fleet needs its own approved grant before it receives events. The fleet
+   appears in **Settings → Integrations** once it is installed.
+
+Register nothing on the repository. The App already delivers, and its events
+reach the fleets whose `repositories` name that repository.
+
+### A fleet URL
+
+Use this for any provider without a connected App.
 
 1. Install or update the fleet.
 
@@ -48,11 +119,13 @@ x-agentsfleet:
 
 3. Register the URL and signing secret with the provider.
 
-   For GitHub, open **Repository settings → Webhooks → Add webhook**. Choose the required event names.
+   For GitHub, open **Repository settings → Webhooks → Add webhook**. Choose the
+   required event names.
 
 4. Send a provider test event.
 
-   The provider owns delivery and retries. `agentsfleet` owns the URL until the fleet is deleted.
+   The provider owns delivery and retries. `agentsfleet` owns the URL until the
+   fleet is deleted.
 
 ## Verify it works
 
