@@ -57,6 +57,7 @@
               "fleets/overview",
               "fleets/install",
               "fleets/running",
+              "fleets/approvals",
               "fleets/secrets",
               "fleets/model-providers",
               "fleets/connectors",

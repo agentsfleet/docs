@@ -7,6 +7,27 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 19, 2026" tags={["CLI", "What's new", "Bug fixes"]}>
+  ## The terminal can answer a fleet that is waiting on you
+
+  `agentsfleet approvals` lists, reads, and decides approval gates. A fleet whose `TRIGGER.md` declares `repository_access: write` opens a gate on every run and parks until a person decides it, so `agentsfleet steer` on one of those fleets could not finish from a terminal before now.
+
+  ## What's new
+
+  - **`agentsfleet approvals`** — `list`, `show <gate_id>`, `approve <gate_id>`, and `deny <gate_id>`. The list prints `GATE`, `FLEET`, `KIND`, `STATUS`, and `ACTION`, and narrows with `--fleet <fleet_id>`. `show` prints the gate's blast radius in full, so the reach is read before it is granted.
+  - **`agentsfleet library add`** — onboards a workspace library entry from `--github <owner/repo>`, `--from <path>`, or `--template <id>`. Exactly one source is required; none or several exits `4`. `--ref` pins a revision for `--github`, `--replace` overwrites an entry the workspace already holds, and the output names the entry's secrets, tools, and network hosts beside the install command to run next.
+  - **`agentsfleet status` counts what is waiting** — a `Waiting` row joins Name, Status, Events, and Budget. When any fleet is parked, the block ends with the command that lists the gates.
+  - **`agentsfleet secret list` is a table** — `NAME`, `KIND`, and `CREATED`, with a readable date in place of the raw counter the old two-field output printed. `--json` is unchanged.
+
+  ## Bug fixes
+
+  - **`agentsfleet library` lists the workspace gallery** — it read the platform-only catalogue, so an entry a workspace owned was installable but invisible. It now reads the same list `install --library` resolves against, and a `TIER` column separates `platform` from `tenant`. A workspace with no entries says so and names `agentsfleet library add`.
+  - **Server failures read as sentences** — a refused install prints the sentence written for a reader, such as "That Fleet Bundle isn't valid. It's missing `SKILL.md`, or has an unsafe or oversized file. Check the source and try again.", in place of the terse internal detail.
+  - **`agentsfleet logout` claims only what it does** — its help now reads: revoke this machine's credential, abort unfinished sign-ins, and clear local state. Other machines stay signed in, and it never claimed to reach tokens already minted.
+  - **The paging hint names a real command** — a paged `agentsfleet list` points at `agentsfleet list --starting-after <cursor>`. It named `agentsfleet fleet list`, which does not exist.
+  - **One spelling for the library placeholder** — help and hints advertise `--library <library_id>` throughout, including `install --help`.
+</Update>
+
 <Update label="Sep 16, 2026" tags={["API", "Bug fixes"]}>
   ## A quiet fleet stops reading "Connecting…"
 

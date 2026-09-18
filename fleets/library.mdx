@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-09-12
+verified: 2026-09-19
 executable: false
 ---
 
@@ -21,7 +21,7 @@ The library gives each installation a known source. It also lets `agentsfleet` c
 
 ## How it behaves
 
-Platform administrators create platform entries. Authorized workspace members create workspace entries from a GitHub repository through the dashboard or API.
+Platform administrators create platform entries. Authorized workspace members create workspace entries with `agentsfleet library add`, in the dashboard, or through the API.
 
 The dashboard waits 30 seconds for an import, then reports a timeout in the dialog. `agentsfleetd` allows its own GitHub fetch 60 seconds, so a large bundle over a slow link can outlast that wait.
 
@@ -29,17 +29,48 @@ Wait for the 60-second fetch deadline, then reload the library. Import again onl
 
 Re-adding identical content to one workspace returns the existing content identity. Installing an entry creates a separate fleet owned by that workspace.
 
+`agentsfleet library` lists the gallery this workspace can install from, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns.
+
 ```bash
 agentsfleet library
 ```
 
 ```text
-LIBRARY                        NAME                            SECRETS
-github-pr-reviewer             GitHub Pull Request reviewer    github
+LIBRARY                        NAME                            TIER        SECRETS
+github-pr-reviewer             GitHub Pull Request reviewer    platform    github
 <varies>
 ```
 
+The list resolves the same entries as `agentsfleet install --library`, so an entry you can see is an entry you can install. A workspace holding no entries reads `No Fleet libraries in this workspace.` and points at `agentsfleet library add --github <owner/repo>`.
+
 New fleets install only by library identifier. Local files can update an existing fleet with `agentsfleet fleet update`.
+
+## Onboard a workspace entry
+
+`agentsfleet library add` onboards an entry into the active workspace. It takes exactly one source, and none or several is rejected with exit code `4`.
+
+```bash
+agentsfleet library add --github agentsfleet/github-pr-reviewer
+```
+
+```text
+✓ github-pr-reviewer onboarded.
+  Library ID: <varies>
+  Secrets: github
+  Tools: http_request
+  Network hosts: api.github.com
+  Install it with: agentsfleet install --library <varies>
+```
+
+The output names what the bundle will ask for before anything is installed. Save each named secret first, then run the install command it prints.
+
+| Source | What it reads |
+| --- | --- |
+| `--github <OWNER>/<REPOSITORY>` | A GitHub repository with `SKILL.md` at its root. `--ref <REVISION>` pins the revision to fetch. |
+| `--from <PATH>` | A local directory holding `SKILL.md`, and `TRIGGER.md` beside it when the bundle declares one. |
+| `--template <TEMPLATE_ID>` | A built-in template shipped with the client. |
+
+`--ref` accompanies `--github` only. A name the workspace already holds is refused unless you pass `--replace`, which overwrites the stored bundle in place.
 
 ## Onboard a platform entry
 
@@ -76,7 +107,7 @@ Four fleets ship as their own public repository under `agentsfleet`. Each instal
 | `zoho-sprint-daily-summarizer` | Summarizes the day's Zoho Sprints activity and posts a digest. | `zoho` |
 | `zoho-recruiter-daily-summarizer` | Summarizes the day's Zoho Recruit pipeline and posts a digest. | `zoho_recruit` |
 
-Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one by uploading its folder, not by naming a repository. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
+Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one from its folder rather than by naming a repository, and `agentsfleet library add --from <PATH>` reads the same folder into one workspace. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
 
 | Identifier | What it does | Secrets |
 | --- | --- | --- |

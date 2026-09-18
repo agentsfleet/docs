@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-08-15
+verified: 2026-09-19
 executable: false
 ---
 
@@ -140,7 +140,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secret create <NAME>` | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | The fleet could not accept work. Check that the fleet exists and is active, then retry. | Use fleet identifiers from the current workspace. |
-| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Use `agentsfleet kill <name>` first, then deploy again. | Use fleet identifiers from the current workspace. |
+| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Pass `--name <unique_name>` to install the same bundle again, or run `agentsfleet kill <fleet_id>` then `agentsfleet delete <fleet_id>` to free the name. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | We couldn't find that Fleet. It may have been deleted, or the identifier doesn't match one in this workspace. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | That action isn't available for this Fleet right now — check its current status and try again. | Use fleet identifiers from the current workspace. |

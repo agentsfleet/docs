@@ -3,7 +3,7 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-09-19
 executable: false
 ---
 
@@ -51,6 +51,10 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    <varies>
    ```
 
+   A fleet whose `TRIGGER.md` declares `repository_access: write` opens an
+   approval gate on every run. The reply arrives once you decide the gate with
+   [`agentsfleet approvals`](/fleets/approvals).
+
 4. Stop new work while keeping the fleet resumable.
 
    ```bash
@@ -83,6 +87,14 @@ Name: <varies>
 Status: active
 Events: <varies>
 Budget: <varies>
+Waiting: <varies>
+```
+
+`Waiting` counts the approvals the fleet is parked on. When any fleet is
+waiting, the client adds the line below.
+
+```text
+Some fleets are waiting on approval. Review with: agentsfleet approvals list
 ```
 
 ## Common problems
@@ -90,6 +102,8 @@ Budget: <varies>
 `UZ-AGT-009` means the fleet does not exist in the active workspace. Check the workspace and fleet identifier.
 
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
+
+A run that produces no reply may be parked at an approval gate. Run `agentsfleet approvals list` and decide the gate it names.
 
 A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
 
@@ -118,5 +132,6 @@ agentsfleet delete <FLEET_ID>
 ## Related pages
 
 - [Fleet overview](/fleets/overview)
+- [Approve a waiting run](/fleets/approvals)
 - [Troubleshooting](/fleets/troubleshooting)
 - [Command index](/cli/agentsfleet)

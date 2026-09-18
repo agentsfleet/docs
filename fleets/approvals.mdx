@@ -1,0 +1,113 @@
+---
+title: Approve a waiting run
+description: Decide the approval gates a fleet is parked on.
+type: how-to
+audience: user
+verified: 2026-09-19
+executable: false
+---
+
+# Approve a waiting run
+
+## What this does
+
+Some fleets ask for access that a person has to grant. A run that asks parks at an approval gate until someone decides it.
+
+`agentsfleet approvals` lists those gates, shows what one grants, and records the decision from your terminal.
+
+## Before you begin
+
+Install a fleet that opens gates. A fleet whose `TRIGGER.md` declares `repository_access: write` opens a new gate on every run.
+
+Sign in and select the workspace that owns the fleet. A tenant API key needs `approval:read` to list gates and `approval:resolve` to decide them.
+
+## Steps
+
+1. List the gates waiting in the active workspace.
+
+   ```bash
+   agentsfleet approvals list
+   ```
+
+   ```text
+   GATE      FLEET     KIND      STATUS    ACTION
+   <varies>  <varies>  <varies>  <varies>  <varies>
+   ```
+
+   Add `--fleet <FLEET_ID>` to narrow the list to one fleet.
+
+2. Read what the gate grants.
+
+   `<GATE_ID>` comes from the `GATE` column.
+
+   ```bash
+   agentsfleet approvals show <GATE_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   The block names the fleet, the gate kind, its status, and the blast radius. The blast radius is one sentence naming what an approval reaches.
+
+3. Decide the gate.
+
+   ```bash
+   agentsfleet approvals approve <GATE_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   Deny it instead when the reach is wider than the work needs.
+
+   ```bash
+   agentsfleet approvals deny <GATE_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+## Verify it works
+
+```bash
+agentsfleet status
+```
+
+```text
+Fleets
+Name: <varies>
+Status: active
+Events: <varies>
+Budget: <varies>
+Waiting: 0
+```
+
+`Waiting` counts the gates the fleet is parked on. An approved run continues where it stopped, and `agentsfleet steer` returns its reply.
+
+## Common problems
+
+`UZ-APPROVAL-002` means the gate is no longer open. It timed out, or someone decided it in the dashboard. List the gates again.
+
+`UZ-APPROVAL-006` means someone decided this gate first. Run `agentsfleet approvals show <GATE_ID>` to read the outcome and who recorded it.
+
+`UZ-REPAIR-010` means the run asked for repository write access with no approved gate behind it. The run continues read-only, so it can name a fix but cannot push one.
+
+`UZ-REPAIR-011` means the fleet's repository binding changed after the gate was raised. The fleet raises a new gate showing the current reach.
+
+## Remove or undo
+
+A decision is final. Denying a gate ends that run without the access it asked for; approving one cannot be withdrawn afterwards.
+
+The decision covers one run. The next run opens its own gate, so nothing you approve today widens what the fleet may do tomorrow.
+
+To stop the questions instead of answering them, remove `repository_access: write` from `TRIGGER.md` and push the bundle with `agentsfleet fleet update`.
+
+## Related pages
+
+- [Run and control a fleet](/fleets/running)
+- [Author a fleet](/fleets/authoring)
+- [API scopes](/api-reference/scopes)
+- [Command reference](/cli/agentsfleet)

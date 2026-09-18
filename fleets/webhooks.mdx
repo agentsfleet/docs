@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-09-17
+verified: 2026-09-19
 executable: false
 ---
 
@@ -72,6 +72,9 @@ grant can be approved.
    ```
 
    ```text
+     Secrets: github
+     Tools: http_request
+     Network hosts: api.github.com
    ✓ github-pr-reviewer is live.
      Fleet ID: <varies>
    ```
@@ -109,6 +112,9 @@ Use this for any provider without a connected App.
    ```
 
    ```text
+     Secrets: github
+     Tools: http_request
+     Network hosts: api.github.com
    ✓ github-pr-reviewer is live.
      Fleet ID: <varies>
      Webhook URLs (register on the upstream provider):

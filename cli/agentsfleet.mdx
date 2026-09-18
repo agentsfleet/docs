@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-08-14
+verified: 2026-09-19
 executable: false
 ---
 
@@ -71,13 +71,13 @@ Commands:
 
 | Command | Effect |
 |---|---|
-| `agentsfleet workspace create [NAME]` | Creates a workspace and selects it. |
+| `agentsfleet workspace create <NAME>` | Creates a workspace and selects it. The name is required. |
 | `agentsfleet workspace list` | Lists workspaces. |
 | `agentsfleet workspace use <WORKSPACE_ID>` | Selects the active workspace on this computer. |
 | `agentsfleet workspace show [WORKSPACE_ID]` | Shows one workspace. |
 | `agentsfleet workspace secrets` | Prints the secret command and dashboard path. |
 | `agentsfleet workspace delete <WORKSPACE_ID>` | Removes one workspace from local client state. Remote data remains. |
-| `agentsfleet api-key create` | Creates a tenant API key. The raw key appears once. |
+| `agentsfleet api-key create --name <NAME>` | Creates a tenant API key. `--name` is required, and the raw key appears once. |
 | `agentsfleet api-key list` | Lists tenant API keys. |
 | `agentsfleet api-key revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
 | `agentsfleet api-key delete <API_KEY_ID>` | Deletes metadata for a revoked tenant API key. |
@@ -90,11 +90,14 @@ Commands:
 
 | Command | Effect |
 |---|---|
-| `agentsfleet library` | Lists installable library entries. |
+| `agentsfleet library` | Lists the workspace gallery: every entry this workspace can install, platform and workspace alike. |
+| `agentsfleet library add --github <OWNER>/<REPOSITORY>` | Onboards a workspace library entry from a GitHub repository. |
+| `agentsfleet library add --from <PATH>` | Onboards a workspace library entry from a local bundle directory. |
+| `agentsfleet library add --template <TEMPLATE_ID>` | Onboards a workspace library entry from a built-in template. |
 | `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. |
 | `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
-| `agentsfleet list` | Lists fleets in the active workspace. |
-| `agentsfleet status` | Shows every fleet in the active workspace. |
+| `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. |
+| `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. |
 | `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
 | `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. |
 | `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. |
@@ -105,6 +108,49 @@ Commands:
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
+`agentsfleet library add` takes exactly one source. Passing none, or more than one of `--github`, `--from`, and `--template`, is rejected with exit code `4`.
+
+`--ref <REVISION>` pins the revision to fetch and accompanies `--github` only. `--from <PATH>` reads a directory holding `SKILL.md`, and `TRIGGER.md` beside it when the bundle declares one.
+
+`--replace` overwrites the entry the workspace already holds under that name. Without it, a name the workspace already holds is refused.
+
+### Approvals
+
+| Command | Effect |
+|---|---|
+| `agentsfleet approvals list` | Lists the gates waiting for a decision in the active workspace. |
+| `agentsfleet approvals list --fleet <FLEET_ID>` | Lists the waiting gates for one fleet. |
+| `agentsfleet approvals show <GATE_ID>` | Shows one gate, including the reach an approval grants. |
+| `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
+| `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
+
+A fleet whose `TRIGGER.md` declares `repository_access: write` opens a gate on every run. The run parks until a person decides that gate, so an unresolved gate stops `agentsfleet steer` from finishing.
+
+A decision is final. The next run opens its own gate, and the previous decision does not carry over.
+
+### Schedules
+
+| Command | Effect |
+|---|---|
+| `agentsfleet schedule add` | Adds a schedule that wakes a fleet on a cron expression. |
+| `agentsfleet schedule list` | Lists the schedules a fleet holds. |
+| `agentsfleet schedule update` | Changes an existing schedule. |
+| `agentsfleet schedule rm` | Removes one schedule. |
+| `agentsfleet schedule status` | Shows a schedule and its state at the upstream scheduler. |
+| `agentsfleet schedule sync` | Re-sends the schedule to the upstream scheduler. |
+
+Run `agentsfleet schedule sync` after `UZ-SCHED-004`, the code the server returns when the upstream scheduler did not confirm a change.
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `--cron <EXPRESSION>` | Sets when the schedule fires. | Unset | Five-field cron expression |
+| `--message <TEXT>` | Sets the message the fleet receives on each fire. | Unset | Text |
+| `--timezone <TIMEZONE>` | Reads the cron expression in this zone. | Unset | Supported region name |
+| `--status <STATE>` | Sets whether the schedule fires. | Unset | `active` or `paused` |
+| `--workspace <WORKSPACE_ID>` | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
+
+A fleet holds at most 32 schedules. Run `agentsfleet schedule <SUBCOMMAND> --help` for the arguments one subcommand takes.
+
 ### Secrets and memory
 
 | Command | Effect |
@@ -113,7 +159,7 @@ Commands:
 | `agentsfleet secret create <NAME> --provider <ID> --api-key <KEY> --model <MODEL>` | Stores a model-provider credential. `--provider` and `--model` are both checked against the model catalogue your server serves — run `agentsfleet models` to list it. `--provider openai-compatible` adds a required `https` `--base-url`, makes `--api-key` optional, and accepts any `--model`. |
 | `agentsfleet secret update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data and provider options as `agentsfleet secret create`. |
 | `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
-| `agentsfleet secret list` | Lists secret names and metadata. |
+| `agentsfleet secret list` | Lists secret names, kinds, and creation times as a table. `--json` returns the same fields it always has. |
 | `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
 | `agentsfleet memory list --fleet <FLEET_ID>` | Lists memory entries newest first. |
 | `agentsfleet memory search <QUERY> --fleet <FLEET_ID>` | Searches memory keys and content. |
@@ -179,9 +225,15 @@ The codes are `MISSING_ARGUMENT`, `MISSING_OPTION_VALUE`, `MISSING_REQUIRED_OPTI
 
 API failures include a stable error code and request identifier when the server supplies them. Use both values when reporting a problem.
 
+A server failure is reported with the message the server wrote for a reader, not with its internal detail text. A refused install reads `That Fleet Bundle isn't valid. It's missing SKILL.md, or has an unsafe or oversized file. Check the source and try again.` in place of `Fleet Bundle is invalid`.
+
+The [error registry](/api-reference/error-codes) lists the message each code carries.
+
 ## Related pages
 
 - [Install the client](/cli/install)
 - [Global options](/cli/flags)
 - [Client configuration](/cli/configuration)
+- [Fleet library](/fleets/library)
+- [Approve a waiting run](/fleets/approvals)
 - [Quickstart](/quickstart)

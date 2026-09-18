@@ -3,7 +3,7 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-09-06
+verified: 2026-09-19
 executable: false
 ---
 
@@ -40,7 +40,7 @@ curl https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets -H "Authori
 ```
 
 ```text
-{"items":<varies>,"total":<varies>,"cursor":<varies>}
+{"items":<varies>,"total":<varies>,"next_cursor":<varies>}
 ```
 
 Errors use the HTTP problem details format. Each product error includes an `error_code`, a `request_id`, and a documentation URL.

@@ -3,7 +3,7 @@ title: API scopes
 description: Permissions that an agentsfleet access token can carry.
 type: reference
 audience: user
-verified: 2026-08-14
+verified: 2026-09-19
 executable: false
 ---
 
@@ -49,6 +49,8 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `platform-library:write` | Adds an entry to the platform library. | None |
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
+
+`agentsfleet approvals` spends the approval scopes from a terminal or a script. Listing needs `approval:read`, and approving or denying needs `approval:resolve`.
 
 Operator tokens may carry `runner:*`, `platform-key:*`, `platform-library:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
 

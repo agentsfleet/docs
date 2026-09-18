@@ -3,7 +3,7 @@ title: Install a fleet
 description: Install a fleet from your workspace library.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-09-19
 executable: false
 ---
 
@@ -19,17 +19,22 @@ Sign in and select a workspace. Save every secret required by the library entry.
 
 ## Steps
 
-1. Browse the platform library.
+1. Browse the workspace gallery.
 
    ```bash
    agentsfleet library
    ```
 
    ```text
-   LIBRARY                        NAME                            SECRETS
-   github-pr-reviewer             GitHub Pull Request reviewer    github
+   LIBRARY                        NAME                            TIER        SECRETS
+   github-pr-reviewer             GitHub Pull Request reviewer    platform    github
    <varies>
    ```
+
+   The gallery holds both tiers. `TIER` reads `platform` for an entry every
+   workspace sees and `tenant` for one this workspace owns.
+
+   An entry you need but cannot see is onboarded with `agentsfleet library add`.
 
 2. Install one library entry.
 
@@ -38,11 +43,17 @@ Sign in and select a workspace. Save every secret required by the library entry.
    ```
 
    ```text
+     Secrets: github
+     Tools: http_request
+     Network hosts: api.github.com
    ✓ github-pr-reviewer is live.
      Fleet ID: <varies>
      Webhook URLs (register on the upstream provider):
        github: <varies>
    ```
+
+   The requirement lines come first, so you see what the fleet was granted
+   before you see that it is live.
 
 3. Register each printed webhook URL with its provider.
 
@@ -60,13 +71,19 @@ Name: github-pr-reviewer
 Status: active
 Events: <varies>
 Budget: <varies>
+Waiting: 0
 ```
+
+`Waiting` counts the approvals this fleet is parked on. A count above zero also
+prints the command that lists them.
 
 ## Common problems
 
 `UZ-BUNDLE-003` means the workspace lacks a required secret. Create each named secret and run the install command again.
 
-`UZ-AGT-006` means the fleet name already exists. Pass `--name <UNIQUE_NAME>` to create another fleet from the same entry.
+`UZ-AGT-006` means the fleet name already exists. Pass `--name <UNIQUE_NAME>` to install the same bundle again under a free name.
+
+To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`. Deletion releases the name.
 
 After any failed install, run `agentsfleet list` before retrying. Retry only when the fleet is absent.
 
