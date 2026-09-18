@@ -83,7 +83,15 @@ prints the command that lists them.
 
 `UZ-AGT-006` means the fleet name already exists. Pass `--name <UNIQUE_NAME>` to install the same bundle again under a free name.
 
-To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`. Deletion releases the name.
+To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then
+`agentsfleet delete <FLEET_ID>`. Deletion releases the name.
+
+<Warning>
+  `agentsfleet delete` is irreversible. It takes the Fleet's events, sessions,
+  schedules, integration grants, connector channels, and memory with it — a
+  name is the only thing you get back. When you only need the name free, prefer
+  `--name <UNIQUE_NAME>` above and leave the existing Fleet in place.
+</Warning>
 
 After any failed install, run `agentsfleet list` before retrying. Retry only when the fleet is absent.
 
