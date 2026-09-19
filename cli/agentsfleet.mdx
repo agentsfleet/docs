@@ -130,26 +130,31 @@ A decision is final. The next run opens its own gate, and the previous decision 
 
 ### Schedules
 
+Every subcommand takes the fleet identifier. The four that act on one schedule
+take its identifier after it.
+
 | Command | Effect |
 |---|---|
-| `agentsfleet schedule add` | Adds a schedule that wakes a fleet on a cron expression. |
-| `agentsfleet schedule list` | Lists the schedules a fleet holds. |
-| `agentsfleet schedule update` | Changes an existing schedule. |
-| `agentsfleet schedule rm` | Removes one schedule. |
-| `agentsfleet schedule status` | Shows a schedule and its state at the upstream scheduler. |
-| `agentsfleet schedule sync` | Re-sends the schedule to the upstream scheduler. |
+| `agentsfleet schedule add <FLEET_ID> --cron <EXPRESSION> --message <TEXT>` | Adds a schedule that wakes a fleet on a cron expression. |
+| `agentsfleet schedule list <FLEET_ID>` | Lists the schedules a fleet holds. |
+| `agentsfleet schedule update <FLEET_ID> <SCHEDULE_ID>` | Changes an existing schedule. |
+| `agentsfleet schedule rm <FLEET_ID> <SCHEDULE_ID>` | Removes one schedule. |
+| `agentsfleet schedule status <FLEET_ID> <SCHEDULE_ID>` | Shows a schedule and its state at the upstream scheduler. |
+| `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` | Re-sends the schedule to the upstream scheduler. |
 
-Run `agentsfleet schedule sync` after `UZ-SCHED-004`, the code the server returns when the upstream scheduler did not confirm a change.
+Run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` after `UZ-SCHED-004`, the code the server returns when the upstream scheduler did not confirm a change.
 
-| Option | Effect | Default | Unit or range |
-|---|---|---|---|
-| `--cron <EXPRESSION>` | Sets when the schedule fires. | Unset | Five-field cron expression |
-| `--message <TEXT>` | Sets the message the fleet receives on each fire. | Unset | Text |
-| `--timezone <TIMEZONE>` | Reads the cron expression in this zone. | Unset | Supported region name |
-| `--status <STATE>` | Sets whether the schedule fires. | Unset | `active` or `paused` |
-| `--workspace <WORKSPACE_ID>` | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
+Each option is accepted by the subcommands named beside it.
 
-A fleet holds at most 32 schedules. Run `agentsfleet schedule <SUBCOMMAND> --help` for the arguments one subcommand takes.
+| Option | Accepted by | Effect | Default | Unit or range |
+|---|---|---|---|---|
+| `--cron <EXPRESSION>` | `add`, `update` | Sets when the schedule fires. | Unset | Five-field cron expression |
+| `--message <TEXT>` | `add`, `update` | Sets the message the fleet receives on each fire. | Unset | Text |
+| `--timezone <TIMEZONE>` | `add`, `update` | Reads the cron expression in this zone. | `UTC` on `add` | Supported region name |
+| `--status <STATE>` | `update` | Sets whether the schedule fires. | Unset | `active` or `paused` |
+| `--workspace <WORKSPACE_ID>` | all six | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
+
+A fleet holds at most 32 schedules.
 
 ### Secrets and memory
 
