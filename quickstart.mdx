@@ -3,7 +3,7 @@ title: Quickstart
 description: Install your first fleet and send it a GitHub event.
 type: tutorial
 audience: user
-verified: 2026-07-12
+verified: 2026-09-19
 executable: false
 ---
 
@@ -84,13 +84,16 @@ Create a GitHub token that can read the repository and post comments. Keep the t
    ```
 
    ```text
+     Secrets: github
+     Tools: http_request
+     Network hosts: api.github.com
    ✓ github-pr-reviewer is live.
      Fleet ID: <varies>
      Webhook URLs (register on the upstream provider):
        github: <varies>
    ```
 
-   Save the fleet identifier and webhook URL from this output. You will use both values below.
+   The first three lines are what the fleet asked for. Save the fleet identifier and webhook URL from this output. You will use both values below.
 
 6. Add the webhook in GitHub.
 

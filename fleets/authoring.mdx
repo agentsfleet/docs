@@ -3,7 +3,7 @@ title: Author a fleet
 description: Create the two files that define a fleet.
 type: how-to
 audience: user
-verified: 2026-09-06
+verified: 2026-09-19
 executable: false
 ---
 
@@ -55,19 +55,40 @@ Create an empty directory. Choose a lowercase fleet name with letters, numbers, 
 
    `SKILL.md` must be at the repository root. `TRIGGER.md` is optional when the default manual trigger is enough.
 
-4. Open **Fleets → Install fleet → Add library entry** in the dashboard.
+4. Onboard the bundle as a workspace library entry.
 
-   Enter the repository as `<OWNER>/<REPOSITORY>`. Both values come from the GitHub repository URL.
+   `<OWNER>` and `<REPOSITORY>` come from the GitHub repository URL.
+
+   ```bash
+   agentsfleet library add --github <OWNER>/<REPOSITORY>
+   ```
+
+   ```text
+   ✓ health-check onboarded.
+     Library ID: <varies>
+     Secrets: <varies>
+     Tools: <varies>
+     Network hosts: <varies>
+     Install it with: agentsfleet install --library <varies>
+   ```
+
+   Pass `--from <PATH>` instead to read the bundle from a local directory. Pass
+   `--replace` to overwrite an entry the workspace already holds under this name.
+
+   The dashboard does the same job at **Fleets → Install fleet → Add library entry**.
 
 5. Install the new library entry.
 
-   `<LIBRARY_ID>` appears in the workspace gallery after the files pass validation.
+   `<LIBRARY_ID>` is the identifier the previous command printed.
 
    ```bash
    agentsfleet install --library <LIBRARY_ID>
    ```
 
    ```text
+     Secrets: <varies>
+     Tools: <varies>
+     Network hosts: <varies>
    ✓ health-check is live.
      Fleet ID: <varies>
    ```

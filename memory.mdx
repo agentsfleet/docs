@@ -3,7 +3,7 @@ title: Memory
 description: Learn what a fleet can remember between events.
 type: explanation
 audience: user
-verified: 2026-07-18
+verified: 2026-09-19
 executable: false
 ---
 
@@ -43,9 +43,12 @@ agentsfleet memory list --fleet <FLEET_ID>
 ```
 
 ```text
-KEY          CATEGORY    UPDATED
-<varies>     <varies>    <varies>
+KEY          CATEGORY    UPDATED     PREVIEW
+<varies>     <varies>    <varies>    <varies>
 ```
+
+`PREVIEW` shows the opening of the entry's content, so a key's meaning is
+readable without a second command.
 
 The list is newest first and pages by cursor. `--starting-after <KEY>` resumes after a key an earlier page returned. When more entries remain, the table prints the command that fetches the next page, and `--json` carries `next_cursor` for scripts.
 
