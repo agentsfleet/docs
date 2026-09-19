@@ -7,6 +7,23 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 19, 2026" tags={["API", "CLI", "What's new", "Bug fixes"]}>
+  ## A signed-in terminal can say who it is signed in as
+
+  `agentsfleet whoami` names the person, the tenant, and the credential this computer holds. Login saves a credential that carries no readable claims — capability is resolved on the server from the record the credential names — so until now nothing on the machine could answer the question, and no endpoint would either.
+
+  ## What's new
+
+  - **`agentsfleet whoami`** — prints `email`, `name`, `user_id`, `tenant`, `credential`, `api_url`, and `scopes`. `--json` returns the same fields for a script. With nothing signed in it names `agentsfleet login` and sends no request.
+  - **`GET /v1/users/me`** — returns `user_id`, `email`, `display_name`, `tenant_id`, `tenant_name`, `credential`, and `scopes`. Accepts a browser session token, a tenant API key, or a command-line credential; a tenant API key answers with the person who created it. It requires no scope, so it also confirms that a credential still works. A subject with no user record is refused with `UZ-AUTH-001`.
+  - **`agentsfleet login` names the account it signed you in to** — the closing line reads `signed in as <name> — <tenant>` in place of `login complete`. It costs no extra request: the check that already ran after minting now returns the identity.
+
+  ## Bug fixes
+
+  - **A credential without billing access is no longer reported as rejected** — `agentsfleet login` and `agentsfleet auth status` checked a credential by calling `GET /v1/tenants/me/billing`, which needs the `billing:read` scope. Anyone signed in without that scope was told the server had rejected their credential, when the server had refused the path. Both now call `GET /v1/users/me`, which needs no scope.
+  - **`agentsfleet auth status` describes what it shows** — its help said it printed the token's claims. A command-line credential has none to print; the command shows where the credential came from, the API URL it targets, and whether the server accepts it.
+</Update>
+
 <Update label="Sep 19, 2026" tags={["CLI", "What's new", "Bug fixes"]}>
   ## The terminal can answer a fleet that is waiting on you
 
