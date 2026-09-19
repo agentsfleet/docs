@@ -22,6 +22,10 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **A credential without billing access is no longer reported as rejected** — `agentsfleet login` and `agentsfleet auth status` checked a credential by calling `GET /v1/tenants/me/billing`, which needs the `billing:read` scope. Anyone signed in without that scope was told the server had rejected their credential, when the server had refused the path. Both now call `GET /v1/users/me`, which needs no scope.
   - **`agentsfleet auth status` describes what it shows** — its help said it printed the token's claims. A command-line credential has none to print; the command shows where the credential came from, the API URL it targets, and whether the server accepts it.
+
+  <Note>
+    Update the server before the client. A client that asks for `/v1/users/me` on a deployment that does not serve it yet gets a 404, which judges no credential: a path is matched before any credential is checked. So `agentsfleet login` keeps the credential it just saved and says the deployment cannot answer, `agentsfleet whoami` names the deployment, and `agentsfleet auth status` reports `unverified` rather than claiming the credential is good or bad. Every other command keeps working.
+  </Note>
 </Update>
 
 <Update label="Sep 19, 2026" tags={["CLI", "What's new", "Bug fixes"]}>
