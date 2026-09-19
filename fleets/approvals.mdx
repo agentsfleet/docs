@@ -17,7 +17,16 @@ Some fleets ask for access that a person has to grant. A run that asks parks at 
 
 ## Before you begin
 
-Install a fleet that opens gates. A fleet whose `TRIGGER.md` declares `repository_access: write` opens a new gate on every run.
+Install a fleet that opens gates. Two kinds reach the inbox, and they behave
+differently:
+
+| Kind | Raised by | Scope of a decision |
+|------|-----------|---------------------|
+| `repository_write` | `repository_access: write` in `TRIGGER.md` | One run. The next run opens its own gate. |
+| `integration_grant` | a mintable credential in the bundle's `credentials:` list | Holds until somebody revokes the grant. |
+
+A fleet can raise both. The `github-pr-reviewer` bundle does: it declares the
+`github` credential and write access, so its first run asks twice.
 
 Sign in and select the workspace that owns the fleet. A tenant API key needs `approval:read` to list gates and `approval:resolve` to decide them.
 
@@ -99,11 +108,29 @@ Waiting: 0
 
 ## Remove or undo
 
-A decision is final. Denying a gate ends that run without the access it asked for; approving one cannot be withdrawn afterwards.
+A gate is decided once, and neither answer can be changed on the gate itself. Denying one ends that run without the access it asked for. What an approval created is a separate object, and an integration grant can be revoked.
 
-The decision covers one run. The next run opens its own gate, so nothing you approve today widens what the fleet may do tomorrow.
+What a decision covers depends on the kind, and the difference matters most in
+the direction people assume it does not.
 
-To stop the questions instead of answering them, remove `repository_access: write` from `TRIGGER.md` and push the bundle with `agentsfleet fleet update`.
+A `repository_write` decision covers one run: the next run opens its own gate,
+so approving today widens nothing tomorrow.
+
+An `integration_grant` decision does not expire. Its blast radius says so —
+`every credential this fleet mints for <service>, until a person revokes the grant` — so approving one is a standing permission, not a single answer. Revoke
+it with `agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>`; list what a
+fleet holds with `agentsfleet grant list --fleet <FLEET_ID>`.
+
+Removing `repository_access: write` from `TRIGGER.md` and pushing the bundle
+with `agentsfleet fleet update` stops the per-run write gates. It does not stop
+every gate. A fleet that declares mintable credentials still raises an
+`integration_grant` gate the first time it needs them.
+
+To stop being asked at all, a fleet has to declare neither write access nor a
+mintable credential.
+
+Run `agentsfleet approvals list --fleet <FLEET_ID>` to see which kind you are
+actually being asked about — the `KIND` column names it.
 
 ## Related pages
 
