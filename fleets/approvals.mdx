@@ -108,9 +108,9 @@ Waiting: 0
 
 `UZ-APPROVAL-006` means someone decided this gate first. Run `agentsfleet approvals show <GATE_ID>` to read the outcome and who recorded it.
 
-`UZ-REPAIR-010` means the run asked for repository write access with no approved gate behind it. The run continues read-only, so it can name a fix but cannot push one.
+`UZ-GRANT-001` means the fleet holds no approved grant for the service it tried to mint against. No token is issued and the run makes no call to the provider. Check what the fleet holds with `agentsfleet grant list --fleet <FLEET_ID>`.
 
-`UZ-REPAIR-011` means the fleet's repository binding changed after the gate was raised. The fleet raises a new gate showing the current reach.
+`UZ-REPAIR-010` and `UZ-REPAIR-011` are retired and no longer returned. Both described a per-event repository-write gate that is no longer raised. A run that cannot write now fails with `UZ-GRANT-001` instead.
 
 ## Remove or undo
 
@@ -121,12 +121,19 @@ An `integration_grant` decision does not expire. Its blast radius says so —
 it with `agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>`; list what a
 fleet holds with `agentsfleet grant list --fleet <FLEET_ID>`.
 
-Removing `repository_access: write` from `TRIGGER.md` and pushing the bundle
-with `agentsfleet fleet update` narrows what a minted token may reach. It does
-not revoke the grant.
+Two different scopes, and picking the wrong one costs more than you meant.
 
-To stop a fleet writing to a repository now, revoke its grant. The next event
-is refused before the fleet contacts GitHub at all.
+To change which repositories a fleet may reach, or to drop it to read-only,
+edit `repositories:` or `repository_access` in `TRIGGER.md` and push the bundle
+with `agentsfleet fleet update`. The next minted token is scoped to what the
+fleet now declares. The grant is untouched and the fleet keeps running.
+
+To stop a fleet reaching the service entirely, delete its grant. A grant covers
+one fleet and one service, never one repository, so deleting it halts every
+repository that fleet reaches through that service.
+
+The next event is refused before the fleet contacts the provider. This is the
+emergency stop, not a way to narrow reach.
 
 Run `agentsfleet approvals list --fleet <FLEET_ID>` to see which kind you are
 actually being asked about — the `KIND` column names it.

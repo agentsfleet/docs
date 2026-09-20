@@ -15,7 +15,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## What's new
 
   - **The integration grant authorises a repository write** — one approved row in `core.integration_grants` per fleet and service, checked before any token is minted. `agentsfleet grant list --fleet <FLEET_ID>` shows it `approved` with an `approved_at` the moment the install returns.
-  - **`agentsfleet grant revoke` is the stop button** — the next event is refused before the fleet contacts the provider, so revoking costs nothing and takes effect immediately.
+  - **`agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>` is the stop button** — the next event is refused before the fleet contacts the provider. It covers one fleet and one service, so it halts every repository that fleet reaches through that service; narrow a fleet's reach by editing `repositories:` instead.
   - **`budget.daily_dollars` bounds the spending** — it halts the fleet rather than one credential request, and it is now the only spending limit on a write path.
 
   ## Bug fixes
