@@ -7,6 +7,30 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 20, 2026" tags={["CLI", "Breaking changes"]}>
+  ## The command-line client runs on Bun
+
+  `agentsfleet` now runs on the Bun runtime. Install Bun 1.4 or later before you install the client. `npm install --global @agentsfleet/cli` still installs the package; Bun runs it. If `bun` is not on your `PATH`, the command reports that it was not found.
+
+  ## Breaking changes
+
+  - **`--no-open` and `--no-input` belong to `login`** — write them after the command name, as `agentsfleet login --no-open`. Written before it, as `agentsfleet --no-open login`, they are now rejected as unknown flags. `--api` and `--json` are unchanged and still work in either position.
+  - **Bun 1.4 or later is required** — the client no longer runs on Node.js alone.
+
+  ## What's new
+
+  - **`agentsfleet help <command>` reads the same as `agentsfleet <command> --help`** — both print the same body, for a command or a group.
+  - **An unrecognised command names a next step** — a near match is suggested, and a command matching nothing points at the command list for the group you were in, not the root.
+  - **Help fits an eighty-column terminal** — every line wraps at eighty characters, and options advertise the value they take, such as `--limit <n>` and `--api <url>`.
+
+  ## Bug fixes
+
+  - **A mistyped flag reports the flag, not your sign-in** — `agentsfleet list --limit 0` while signed out now says `must be ≥ 1` and exits `4`. It used to ask you to sign in first, and the flag was still wrong when you came back.
+  - **`agentsfleet doctor` exits non-zero when a check fails** — it reported success while naming an unreachable server.
+  - **A refused value names the bound it crossed** — `must be ≥ 1`, `must be ≤ 200`, or `must be an integer`, instead of one sentence covering all three.
+
+</Update>
+
 <Update label="Sep 19, 2026" tags={["API", "What's new", "Bug fixes"]}>
   ## A reviewer fleet reviews without asking you first
 

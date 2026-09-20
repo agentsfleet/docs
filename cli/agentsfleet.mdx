@@ -54,9 +54,18 @@ Commands:
 | `-v`, `--version` | Prints the client version and exits. | `false` | Boolean |
 | `--api <API_URL>` | Sends requests to this API URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
 | `--json` | Prints JSON when the command supports it. | `false` | Boolean |
-| `--no-input` | Returns an error instead of asking a question. | `false` | Boolean |
-| `--no-open` | Prints the login URL instead of opening a browser. | `false` | Boolean |
 | `-h`, `--help` | Prints help and exits. | `false` | Boolean |
+
+### Login options
+
+Write these after `login`. Only `agentsfleet login` reads them.
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `--no-open` | Prints the login URL instead of opening a browser. | `false` | Boolean |
+| `--no-input` | Returns an error instead of asking a question. | `false` | Boolean |
+| `--force` | Signs in again even when this computer already holds a credential. | `false` | Boolean |
+| `--token-name <LABEL>` | Labels this sign-in on the approval page and in `agentsfleet auth status`. | The platform family name | Text |
 
 ### Account and diagnosis
 
