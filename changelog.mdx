@@ -7,6 +7,26 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 19, 2026" tags={["API", "What's new", "Bug fixes"]}>
+  ## A reviewer fleet reviews without asking you first
+
+  Installing a fleet that declares a mintable credential now writes an approved integration grant and raises no approval card. Installing is the answer: you chose the fleet, its bundle names the integration, and `TRIGGER.md` names the repositories and the access level. A fleet declaring `repository_access: write` used to open a `repository_write` gate on every run, and because each model turn is its own event, a single instruction could raise a card per turn and post nothing.
+
+  ## What's new
+
+  - **The integration grant authorises a repository write** — one approved row in `core.integration_grants` per fleet and service, checked before any token is minted. `agentsfleet grant list --fleet <FLEET_ID>` shows it `approved` with an `approved_at` the moment the install returns.
+  - **`agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>` is the stop button** — the next event is refused before the fleet contacts the provider. It covers one fleet and one service, so it halts every repository that fleet reaches through that service; narrow a fleet's reach by editing `repositories:` instead.
+  - **`budget.daily_dollars` bounds the spending** — it halts the fleet rather than one credential request, and it is now the only spending limit on a write path.
+
+  ## Bug fixes
+
+  - **A continuation no longer raises its own card** — each model turn carries a fresh event identifier, so a run that took ten turns asked ten times. It asks none.
+  - **`repository_write` gates are no longer raised** — gates recorded before this release stay readable in the approval inbox, and an event already parked on one still resolves from it.
+  - **Three error codes retired** — `UZ-REPAIR-010`, `UZ-REPAIR-011` and `UZ-REPAIR-013` can no longer be returned. A fleet without an approved grant returns `UZ-GRANT-001` instead. The retired codes keep their anchors, because older logs still carry them.
+  - **The 32-request allowance is gone** — it was counted per approval, and with one approval per run a ten-turn run drew far more than the number the card showed. `budget.daily_dollars` replaces it.
+
+</Update>
+
 <Update label="Sep 19, 2026" tags={["CLI", "What's new", "Bug fixes"]}>
   ## The terminal can answer a fleet that is waiting on you
 
