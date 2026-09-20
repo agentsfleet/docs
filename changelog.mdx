@@ -27,7 +27,8 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **A mistyped flag reports the flag, not your sign-in** — `agentsfleet list --limit 0` while signed out now says `must be ≥ 1` and exits `4`. It used to ask you to sign in first, and the flag was still wrong when you came back.
   - **`agentsfleet doctor` exits non-zero when a check fails** — it reported success while naming an unreachable server.
-  - **A refused value names the bound it crossed** — `must be ≥ 1`, `must be ≤ 200`, or `must be an integer`, instead of one sentence covering all three.
+  - **A refused value names the bound it crossed, the flag it came from, and the value you passed** — `agentsfleet list --limit 0` reports `invalid --limit: must be ≥ 1 (got "0")`. Flags and arguments read the same way, so a wrong value buried in a long command is visible without re-reading the line you typed.
+  - **`--json` prints the error envelope and nothing else** — a rejected invocation used to print the help page above it, so reading the output as JSON failed on the first character. `agentsfleet --help --json` still prints help.
 
 </Update>
 
