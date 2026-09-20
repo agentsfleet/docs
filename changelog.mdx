@@ -7,6 +7,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 20, 2026" tags={["API", "CLI", "Bug fixes"]}>
+  ## A charge names the fleet that paid for it, and a continuation remembers what it resumed
+
+  Two fleets could share one `event_id`. The identifier is minted per admission and nothing scoped it to a fleet, so `billing.usage_ledger` arbitrated a charge by `(event_id, charge_type)` alone and two fleets' charges could accumulate into one row — one fleet's spend added to the other's, with no read that would notice. The arbiter is now `(event_id, charge_type, fleet_id)` and `fleet_id` is `NOT NULL`.
+
+  ## Bug fixes
+
+  - **A charge accumulates only its own fleet's spend** — `billing.usage_ledger` arbitrates on `uq_usage_ledger_event_id_charge_type_fleet_id`. Two fleets charged under one `event_id` hold two rows, each with its own `credit_deducted_nanos`. Before this, the second fleet's renewal added to the first fleet's row.
+  - **A continuation keeps the event it resumed** — a run continued from an approval records `resumes_event_id` whichever writer lands first. The lease path and the approval path both write the narrative row, and the one that arrived without a predecessor used to clear the one already stored, leaving an operator's history unable to say what the run followed from.
+  - **A redelivery no longer announces a run twice** — an approval converging on a row the lease path already opened publishes no second `event_received`, so a console counts one run once.
+
+  ## What's new
+
+  - **`agentsfleet billing` groups charges by fleet and event** — a tenant whose fleets share an `event_id` sees one row per fleet instead of two charges merged into one line.
+  - **`fleet_id` on a charge is never null** — `GET /tenant/charges` always names the fleet. It was documented as null for charges written before the fleet identifier began surviving deletion; no database holds such a row. `workspace_id` and `fleet_name` are still nullable, and `fleet_name` is still a snapshot taken when the charge was written.
+
+</Update>
+
 <Update label="Sep 19, 2026" tags={["API", "What's new", "Bug fixes"]}>
   ## A reviewer fleet reviews without asking you first
 
