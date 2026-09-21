@@ -26,13 +26,17 @@ Sign in and select a workspace. Save every secret required by the library entry.
    ```
 
    ```text
-   LIBRARY                        NAME                            TIER        SECRETS
-   github-pr-reviewer             GitHub Pull Request reviewer    platform    github
+   NAME                            LIBRARY                        TIER        SECRETS    AGO
+   GitHub Pull Request reviewer    github-pr-reviewer             platform    github     41d
    <varies>
    ```
 
    The gallery holds both tiers. `TIER` reads `platform` for an entry every
    workspace sees and `tenant` for one this workspace owns.
+
+   Two entries can share a name across the tiers, so `TIER` is what tells them
+   apart. In the dashboard the same distinction is a badge on each card,
+   reading `Platform` or `This workspace`.
 
    An entry you need but cannot see is onboarded with `agentsfleet library add`.
 

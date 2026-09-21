@@ -97,9 +97,10 @@ Commands:
 | `agentsfleet library list` | Lists only the entries this workspace onboarded, with the identifier each removal names. |
 | `agentsfleet library remove <ENTRY_ID>` | Removes one entry this workspace onboarded. Fleets installed from it keep running. |
 | `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. |
+| `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
 | `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. |
-| `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. |
+| `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
 | `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
 | `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. |
 | `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. |
@@ -141,11 +142,11 @@ take its identifier after it.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet schedule add <FLEET_ID> --cron <EXPRESSION> --message <TEXT>` | Adds a schedule that wakes a fleet on a cron expression. |
+| `agentsfleet schedule create <FLEET_ID> --cron <EXPRESSION> --message <TEXT>` | Creates a schedule that wakes a fleet on a cron expression. |
 | `agentsfleet schedule list <FLEET_ID>` | Lists the schedules a fleet holds. |
 | `agentsfleet schedule update <FLEET_ID> <SCHEDULE_ID>` | Changes an existing schedule. |
-| `agentsfleet schedule rm <FLEET_ID> <SCHEDULE_ID>` | Removes one schedule. |
-| `agentsfleet schedule status <FLEET_ID> <SCHEDULE_ID>` | Shows a schedule and its state at the upstream scheduler. |
+| `agentsfleet schedule delete <FLEET_ID> <SCHEDULE_ID>` | Deletes one schedule. |
+| `agentsfleet schedule show <FLEET_ID> <SCHEDULE_ID>` | Shows one schedule and its state at the upstream scheduler. |
 | `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` | Re-sends the schedule to the upstream scheduler. |
 
 Run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` after `UZ-SCHED-004`, the code the server returns when the upstream scheduler did not confirm a change.
