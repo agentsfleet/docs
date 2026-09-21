@@ -16,6 +16,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **`--no-open` and `--no-input` belong to `login`** — write them after the command name, as `agentsfleet login --no-open`. Written before it, as `agentsfleet --no-open login`, they are now rejected as unknown flags. `--api` and `--json` are unchanged and still work in either position.
   - **Bun 1.4 or later is required** — the client no longer runs on Node.js alone.
+  - **`--workspace-id` is now `--workspace`** — `agentsfleet list` and `agentsfleet workspace show` took `--workspace-id`; every other command that scopes to a workspace took `--workspace`. One spelling now, matching `--fleet`. `agentsfleet list --workspace-id <id>` is rejected as an unknown flag; write `agentsfleet list --workspace <id>`.
 
   ## What's new
 
