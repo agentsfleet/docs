@@ -7,6 +7,22 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 21, 2026" tags={["API", "CLI", "Dashboard", "What's new"]}>
+  ## Onboarding a Fleet library is no longer a one-way door
+
+  A workspace can list the Fleet libraries it onboarded and remove one. Until now nothing removed a row from `core.tenant_fleet_library`, so every entry a workspace ever added stayed in the install gallery. Fleets installed from an entry are untouched by its removal: an install copies the bundle onto the fleet, and the fleet runs from its own copy.
+
+  ## What's new
+
+  - **`GET /v1/workspaces/{workspace_id}/library-entries` is the workspace's own collection** — its entries alone, never a platform row, paged on its own cursor. The merged gallery at `/v1/workspaces/{workspace_id}/fleet-libraries` is unchanged, and `agentsfleet install --library` still resolves against it.
+  - **`DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}` removes one entry** — `204`, and repeatable. An identifier already gone answers `204`, and so does one naming another workspace's entry, so neither reply tells you whether the entry exists somewhere else. It needs the `library:write` scope.
+  - **`agentsfleet library list` and `agentsfleet library remove <ENTRY_ID>` are the terminal half** — `list` prints the identifier `remove` takes. Bare `agentsfleet library` still prints the full gallery, unchanged.
+  - **The dashboard grows a Library page** — under the workspace sidebar, listing what this workspace owns, with a confirmation that names the entry before it goes.
+  - **Removal is permanent** — no marker row, no hidden state. Onboard the same bundle again and it arrives as a new entry with a new identifier.
+  - **No new error code** — a malformed `entry_id` is a plain `400`, a cursor from the wrong collection is `UZ-LIBRARY-001`, and a database failure is `UZ-LIBRARY-006`.
+
+</Update>
+
 <Update label="Sep 19, 2026" tags={["API", "What's new", "Bug fixes"]}>
   ## A reviewer fleet reviews without asking you first
 

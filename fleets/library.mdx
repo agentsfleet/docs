@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-09-19
+verified: 2026-09-21
 executable: false
 ---
 
@@ -71,6 +71,42 @@ The output names what the bundle will ask for before anything is installed. Save
 | `--template <TEMPLATE_ID>` | A built-in template shipped with the client. |
 
 `--ref` accompanies `--github` only. A name the workspace already holds is refused unless you pass `--replace`, which overwrites the stored bundle in place.
+
+## List and remove workspace entries
+
+`agentsfleet library list` answers for the entries this workspace onboarded. It never shows a platform entry, because it reads a different collection from `agentsfleet library`.
+
+```bash
+agentsfleet library list
+```
+
+```text
+ENTRY       NAME                            SOURCE                                  ONBOARDED
+<varies>    GitHub Pull Request reviewer    github:agentsfleet/github-pr-reviewer    2026-09-21
+```
+
+A workspace holding no entries reads `This workspace has onboarded no Fleet libraries.` and names the command that adds one.
+
+`agentsfleet library remove` takes one entry identifier, from the `ENTRY` column above.
+
+```bash
+agentsfleet library remove <ENTRY_ID>
+```
+
+```text
+✓ <varies> is no longer in this workspace's Fleet library. Fleets already installed from it keep running.
+  Onboard it again with: agentsfleet library add --github <owner/repo>
+```
+
+Removal is permanent. The entry leaves the install gallery, and nothing restores it. Onboard the same bundle again to get an entry back; it arrives with a new identifier.
+
+Fleets installed from the entry are untouched. An install copies the bundle onto the fleet, so each fleet keeps its own `SKILL.md`, its own `TRIGGER.md`, and its own content identity.
+
+Removing an identifier that is already gone succeeds. So does one that names another workspace's entry. Both answer the same way, so neither tells you whether the entry exists somewhere else.
+
+You need the `library:write` scope, the same scope `agentsfleet library add` needs.
+
+The dashboard does the same work at **Library** in the workspace sidebar. The page lists what this workspace owns and asks you to confirm each removal by name.
 
 ## Onboard a platform entry
 
