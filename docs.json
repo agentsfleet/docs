@@ -147,6 +147,12 @@
             ]
           },
           {
+            "group": "Users",
+            "pages": [
+              "GET /v1/users/me"
+            ]
+          },
+          {
             "group": "Tenants",
             "pages": [
               "GET /v1/tenants/me/workspaces"
@@ -272,8 +278,10 @@
               "GET /v1/workspaces/{workspace_id}/fleet-libraries",
               "POST /v1/admin/fleet-libraries",
               "POST /v1/workspaces/{workspace_id}/fleet-libraries",
+              "GET /v1/workspaces/{workspace_id}/library-entries",
               "PATCH /v1/admin/fleet-libraries/{id}",
-              "DELETE /v1/admin/fleet-libraries/{id}"
+              "DELETE /v1/admin/fleet-libraries/{id}",
+              "DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}"
             ]
           },
           {
