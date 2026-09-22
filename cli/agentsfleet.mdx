@@ -91,11 +91,11 @@ Commands:
 | Command | Effect |
 |---|---|
 | `agentsfleet library` | Lists the workspace gallery: every entry this workspace can install, platform and workspace alike. |
-| `agentsfleet library add --github <OWNER>/<REPOSITORY>` | Onboards a workspace library entry from a GitHub repository. |
-| `agentsfleet library add --from <PATH>` | Onboards a workspace library entry from a local bundle directory. |
-| `agentsfleet library add --template <TEMPLATE_ID>` | Onboards a workspace library entry from a built-in template. |
+| `agentsfleet library create --github <OWNER>/<REPOSITORY>` | Onboards a workspace library entry from a GitHub repository. |
+| `agentsfleet library create --from <PATH>` | Onboards a workspace library entry from a local bundle directory. |
+| `agentsfleet library create --template <TEMPLATE_ID>` | Onboards a workspace library entry from a built-in template. |
 | `agentsfleet library list` | Lists only the entries this workspace onboarded, with the identifier each removal names. |
-| `agentsfleet library remove <ENTRY_ID>` | Removes one entry this workspace onboarded. Fleets installed from it keep running. |
+| `agentsfleet library delete <ENTRY_ID>` | Removes one entry this workspace onboarded. Fleets installed from it keep running. |
 | `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
@@ -111,11 +111,11 @@ Commands:
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
-`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything installable here, platform entries included. The second lists only what this workspace onboarded, which is the set `agentsfleet library remove` can act on.
+`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything installable here, platform entries included. The second lists only what this workspace onboarded, which is the set `agentsfleet library delete` can act on.
 
-`agentsfleet library remove` is repeatable. Running it twice on one identifier succeeds both times, and so does running it on an identifier this workspace never owned. Removal is permanent: onboard the bundle again to get an entry back, and it arrives with a new identifier.
+`agentsfleet library delete` is repeatable. Running it twice on one identifier succeeds both times, and so does running it on an identifier this workspace never owned. Removal is permanent: onboard the bundle again to get an entry back, and it arrives with a new identifier.
 
-`agentsfleet library add` takes exactly one source. Passing none, or more than one of `--github`, `--from`, and `--template`, is rejected with exit code `4`.
+`agentsfleet library create` takes exactly one source. Passing none, or more than one of `--github`, `--from`, and `--template`, is rejected with exit code `4`.
 
 `--ref <REVISION>` pins the revision to fetch and accompanies `--github` only. `--from <PATH>` reads a directory holding `SKILL.md`, and `TRIGGER.md` beside it when the bundle declares one.
 
