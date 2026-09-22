@@ -19,7 +19,7 @@ If you need access, [join the waitlist](https://accounts.agentsfleet.net/waitlis
 
 Open the [dashboard](https://app.agentsfleet.net) to manage your workspace. For your profile and sign-in security, choose **Manage account** in the account menu. You can also open [account settings](https://app.agentsfleet.net/settings/account) directly.
 
-You need Bun 1.4 or later to run the client, and `npm`, which ships with Node.js, to install it. You also need an `agentsfleet` account and a GitHub repository that you can manage.
+You need Bun 1.4 or later. You also need an `agentsfleet` account and a GitHub repository that you can manage.
 
 Create a GitHub token that can read the repository and post comments. Keep the token ready for step 4.
 
@@ -28,11 +28,12 @@ Create a GitHub token that can read the repository and post comments. Keep the t
 1. Install the `agentsfleet` command-line interface.
 
    ```bash
-   npm install --global @agentsfleet/cli
+   bun install --global @agentsfleet/cli
    ```
 
    ```text
-   added <varies> packages in <varies>
+   installed @agentsfleet/cli with binaries:
+    - agentsfleet
    ```
 
 2. Check the installed version.
