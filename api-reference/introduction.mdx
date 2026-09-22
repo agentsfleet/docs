@@ -25,6 +25,8 @@ Most paths accept a bearer token in the `Authorization` header. Tenant API keys 
 
 Interactive users sign in with `agentsfleet login`. Login saves a durable command-line credential that starts with `afc_`. The credential resolves to the person who signed in.
 
+`GET /v1/users/me` returns the person a credential belongs to, their tenant, which credential class proved them, and the scopes they hold. It requires no scope of its own, so it is also the cheapest way to check that a credential still works.
+
 The credential stays valid until a logout, a newer login from the same computer, or a dashboard revoke ends it.
 
 Browser session tokens use the identity provider’s published signing keys. Keys refresh after six hours. If the provider is unavailable, previously confirmed keys remain usable for at most fifteen more minutes.
