@@ -94,12 +94,12 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **`agentsfleet whoami`** — prints `email`, `name`, `user_id`, `tenant`, `credential`, `api_url`, and `scopes`. `--json` returns the same fields for a script. With nothing signed in, it points you at `agentsfleet login` and sends no request.
+  - **`agentsfleet whoami`** — prints `email`, `name`, `user_id`, `tenant`, `credential`, `api_url`, and `scopes`. `--json` returns the same fields for a script. It gains a `source` field on Sep 21, when it absorbs `agentsfleet auth status`. With nothing signed in, it points you at `agentsfleet login` and sends no request.
   - **`agentsfleet login` names the account it signed you in to** — the closing line reads `signed in as <name> — <tenant>` instead of `login complete`. It costs no extra request: the check that already ran after signing in now returns the identity.
 
   ## API reference
 
-  - **`GET /v1/users/me`** — returns `user_id`, `email`, `display_name`, `tenant_id`, `tenant_name`, `credential`, and `scopes`. It accepts a browser session token, a tenant API key, or a command-line credential; a tenant API key answers with the person who created it. It needs no scope, so it also works as a check that a credential is still valid. A subject with no user record is refused with `UZ-AUTH-001`.
+  - **`GET /v1/users/me`** — returns `user_id`, `email`, `display_name`, `tenant_id`, `tenant_name`, `credential`, and `scopes`. It accepts a browser session token, a tenant API key, or a command-line credential; a tenant API key answers with the person who created it. It needs no scope, so it also works as a check that a credential is still valid. A caller this tenant does not know as a person is refused with `403`.
 
   ## Bug fixes
 

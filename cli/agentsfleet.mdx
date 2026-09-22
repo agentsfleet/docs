@@ -164,9 +164,9 @@ Each option is accepted by the subcommands named beside it.
 
 | Option | Accepted by | Effect | Default | Unit or range |
 |---|---|---|---|---|
-| `--cron <EXPRESSION>` | `add`, `update` | Sets when the schedule fires. | Unset | Five-field cron expression |
-| `--message <TEXT>` | `add`, `update` | Sets the message the fleet receives on each fire. | Unset | Text |
-| `--timezone <TIMEZONE>` | `add`, `update` | Reads the cron expression in this zone. | `UTC` on `add` | Supported region name |
+| `--cron <EXPRESSION>` | `create`, `update` | Sets when the schedule fires. | Unset | Five-field cron expression |
+| `--message <TEXT>` | `create`, `update` | Sets the message the fleet receives on each fire. | Unset | Text |
+| `--timezone <TIMEZONE>` | `create`, `update` | Reads the cron expression in this zone. | `UTC` on `create` | Supported region name |
 | `--status <STATE>` | `update` | Sets whether the schedule fires. | Unset | `active` or `paused` |
 | `--workspace <WORKSPACE_ID>` | all six | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
 

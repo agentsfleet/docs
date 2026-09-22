@@ -117,7 +117,7 @@ A bundle allows 1 through 8 triggers. One webhook allows 1 through 16 event name
 
 Delete the installed fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
 
-The public API has no operation for deleting a workspace library entry.
+Delete a workspace library entry with `DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}`, or with `agentsfleet library delete <ENTRY_ID>`.
 
 ## Related pages
 

@@ -164,7 +164,7 @@ A credential or tool name allows 200 bytes. A network host allows 253 bytes, the
 
 Install-gate copy is bounded too. An entry carries reason text for at most 32 credentials, and each reason allows 500 bytes.
 
-There is no public command to delete a workspace library entry. Removing a fleet does not remove its library entry.
+Removing a fleet does not remove its library entry. Remove the entry itself with `agentsfleet library delete <ENTRY_ID>`.
 
 ## Related pages
 
