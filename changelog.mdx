@@ -7,6 +7,29 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 23, 2026" tags={["Dashboard", "What's new", "Bug fixes"]}>
+  ## A Fleet library row shows where its bundle came from
+
+  Both Fleet library tables spelled provenance as a prefix on every row — `upload:probe/skill-only`, `github:agentsfleet/github-pr-reviewer`. The kind is now its provider's mark and the text is the reference alone, and a GitHub row links to the repository it was onboarded from.
+
+  ## What's new
+
+  - **Source replaces Repository on the platform table** — both Fleet library tables now carry the same columns in the same order: Name, Source, Status, Bundle, Time, Actions. The workspace table gained Time in place of Onboarded.
+  - **A GitHub row is a link** — the platform row points at the reference it was fetched at and says on hover that a branch can move; the workspace row points at the repository, which is all that row stores.
+  - **Remove is the same icon as the Model library's** — a delete glyph with the verb in its tooltip, on both tables.
+  - **Both sidebar entries read `Fleet library`** — the workspace entry under Configuration was `Library`. Only a platform admin sees both, and the group heading tells them apart.
+  - **The Getting started checklist has one button** — the next step is now the page's primary action, named for the step, and it moves on as each step lands. The rows were always links and never looked like it.
+  - **Install a fleet opens the fleet it recommends** — the step's hint names `github-pr-reviewer`, so the link now opens that card rather than the gallery's front door.
+
+  ## Bug fixes
+
+  - **Events fills the page** — a handful of events left the table floating in the top third of the screen with its pagination bar beneath them. The page reserved a minimum height where the table needed a definite one.
+  - **Platform &gt; Fleet library fills the page** — the same fault from the other side: the page reserved the height and the table never claimed it.
+  - **A connector row says `Connected` once** — the row carried the word on its status pill and again underneath. The description now names the account the install landed on instead.
+  - **Connect and Disconnect are icons** — matching every other row action, with the provider named in each tooltip.
+
+</Update>
+
 <Update label="Sep 21, 2026" tags={["API", "CLI", "Dashboard", "What's new", "Breaking changes"]}>
   ## Remove a Fleet library entry your workspace added
 
