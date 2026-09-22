@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-09-19
+verified: 2026-09-21
 executable: false
 ---
 
@@ -21,7 +21,7 @@ The library gives each installation a known source. It also lets `agentsfleet` c
 
 ## How it behaves
 
-Platform administrators create platform entries. Authorized workspace members create workspace entries with `agentsfleet library add`, in the dashboard, or through the API.
+Platform administrators create platform entries. Authorized workspace members create workspace entries with `agentsfleet library create`, in the dashboard, or through the API.
 
 The dashboard waits 30 seconds for an import, then reports a timeout in the dialog. `agentsfleetd` allows its own GitHub fetch 60 seconds, so a large bundle over a slow link can outlast that wait.
 
@@ -36,21 +36,21 @@ agentsfleet library
 ```
 
 ```text
-LIBRARY                        NAME                            TIER        SECRETS
-github-pr-reviewer             GitHub Pull Request reviewer    platform    github
+NAME                            LIBRARY                        TIER        SECRETS    AGO
+GitHub Pull Request reviewer    github-pr-reviewer             platform    github     41d
 <varies>
 ```
 
-The list resolves the same entries as `agentsfleet install --library`, so an entry you can see is an entry you can install. A workspace holding no entries reads `No Fleet libraries in this workspace.` and points at `agentsfleet library add --github <owner/repo>`.
+The list resolves the same entries as `agentsfleet install --library`, so an entry you can see is an entry you can install. A workspace holding no entries reads `No Fleet libraries in this workspace.` and points at `agentsfleet library create --github <owner/repo>`.
 
 New fleets install only by library identifier. Local files can update an existing fleet with `agentsfleet fleet update`.
 
 ## Onboard a workspace entry
 
-`agentsfleet library add` onboards an entry into the active workspace. It takes exactly one source, and none or several is rejected with exit code `4`.
+`agentsfleet library create` onboards an entry into the active workspace. It takes exactly one source, and none or several is rejected with exit code `4`.
 
 ```bash
-agentsfleet library add --github agentsfleet/github-pr-reviewer
+agentsfleet library create --github agentsfleet/github-pr-reviewer
 ```
 
 ```text
@@ -71,6 +71,42 @@ The output names what the bundle will ask for before anything is installed. Save
 | `--template <TEMPLATE_ID>` | A built-in template shipped with the client. |
 
 `--ref` accompanies `--github` only. A name the workspace already holds is refused unless you pass `--replace`, which overwrites the stored bundle in place.
+
+## List and remove workspace entries
+
+`agentsfleet library list` answers for the entries this workspace onboarded. It never shows a platform entry, because it reads a different collection from `agentsfleet library`.
+
+```bash
+agentsfleet library list
+```
+
+```text
+ENTRY       NAME                            SOURCE                                  ONBOARDED
+<varies>    GitHub Pull Request reviewer    github:agentsfleet/github-pr-reviewer    2026-09-21
+```
+
+A workspace holding no entries reads `This workspace has onboarded no Fleet libraries.` and names the command that adds one.
+
+`agentsfleet library delete` takes one entry identifier, from the `ENTRY` column above.
+
+```bash
+agentsfleet library delete <ENTRY_ID>
+```
+
+```text
+✓ <varies> is no longer in this workspace's Fleet library. Fleets already installed from it keep running.
+  Onboard it again with: agentsfleet library create --github <owner/repo>
+```
+
+Removal is permanent. The entry leaves the install gallery, and nothing restores it. Onboard the same bundle again to get an entry back; it arrives with a new identifier.
+
+Fleets installed from the entry are untouched. An install copies the bundle onto the fleet, so each fleet keeps its own `SKILL.md`, its own `TRIGGER.md`, and its own content identity.
+
+Removing an identifier that is already gone succeeds. So does one that names another workspace's entry. Both answer the same way, so neither tells you whether the entry exists somewhere else.
+
+You need the `library:write` scope, the same scope `agentsfleet library create` needs.
+
+The dashboard does the same work at **Library** in the workspace sidebar. The page lists what this workspace owns and asks you to confirm each removal by name.
 
 ## Onboard a platform entry
 
@@ -107,7 +143,7 @@ Four fleets ship as their own public repository under `agentsfleet`. Each instal
 | `zoho-sprint-daily-summarizer` | Summarizes the day's Zoho Sprints activity and posts a digest. | `zoho` |
 | `zoho-recruiter-daily-summarizer` | Summarizes the day's Zoho Recruit pipeline and posts a digest. | `zoho_recruit` |
 
-Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one from its folder rather than by naming a repository, and `agentsfleet library add --from <PATH>` reads the same folder into one workspace. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
+Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one from its folder rather than by naming a repository, and `agentsfleet library create --from <PATH>` reads the same folder into one workspace. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
 
 | Identifier | What it does | Secrets |
 | --- | --- | --- |

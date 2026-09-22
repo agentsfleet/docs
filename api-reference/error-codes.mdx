@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-09-19
+verified: 2026-09-21
 executable: false
 ---
 
@@ -226,6 +226,10 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-CATALOG-005"></span>`UZ-CATALOG-005` | 412 | Catalog entry changed since you loaded it | Someone else edited this catalog entry since you opened it. Refresh to see their change, then re-apply your edit. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
 
 ### Library listings
+
+These codes answer both library reads: the gallery at `/v1/workspaces/{workspace_id}/fleet-libraries`, and the entries a workspace owns at `/v1/workspaces/{workspace_id}/library-entries`. Each read issues its own page cursor. Spending one collection's cursor on the other earns `UZ-LIBRARY-001`.
+
+Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 earns a plain 400 with no library code. A removal that reaches the database and fails earns `UZ-LIBRARY-006`.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|

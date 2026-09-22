@@ -7,6 +7,54 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 21, 2026" tags={["API", "CLI", "Dashboard", "What's new", "Breaking changes"]}>
+  ## Remove a Fleet library entry your workspace added
+
+  You can now list the Fleet library entries your workspace onboarded and remove the ones you no longer want. Until now, every entry a workspace added stayed in the install gallery for good.
+
+  Removing an entry leaves fleets installed from it alone. Installing copies the bundle onto the fleet, so the fleet keeps running from its own copy.
+
+  ## Breaking changes
+
+  - **`agentsfleet library add` is now `agentsfleet library create`** — every other collection on this surface uses `create`, so the library group now matches. There is no alias: `agentsfleet library add` is rejected as an unknown subcommand, so update any script that uses the old spelling. Run `agentsfleet library --help` for the current verbs.
+  - **`agentsfleet connector status` is now `agentsfleet connector show`** — reading one resource is called `show` everywhere else.
+  - **`agentsfleet auth status` is removed** — `agentsfleet whoami` answers for it. The two showed nearly the same thing, so `whoami` gained the one field it lacked: `source`, which tells you whether the credential in use came from the `environment` or from a `file`. That matters because an exported service key overrides a stored login, so a terminal can look signed in as one identity while acting as another. `agentsfleet doctor` still checks reachability and workspace binding.
+
+  ## What's new
+
+  - **`agentsfleet library list`** — lists the entries your workspace onboarded, with the identifier that `agentsfleet library delete` takes.
+  - **`agentsfleet library delete <ENTRY_ID>`** — removes one entry. Running `agentsfleet library` on its own still prints the full gallery.
+  - **A Library page in the dashboard** — under the workspace sidebar. It lists what the workspace owns, and names the entry in a confirmation before removing it.
+  - **Removal is permanent** — nothing is kept behind. Onboard the same bundle again and it returns as a new entry with a new identifier.
+
+  ## API reference
+
+  - **`GET /v1/workspaces/{workspace_id}/library-entries`** — lists only the entries this workspace onboarded, never a platform entry, paged on its own cursor. The combined gallery at `GET /v1/workspaces/{workspace_id}/fleet-libraries` is unchanged, and `agentsfleet install --library` still resolves against it.
+  - **`DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}`** — removes one entry and returns `204`. It needs the `library:write` scope. Repeating the call returns `204`, and so does an identifier belonging to another workspace, so the reply never reveals whether an entry exists elsewhere.
+  - **No new error codes** — a malformed `entry_id` returns `400`, a cursor from a different collection returns `UZ-LIBRARY-001`, and a database failure returns `UZ-LIBRARY-006`.
+
+</Update>
+
+<Update label="Sep 20, 2026" tags={["API", "CLI", "What's new", "Bug fixes"]}>
+  ## Every charge records the fleet that incurred it
+
+  Two fleets could share one `event_id`, because that identifier is minted per admission and nothing tied it to a fleet. The billing ledger settled a charge on `(event_id, charge_type)` alone, so two fleets' charges could pile into a single row: one fleet's spend counted against the other, with no report that would show it.
+
+  Charges now settle on `(event_id, charge_type, fleet_id)`, and `fleet_id` can no longer be null.
+
+  ## What's new
+
+  - **`agentsfleet billing` groups charges by fleet and event** — when two of your fleets share an `event_id`, you see one row per fleet instead of two charges merged into one line.
+  - **A charge always names its fleet** — `GET /tenant/charges` was documented as returning a null `fleet_id` for charges written before fleet identifiers survived deletion, but no database holds such a row. `workspace_id` and `fleet_name` are still nullable, and `fleet_name` is still a snapshot taken when the charge was written.
+
+  ## Bug fixes
+
+  - **A charge counts only its own fleet's spend** — `billing.usage_ledger` now settles on `uq_usage_ledger_event_id_charge_type_fleet_id`. Two fleets charged under one `event_id` get two rows, each with its own `credit_deducted_nanos`. The second fleet's charge used to be added to the first fleet's row.
+  - **A continued run remembers what it resumed** — a run continued from an approval keeps its `resumes_event_id` whichever writer lands first. Both the lease path and the approval path write this row, and whichever one arrived without a predecessor used to erase the value already stored, leaving the history unable to show what the run followed from.
+  - **A redelivered approval no longer announces the run twice** — when an approval lands on a row the lease path already opened, no second `event_received` is published, so a console counts the run once.
+
+</Update>
+
 <Update label="Sep 20, 2026" tags={["CLI", "Breaking changes"]}>
   ## The command-line client runs on Bun
 
@@ -32,6 +80,30 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **`--json` prints the error envelope and nothing else** — a rejected invocation used to print the help page above it, so reading the output as JSON failed on the first character. `agentsfleet --help --json` still prints help.
   - **A dropped connection is retried, on every command** — a socket lost mid-request used to fail the command outright with `cannot reach agentsfleet API`. It is now sent again, up to three attempts with a growing pause, because a reply you never saw is usually a request that never ran. A server that answers — a `503`, a rate limit, a timeout the client declared — is unchanged: those still stop at one attempt for anything that writes.
   - **What a retry can cost you, stated plainly** — if the connection drops *after* the server accepted the write, the second attempt is a second write. `agentsfleet secret create` reports `already exists` for the value it just stored (the vault holds what you sent; no `secret update` is needed), and `agentsfleet api-key create` can leave a key you never see the secret for — check `agentsfleet api-key list` if a create is interrupted. A rejected certificate or an unusable URL is never retried, and now says so in its own words instead of suggesting you check your network.
+
+</Update>
+
+<Update label="Sep 19, 2026" tags={["API", "CLI", "What's new", "Bug fixes"]}>
+  ## See who you are signed in as
+
+  `agentsfleet whoami` tells you the person, tenant, and credential this computer is signed in with. Signing in saves a credential that carries no readable details of its own — the server works out what it can do from the record it names — so until now nothing on your machine could answer that question.
+
+  ## Upgrading
+
+  Update the server before the client. A client that calls `/v1/users/me` against a deployment that does not serve it yet gets a `404`, which says nothing about your credential, because the path is matched before the credential is checked. When that happens, `agentsfleet login` keeps the credential it just saved and tells you the deployment cannot answer, and `agentsfleet whoami` names the deployment instead of calling the credential good or bad. Every other command keeps working.
+
+  ## What's new
+
+  - **`agentsfleet whoami`** — prints `email`, `name`, `user_id`, `tenant`, `credential`, `api_url`, and `scopes`. `--json` returns the same fields for a script. With nothing signed in, it points you at `agentsfleet login` and sends no request.
+  - **`agentsfleet login` names the account it signed you in to** — the closing line reads `signed in as <name> — <tenant>` instead of `login complete`. It costs no extra request: the check that already ran after signing in now returns the identity.
+
+  ## API reference
+
+  - **`GET /v1/users/me`** — returns `user_id`, `email`, `display_name`, `tenant_id`, `tenant_name`, `credential`, and `scopes`. It accepts a browser session token, a tenant API key, or a command-line credential; a tenant API key answers with the person who created it. It needs no scope, so it also works as a check that a credential is still valid. A subject with no user record is refused with `UZ-AUTH-001`.
+
+  ## Bug fixes
+
+  - **A credential without billing access is no longer reported as rejected** — signing in used to verify a credential by calling `GET /v1/tenants/me/billing`, which needs the `billing:read` scope. Anyone signed in without that scope was told the server had rejected their credential, when the server had refused that one path. The check now calls `GET /v1/users/me`, which needs no scope.
 
 </Update>
 
