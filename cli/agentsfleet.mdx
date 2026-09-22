@@ -64,7 +64,7 @@ Commands:
 |---|---|
 | `agentsfleet login` | Signs in through a browser and saves a durable credential for this computer. |
 | `agentsfleet logout` | Revokes this computer's credential and any unfinished sign-in, then clears local credentials. Browser sessions stay signed in. |
-| `agentsfleet auth status` | Shows the token source, claims, and server status. |
+| `agentsfleet whoami` | Shows who this terminal is signed in as, the credential's source (`environment` or `file`), and the server it talks to. |
 | `agentsfleet doctor` | Checks client settings, authentication, and API access. |
 
 ### Workspaces and access
@@ -82,7 +82,7 @@ Commands:
 | `agentsfleet api-key revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
 | `agentsfleet api-key delete <API_KEY_ID>` | Deletes metadata for a revoked tenant API key. |
 | `agentsfleet connector list` | Lists connector setup and connection state. |
-| `agentsfleet connector status <PROVIDER>` | Shows one connector. |
+| `agentsfleet connector show <PROVIDER>` | Shows one connector. |
 | `agentsfleet grant list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
 | `agentsfleet grant delete --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
 
