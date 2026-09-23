@@ -65,7 +65,9 @@ Provider webhook registration stays in the install output. Trigger shows the dec
 
 A source save takes effect on the next wake and keeps the same fleet identifier and memory.
 
-If another operator saves first, your stale source edit is refused. The editor reloads the current source so you can review the newer version and apply your change again.
+If another operator saves first, your save is held and the editor says the source changed on the server. Your edit stays on screen. Saving again replaces the server's copy with what you see, so review the other change before you press it.
+
+An API client that saves stale source receives [`UZ-AGT-014`](/api-reference/error-codes#UZ-AGT-014). Fetch the current source, reapply your change, and save again.
 
 Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
 
