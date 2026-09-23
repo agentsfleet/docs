@@ -27,7 +27,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Platform &gt; Fleet library fills the page** — the same fault from the other side: the page reserved the height and the table never claimed it.
   - **A connector row says `Connected` once** — the row carried the word on its status pill and again underneath. The description now names the account the install landed on instead.
   - **Connect and Disconnect are icons** — matching every other row action, with the provider named in each tooltip.
-  - **Saving a fleet's SKILL.md or TRIGGER.md just saves** — the two documents shared one version tag, so saving either one told the other's editor it was out of date. The editor then asked you to compare two copies that were identical and would not save until you did, and saving the second document put the first back into the same state. A save now re-reads the server before it believes a conflict: if your document has not moved, it saves. If it genuinely changed, it says so in one line and saving again replaces it with yours.
+  - **Saving a fleet's SKILL.md or TRIGGER.md just saves** — the two documents shared one version tag, so saving either one told the other's editor it was out of date. The editor then asked you to compare two copies that were identical and would not save until you did, and saving the second document put the first back into the same state. A save now re-reads the server before it believes a conflict: if your document has not moved, it saves. If it genuinely changed, it says so in one line and keeps your edit on screen; saving again replaces the server's copy with yours. The API still refuses a stale save with `UZ-AGT-014`.
 
 </Update>
 
