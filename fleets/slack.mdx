@@ -121,6 +121,8 @@ The fleet reads the first message of the thread and the latest 19 replies. It cu
 
 In a private channel, the fleet sees only your mention. The Slack app cannot read private channel history. The fleet also answers from the mention alone when Slack does not return the thread within 1.5 seconds.
 
+A fleet you install under the name `slack-channel-<TEAM_ID>-<CHANNEL_ID>` is never used as the channel's own fleet. While it holds that name, a mention that needs the channel's own fleet starts no run. Rename or delete that fleet.
+
 A mention from a bot, an edited message, or the app's own reply starts no run.
 
 A mention from a Slack workspace that is not connected to an `agentsfleet` workspace starts no run. Connect Slack again from **Settings → Integrations**.
