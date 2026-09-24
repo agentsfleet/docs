@@ -39,7 +39,7 @@ Find the channel identifier (ID) in Slack. Open the channel's details and copy *
      Fleet ID: <varies>
    ```
 
-   `agentsfleet` adds a `mention` trigger for that channel to the fleet's `TRIGGER.md`. You can write the same trigger yourself:
+   `agentsfleet` adds a `mention` trigger for that channel to the fleet's `TRIGGER.md`. To write the same trigger yourself, add these lines to the `x-agentsfleet` block of the front matter in the fleet's existing `TRIGGER.md`:
 
    ```yaml
    x-agentsfleet:
@@ -68,14 +68,15 @@ Find the channel identifier (ID) in Slack. Open the channel's details and copy *
 
    Case does not matter. A `:` or `,` right after the name is ignored.
 
-The table shows which fleet answers a mention.
+A mention that names no fleet goes only to a fleet that is running and has no `repository_access: write` in its `TRIGGER.md`. The table shows which fleet answers a mention.
 
 | The channel has | The mention names a fleet | Who answers |
 |---|---|---|
 | No attached fleet | No | The channel's own fleet, described below |
-| One attached fleet | No | That fleet |
-| Several attached fleets | No | Nobody. A notice lists the fleets' names. |
-| Any attached fleet | Yes | The named fleet |
+| One running fleet without write access | No | That fleet |
+| Several running fleets without write access | No | Nobody. A notice lists the fleets' names. |
+| Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
+| Any attached fleet | Yes | The named fleet. A paused fleet sends the paused notice. |
 
 A fleet whose `TRIGGER.md` declares `repository_access: write` answers only when a mention names it. From one mention it can open at most one draft pull request. It cannot merge the pull request, mark it ready for review, or change a workflow.
 
@@ -145,7 +146,7 @@ agentsfleet fleet update <FLEET_ID> --from <PATH>
 
 To remove the channel's own fleet, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`. Deleting it also deletes the channel's memory. The next mention that needs it creates a new one.
 
-Between the two commands, a mention that needs the channel's own fleet gets no answer. A stopped channel fleet answers with the paused notice instead.
+Between the two commands, the channel fleet is killed, and a mention that needs it gets no answer. A channel fleet you stop instead of killing answers with the paused notice until you resume it.
 
 ## Related pages
 

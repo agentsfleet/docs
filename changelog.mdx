@@ -25,7 +25,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## API reference
 
   - **`POST /v1/workspaces/{workspace_id}/fleets`** — accepts an optional `slack_channel_id`, such as `C0123456789`, and adds the `mention` trigger for that channel.
-  - **`POST /v1/connectors/slack/events`** — answers `200` with `{"event_id", "replayed"}` for an accepted mention, and `{"ignored": "<reason>"}` otherwise: `unreadable_body`, `bot_message`, `team_not_mapped`, or `unsupported_event`.
+  - **`POST /v1/connectors/slack/events`** — answers `200` with `{"event_id": "<EVENT_ID>", "replayed": false}` for an accepted mention, and `{"ignored": "<reason>"}` otherwise: `unreadable_body`, `bot_message`, `team_not_mapped`, or `unsupported_event`.
   - **Slack signature errors** — a bad signature returns `401` `UZ-WH-010` and a stale timestamp `UZ-WH-011`, as every signed route does. The error registry now marks `UZ-SLK-010`, `UZ-SLK-011`, and `UZ-SLK-020` retired.
 
   ## Bug fixes

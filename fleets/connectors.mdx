@@ -31,7 +31,9 @@ You need administrator access to the workspace and provider account. Supported p
 
 The workspace owns the connector. Each fleet needs a separate approved grant before it can use the connection.
 
-A connected Slack workspace also lets a fleet answer mentions in a channel. That needs no grant, because `agentsfleet` posts the answer itself. See [Answer mentions in Slack](/fleets/slack).
+A connected Slack workspace also lets a fleet answer mentions in a channel. Posting that answer needs no grant, because `agentsfleet` posts it itself. See [Answer mentions in Slack](/fleets/slack).
+
+A fleet that answers in Slack and also calls another provider still needs that provider's approved grant. For example, it needs a GitHub grant to open a draft pull request.
 
 ## Verify it works
 
