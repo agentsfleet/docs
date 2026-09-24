@@ -18,6 +18,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **The fleet reads the thread** — it sees the first message and the latest 19 replies, each cut at 2,000 characters and 16,000 in total. In a private channel, or when Slack takes longer than 1.5 seconds, it answers from the mention alone.
   - **Name a fleet to pick it** — start the message with a fleet's name when the channel has several. An unnamed mention with several candidates gets a notice that lists their names.
   - **Each channel gets its own fleet** — the first mention no attached fleet takes creates `slack-channel-<TEAM_ID>-<CHANNEL_ID>`. It has no tools, a budget of 1.00 dollars a day, and memory scoped to the channel. It replies with the command that attaches a fleet.
+  - **The fleet page shows the channel** — a fleet attached to a channel lists a **Chat mention** trigger with its channel identifier.
   - **Write fleets answer only when named** — a fleet with `repository_access: write` opens at most one draft pull request per mention. The fleet cannot merge that pull request, mark it ready for review, or change a workflow.
   - **Fleets read their Continuous Integration (CI) runs** — a GitHub-bound fleet's token now reads workflow runs and jobs (`actions: read`), and check-run annotations (`checks: read`) where the GitHub App installation holds that permission. A permission the installation lacks is left out of the token, and the mint still succeeds.
 

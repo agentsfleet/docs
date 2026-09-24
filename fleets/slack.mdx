@@ -93,7 +93,9 @@ Its memory belongs to the channel, and no other fleet reads it. It also posts th
 
 2. Check that a reply from the fleet appears in the same thread.
 
-3. List the fleet's events. `<FLEET_ID>` comes from the install output.
+3. Open the fleet in the dashboard. Its trigger card reads **Chat mention** with the channel ID.
+
+4. List the fleet's events. `<FLEET_ID>` comes from the install output.
 
    ```bash
    agentsfleet events <FLEET_ID>
@@ -136,6 +138,8 @@ agentsfleet fleet update <FLEET_ID> --from <PATH>
 ```
 
 To remove the channel's own fleet, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`. Deleting it also deletes the channel's memory. The next mention that needs it creates a new one.
+
+Between the two commands, a mention that needs the channel's own fleet gets no answer. A stopped channel fleet answers with the paused notice instead.
 
 ## Related pages
 
