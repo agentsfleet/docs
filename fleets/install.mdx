@@ -3,7 +3,7 @@ title: Install a fleet
 description: Install a fleet from your workspace library.
 type: how-to
 audience: user
-verified: 2026-09-19
+verified: 2026-09-24
 executable: false
 ---
 
@@ -58,6 +58,10 @@ Sign in and select a workspace. Save every secret required by the library entry.
 
    The requirement lines come first, so you see what the fleet was granted
    before you see that it is live.
+
+   Add `--slack-channel <CHANNEL_ID>` to have the fleet answer mentions in one
+   Slack channel. [Answer mentions in Slack](/fleets/slack) covers the channel
+   identifier (ID) and how a mention picks a fleet.
 
 3. Register each printed webhook URL with its provider.
 
@@ -126,3 +130,4 @@ agentsfleet delete <FLEET_ID>
 - [Fleet library](/fleets/library)
 - [Secrets](/fleets/secrets)
 - [Run and control a fleet](/fleets/running)
+- [Answer mentions in Slack](/fleets/slack)

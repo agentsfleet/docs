@@ -3,7 +3,7 @@ title: Connect a provider
 description: Connect a workspace to GitHub, Slack, Zoho Desk, Jira, or Linear.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-09-24
 executable: false
 ---
 
@@ -30,6 +30,10 @@ You need administrator access to the workspace and provider account. Supported p
 4. Return to the dashboard and approve the fleet's integration grant.
 
 The workspace owns the connector. Each fleet needs a separate approved grant before it can use the connection.
+
+A connected Slack workspace also lets a fleet answer mentions in a channel. Posting that answer needs no grant, because `agentsfleet` posts it itself. See [Answer mentions in Slack](/fleets/slack).
+
+A fleet that answers in Slack and also calls another provider still needs that provider's approved grant. For example, it needs a GitHub grant to open a draft pull request.
 
 ## Verify it works
 
@@ -63,4 +67,5 @@ Remove any fleet integration grants that should no longer use the provider. Revo
 
 - [Secrets](/fleets/secrets)
 - [Webhooks](/fleets/webhooks)
+- [Answer mentions in Slack](/fleets/slack)
 - [Error registry](/api-reference/error-codes)

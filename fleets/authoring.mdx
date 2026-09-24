@@ -3,7 +3,7 @@ title: Author a fleet
 description: Create the two files that define a fleet.
 type: how-to
 audience: user
-verified: 2026-09-19
+verified: 2026-09-24
 executable: false
 ---
 
@@ -50,6 +50,9 @@ Create an empty directory. Choose a lowercase fleet name with letters, numbers, 
        daily_dollars: 1.00
    ---
    ```
+
+   To have the fleet answer mentions in a Slack channel, add a `mention` trigger.
+   [Answer mentions in Slack](/fleets/slack) shows its fields.
 
 3. Put the files in a GitHub repository.
 
@@ -125,3 +128,4 @@ Delete a workspace library entry with `DELETE /v1/workspaces/{workspace_id}/libr
 - [Tools](/fleets/tools)
 - [Webhooks](/fleets/webhooks)
 - [Secrets](/fleets/secrets)
+- [Answer mentions in Slack](/fleets/slack)
