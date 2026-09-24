@@ -39,7 +39,7 @@ Find the channel identifier (ID) in Slack. Open the channel's details and copy *
      Fleet ID: <varies>
    ```
 
-   `agentsfleet` adds a `mention` trigger for that channel to the fleet's `TRIGGER.md`. To write the same trigger yourself, add these lines to the `x-agentsfleet` block of the front matter in the fleet's existing `TRIGGER.md`:
+   `agentsfleet` adds a `mention` trigger for that channel to the fleet's `TRIGGER.md`. To write the same trigger yourself, add the `mention` entry below to the `triggers` list under `x-agentsfleet` in the fleet's existing `TRIGGER.md`. The example shows where that list sits, so keep a single `x-agentsfleet` block:
 
    ```yaml
    x-agentsfleet:
