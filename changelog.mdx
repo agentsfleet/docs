@@ -7,6 +7,36 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 24, 2026" tags={["What's new", "Bug fixes", "API", "CLI", "Integrations"]}>
+  ## Mention a fleet in Slack and it answers in the thread
+
+  A fleet attached to a Slack channel now answers when someone mentions `agentsfleet` there, and posts its answer as a reply in the same thread. Until now the Slack route acknowledged every mention and dropped it. [Answer mentions in Slack](/fleets/slack) walks through the setup.
+
+  ## What's new
+
+  - **Attach a fleet at install** — `--slack-channel <CHANNEL_ID>` writes a `mention` trigger for that channel into the fleet's `TRIGGER.md`. One fleet answers in one channel.
+  - **The fleet reads the thread** — it sees the first message and the latest 19 replies, each cut at 2,000 characters and 16,000 in total. In a private channel, or when Slack takes longer than 1.5 seconds, it answers from the mention alone.
+  - **Name a fleet to pick it** — start the message with a fleet's name when the channel has several. An unnamed mention with several candidates gets a notice that lists their names.
+  - **Each channel gets its own fleet** — the first mention no attached fleet takes creates `slack-channel-<TEAM_ID>-<CHANNEL_ID>`. It has no tools, a budget of 1.00 dollars a day, and memory scoped to the channel. It replies with the command that attaches a fleet.
+  - **Write fleets answer only when named** — a fleet with `repository_access: write` opens at most one draft pull request per mention. The fleet cannot merge that pull request, mark it ready for review, or change a workflow.
+  - **Fleets read their Continuous Integration (CI) runs** — a GitHub-bound fleet's token now reads workflow runs and jobs (`actions: read`), and check-run annotations (`checks: read`) where the GitHub App installation holds that permission. A permission the installation lacks is left out of the token, and the mint still succeeds.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/fleets`** — accepts an optional `slack_channel_id`, such as `C0123456789`, and adds the `mention` trigger for that channel.
+  - **`POST /v1/connectors/slack/events`** — answers `200` with `{"event_id", "replayed"}` for an accepted mention, and `{"ignored": "<reason>"}` otherwise: `unreadable_body`, `bot_message`, `team_not_mapped`, or `unsupported_event`.
+  - **Slack signature errors** — a bad signature returns `401` `UZ-WH-010` and a stale timestamp `UZ-WH-011`, as every signed route does. The error registry now marks `UZ-SLK-010`, `UZ-SLK-011`, and `UZ-SLK-020` retired.
+
+  ## Bug fixes
+
+  - **An answer with nowhere to go is no longer queued** — an answer from a scheduled run, a steer, or a GitHub review was queued for its model provider, which is not a place to post, and then dropped. Only an event with a reply destination, such as a Slack thread, now owes a delivery.
+
+  ## CLI
+
+  - **`agentsfleet install --library <LIBRARY_ID> --slack-channel <CHANNEL_ID>`** — attaches the new fleet to one Slack channel. An identifier that is not `C` or `G` followed by at least eight upper-case letters or digits fails before any request: `must be a Slack channel ID: C or G, then upper-case letters and digits`.
+
+</Update>
+
 <Update label="Sep 23, 2026" tags={["Dashboard", "What's new", "Bug fixes"]}>
   ## A Fleet library row shows where its bundle came from
 
