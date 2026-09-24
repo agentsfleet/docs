@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-09-21
+verified: 2026-09-24
 executable: false
 ---
 
@@ -122,9 +122,9 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-SLK-010"></span>`UZ-SLK-010` | 401 | Invalid Slack signature | The Slack signature did not verify. The Slack app's signing secret must match the one vaulted at slack-app/signing_secret. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-011"></span>`UZ-SLK-011` | 401 | Stale Slack timestamp | The Slack timestamp is more than 5 minutes off. That means a replay or clock skew. | Keep Slack app credentials, permissions, and clocks current. |
-| <span id="UZ-SLK-020"></span>`UZ-SLK-020` | 200 | Slack team not installed | This Slack team has no connector install; the event is acknowledged and ignored. Re-run Connect Slack from the dashboard. | Keep Slack app credentials, permissions, and clocks current. |
+| <span id="UZ-SLK-010"></span>`UZ-SLK-010` | 401 | Invalid Slack signature | **Retired.** A Slack delivery whose signature does not verify now returns [`UZ-WH-010`](#UZ-WH-010), like every other signed delivery. | Keep the Slack app's signing secret matched with the one `agentsfleet` holds. |
+| <span id="UZ-SLK-011"></span>`UZ-SLK-011` | 401 | Stale Slack timestamp | **Retired.** A Slack delivery more than 5 minutes old now returns [`UZ-WH-011`](#UZ-WH-011). | Keep service clocks synchronized. |
+| <span id="UZ-SLK-020"></span>`UZ-SLK-020` | 200 | Slack team not installed | **Retired.** A mention from a Slack team with no connector install returns `200` with `{"ignored": "team_not_mapped"}` and starts no run. Connect Slack again from **Settings → Integrations**. | Keep Slack connected to the workspace that owns the channel's fleets. |
 | <span id="UZ-SLK-022"></span>`UZ-SLK-022` | 502 | Slack token exchange failed | The Slack OAuth code could not be exchanged for a bot token. Retry the connect flow; if it continues, check the Slack app credentials. | Keep Slack app credentials, permissions, and clocks current. |
 | <span id="UZ-SLK-030"></span>`UZ-SLK-030` | 502 | Slack answer post failed | The answer could not be posted to Slack: missing chat:write, a 429, or an outage. It retries with backoff; the run does not fail. | Keep Slack app credentials, permissions, and clocks current. |
 

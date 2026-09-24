@@ -61,6 +61,7 @@
               "fleets/secrets",
               "fleets/model-providers",
               "fleets/connectors",
+              "fleets/slack",
               "fleets/webhooks",
               "fleets/authoring",
               "fleets/tools",

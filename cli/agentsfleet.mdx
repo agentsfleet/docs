@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-09-21
+verified: 2026-09-24
 executable: false
 ---
 
@@ -105,7 +105,7 @@ Write these after `login`. Only `agentsfleet login` reads them.
 | `agentsfleet library create --template <TEMPLATE_ID>` | Onboards a workspace library entry from a built-in template. |
 | `agentsfleet library list` | Lists only the entries this workspace onboarded, with the identifier each removal names. |
 | `agentsfleet library delete <ENTRY_ID>` | Removes one entry this workspace onboarded. Fleets installed from it keep running. |
-| `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. |
+| `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. `--slack-channel <CHANNEL_ID>` also attaches the fleet to one Slack channel, so it answers mentions there. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
 | `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. |
