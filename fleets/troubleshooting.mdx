@@ -50,6 +50,14 @@ Every API error carries a stable error identifier and request identifier. Use bo
    <varies>
    ```
 
+   In the dashboard, open the failed event and click **Copy diagnostic**.
+   The copy contains its event identifier, failure class, and recorded cause.
+   For a reply that stopped early, it also carries safe stream counters when
+   the runner reported them.
+
+   Share that copy with an operator; the event
+   identifier lets them find the run across multiple runners.
+
 3. Apply the fix named by the stable error identifier.
 
    `UZ-AGT-008` points to invalid `TRIGGER.md` data. `UZ-BUNDLE-003` points to missing workspace secrets.

@@ -55,6 +55,11 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    approval gate on every run. The reply arrives once you decide the gate with
    [`agentsfleet approvals`](/fleets/approvals).
 
+   In the dashboard chat, a reply appears as it arrives. You can send another
+   message while a run is active; the new event waits its turn and keeps its
+   own place in the conversation. Reasoning and tool activity are shown
+   separately from the final reply.
+
 4. Stop new work while keeping the fleet resumable.
 
    ```bash
@@ -104,6 +109,15 @@ Some fleets are waiting on approval. Review with: agentsfleet approvals list
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
 
 A run that produces no reply may be parked at an approval gate. Run `agentsfleet approvals list` and decide the gate it names.
+
+If a run fails while replying, open its event details in the dashboard and
+click **Copy diagnostic**. The copy includes the event identifier and the
+recorded failure cause. The chat keeps the failure message short.
+
+Before a run starts, the runner downloads the fleet's bundle, making up to 3
+attempts within 5 seconds when the connection drops. If every attempt fails,
+the chat reports that the runner refused the run before the fleet started.
+Your message stays in the conversation, so send it again.
 
 A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
 

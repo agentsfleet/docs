@@ -7,6 +7,33 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 25, 2026" tags={["Dashboard", "What's new", "Bug fixes", "API"]}>
+  ## Fleet chat shows replies as they arrive
+
+  You can send another message while a fleet is working. The dashboard keeps
+  each accepted message in order, shows when it is queued, and adds the reply
+  as it arrives.
+
+  Update each `agentsfleet-runner` to 0.51.0 along with the control plane. An
+  older runner still completes runs, but its replies appear only when the run
+  finishes.
+
+  ## What's new
+
+  - **Reasoning and tool activity have their own place** — the chat keeps the final reply readable while showing progress during a run.
+  - **Reasoning text is lighter than the reply** — the answer reads first, and the reasoning still meets the Web Content Accessibility Guidelines (WCAG) AA contrast level.
+  - **Reply text arrives in smaller steps** — the dashboard receives new text every 200 milliseconds instead of every second.
+  - **`event_complete` carries the final reply** — the fleet stream's completion frame includes `final_reply` when the reply is at most 64 KiB. Without it, read the event.
+  - **A failed event carries a copyable diagnostic** — open its event details and click **Copy diagnostic** to capture its identifier and recorded cause for an operator.
+
+  ## Bug fixes
+
+  - **A stopped reply has a plain message** — chat no longer displays a runner error name as if it explained what happened. The cause remains available in the event diagnostic.
+  - **Streaming tool calls reach the fleet** — a model that asks to use a tool while streaming can complete the tool call and continue its answer.
+  - **A brief network drop no longer fails a run before it starts** — the runner retries the fleet bundle download up to 3 times within 5 seconds.
+  - **A failed bundle download no longer blames the fleet's instructions** — chat now says "The runner refused this run before the fleet started."
+</Update>
+
 <Update label="Sep 24, 2026" tags={["What's new", "Bug fixes", "API", "CLI", "Integrations"]}>
   ## Mention a fleet in Slack and it answers in the thread
 
