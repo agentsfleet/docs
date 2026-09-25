@@ -102,6 +102,7 @@ A runner that simply disappears needs no action. Its work expires and another ru
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
 - **Raising Workers past the count the host started with needs a restart.** Lowering it takes effect on the next heartbeat.
 - **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
+- **Live replies need a current runner.** A runner older than `agentsfleet-runner` 0.51.0 still completes runs, but the dashboard shows each reply only when its run finishes. Update runners along with `agentsfleetd`.
 
 ## Related pages
 

@@ -114,6 +114,11 @@ If a run fails while replying, open its event details in the dashboard and
 click **Copy diagnostic**. The copy includes the event identifier and the
 recorded failure cause. The chat keeps the failure message short.
 
+Before a run starts, the runner downloads the fleet's bundle, making up to 3
+attempts within 5 seconds when the connection drops. If every attempt fails,
+the chat reports that the runner refused the run before the fleet started.
+Your message stays in the conversation, so send it again.
+
 A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
 
 ## Remove or undo
