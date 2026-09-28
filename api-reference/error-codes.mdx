@@ -149,7 +149,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. | Use fleet identifiers from the current workspace. |
-| <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This message conflicts with one already sent. Send it again as a new message. The response carries `current_state: "admitted"`. | Repeat an `operation_id` only to retry the same message. Send new text under a new `operation_id`. |
+| <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This message conflicts with one already sent. Send it again as a new message. The response carries `current_state: "admitted"`. | This `operation_id` was already sent with a different message, or by another sender. A workspace's API keys count as one sender. Retry exactly what you first sent, or send a new message under a new `operation_id`. |
 
 ### Schedules
 
