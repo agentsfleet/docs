@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-09-19
-product_version: 0.49.0
+verified: 2026-09-28
+product_version: 0.51.0
 executable: false
 ---
 
@@ -45,7 +45,9 @@ Use the fleet navigation for one task at a time:
 
 Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
 
-When you send a message, Chat moves to the latest turn and shows a paw with **Working…** beside the fleet's reply. The cue clears when the reply starts. The message field grows for longer drafts and scrolls within the field when full.
+When you send a message, Chat moves to the latest turn. A spinner and a status word, such as **Herding…**, hold the reply's place until it starts. The message field grows for longer drafts and scrolls within the field when full.
+
+While the fleet reasons, the reply shows **Thinking** with a running clock. It folds to **Thought** and the total time when the answer starts; choose it to read the reasoning. Each tool the fleet calls shows its name and a clock, and a finished tool shows a check mark and its duration.
 
 New activity leaves your place in older messages alone. Use **Jump to latest** above the message field to return to the newest turn. On narrow screens, the fleet tabs scroll sideways and the status figures wrap.
 
@@ -59,7 +61,15 @@ Chat retries failures quickly at first, with delays from one to 15 seconds. Afte
 
 Choose **Retry now** in the connection notice to retry without waiting. Automatic recovery continues without clicking it. Chat fetches recent durable activity after reconnecting; transient streaming fragments cannot always be recovered.
 
-A message the server refuses is marked as not sent, with a retry beside it.
+A message that was not delivered leaves the thread, and its text returns to the message field.
+
+A refused message shows **Message not sent** above the field. One with no answer shows **Couldn't confirm this message was sent**.
+
+Choose **Resend** to send the message again. The fleet runs it at most once, even if the first send did arrive.
+
+Each unsent message keeps its own **Resend** and **Dismiss** until you choose one. The list survives a page reload and shows in other tabs.
+
+An expired session shows **Sign in** instead of **Resend**. Resending the same message is safe; changing the text makes it a new message.
 
 Provider webhook registration stays in the install output. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
 

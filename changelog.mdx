@@ -7,6 +7,30 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Sep 28, 2026" tags={["Dashboard", "API", "Bug fixes"]}>
+  ## A message you resend runs once
+
+  A chat message now carries an `operation_id`, and the API answers a repeat of it with the first message's event. Resending after a dropped connection, a reload, or a pause no longer starts a second run.
+
+  ## What's new
+
+  - **Unsent messages stay listed** — each keeps its own **Resend** and **Dismiss** until you choose one, including after a reload or in another tab.
+  - **An unanswered send says so** — Chat reads **Couldn't confirm this message was sent.** when no answer came back, and **Message not sent.** when the server refused it.
+  - **Reasoning shows how long it took** — a reply reads **Thinking** with a clock while the fleet reasons, then **Thought** and the total time.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages`** — a repeated `operation_id` returns `202` with the first message's `event_id`, even when the fleet has paused since or holds its limit of waiting work.
+  - **`UZ-AGT-016`** — the same `operation_id` with a different `message` returns `409` with `current_state: "admitted"`, and nothing runs.
+  - **`operation_id` belongs to one fleet** — the same value sent to two fleets is two messages.
+
+  ## Bug fixes
+
+  - **Two failed sends keep both messages** — Chat used to keep only the latest one.
+  - **A dropped connection no longer sends a message twice** — the automatic retry carries the same `operation_id`.
+  - **Malformed tool activity no longer breaks Chat** — a tool update without a readable name is ignored.
+</Update>
+
 <Update label="Sep 25, 2026" tags={["Dashboard", "What's new", "Bug fixes", "API"]}>
   ## Fleet chat shows replies as they arrive
 
