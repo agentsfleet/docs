@@ -1,0 +1,97 @@
+---
+title: Invite teammates
+description: Invite people into your account so they can open and steer its fleets.
+type: how-to
+audience: user
+verified: 2026-10-01
+executable: false
+---
+
+# Invite teammates
+
+## What this does
+
+An invite lets another person work in every workspace of your account. They open its fleets, watch them live, and steer them.
+
+Everyone who joins is a **member**. You stay the account's one **owner**.
+
+| Action in your account | Owner | Member |
+|---|---|---|
+| Open workspaces and read fleets | Yes | Yes |
+| Steer fleets and watch them live | Yes | Yes |
+| Store secrets | Yes | No |
+| Connect integrations | Yes | No |
+| Invite and remove people | Yes | No |
+
+A member who tries an owner action sees "Only the account owner can do this."
+
+## Before you begin
+
+You need an `agentsfleet` account. Signup makes you the owner of your own account, so **Settings → Members** is always in your dashboard.
+
+You need your teammate's email address. Your teammate accepts while signed in with that address.
+
+## Steps
+
+1. Open **Settings → Members** in the dashboard.
+2. Click **Invite**, enter your teammate's email address, and click **Create invite**.
+3. Click the copy button beside the link under **Invite ready**, then click **Done**.
+4. Send the link to your teammate.
+
+   The link expires 7 days after you create it. Until then, the **People** table lists the address with the `invited` role.
+
+5. Your teammate signs in with the invited address and opens the link.
+
+   The **Invites** page lists your account under its owner's name, such as **Ada's account**.
+
+6. Your teammate clicks the check mark in that row to accept.
+
+   The dashboard opens the first workspace in your account.
+
+The API offers the same actions. See the **Invites** and **Members** groups in the API reference.
+
+## Verify it works
+
+Open **Settings → Members**. Your teammate's row shows the `member` role, and the **Time** column shows when they joined.
+
+Your teammate opens the workspace switcher. Their own workspaces sit under **Yours**, and yours sit under your account's name.
+
+## Common problems
+
+**The invite was sent to a different email address ([`UZ-INV-002`](/api-reference/error-codes#UZ-INV-002)).** Your teammate is signed in with another address. They sign in with the invited address and open the link again.
+
+**The invite is no longer valid ([`UZ-INV-001`](/api-reference/error-codes#UZ-INV-001)).** The invite expired, was revoked, or was already accepted. Create a new invite.
+
+**That person already has an invite or is already a member ([`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003)).** Copy the link from their `invited` row instead. To send a new link, revoke the pending invite first.
+
+**Only the account owner can do this ([`UZ-AUTH-026`](/api-reference/error-codes#UZ-AUTH-026)).** A member tried to store a secret, connect an integration, or manage people. Ask the owner to make the change.
+
+**Your teammate's API key or command-line login does not reach your account.** API keys and command-line logins reach only their holder's own account. A member works in your account through the dashboard.
+
+## Remove or undo
+
+To revoke a pending invite:
+
+1. Open **Settings → Members**.
+2. Click the revoke button in the invite's row, then click **Revoke**.
+
+The link stops working. You can invite the same address again.
+
+<Warning>
+A removed member loses access to every workspace in your account within 15 seconds, including any page they have open. Your fleets, secrets, and workspaces stay as they are.
+</Warning>
+
+To remove a member:
+
+1. Open **Settings → Members**.
+2. Click the remove button in the member's row, then click **Remove**.
+
+The owner's row has no remove button. An account always keeps its owner ([`UZ-INV-004`](/api-reference/error-codes#UZ-INV-004)).
+
+A member cannot leave an account alone. They ask the owner to remove them.
+
+## Related pages
+
+- [Workspace overview](/workspaces/overview)
+- [Manage workspaces](/workspaces/managing)
+- [Error codes](/api-reference/error-codes)

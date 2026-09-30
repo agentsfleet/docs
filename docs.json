@@ -73,7 +73,8 @@
             "group": "Workspaces",
             "pages": [
               "workspaces/overview",
-              "workspaces/managing"
+              "workspaces/managing",
+              "workspaces/teammates"
             ]
           },
           {

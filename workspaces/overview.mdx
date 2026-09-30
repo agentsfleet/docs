@@ -21,7 +21,9 @@ Use separate workspaces when teams or environments need different fleets and sec
 
 ## How it behaves
 
-You create a workspace through the client or API. The tenant owns the workspace and its members control access.
+You create a workspace through the client or API. The tenant owns the workspace. The dashboard calls a tenant an account.
+
+An account has one owner, the person who signed up. The owner can invite members, who open and steer every workspace in the account. Only the owner stores secrets, connects integrations, and manages people.
 
 A fleet belongs to exactly one workspace. Secrets and connectors do not cross workspace boundaries.
 
@@ -36,4 +38,5 @@ The client has no remote workspace removal call. `workspace delete` only removes
 ## Related pages
 
 - [Manage workspaces](/workspaces/managing)
+- [Invite teammates](/workspaces/teammates)
 - [Secrets](/fleets/secrets)
