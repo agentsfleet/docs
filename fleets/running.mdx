@@ -60,6 +60,12 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    own place in the conversation. Reasoning and tool activity are shown
    separately from the final reply.
 
+   While a reply runs, the chat keeps your place. Your new message moves to
+   the top of the panel, and the reply grows below it.
+
+   If you scroll back, a turn someone else sends does not move you. Click
+   **Jump to latest** to follow it.
+
 4. Stop new work while keeping the fleet resumable.
 
    ```bash
@@ -109,6 +115,12 @@ Some fleets are waiting on approval. Review with: agentsfleet approvals list
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
 
 A run that produces no reply may be parked at an approval gate. Run `agentsfleet approvals list` and decide the gate it names.
+
+A message with no answer after 30 seconds reads **Couldn't confirm this message was sent.** Click **Resend**. It carries the same `operation_id`, so the fleet runs the message once.
+
+If live updates stop, a warning appears above the message box: **Live updates are temporarily unavailable. We’re reconnecting automatically.**
+
+Click **Retry now** to reconnect at once. When the stream returns, the chat reloads the activity it missed.
 
 If a run fails while replying, open its event details in the dashboard and
 click **Copy diagnostic**. The copy includes the event identifier and the
