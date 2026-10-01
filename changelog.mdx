@@ -37,7 +37,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **`POST /v1/tenants/me/invites`** — invites `{email}` and answers `201` with the invite, its `link`, and `email_status`: `sent`, `failed`, or `unconfigured`. `GET` lists pending invites with `email_status` and `email_sent_at`.
   - **`POST /v1/tenants/me/invites/{invite_id}/send`** — sends the invite email again. It answers `200` `{"email_status": "sent"}`, `503` `UZ-INV-005` when email is unavailable, or `404` `UZ-INV-001`.
   - **`DELETE /v1/tenants/me/invites/{invite_id}`** — revokes a pending invite and answers `204`.
-  - **`GET /v1/me/invites`** and **`POST /v1/me/invites/{invite_id}/accept`** — list and accept invites sent to the signed-in address. Another address is refused with `403` `UZ-INV-002`.
+  - **`GET /v1/users/me/invites`** and **`POST /v1/users/me/invites/{invite_id}/accept`** — list and accept invites sent to the signed-in address. Another address is refused with `403` `UZ-INV-002`.
   - **`GET /v1/tenants/me/members`** and **`DELETE /v1/tenants/me/members/{user_id}`** — list and remove members. The last owner cannot be removed (`409` `UZ-INV-004`).
   - **`event_admitted`** — a new fleet stream frame carrying the sender and message the moment a steer is accepted. A thread read returns waiting messages as `queued` rows.
 
