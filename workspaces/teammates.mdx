@@ -88,6 +88,8 @@ To revoke a pending invite:
 
 The link stops working. You can invite the same address again.
 
+If your teammate accepted the invite first, `agentsfleet` refuses the revoke with [`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003). The **People** table then lists them as a member. To take back their access, remove them.
+
 <Warning>
 A removed member loses access to every workspace in your account within 15 seconds, including any page they have open. Your fleets, secrets, and workspaces stay as they are.
 </Warning>
