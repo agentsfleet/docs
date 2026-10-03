@@ -58,7 +58,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   - **A stopped reply has a plain message** — chat no longer displays a runner error name as if it explained what happened. The cause remains available in the event diagnostic.
   - **Streaming tool calls reach the fleet** — a model that asks to use a tool while streaming can complete the tool call and continue its answer.
-  - **A brief network drop no longer fails a run before it starts** — the runner retries the fleet bundle download up to 3 times within 5 seconds.
+  - **A brief network drop no longer fails a run before it starts** — the runner makes up to 3 fleet bundle download attempts with a 5-second retry budget.
   - **A failed bundle download no longer blames the fleet's instructions** — chat now says "The runner refused this run before the fleet started."
 </Update>
 
