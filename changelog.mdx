@@ -19,6 +19,38 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Upload sources** — both pages show an upload icon and source name; an empty source name uses the entry name.
 </Update>
 
+<Update label="Sep 30, 2026" tags={["Dashboard", "API", "Bug fixes"]}>
+  ## Chat keeps your place while a fleet replies
+
+  The fleet chat now holds still while a reply runs. When you send a message, it moves to the top of the panel once, and the reply grows below it. Folding a thought or a reply finishing no longer drags the conversation past you.
+
+  ## What's new
+
+  - **A turn someone else sends leaves you where you are** — if you have scrolled back, a teammate's, API, or webhook turn does not move the chat. **Jump to latest** takes you to it.
+  - **Reasoning folds once** — the thought folds when the answer starts and stays folded if the fleet reasons again. **Thought** counts every stretch of reasoning.
+  - **A send with no answer ends after 30 seconds** — it reads **Couldn't confirm this message was sent.** with **Resend**. Later messages to the fleet no longer wait behind it.
+  - **Another tab's unsent message appears here** — once the tab that sent it has closed, the message shows with **Resend**.
+  - **A dismissed message stays dismissed** — in every tab of that browser, for a day.
+  - **A reused message identifier gets its own notice** — **This message conflicts with one already sent.** offers **Send as new** instead of **Resend**.
+  - **A failed run carries a failure mark** — so its sentence never reads as a short reply. Lines such as **Completed.** read as status, not as the fleet's words.
+  - **The byte count appears near the limit** — from 90% of 8,192 bytes, the message box shows the count, and **Send** is disabled past the limit.
+  - **Durations of a minute or more show minutes** — for example `2m 05s`.
+  - **Chat catches up after a lost stream** — the chat fetches recent saved activity, and fleet tiles read **catching up** meanwhile. Missed reply fragments and tool updates may remain missing.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages`** — the `202` body carries `replayed`: `true` when the `operation_id` matched an earlier message, `false` for a new one.
+  - **A NUL character is refused** — a `message` or `operation_id` containing one returns `400` `UZ-REQ-001`.
+  - **Tool activity frames carry `call_id`** — each tool frame on the fleet stream names its call, so two calls to one tool stay apart.
+
+  ## Bug fixes
+
+  - **The reconnect notice no longer reads as an error** — it is an amber warning above the message box and no longer pushes the conversation down. **Retry now** reconnects at once.
+  - **A thought clock stops when its reply's end was missed** — it no longer runs on after the stream dropped the reply's last frame.
+  - **A replayed message no longer sits at Queued** — its reply loads from the event.
+
+</Update>
+
 <Update label="Sep 28, 2026" tags={["Dashboard", "API", "Bug fixes"]}>
   ## A message you resend runs once
 
