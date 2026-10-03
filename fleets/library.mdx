@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-09-21
+verified: 2026-10-03
 executable: false
 ---
 
@@ -107,6 +107,14 @@ Removing an identifier that is already gone succeeds. So does one that names ano
 You need the `library:write` scope, the same scope `agentsfleet library create` needs.
 
 The dashboard does the same work at **Fleet library** in the workspace sidebar. The page lists what this workspace owns and asks you to confirm each removal by name.
+
+Both dashboard tables show **Name**, **Source**, **Status**, **Time**, and **Actions** in that order. The platform catalog no longer shows bundle hashes.
+
+Workspace entries show **Ready** when their checked bundle is available in the workspace gallery. Platform entries show **Draft**, **Published**, **No bundle**, or **Broken**.
+
+Uploaded bundles show an upload icon and their source name on both pages. An empty source name uses the entry name.
+
+GitHub sources show a GitHub icon and a repository link. The platform catalog includes its stored revision in the source text and link. Workspace entries link to the repository without a revision.
 
 ## Onboard a platform entry
 
