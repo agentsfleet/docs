@@ -150,13 +150,21 @@
           {
             "group": "Users",
             "pages": [
-              "GET /v1/users/me"
+              "GET /v1/users/me",
+              "GET /v1/users/me/invites",
+              "POST /v1/users/me/invites/{invite_id}/accept"
             ]
           },
           {
             "group": "Tenants",
             "pages": [
-              "GET /v1/tenants/me/workspaces"
+              "GET /v1/tenants/me/workspaces",
+              "GET /v1/tenants/me/members",
+              "DELETE /v1/tenants/me/members/{user_id}",
+              "GET /v1/tenants/me/invites",
+              "POST /v1/tenants/me/invites",
+              "POST /v1/tenants/me/invites/{invite_id}/send",
+              "DELETE /v1/tenants/me/invites/{invite_id}"
             ]
           },
           {
@@ -203,6 +211,7 @@
               "POST /v1/runners/me/leases",
               "POST /v1/runners/me/leases/{lease_id}/renew",
               "POST /v1/runners/me/leases/{lease_id}/activity",
+              "POST /v1/runners/me/leases/{lease_id}/tool-calls",
               "POST /v1/runners/me/reports",
               "POST /v1/runners/me/credentials/mint",
               "GET /v1/runners/me/bundles/{content_hash}",
@@ -220,6 +229,7 @@
             "group": "Workspaces",
             "pages": [
               "POST /v1/workspaces",
+              "GET /v1/workspaces/{workspace_id}/members",
               "GET /v1/workspaces/{workspace_id}/events",
               "GET /v1/workspaces/{workspace_id}/events/stream",
               "GET /v1/workspaces/{workspace_id}/onboarding"
@@ -316,6 +326,7 @@
             "pages": [
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events/{event_id}",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events/{event_id}/tool-calls/{call_id}",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/events/stream"
             ]
           },
