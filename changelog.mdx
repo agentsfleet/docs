@@ -19,6 +19,61 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Upload sources** — both pages show an upload icon and source name; an empty source name uses the entry name.
 </Update>
 
+<Update label="Sep 28, 2026" tags={["Dashboard", "API", "Bug fixes"]}>
+  ## A message you resend runs once
+
+  A chat message now carries an `operation_id`, and the API answers a repeat of it with the first message's event. Resending after a dropped connection or a reload no longer starts a second run, even if the fleet stopped in between.
+
+  ## What's new
+
+  - **Unsent messages stay listed** — each keeps its own **Resend** and **Dismiss** until you choose one, including after a reload or in another tab.
+  - **An unanswered send says so** — Chat reads **Couldn't confirm this message was sent.** when no answer came back, and **Message not sent.** when the server refused it.
+  - **Unsent messages stay with you** — someone who signs in next on the same browser does not see them.
+  - **An expired session keeps Resend** — the notice shows **Sign in** beside **Resend**.
+  - **Reasoning shows how long it took** — a reply reads **Thinking** with a clock while the fleet reasons, then **Thought** and the total time.
+
+  ## API reference
+
+  - **`POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages`** — a repeated `operation_id` returns `202` with the first message's `event_id`, even if the fleet has since stopped, paused, spent its budget, or reached its limit of waiting work.
+  - **`UZ-AGT-016`** — the same `operation_id` with a different `message`, or from another sender, returns `409` with `current_state: "admitted"`, and nothing runs. A workspace's API keys count as one sender.
+  - **An `operation_id` sent before this release** — is not recognized after it, so a retry that crosses the upgrade runs as a new message.
+  - **`operation_id` belongs to one fleet** — the same value sent to two fleets is two messages.
+
+  ## Bug fixes
+
+  - **Two failed sends keep both messages** — Chat used to keep only the latest one.
+  - **A dropped connection no longer sends a message twice** — the automatic retry carries the same `operation_id`.
+  - **An over-long message is caught before it is sent** — Chat shows **Messages can be at most 8,192 bytes.** instead of sending one the server refuses.
+  - **Malformed tool activity no longer breaks Chat** — a tool update without a readable name is ignored.
+</Update>
+
+<Update label="Sep 25, 2026" tags={["Dashboard", "What's new", "Bug fixes", "API"]}>
+  ## Fleet chat shows replies as they arrive
+
+  You can send another message while a fleet is working. The dashboard keeps
+  each accepted message in order, shows when it is queued, and adds the reply
+  as it arrives.
+
+  Update each `agentsfleet-runner` to 0.51.0 along with the control plane. An
+  older runner still completes runs, but its replies appear only when the run
+  finishes.
+
+  ## What's new
+
+  - **Reasoning and tool activity have their own place** — the chat keeps the final reply readable while showing progress during a run.
+  - **Reasoning text is lighter than the reply** — the answer reads first, and the reasoning still meets the Web Content Accessibility Guidelines (WCAG) AA contrast level.
+  - **Reply text arrives in smaller steps** — the dashboard receives new text every 200 milliseconds instead of every second.
+  - **`event_complete` carries the final reply** — the fleet stream's completion frame includes `final_reply` when the reply is at most 64 KiB. Without it, read the event.
+  - **A failed event carries a copyable diagnostic** — open its event details and click **Copy diagnostic** to capture its identifier and recorded cause for an operator.
+
+  ## Bug fixes
+
+  - **A stopped reply has a plain message** — chat no longer displays a runner error name as if it explained what happened. The cause remains available in the event diagnostic.
+  - **Streaming tool calls reach the fleet** — a model that asks to use a tool while streaming can complete the tool call and continue its answer.
+  - **A brief network drop no longer fails a run before it starts** — the runner makes up to 3 fleet bundle download attempts with a 5-second retry budget.
+  - **A failed bundle download no longer blames the fleet's instructions** — chat now says "The runner refused this run before the fleet started."
+</Update>
+
 <Update label="Sep 24, 2026" tags={["What's new", "Bug fixes", "API", "CLI", "Integrations"]}>
   ## Mention a fleet in Slack and it answers in the thread
 
