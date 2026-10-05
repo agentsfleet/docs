@@ -7,6 +7,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 06, 2026" tags={["What's new"]}>
+  ## The Rust runner runs a fleet's code in its sandbox
+
+  The Rust `agentsfleet-runner` now runs commands, file edits, patches, and git inside each run's sandbox. It replaces the current runner at the cutover. Until then, your fleets keep the runner and tools they have today.
+
+  ## What's new
+
+  - **`shell`** — runs one command to its end in the workspace. A failed command answers its output, then its exit code. `timeout_ms` defaults to 10,000 and is capped at 600,000; a command past it answers `timed_out`.
+  - **`exec_command` and `write_stdin`** — keep a process running across calls and send it input. A run holds up to 64 sessions (`session_cap_reached`), and every session still open stops when the run ends.
+  - **Repositories are checked out before the first turn** — each repository in a fleet's `repositories` binding is cloned into the workspace when the fleet declares `shell`, `exec_command`, or `git`. A read binding checks out the default branch. The GitHub token never enters the sandbox.
+  - **`git`** — runs in that checkout. `push`, `fetch`, `pull`, `remote`, and `clone` answer `subcommand_not_allowed`, because the sandbox has no network.
+  - **`apply_patch`** — applies a patch in the format Codex writes and answers the changed files, with `+N −M` on the last line. A patch that does not apply answers `patch_invalid`.
+  - **File tools** — `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, and `file_edit_hashed` reach only the workspace (`path_not_allowed`). A stale line tag answers `hash_mismatch`.
+  - **`image`** — shows the model a PNG, JPEG, GIF, or WebP file of up to 5 MiB on its next turn. It needs a model on the Messages or Responses API; otherwise it answers `image_input_unavailable`, `file_too_large`, or `not_an_image`.
+  - **Browser tools wait for the microVM engine** — `browser_open`, `browser`, and `screenshot` answer `browser_unavailable`, and the run carries on.
+  - **The toolbox carries the tools** — Node 20, Python 3.13 with uv, ripgrep, jq, curl, and the GitHub command-line tool, pinned to one Debian snapshot. A host mounts the toolbox only when its signed release manifest and digest check out.
+</Update>
+
 <Update label="Oct 03, 2026" tags={["Bug fixes", "Dashboard"]}>
   ## Fleet library tables share their columns
 
