@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-09-28
+verified: 2026-10-01
 executable: false
 ---
 
@@ -97,6 +97,17 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-AUTH-023"></span>`UZ-AUTH-023` | 401 | Command-line credential revoked | This credential was revoked by a logout or by a newer login from this machine. Run `agentsfleet login` to get a new one. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-024"></span>`UZ-AUTH-024` | 404 | Command-line credential not found | You have no live credential with that identifier. It may be revoked, or it may not be yours. | Keep sign-in sessions and credentials current. |
 | <span id="UZ-AUTH-025"></span>`UZ-AUTH-025` | 401 | Credential exchange failed | Login could not exchange the browser session for a durable credential, so nothing was saved. The session likely expired. Run `agentsfleet login` again. | Keep sign-in sessions and credentials current. |
+| <span id="UZ-AUTH-026"></span>`UZ-AUTH-026` | 403 | Owner only | Only the account owner can store secrets, connect integrations, or manage members. Ask the owner to make this change. | Leave secrets, integrations, and people to the account owner. |
+
+### Invites and members
+
+| Code | HTTP | Title | Why and fix | Prevent |
+|---|---|---|---|---|
+| <span id="UZ-INV-001"></span>`UZ-INV-001` | 404 | Invite not found | The invite expired, was revoked, or was already accepted. For an expired or revoked invite, ask the account owner for a new one. If the invitee already joined, they are a member — the owner removes the member before inviting them again. | Accept an invite within 7 days of its creation. |
+| <span id="UZ-INV-002"></span>`UZ-INV-002` | 403 | Invite is for another address | Sign in with the email address the invite was sent to, then open the invite again. | Invite the address your teammate signs in with. |
+| <span id="UZ-INV-003"></span>`UZ-INV-003` | 409 | Already invited or a member | The address has a pending invite or already belongs to the account. Revoke the pending invite to send a new one, or remove the member. | Check the account's pending invites and members before inviting. |
+| <span id="UZ-INV-004"></span>`UZ-INV-004` | 409 | Account needs an owner | An account keeps at least one owner. The last owner cannot be removed. | Remove members only. The owner stays with the account. |
+| <span id="UZ-INV-005"></span>`UZ-INV-005` | 503 | Invite email could not be sent | Email is not set up, or the mail relay refused or did not answer. The invite is still valid. | Copy the invite link and send it yourself, or send again later. |
 
 ### API
 
