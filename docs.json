@@ -217,7 +217,8 @@
               "POST /v1/runners/me/credentials/mint",
               "GET /v1/runners/me/bundles/{content_hash}",
               "GET /v1/runners/me/memory/{fleet_id}",
-              "POST /v1/runners/me/memory/{fleet_id}"
+              "POST /v1/runners/me/memory/{fleet_id}",
+              "POST /v1/runners/me/memory/{fleet_id}/recall"
             ]
           },
           {
@@ -279,7 +280,8 @@
               "POST /v1/workspaces/{workspace_id}/fleets",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
-              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}"
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
+              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access"
             ]
           },
           {
