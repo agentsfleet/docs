@@ -103,7 +103,7 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-INV-001"></span>`UZ-INV-001` | 404 | Invite not found | The invite expired, was revoked, or was already accepted. Ask the account owner for a new one. | Accept an invite within 7 days of its creation. |
+| <span id="UZ-INV-001"></span>`UZ-INV-001` | 404 | Invite not found | The invite expired, was revoked, or was already accepted. For an expired or revoked invite, ask the account owner for a new one. If the invitee already joined, they are a member — the owner removes the member before inviting them again. | Accept an invite within 7 days of its creation. |
 | <span id="UZ-INV-002"></span>`UZ-INV-002` | 403 | Invite is for another address | Sign in with the email address the invite was sent to, then open the invite again. | Invite the address your teammate signs in with. |
 | <span id="UZ-INV-003"></span>`UZ-INV-003` | 409 | Already invited or a member | The address has a pending invite or already belongs to the account. Revoke the pending invite to send a new one, or remove the member. | Check the account's pending invites and members before inviting. |
 | <span id="UZ-INV-004"></span>`UZ-INV-004` | 409 | Account needs an owner | An account keeps at least one owner. The last owner cannot be removed. | Remove members only. The owner stays with the account. |

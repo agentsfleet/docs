@@ -57,7 +57,7 @@ You need your teammate's email address. Your teammate accepts while signed in wi
 
    The dashboard opens the first workspace in your account.
 
-The API offers the same actions. See the **Invites** and **Members** groups in the API reference.
+The API offers the same actions. See the **Users** and **Tenants** groups in the API reference.
 
 ## Verify it works
 
@@ -69,11 +69,11 @@ Your teammate opens the workspace switcher. Their own workspaces sit under **You
 
 **The invite was sent to a different email address ([`UZ-INV-002`](/api-reference/error-codes#UZ-INV-002)).** Your teammate is signed in with another address. They sign in with the invited address and open the link again.
 
-**The invite is no longer valid ([`UZ-INV-001`](/api-reference/error-codes#UZ-INV-001)).** The invite expired, was revoked, or was already accepted. Create a new invite.
+**The invite is no longer valid ([`UZ-INV-001`](/api-reference/error-codes#UZ-INV-001)).** The invite expired or was revoked, so create a new invite. An already-accepted invite means your teammate is a member; remove them before inviting again.
 
 **We could not send the email ([`UZ-INV-005`](/api-reference/error-codes#UZ-INV-005)).** Sending again found no mail service, or the mail service refused. The invite still works, so copy its link and send it yourself.
 
-**That person already has an invite or is already a member ([`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003)).** Copy the link from their `invited` row instead. To send a new link, revoke the pending invite first.
+**That person already has an invite or is already a member ([`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003)).** A pending invite keeps its link in the `invited` row — copy it, or revoke the invite to send a new one. A member already has access; to invite them again, remove them first.
 
 **Only the account owner can do this ([`UZ-AUTH-026`](/api-reference/error-codes#UZ-AUTH-026)).** A member tried to store a secret, connect an integration, or manage people. Ask the owner to make the change.
 
