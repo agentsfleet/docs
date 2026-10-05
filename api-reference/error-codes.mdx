@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-10-01
+verified: 2026-10-06
 executable: false
 ---
 
@@ -174,6 +174,8 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-SCHED-006"></span>`UZ-SCHED-006` | 409 | Schedule update busy | Another schedule mutation holds the synchronization lease. Retry after the reported delay. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
 | <span id="UZ-SCHED-007"></span>`UZ-SCHED-007` | 503 | Schedule service unavailable | QStash credentials are not configured. Follow the registration playbook and roll agentsfleetd. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
 | <span id="UZ-SCHED-008"></span>`UZ-SCHED-008` | 409 | Schedule source already exists | A schedule already uses this source key for the selected Fleet. Pick a different source or update the existing schedule. | Use a valid schedule, cron expression, timezone, and configured QStash ingress. |
+| <span id="UZ-SCHED-009"></span>`UZ-SCHED-009` | 409 | Fleet schedule cap reached | A fleet can create at most 16 schedules itself. Remove one of its own schedules before creating another. | Let a fleet remove the follow-ups it no longer needs. |
+| <span id="UZ-SCHED-010"></span>`UZ-SCHED-010` | 403 | Schedule not created by the fleet | A fleet can change or delete only the schedules it created. A person created this one. Change it from the schedules page or `agentsfleet schedule`. | A fleet reads every schedule of its own fleet and changes only those with source `fleet`. |
 
 ### Fleet Bundles
 
@@ -279,6 +281,8 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`, so the run stops. The tenant balance is fine; this is the fleet's own budget. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. | Keep runner settings and lease health within configured limits. |
+| <span id="UZ-RUN-019"></span>`UZ-RUN-019` | 409 | Event has no thread to message | The run came from an API steer, a webhook, or a schedule, so no thread is waiting. Say it in the run's answer instead. | Use `message` only in fleets a Slack mention starts. |
+| <span id="UZ-RUN-020"></span>`UZ-RUN-020` | 429 | Run message limit reached | A run can post at most 8 messages before it answers. Put the rest in the run's answer. | Post progress at milestones, not on every step. |
 
 ### Runs
 
