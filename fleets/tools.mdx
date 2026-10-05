@@ -54,20 +54,24 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 | Tool | What it does |
 |---|---|
 | `cron_add` | Creates a recurring schedule from a five-field cron expression, a message, and an optional zone. The zone defaults to Coordinated Universal Time (UTC). |
-| `schedule` | Creates one follow-up at a moment within the next year. The schedule is removed after it runs. |
+| `schedule` | Creates one follow-up at a moment within the next year. The moment rounds up to the next whole minute, which must be at least a minute away. The schedule is removed after it runs. |
 | `cron_list` | Lists every schedule of the fleet. Each one names its source: `fleet`, `api` for a person, or `trigger` for `TRIGGER.md`. |
 | `cron_update` | Changes, pauses, or resumes a schedule the fleet created. |
 | `cron_remove` | Deletes a schedule the fleet created. |
-| `cron_run` | Runs a schedule now. The new run waits behind the current one. |
+| `cron_run` | Runs a schedule now. The new run waits behind the current one. A run that a schedule started cannot run a schedule now. |
 | `cron_runs` | Lists a schedule's runs, newest first, 50 at a time. |
 
 A schedule the fleet creates appears beside your own on the fleet's schedules list, with source `fleet`. You can change or delete it there like any other schedule.
+
+`agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. If the fleet is paused when a `schedule` follow-up is due, the follow-up is removed without running.
 
 ### Message tool
 
 `message` posts one line to the Slack thread that started the run, before the run answers. Use it for progress, such as "fix pushed, re-checking at 09:00".
 
 `agentsfleet` posts the line with the workspace's Slack connection. The fleet never holds the Slack token. `agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` before it posts.
+
+The line appears exactly as the fleet wrote it. A `<!channel>`, `<!here>`, or user mention in it shows as text and notifies nobody.
 
 ## Limits
 
@@ -81,9 +85,11 @@ Remove a tool name from `TRIGGER.md` to revoke it. The next fleet update applies
 
 A fleet creates at most 16 schedules itself, inside the 32 a fleet holds. The 17th fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009). Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/api-reference/error-codes#UZ-SCHED-010).
 
+`cron_run` fails with [`UZ-SCHED-011`](/api-reference/error-codes#UZ-SCHED-011) for a paused schedule, a schedule being removed, or a run that a schedule started. It fails with [`UZ-AGT-012`](/api-reference/error-codes#UZ-AGT-012) while the fleet is paused.
+
 `message` posts at most 8 lines per run, each at most 4,096 bytes. The 9th line fails with [`UZ-RUN-020`](/api-reference/error-codes#UZ-RUN-020). A run started from the API, a webhook, or a schedule has no thread, so `message` fails with [`UZ-RUN-019`](/api-reference/error-codes#UZ-RUN-019).
 
-If Slack refuses a line, or does not answer after 3 tries spaced up to 800 milliseconds apart, `message` reports the line as not delivered. The run continues, and its answer still reaches the thread.
+If Slack refuses a line, or has not taken it within 12 seconds, `message` reports the line as not delivered. The run continues, and its answer still reaches the thread.
 
 ## Related pages
 
