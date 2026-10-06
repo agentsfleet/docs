@@ -63,7 +63,7 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 
 A schedule the fleet creates appears beside your own on the fleet's schedules list, with source `fleet`. You can change or delete it there like any other schedule.
 
-`agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. If the fleet is paused when a `schedule` follow-up is due, the follow-up is removed without running.
+`agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. If the fleet is paused when a `schedule` follow-up is due, or `agentsfleet` could not register the follow-up before its moment, the follow-up is removed without running.
 
 ### Message tool
 
