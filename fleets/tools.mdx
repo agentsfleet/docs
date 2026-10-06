@@ -54,12 +54,12 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 | Tool | What it does |
 |---|---|
 | `cron_add` | Creates a recurring schedule from a five-field cron expression, a message, and an optional zone. The zone defaults to Coordinated Universal Time (UTC). |
-| `schedule` | Creates one follow-up at a moment within the next year. The moment rounds up to the next whole minute, which must be at least a minute away. The schedule is removed after it runs. |
+| `schedule` | Creates one follow-up at a moment within the next year. The moment rounds up to the next whole minute, which must be at least a minute away. The schedule runs once and is then removed; running it with `cron_run` counts as that one run. |
 | `cron_list` | Lists every schedule of the fleet. Each one names its source: `fleet`, `api` for a person, or `trigger` for `TRIGGER.md`. |
 | `cron_update` | Changes, pauses, or resumes a schedule the fleet created. |
 | `cron_remove` | Deletes a schedule the fleet created. |
 | `cron_run` | Runs a schedule now. The new run waits behind the current one. A run that a schedule started cannot run a schedule now. |
-| `cron_runs` | Lists a schedule's runs, newest first, 50 at a time. |
+| `cron_runs` | Lists a schedule's runs, newest first, 50 at a time. A `schedule` follow-up's run stays listed after the follow-up is removed. |
 
 A schedule the fleet creates appears beside your own on the fleet's schedules list, with source `fleet`. You can change or delete it there like any other schedule.
 
