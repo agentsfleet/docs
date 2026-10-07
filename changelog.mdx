@@ -7,6 +7,23 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 07, 2026" tags={["What's new"]}>
+  ## A chat follow-up continues where the last message stopped
+
+  On the Rust runner, a chat message now carries the thread's recent turns, and the fleet's next run reuses its sandbox for 10 minutes. A fleet can also hand work to child agents, and every sandbox has a stated size.
+
+  ## What's new
+
+  - **Earlier turns reach the model** — a message from Chat, `agentsfleet steer`, or a Slack mention carries up to 8 of the thread's earlier finished turns, oldest first. Each message or answer keeps its first 16 KiB, and the oldest turns drop until the rest fit in 64 KiB.
+  - **The prompt's start is cached** — on the Messages and Responses APIs, the provider is asked to cache the tools, instructions, and earlier turns, so a follow-up can read them from its cache.
+  - **The sandbox waits 10 minutes** — after a run finishes without failing, the same runner keeps the fleet's sandbox, and the next run finds the files, installed packages, and caches the last one left. A background process ends with its command, and `exec_command` sessions end with the run.
+  - **A fresh sandbox otherwise** — the next run starts clean once 10 minutes pass, the last run failed, the fleet's repositories or network access changed, the fleet left `active`, or the runner restarted or went offline.
+  - **Child agents** — `delegate` and `spawn` start a child that shares the run's sandbox, files, memory, and budget. `wait_agent`, `send_input`, `list_agents`, and `interrupt_agent` drive a spawned child. Children nest two levels deep, with 4 working at once and 16 per run (`child_cap_reached`).
+  - **Every sandbox has a stated size** — 2 GiB of memory, 2 cores, 512 processes and threads, and a 4 GiB disk. No fleet setting changes it yet.
+  - **`/tmp` shares the workspace disk** — a full `/tmp` answers `No space left on device`, as a full `/workspace` does, and the sandbox keeps running.
+  - **Out of memory ends one command** — the command reads `Process killed: out of memory` (`out_of_memory`), and the next command runs in the same sandbox with its files.
+</Update>
+
 <Update label="Oct 06, 2026" tags={["What's new"]}>
   ## The Rust runner runs a fleet's code in its sandbox
 
