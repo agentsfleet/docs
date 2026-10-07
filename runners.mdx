@@ -57,6 +57,28 @@ The three isolation settings differ in what enforces the boundary:
 | Nested container | The fleet runs inside a container on a Linux host or virtual machine. |
 | None | No sandbox. Development builds only. |
 
+### The sandbox each run gets
+
+On the Rust runner, a run whose fleet declares a sandbox tool gets its own sandbox. No fleet setting picks its size yet, so every sandbox gets these defaults.
+
+| Limit | Default | Valid range |
+|---|---|---|
+| Memory | 2 GiB | 256 MiB to 64 GiB |
+| Processor | 2 cores | 0.25 to 32 cores |
+| Processes and threads | 512 at once | none, always 512 |
+| Workspace disk, holding `/workspace` and `/tmp` | 4 GiB | 1 GiB to 256 GiB |
+| Disk throughput | 200 MiB per second each way | none |
+
+A runner refuses a run that asks for a size outside these ranges, before it builds a sandbox.
+
+Commands share the memory limit minus 64 MiB, which the sandbox keeps for itself, and there is no swap. When commands need more, the kernel kills one of their processes. The command it belonged to reads `Process killed: out of memory` with the code `out_of_memory`, and the sandbox and its files stay for the next command.
+
+`/tmp` lives on the workspace disk, so the two share one size limit. A write past it fails with `No space left on device`, and the sandbox keeps running. The kernel refuses a new process or thread past 512.
+
+After a run finishes without failing, the runner keeps its sandbox for 10 minutes for the fleet's next run. A kept sandbox is frozen, and it still holds its memory and disk. The runner keeps at most one per worker, drops the oldest first, and drops other fleets' sandboxes when every worker is busy.
+
+While a runner keeps a fleet's sandbox, only that runner takes the fleet's next run, unless it goes offline. [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps) lists what ends the wait early.
+
 ### The states a runner shows
 
 The runner page shows two facts side by side: what you have told the runner to do, and whether the host is answering.
