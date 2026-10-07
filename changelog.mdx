@@ -40,7 +40,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **`apply_patch`** — applies a patch in the format Codex writes and answers the changed files, with `+N −M` on the last line. A patch that does not apply answers `patch_invalid`.
   - **File tools** — `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, and `file_edit_hashed` reach only the workspace (`path_not_allowed`). A stale line tag answers `hash_mismatch`.
   - **`file_read` pages by line** — `offset` (from 1) and `limit` (2,000 when absent) pick the lines, and a page stays within 10,000 tokens. Its last line names the `offset` to read on from; an offset past the end answers `invalid_arguments`.
-  - **`image`** — shows the model a PNG, JPEG, GIF, or WebP file of up to 5 MiB on its next turn. It needs a model on the Messages or Responses API; otherwise it answers `image_input_unavailable`, `file_too_large`, or `not_an_image`.
+  - **`image`** — shows the model a PNG, JPEG, GIF, or WebP file of up to 5 MiB on its next turn. It needs a model on the Messages or Responses API; otherwise it answers `image_input_unavailable`. An oversized file answers `file_too_large`, and an unsupported image answers `not_an_image`.
   - **Browser tools wait for the microVM engine** — `browser_open`, `browser`, and `screenshot` answer `browser_unavailable`, and the run carries on.
   - **The toolbox carries the tools** — Node 20, Python 3.13 with uv, ripgrep, jq, curl, and the GitHub command-line tool, pinned to one Debian snapshot. A host mounts the toolbox only when its signed release manifest and digest check out.
 </Update>
