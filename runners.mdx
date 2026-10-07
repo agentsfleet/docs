@@ -75,6 +75,8 @@ Commands share the memory limit minus 64 MiB, which the sandbox keeps for itself
 
 `/tmp` lives on the workspace disk, so the two share one size limit. A write past it fails with `No space left on device`, and the sandbox keeps running. The kernel refuses a new process or thread past 512.
 
+Shared memory, `/dev/shm`, holds at most a quarter of the memory limit, 512 MiB by default. A write past it fails with `No space left on device`, and later commands keep the rest of the memory.
+
 After a run finishes without failing, the runner keeps its sandbox for 10 minutes for the fleet's next run. A kept sandbox is frozen, and it still holds its memory and disk. The runner keeps at most one per worker, drops the oldest first, and drops other fleets' sandboxes when every worker is busy.
 
 While a runner keeps a fleet's sandbox, only that runner takes the fleet's next run, unless it goes offline. [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps) lists what ends the wait early.
