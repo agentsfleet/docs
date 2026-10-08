@@ -126,7 +126,11 @@ The runner looks up each host's Internet Protocol version 4 (IPv4) addresses on 
 
 Each sandbox joins the host through its own virtual Ethernet pair. `nf_tables` rules on the host side of that pair admit only the allowlist's addresses. The rules live in the host's network namespace, so code inside the sandbox cannot see or change them.
 
-The runner refuses a run before its sandbox starts when a listed host has no IPv4 address. It also refuses one whose allowlist holds more than 256 addresses. The run fails with a reason that names the host or the count.
+The runner refuses a run before its sandbox starts when a listed host has no IPv4 address. It also refuses a run whose allowlist holds more than 256 addresses. The run then fails with "the egress allowlist could not be resolved into addresses this runner can admit".
+
+A host from `network.allow` may not resolve to a private or reserved address, such as `10.0.0.0/8`, `100.64.0.0/10` or the cloud metadata address `169.254.169.254`. Such a run fails with "the fleet allows an egress host at a private or reserved address". Hosts in the runner's Allowlist are exempt, so an operator can point one at a package mirror on its own network.
+
+In both cases the runner's log names the host and never an address.
 
 Allowlist egress needs three things from the host:
 
