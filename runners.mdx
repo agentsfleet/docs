@@ -72,7 +72,7 @@ Policy travels down from the dashboard. Change it under **Admin → Runners → 
 |---|---|---|---|
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
 | Network policy | What the sandbox may reach on the network. | Allow all egress | Allow all egress, No egress, Allowlist egress |
-| Allowlist | Registry hosts the sandbox may reach under Allowlist egress, as `host` or `host:port`. | empty, which means the default registry set | Up to 32 comma-separated host names |
+| Allowlist | Registry hosts the sandbox may reach under Allowlist egress. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
 | Workers | How many events the host runs at once. A higher count starts more workers at the next heartbeat; a lower one lets running work finish. | 1 | 1 to 64 |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
 

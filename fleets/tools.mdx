@@ -45,7 +45,9 @@ x-agentsfleet:
       - api.github.com
 ```
 
-`http_request` also follows the network host list. Secret references are filled by the credential firewall during an approved outbound request.
+`http_request` also follows the network host list. An entry may be a host name or a URL. Only its host counts, so `https://api.github.com:443/repos` admits `api.github.com` on any port, for `http_request` and the sandbox alike.
+
+Secret references are filled by the credential firewall during an approved outbound request.
 
 An unknown tool is skipped and records `UZ-TOOL-005` in the activity stream. The run continues with the remaining valid tools.
 

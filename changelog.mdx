@@ -26,6 +26,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **An empty Allowlist means the default registry set** — npm, PyPI, crates.io, and the Go module proxy.
   - **Allow all egress shares the host's network** — No egress keeps the sandbox to its loopback interface.
   - **A host that does not resolve refuses the run** — the runner's log names the host. An allowlist past 256 addresses is refused too.
+  - **`network.allow` entries may be URLs** — `http_request` reads each entry the way the sandbox's rules do, so `https://api.github.com:443` admits `api.github.com` in both. Only the host counts.
   - **A fleet host at a private address refuses the run** — a `network.allow` host that resolves into `10.0.0.0/8`, the tailnet's `100.64.0.0/10`, or `169.254.169.254` stops it. Allowlist hosts are exempt.
   - **Runner traces and metrics** — with `OTEL_EXPORTER_OTLP_ENDPOINT` set, a runner sends one trace per run and eight metrics, and holds no credential to do it. Any OTLP header variable, or a user name in the endpoint, stops it at start.
   - **A fixed span budget** — 256 spans per run and 128 per second; the rest are counted in `agentsfleet_runner_spans_suppressed_total`.
