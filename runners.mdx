@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-09-12
+verified: 2026-10-08
 executable: false
 ---
 
@@ -27,15 +27,42 @@ Runners are replaceable. When one stops answering, its unfinished work goes to a
 
 Open **Admin → Runners → Add runner** and fill in the policy. `agentsfleetd` mints a runner token and shows it once. Copy it before you close the dialog, because it is never shown again.
 
-Put that token on the host, then start `agentsfleet-runner`. The host reads two required variables and one optional variable:
+Put that token on the host, then start `agentsfleet-runner`. [Install a runner](/runners/install) covers the binary and its toolbox. The host reads two required variables and six optional ones:
 
 | Variable | What it sets | Default | Valid values |
 |---|---|---|---|
 | `AGENTSFLEET_API_URL` | The control plane the runner asks for work. | none, required | URL beginning with `http://` or `https://` |
 | `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
-| `RUNNER_STORAGE_HOME` | Where the host keeps its own scratch files. | a host-local path | An absolute directory path |
+| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, fleet bundles, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
+| `AGENTSFLEET_LOG_LEVEL` | The lowest level the runner writes to standard error. | `info` | `off`, `error`, `warn`, `info`, `debug`, `trace` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the runner sends its traces and metrics, over OpenTelemetry Protocol (OTLP). Unset sends nothing. | none | An `http` or `https` URL with a host and no query, such as `http://127.0.0.1:4318` |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | How the runner encodes what it sends. | `http/protobuf` | `http/protobuf`, `http/json` |
+| `OTEL_EXPORTER_OTLP_TIMEOUT` | How long one send may take. | 10,000 milliseconds | A whole number of milliseconds above 0 |
+| `OTEL_SERVICE_INSTANCE_ID` | The name each trace and metric from this host carries, so two hosts' counts stay apart. | none | Any text, such as the host's name |
+
+An unreadable log level falls back to `info`. A missing or malformed address or token stops the runner at start and names the variable.
 
 No policy value is read from the host. A runner that carried its own isolation setting could disagree with the dashboard, and nothing would compare the two.
+
+### What the runner sends to a collector
+
+The runner holds no telemetry credential. Setting `OTEL_EXPORTER_OTLP_HEADERS`, or a signal's own header variable such as `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, stops the runner at start and names the variable. A user name or password in the endpoint stops it too, so give the credential to the collector on the host.
+
+The runner sends uncompressed. Any `OTEL_EXPORTER_OTLP_COMPRESSION` variable, a signal's own included, stops it at start.
+
+With an endpoint set, the runner sends one trace for each run. The trace holds the run, each model turn, and each tool call, with the lease and event identifiers.
+
+It also sends eight counts and timings with no tenant or fleet name on them:
+
+- model turn time and retries, by provider
+- sandbox start time
+- live updates it could not deliver
+- memory saves that failed
+- tool call time, by tool
+- processes the kernel killed inside a sandbox for lack of memory
+- sandboxes kept between runs, by what became of them
+
+It counts what it could not deliver to the collector in `agentsfleet_runner_otlp_entries_discarded_total`. It never sends its log lines, a prompt, a reply, a tool's output, or a credential. Log lines stay on standard error, for the host's log store.
 
 ### The policy you assign
 
@@ -45,8 +72,8 @@ Policy travels down from the dashboard. Change it under **Admin → Runners → 
 |---|---|---|---|
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
 | Network policy | What the sandbox may reach on the network. | Allow all egress | Allow all egress, No egress, Allowlist egress |
-| Allowlist | Registry hosts the sandbox may reach, as `host` or `host:port`. | empty | Up to 32 comma-separated host names |
-| Workers | How many events the host runs at once. | 1 | 1 to 64 |
+| Allowlist | Registry hosts the sandbox may reach under Allowlist egress, as `host` or `host:port`. | empty, which means the default registry set | Up to 32 comma-separated host names |
+| Workers | How many events the host runs at once. A higher count starts more workers at the next heartbeat; a lower one lets running work finish. | 1 | 1 to 64 |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
 
 The three isolation settings differ in what enforces the boundary:
@@ -59,7 +86,7 @@ The three isolation settings differ in what enforces the boundary:
 
 ### The sandbox each run gets
 
-On the Rust runner, a run whose fleet declares a sandbox tool gets its own sandbox. No fleet setting picks its size yet, so every sandbox gets these defaults.
+A run whose fleet declares a sandbox tool gets its own sandbox. No fleet setting picks its size yet, so every sandbox gets these defaults.
 
 | Limit | Default | Valid range |
 |---|---|---|
@@ -80,6 +107,34 @@ Shared memory, `/dev/shm`, holds at most a quarter of the memory limit, 512 MiB 
 After a run finishes without failing, the runner keeps its sandbox for 10 minutes for the fleet's next run. A kept sandbox is frozen, and it still holds its memory and disk. The runner keeps at most one per worker, drops the oldest first, and drops other fleets' sandboxes when every worker is busy.
 
 While a runner keeps a fleet's sandbox, only that runner takes the fleet's next run, unless it goes offline. [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps) lists what ends the wait early.
+
+### What a sandbox can reach
+
+The network policy decides what each sandbox reaches.
+
+| Network policy | What the sandbox reaches |
+|---|---|
+| Allow all egress | The host's own network, shared with the host. |
+| No egress | Nothing beyond its own loopback interface. |
+| Allowlist egress | Only the addresses on the run's allowlist, and nothing else. |
+
+Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists under `network.allow` in `TRIGGER.md`. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
+
+An empty Allowlist means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
+
+The runner looks up each host's Internet Protocol version 4 (IPv4) addresses on the host itself. The sandbox finds those names in its own `/etc/hosts` and has no Domain Name System (DNS) resolver. Traffic to port 53 is dropped, so a name outside the list never resolves.
+
+Each sandbox joins the host through its own virtual Ethernet pair. `nf_tables` rules on the host side of that pair admit only the allowlist's addresses. The rules live in the host's network namespace, so code inside the sandbox cannot see or change them.
+
+The runner refuses a run before its sandbox starts when a listed host has no IPv4 address. It also refuses one whose allowlist holds more than 256 addresses. The run fails with a reason that names the host or the count.
+
+Allowlist egress needs three things from the host:
+
+- a kernel with `nf_tables`
+- IPv4 forwarding on, `net.ipv4.ip_forward=1`
+- no host firewall whose forward policy drops traffic
+
+At start, the runner builds one test pair with its rules and removes it. When that fails, the heartbeat reports `egress_enforcement: false`. A runner assigned Allowlist egress then reads degraded with the reason `egress enforcement unavailable`.
 
 ### The states a runner shows
 
@@ -122,14 +177,16 @@ A runner that simply disappears needs no action. Its work expires and another ru
 
 ## Limits
 
-- **Allowlist egress is not enforced yet.** A runner assigned it reads degraded and takes no work until that enforcement ships. Use No egress or Allow all egress today.
+- **Allowlist egress is IPv4 only.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
+- **A run keeps the addresses it started with.** A host whose address changes during a run stays unreachable until the next run looks it up again.
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
-- **Raising Workers past the count the host started with needs a restart.** Lowering it takes effect on the next heartbeat.
+- **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
 - **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
 - **Live replies need a current runner.** A runner older than `agentsfleet-runner` 0.51.0 still completes runs, but the dashboard shows each reply only when its run finishes. Update runners along with `agentsfleetd`.
 
 ## Related pages
 
+- [Install a runner](/runners/install)
 - [Install a fleet](/fleets/install)
 - [Run and control a fleet](/fleets/running)
 - [Manage secrets](/fleets/secrets)
