@@ -80,7 +80,8 @@
           {
             "group": "Runners",
             "pages": [
-              "runners"
+              "runners",
+              "runners/install"
             ]
           },
           {
@@ -213,6 +214,13 @@
               "POST /v1/runners/me/leases/{lease_id}/renew",
               "POST /v1/runners/me/leases/{lease_id}/activity",
               "POST /v1/runners/me/leases/{lease_id}/tool-calls",
+              "POST /v1/runners/me/leases/{lease_id}/messages",
+              "GET /v1/runners/me/leases/{lease_id}/schedules",
+              "POST /v1/runners/me/leases/{lease_id}/schedules",
+              "PATCH /v1/runners/me/leases/{lease_id}/schedules/{schedule_id}",
+              "DELETE /v1/runners/me/leases/{lease_id}/schedules/{schedule_id}",
+              "GET /v1/runners/me/leases/{lease_id}/schedules/{schedule_id}/runs",
+              "POST /v1/runners/me/leases/{lease_id}/schedules/{schedule_id}/runs",
               "POST /v1/runners/me/reports",
               "POST /v1/runners/me/credentials/mint",
               "GET /v1/runners/me/bundles/{content_hash}",

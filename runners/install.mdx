@@ -220,7 +220,17 @@ systemctl disable --now agentsfleet-runner
 Removed <varies>
 ```
 
-To roll back, install the previous release's binary and stage that release's toolbox the same way, then start the service.
+To roll back, first clear the current release's toolbox from `toolbox/incoming`. The runner refuses that directory while it holds two releases' manifests.
+
+```bash
+rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
+```
+
+```text
+(no output)
+```
+
+If you set `RUNNER_STORAGE_HOME`, clear `toolbox/incoming` under that directory instead. Then install the previous release's binary, stage that release's toolbox as in step 7, and start the service. Keep the rest of the storage home, which holds run reports the runner has not sent yet.
 
 To remove the runner for good, revoke it under **Admin → Runners**. Deleting `/var/lib/agentsfleet-runner` also deletes any run reports the runner has not sent yet.
 
