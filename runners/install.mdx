@@ -1,0 +1,247 @@
+---
+title: Install a runner
+description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
+type: how-to
+audience: operator
+verified: 2026-10-08
+executable: false
+---
+
+# Install a runner
+
+## What this does
+
+You install `agentsfleet-runner` on a Linux host and start it as a service. The runner then asks `agentsfleetd` for work and runs each run in a sandbox.
+
+A runner needs two things from the same release. One is the runner binary, a single static file. The other is the toolbox, a read-only disk image that becomes the root of every sandbox.
+
+At start, the runner checks the toolbox's release manifest against a signing key built into the binary. It also checks that the release is for this host's architecture and this runner's version. Only then does it copy the image under `toolbox/images` in its storage home and mount it read-only.
+
+## Before you begin
+
+You need a host with these:
+
+- Linux on `x86_64`, also called amd64. Each release ships an amd64 runner only.
+- systemd 254 or later, which can hand the runner a control group (cgroup) subtree of its own.
+- A kernel with Landlock enabled, seccomp, cgroup version 2, and the Enhanced Read-Only File System (EROFS).
+- bubblewrap 0.8.0 or later, installed at `/usr/bin/bwrap`.
+- For Allowlist egress, `nf_tables` in the kernel and `net.ipv4.ip_forward=1`.
+
+You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to create one. Run every step below as root.
+
+## Steps
+
+1. Download `agentsfleet-runner-bundle-linux-amd64.tar.gz` from the [release](https://github.com/agentsfleet/agentsfleet/releases) you want to run.
+
+   The bundle holds the binary and the toolbox image with its manifest and signature. It also holds the image's software bill of materials, its vulnerability scan, and `release.pub`, the public signing key.
+
+2. Make a private scratch directory for the bundle, and keep its path in `BUNDLE_DIR`. Run the remaining steps in this same shell.
+
+   ```bash
+   BUNDLE_DIR=$(mktemp -d)
+   ```
+
+   ```text
+   (no output)
+   ```
+
+   `mktemp -d` makes a new directory that only root can open. Do not reuse a fixed path under `/tmp`. Another user who creates it first could swap the binary before you install it.
+
+3. Unpack the bundle into it.
+
+   ```bash
+   tar -xzf agentsfleet-runner-bundle-linux-amd64.tar.gz -C "$BUNDLE_DIR"
+   ```
+
+   ```text
+   (no output)
+   ```
+
+4. List what it holds.
+
+   ```bash
+   ls "$BUNDLE_DIR"
+   ```
+
+   ```text
+   agentsfleet-runner-linux-amd64
+   release.pub
+   toolbox-<varies>.erofs
+   toolbox-<varies>.json
+   toolbox-<varies>.json.sig
+   toolbox-<varies>.sbom.spdx.json
+   toolbox-<varies>.scan.json
+   ```
+
+   The part between `toolbox-` and the extension is the image's SHA-256 digest. The steps below call it `<SHA256>`.
+
+5. Install the binary where the service starts it.
+
+   ```bash
+   install -m 755 "$BUNDLE_DIR/agentsfleet-runner-linux-amd64" /usr/local/bin/agentsfleet-runner
+   ```
+
+   ```text
+   (no output)
+   ```
+
+6. Make the directory the runner reads its toolbox from.
+
+   ```bash
+   install -d -m 755 /var/lib/agentsfleet-runner/toolbox/incoming
+   ```
+
+   ```text
+   (no output)
+   ```
+
+   This path sits under the default storage home. If you set `RUNNER_STORAGE_HOME`, use `toolbox/incoming` under that directory instead.
+
+7. Stage exactly three toolbox files: the image, its manifest, and the manifest's signature.
+
+   ```bash
+   install -m 644 "$BUNDLE_DIR/toolbox-<SHA256>.erofs" "$BUNDLE_DIR/toolbox-<SHA256>.json" "$BUNDLE_DIR/toolbox-<SHA256>.json.sig" /var/lib/agentsfleet-runner/toolbox/incoming/
+   ```
+
+   ```text
+   (no output)
+   ```
+
+   Leave the bill of materials and the scan out. Every `toolbox-` file ending in `.json` counts as a manifest, and the runner refuses more than one.
+
+8. Write the two required variables to `/etc/default/agentsfleet-runner`. Replace `<API_URL>` with your `agentsfleetd` address and `<RUNNER_TOKEN>` with the token the dashboard showed.
+
+   ```ini
+   AGENTSFLEET_API_URL=<API_URL>
+   AGENTSFLEET_RUNNER_TOKEN=<RUNNER_TOKEN>
+   ```
+
+   [Runners](/runners#enrolling-a-host) lists the optional variables, such as the telemetry endpoint.
+
+9. Write the service to `/etc/systemd/system/agentsfleet-runner.service`.
+
+   ```ini
+   [Unit]
+   Description=agentsfleet Runner
+   After=network.target
+
+   [Service]
+   ExecStartPre=-+/usr/sbin/modprobe erofs
+   ExecStart=/usr/local/bin/agentsfleet-runner run
+   EnvironmentFile=/etc/default/agentsfleet-runner
+   Environment=OTEL_SERVICE_INSTANCE_ID=%H
+   RuntimeDirectory=agentsfleet
+   Environment=HOME=/run/agentsfleet
+   Restart=always
+   RestartSec=5
+   KillMode=mixed
+   TimeoutStopSec=300
+   Delegate=cpu io memory pids
+   DelegateSubgroup=runner
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   `ExecStartPre=` loads the EROFS module before every start, because the runner refuses a kernel that has not loaded it yet. The leading `-` lets the service start on a host without `modprobe`, or one whose kernel has EROFS built in.
+
+   `Delegate=` and `DelegateSubgroup=` give the runner its own cgroup subtree. Each sandbox's memory, processor, process, and disk limits are written there. `%H` names each host's telemetry after the host.
+
+10. Load the service and start it.
+
+    ```bash
+    systemctl daemon-reload
+    ```
+
+    ```text
+    (no output)
+    ```
+
+    ```bash
+    systemctl enable --now agentsfleet-runner
+    ```
+
+    ```text
+    Created symlink <varies>
+    ```
+
+## Verify it works
+
+Check which version you installed.
+
+```bash
+agentsfleet-runner --version
+```
+
+```text
+agentsfleet-runner <varies>
+```
+
+Ask the host what its kernel can enforce. The command prints the report a heartbeat carries and one check per fact. It exits 0 only when the host can build a sandbox.
+
+```bash
+agentsfleet-runner probe
+```
+
+```text
+{
+  "capability_report": {
+    "landlock": true,
+    "seccomp": true,
+    "cgroup_controllers": <varies>,
+    "bubblewrap": true,
+    "egress_enforcement": <varies>
+  },
+  "checks": [
+    {
+      "name": "landlock",
+      "ok": true,
+      "detail": "Landlock is enabled, so file system access can be confined."
+    },
+    <varies>
+  ]
+}
+```
+
+The `kvm` check reports whether `/dev/kvm`, the Kernel-based Virtual Machine (KVM) device, opens. A failed `kvm` check does not stop the runner, because the bubblewrap sandbox needs no KVM device.
+
+Open **Admin → Runners** in the dashboard. The new runner reads `online` within one heartbeat.
+
+## Common problems
+
+- **The service stops at start and names the toolbox.** The `toolbox/incoming` directory must hold one release's image, manifest, and signature, from the same release as the binary. A manifest for another runner version or another architecture is refused.
+- **`probe` exits 1.** Read the first check with `"ok": false`. Its `detail` names what the host lacks, such as Landlock, bubblewrap, EROFS, or a cgroup controller.
+- **The runner reads degraded with `egress enforcement unavailable`.** It is assigned Allowlist egress, but the host failed the egress test. Turn on `net.ipv4.ip_forward`, check that the kernel has `nf_tables`, and restart the service.
+
+## Remove or undo
+
+Stop the service. The runner's unfinished work expires, and another runner takes it.
+
+```bash
+systemctl disable --now agentsfleet-runner
+```
+
+```text
+Removed <varies>
+```
+
+To roll back, first clear the current release's toolbox from `toolbox/incoming`. The runner refuses that directory while it holds two releases' manifests.
+
+```bash
+rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
+```
+
+```text
+(no output)
+```
+
+If you set `RUNNER_STORAGE_HOME`, clear `toolbox/incoming` under that directory instead. Keep the rest of the storage home, which holds run reports the runner has not sent yet.
+
+Then unpack the previous release's bundle as in steps 2 to 4. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
+
+To remove the runner for good, revoke it under **Admin → Runners**. Deleting `/var/lib/agentsfleet-runner` also deletes any run reports the runner has not sent yet.
+
+## Related pages
+
+- [Runners](/runners)
+- [Install a fleet](/fleets/install)

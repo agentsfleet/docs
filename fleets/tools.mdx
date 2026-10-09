@@ -3,7 +3,7 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-10-06
+verified: 2026-10-08
 product_version: 0.51.0
 executable: false
 ---
@@ -20,10 +20,13 @@ A tool gives a fleet one named action. The fleet author declares allowed tools i
 | Memory | `memory_store`, `memory_recall`, `memory_list`, `memory_forget` |
 | Schedule | `cron_add`, `cron_list`, `cron_remove`, `cron_update`, `cron_run`, `cron_runs`, `schedule` |
 | Delegation | `delegate`, `spawn`, `wait_agent`, `send_input`, `list_agents`, `interrupt_agent` |
-| Files | `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, `file_edit_hashed` |
-| Local work | `shell`, `git`, `calculator`, `image` |
+| Files | `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, `file_edit_hashed`, `apply_patch` |
+| Local work | `shell`, `exec_command`, `write_stdin`, `git`, `image` |
 | Browser | `browser`, `browser_open`, `screenshot` |
 | Messaging | `message` |
+| Planning | `update_plan` |
+
+`exec_command` starts a process the fleet drives across calls, and `write_stdin` sends that process input. `apply_patch` applies a patch to the workspace. `update_plan` records the fleet's plan steps, which the thread shows.
 
 ## Why it exists
 
@@ -43,7 +46,9 @@ x-agentsfleet:
       - api.github.com
 ```
 
-`http_request` also follows the network host list. Secret references are filled by the credential firewall during an approved outbound request.
+`http_request` also follows the network host list. An entry may be a host name or a URL. Only its host counts, so `https://api.github.com:443/repos` admits `api.github.com` on any port, for `http_request` and the sandbox alike.
+
+Secret references are filled by the credential firewall during an approved outbound request.
 
 An unknown tool is skipped and records `UZ-TOOL-005` in the activity stream. The run continues with the remaining valid tools.
 
@@ -74,8 +79,6 @@ A schedule the fleet creates appears beside your own on the fleet's schedules li
 Apart from those replaced secrets, the line appears as plain text, as the fleet wrote it. A `<!channel>`, `<!here>`, or user mention in it shows as text and notifies nobody.
 
 ### Child agents
-
-<Note>The child-agent tools run on the Rust runner, which replaces the current runner at the cutover.</Note>
 
 A child agent is a second agent inside the same run, working on one task. It shares the run's sandbox, files, memory, and budget. It starts from its task alone and does not see the conversation.
 

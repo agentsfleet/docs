@@ -85,8 +85,6 @@ Deleting a killed fleet removes all fleet records. A replacement fleet receives 
 
 ### What a follow-up message keeps
 
-<Note>Earlier turns and the kept sandbox come with the Rust runner, which replaces the current runner at the cutover.</Note>
-
 A message from Chat, from `agentsfleet steer`, or from a Slack mention reaches the model with the fleet's recent conversation. The model reads up to 8 earlier turns of the fleet's chat thread, oldest first. A turn is one message and the fleet's answer to it.
 
 Each message or answer keeps its first 16 KiB, and the oldest turns drop until the rest fit in 64 KiB. A message still waiting, running, or refused before it ran is left out. If the thread cannot be read, the message runs without earlier turns.

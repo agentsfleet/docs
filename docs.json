@@ -80,7 +80,8 @@
           {
             "group": "Runners",
             "pages": [
-              "runners"
+              "runners",
+              "runners/install"
             ]
           },
           {
