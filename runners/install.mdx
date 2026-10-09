@@ -124,6 +124,7 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
    After=network.target
 
    [Service]
+   ExecStartPre=+/usr/sbin/modprobe erofs
    ExecStart=/usr/local/bin/agentsfleet-runner run
    EnvironmentFile=/etc/default/agentsfleet-runner
    Environment=OTEL_SERVICE_INSTANCE_ID=%H
@@ -139,6 +140,8 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
    [Install]
    WantedBy=multi-user.target
    ```
+
+   `ExecStartPre=` loads the EROFS module before every start, because the runner refuses a kernel that has not loaded it yet.
 
    `Delegate=` and `DelegateSubgroup=` give the runner its own cgroup subtree. Each sandbox's memory, processor, process, and disk limits are written there. `%H` names each host's telemetry after the host.
 
