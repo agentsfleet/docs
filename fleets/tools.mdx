@@ -71,7 +71,7 @@ A schedule the fleet creates appears beside your own on the fleet's schedules li
 
 `agentsfleet` posts the line with the workspace's Slack connection. The fleet never holds the Slack token. `agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` before it posts.
 
-The line appears exactly as the fleet wrote it. A `<!channel>`, `<!here>`, or user mention in it shows as text and notifies nobody.
+Apart from those replaced secrets, the line appears as plain text, as the fleet wrote it. A `<!channel>`, `<!here>`, or user mention in it shows as text and notifies nobody.
 
 ## Limits
 
