@@ -83,6 +83,32 @@ Stopping a fleet lets the current run finish. Killing a fleet keeps its records 
 
 Deleting a killed fleet removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
 
+### What a follow-up message keeps
+
+<Note>Earlier turns and the kept sandbox come with the Rust runner, which replaces the current runner at the cutover.</Note>
+
+A message from Chat, from `agentsfleet steer`, or from a Slack mention reaches the model with the fleet's recent conversation. The model reads up to 8 earlier turns of the fleet's chat thread, oldest first. A turn is one message and the fleet's answer to it.
+
+Each message or answer keeps its first 16 KiB, and the oldest turns drop until the rest fit in 64 KiB. A message still waiting, running, or refused before it ran is left out. If the thread cannot be read, the message runs without earlier turns.
+
+A failed turn reads as `[the run failed: <LABEL>]`, where `<LABEL>` names the failure. A turn that ended without a reply reads as `[no reply]`.
+
+On a model that uses the Messages or Responses API, `agentsfleet` asks the provider to cache the start of the prompt. That start holds the tools, the instructions, and the earlier turns, so a follow-up can read it from the cache. A model on the Chat Completions API gets no cache request.
+
+When a run finishes without failing, its runner keeps the fleet's sandbox for 10 minutes. The fleet's next run in that window goes to the same runner and continues in that sandbox. It finds the files, installed packages, caches, and repository changes the last run left.
+
+Do not rely on a running process. A background process ends when its command ends, and every `exec_command` session ends when the run ends. A fleet that declares no sandbox tool has no sandbox to keep.
+
+The next run starts in a fresh sandbox when any of these is true:
+
+- More than 10 minutes passed since the last run finished.
+- The last run failed.
+- The fleet's repositories or network access changed.
+- The fleet was stopped, paused, or killed.
+- The runner restarted, went offline, needed the room for other fleets, or could not resume the sandbox.
+
+A fresh sandbox checks out the fleet's repositories again and holds none of the last run's other files. Keep what must last longer in the fleet's [memory](/memory).
+
 ## Limits
 
 The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.

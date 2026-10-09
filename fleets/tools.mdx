@@ -19,7 +19,7 @@ A tool gives a fleet one named action. The fleet author declares allowed tools i
 | Network | `http_request`, `web_search`, `web_fetch`, `pushover` |
 | Memory | `memory_store`, `memory_recall`, `memory_list`, `memory_forget` |
 | Schedule | `cron_add`, `cron_list`, `cron_remove`, `cron_update`, `cron_run`, `cron_runs`, `schedule` |
-| Delegation | `delegate`, `spawn` |
+| Delegation | `delegate`, `spawn`, `wait_agent`, `send_input`, `list_agents`, `interrupt_agent` |
 | Files | `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, `file_edit_hashed` |
 | Local work | `shell`, `git`, `calculator`, `image` |
 | Browser | `browser`, `browser_open`, `screenshot` |
@@ -73,6 +73,25 @@ A schedule the fleet creates appears beside your own on the fleet's schedules li
 
 Apart from those replaced secrets, the line appears as plain text, as the fleet wrote it. A `<!channel>`, `<!here>`, or user mention in it shows as text and notifies nobody.
 
+### Child agents
+
+<Note>The child-agent tools run on the Rust runner, which replaces the current runner at the cutover.</Note>
+
+A child agent is a second agent inside the same run, working on one task. It shares the run's sandbox, files, memory, and budget. It starts from its task alone and does not see the conversation.
+
+A child holds the tools named in the call's `tools` list, and its parent must hold each one. Without `tools`, the child holds every tool its parent holds. Naming a tool the parent lacks answers `child_tool_not_held`.
+
+| Tool | What it does |
+|---|---|
+| `delegate` | Starts a child on `task` and waits for its answer, which becomes the call's result. A failed child answers `child_failed`, and an interrupted one answers `interrupted`. |
+| `spawn` | Starts a child on `task` that works alongside the fleet, and answers its `child_id` at once. |
+| `wait_agent` | Waits for a spawned child to end, then answers its status and its answer. `timeout_ms` defaults to 30,000 milliseconds and is capped at 3,600,000 (one hour). A child still working when the wait ends reads `running`, and `0` checks without waiting. |
+| `send_input` | Queues `message` for a spawned child's next turn and answers whether the child accepted it. A child that has ended accepts nothing. |
+| `list_agents` | Lists every child of the run with its `child_id`, status, depth, and number of tool calls. |
+| `interrupt_agent` | Stops a spawned child where it is. Its open tool call and the child both end `interrupted`. |
+
+A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` this run never issued answers `child_not_found`.
+
 ## Limits
 
 `http_request` accepts only hosts allowed by the fleet policy. Responses allow up to 1 MiB.
@@ -80,6 +99,12 @@ Apart from those replaced secrets, the line appears as plain text, as the fleet 
 Hosted runners have no display. `browser_open` and `screenshot` can fail there; use them only with a suitable self-managed runner.
 
 `web_fetch` does not use the fleet host list. Use `http_request` when a host restriction is required.
+
+Child agents nest two levels deep. A child can start children of its own. Those grandchildren are offered none of the six child-agent tools.
+
+A run has at most 4 children working at once and starts at most 16 in all. Past either cap, `delegate` and `spawn` answer `child_cap_reached`.
+
+When the run ends, every child still working ends `interrupted`.
 
 Remove a tool name from `TRIGGER.md` to revoke it. The next fleet update applies the new list to later runs.
 

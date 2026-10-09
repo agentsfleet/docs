@@ -7,6 +7,44 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 07, 2026" tags={["What's new"]}>
+  ## A chat follow-up continues where the last message stopped
+
+  On the Rust runner, a chat message now carries the thread's recent turns, and the fleet's next run reuses its sandbox for 10 minutes. A fleet can also hand work to child agents, and every sandbox has a stated size.
+
+  ## What's new
+
+  - **Earlier turns reach the model** — a message from Chat, `agentsfleet steer`, or a Slack mention carries up to 8 of the thread's earlier finished turns, oldest first. Each message or answer keeps its first 16 KiB, and the oldest turns drop until the rest fit in 64 KiB.
+  - **The prompt's start is cached** — on the Messages and Responses APIs, the provider is asked to cache the tools, instructions, and earlier turns, so a follow-up can read them from its cache.
+  - **The sandbox waits 10 minutes** — after a run finishes without failing, the same runner keeps the fleet's sandbox, and the next run finds the files, installed packages, and caches the last one left. A background process ends with its command, and `exec_command` sessions end with the run.
+  - **A fresh sandbox otherwise** — the next run starts clean once 10 minutes pass, the last run failed, the fleet's repositories or network access changed, the fleet left `active`, or the runner restarted or went offline.
+  - **Child agents** — `delegate` and `spawn` start a child that shares the run's sandbox, files, memory, and budget. `wait_agent`, `send_input`, `list_agents`, and `interrupt_agent` drive a spawned child. Children nest two levels deep, with 4 working at once and 16 per run (`child_cap_reached`).
+  - **Every sandbox has a stated size** — 2 GiB of memory, 2 cores, 512 processes and threads, and a 4 GiB disk. No fleet setting changes it yet.
+  - **`/tmp` shares the workspace disk** — a full `/tmp` answers `No space left on device`, as a full `/workspace` does, and the sandbox keeps running.
+  - **Out of memory ends one command** — the command reads `Process killed: out of memory` (`out_of_memory`), and the next command runs in the same sandbox with its files.
+</Update>
+
+<Update label="Oct 06, 2026" tags={["What's new"]}>
+  ## The Rust runner runs a fleet's code in its sandbox
+
+  The Rust `agentsfleet-runner` now runs commands, file edits, patches, and git inside each run's sandbox. It replaces the current runner at the cutover. Until then, your fleets keep the runner and tools they have today.
+
+  ## What's new
+
+  - **`shell`** — runs one command to its end in the workspace. A failed command answers its output, then its exit code. `timeout_ms` defaults to 10,000 and is capped at 600,000; a command past it answers `timed_out`.
+  - **`exec_command` and `write_stdin`** — keep a process running across calls and send it input. A run holds up to 64 sessions (`session_cap_reached`), and every session still open stops when the run ends.
+  - **Long sessions stay heard** — a session's output streams as it is printed, and each call reads what arrived since the last one. Past 1 MiB unread, a call reads the first and last 512 KiB and a count of the bytes between.
+  - **A write the process will not take says so** — `write_stdin` to a process that closed its input, or has not read what it was sent, answers one fixed sentence and the session runs on. A write to a process that had already ended says it was not delivered, then answers the ending. What a failed sandbox call says about its failure is at most 4 KiB.
+  - **Repositories are checked out before the first turn** — each repository in a fleet's `repositories` binding is cloned into the workspace when the fleet declares any tool that runs in the sandbox, file tools included. A read binding checks out the default branch. The GitHub token never enters the sandbox.
+  - **`git`** — runs in that checkout. `push`, `fetch`, `pull`, `remote`, and `clone` answer `subcommand_not_allowed`, because the sandbox has no network. git runs hooks, `!` aliases and configured commands, so declaring `git` lets a fleet run what `shell` can, inside the same sandbox.
+  - **`apply_patch`** — applies a patch in the format Codex writes and answers the changed files, with `+N −M` on the last line. A patch that does not apply answers `patch_invalid`.
+  - **File tools** — `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, and `file_edit_hashed` reach only the workspace (`path_not_allowed`). A stale line tag answers `hash_mismatch`.
+  - **`file_read` pages by line** — `offset` (from 1) and `limit` (2,000 when absent) pick the lines, and a page stays within 10,000 tokens. Its last line names the `offset` to read on from; an offset past the end answers `invalid_arguments`.
+  - **`image`** — shows the model a PNG, JPEG, GIF, or WebP file of up to 5 MiB on its next turn. It needs a model on the Messages or Responses API; otherwise it answers `image_input_unavailable`. An oversized file answers `file_too_large`, and an unsupported image answers `not_an_image`.
+  - **Browser tools wait for the microVM engine** — `browser_open`, `browser`, and `screenshot` answer `browser_unavailable`, and the run carries on.
+  - **The toolbox carries the tools** — Node 20, Python 3.13 with uv, ripgrep, jq, curl, and the GitHub command-line tool, pinned to one Debian snapshot. A host mounts the toolbox only when its signed release manifest and digest check out.
+</Update>
+
 <Update label="Oct 03, 2026" tags={["Bug fixes", "Dashboard"]}>
   ## Fleet library tables share their columns
 
