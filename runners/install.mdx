@@ -35,20 +35,22 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
 
    The bundle holds the binary and the toolbox image with its manifest and signature. It also holds the image's software bill of materials, its vulnerability scan, and `release.pub`, the public signing key.
 
-2. Make a scratch directory for the bundle.
+2. Make a private scratch directory for the bundle, and keep its path in `BUNDLE_DIR`. Run the remaining steps in this same shell.
 
    ```bash
-   mkdir -p /tmp/agentsfleet-runner
+   BUNDLE_DIR=$(mktemp -d)
    ```
 
    ```text
    (no output)
    ```
 
+   `mktemp -d` makes a new directory that only root can open. Do not reuse a fixed path under `/tmp`. Another user who creates it first could swap the binary before you install it.
+
 3. Unpack the bundle into it.
 
    ```bash
-   tar -xzf agentsfleet-runner-bundle-linux-amd64.tar.gz -C /tmp/agentsfleet-runner
+   tar -xzf agentsfleet-runner-bundle-linux-amd64.tar.gz -C "$BUNDLE_DIR"
    ```
 
    ```text
@@ -58,7 +60,7 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
 4. List what it holds.
 
    ```bash
-   ls /tmp/agentsfleet-runner
+   ls "$BUNDLE_DIR"
    ```
 
    ```text
@@ -76,7 +78,7 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
 5. Install the binary where the service starts it.
 
    ```bash
-   install -m 755 /tmp/agentsfleet-runner/agentsfleet-runner-linux-amd64 /usr/local/bin/agentsfleet-runner
+   install -m 755 "$BUNDLE_DIR/agentsfleet-runner-linux-amd64" /usr/local/bin/agentsfleet-runner
    ```
 
    ```text
@@ -98,7 +100,7 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
 7. Stage exactly three toolbox files: the image, its manifest, and the manifest's signature.
 
    ```bash
-   install -m 644 /tmp/agentsfleet-runner/toolbox-<SHA256>.erofs /tmp/agentsfleet-runner/toolbox-<SHA256>.json /tmp/agentsfleet-runner/toolbox-<SHA256>.json.sig /var/lib/agentsfleet-runner/toolbox/incoming/
+   install -m 644 "$BUNDLE_DIR/toolbox-<SHA256>.erofs" "$BUNDLE_DIR/toolbox-<SHA256>.json" "$BUNDLE_DIR/toolbox-<SHA256>.json.sig" /var/lib/agentsfleet-runner/toolbox/incoming/
    ```
 
    ```text
@@ -233,7 +235,9 @@ rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
 (no output)
 ```
 
-If you set `RUNNER_STORAGE_HOME`, clear `toolbox/incoming` under that directory instead. Then install the previous release's binary, stage that release's toolbox as in step 7, and start the service. Keep the rest of the storage home, which holds run reports the runner has not sent yet.
+If you set `RUNNER_STORAGE_HOME`, clear `toolbox/incoming` under that directory instead. Keep the rest of the storage home, which holds run reports the runner has not sent yet.
+
+Then unpack the previous release's bundle as in steps 2 to 4. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
 
 To remove the runner for good, revoke it under **Admin → Runners**. Deleting `/var/lib/agentsfleet-runner` also deletes any run reports the runner has not sent yet.
 
