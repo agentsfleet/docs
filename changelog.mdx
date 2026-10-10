@@ -7,6 +7,20 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 10, 2026" tags={["Upgrading", "Bug fixes", "Runners"]}>
+  ## The toolbox drops the GitHub command-line tool
+
+  The toolbox removes `gh`, which carried an outdated Go dependency. git, Python with uv, Node, ripgrep, jq and curl remain available.
+
+  ## Upgrading
+
+  - **GitHub API calls** — use [`http_request`](/fleets/tools#how-it-behaves) instead of `gh` in sandbox commands.
+
+  ## Bug fixes
+
+  - **Toolbox scan** — separate scanner caches prevent a permission error from stopping the build before vulnerability matching.
+</Update>
+
 <Update label="Oct 08, 2026" tags={["Upgrading", "What's new", "Runners"]}>
   ## The Rust runner replaces the previous runner
 

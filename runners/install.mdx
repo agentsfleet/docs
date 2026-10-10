@@ -3,7 +3,8 @@ title: Install a runner
 description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
 type: how-to
 audience: operator
-verified: 2026-10-08
+verified: 2026-10-10
+product_version: 0.59.0
 executable: false
 ---
 
@@ -14,6 +15,8 @@ executable: false
 You install `agentsfleet-runner` on a Linux host and start it as a service. The runner then asks `agentsfleetd` for work and runs each run in a sandbox.
 
 A runner needs two things from the same release. One is the runner binary, a single static file. The other is the toolbox, a read-only disk image that becomes the root of every sandbox.
+
+The toolbox includes git, Python 3 with uv, Node, ripgrep, jq and curl. Go and the GitHub command-line tool (`gh`) are absent. Use [`http_request`](/fleets/tools#how-it-behaves) for GitHub API calls.
 
 At start, the runner checks the toolbox's release manifest against a signing key built into the binary. It also checks that the release is for this host's architecture and this runner's version. Only then does it copy the image under `toolbox/images` in its storage home and mount it read-only.
 
