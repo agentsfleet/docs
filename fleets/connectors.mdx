@@ -59,6 +59,8 @@ One GitHub App installation can belong to only one workspace. Another workspace 
 
 ## Remove or undo
 
+Disconnect the connector from the Integrations page. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
+
 Revoke the application from the provider's account settings. The next connector call fails and the dashboard asks for reconnection.
 
 Remove any fleet integration grants that should no longer use the provider. Revoking a connector does not delete fleet history.
