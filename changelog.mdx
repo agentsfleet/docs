@@ -7,6 +7,17 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 13, 2026" tags={["Bug fixes", "API", "UI"]}>
+  ## Lease timings measure pickup, and model tables read providers by name
+
+  Two timing fields now measure only what their names say, a refused secret field names the fields that work, and both model tables sort and show providers by vendor name. The first-token change needs `agentsfleet-runner` 0.60.0 or later.
+
+  - **First-token time counts from the start of the run** — the run report's `time_to_first_token_ms`, which product analytics records, no longer includes fetching the fleet bundle, hydrating memory, or preparing the sandbox. Expect the figure to drop by that setup time once runners upgrade.
+  - **Queue wait is logged only for a newly read event** — `runner_lease_issued` leaves `queue_wait_ms` off a reclaimed lease and off an event delivered again after a wait, such as one parked for an approval, so the figure is pickup time alone. Clock skew between daemon replicas reads as `0`, never below.
+  - **A wrong secret field names the fields the secret has** — a request that names a field a fleet's secret does not carry, `${secrets.github.password}` against a minted GitHub token, is refused with that secret's field names, and none of their values, instead of the refusal that says no other spelling exists.
+  - **Model tables sort providers by the name they show** — the Provider column in the workspace Models table and in the admin Model library orders `OpenAI` before `Tencent Hunyuan`, as it reads. Provider badges are neutral, so a row's Default badge stands out, and the admin Model library ends at its last row, as the Fleet library tables do.
+</Update>
+
 <Update label="Oct 13, 2026" tags={["What's new", "Performance", "UI"]}>
   ## Fresh work reaches a runner on its next poll
 
