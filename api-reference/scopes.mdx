@@ -35,14 +35,14 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `fleet:write` | Creates, updates, and messages fleets. | `fleet:admin` |
 | `fleet:admin` | Deletes fleets. | None |
 | `secret:read` | Lists secret names and metadata. | `secret:write` |
-| `secret:write` | Creates, rotates, and deletes secrets. | None |
+| `secret:write` | Creates, rotates, and deletes secrets. Deleting a secret named for a connector also needs `connector:write`. | None |
 | `apikey:read` | Lists tenant API keys. | `apikey:write`, `apikey:admin` |
 | `apikey:write` | Creates and rotates tenant API keys. | `apikey:admin` |
 | `apikey:admin` | Revokes tenant API keys. | None |
 | `grant:read` | Lists integration grants. | `grant:write` |
 | `grant:write` | Revokes integration grants. | None |
 | `connector:read` | Reads connector state. | `connector:write` |
-| `connector:write` | Starts a connector setup flow. | None |
+| `connector:write` | Starts a connector setup flow and disconnects a connector, including by deleting its secret. | None |
 | `billing:read` | Reads the tenant balance and charges. | None |
 | `workspace:admin` | Creates and lists workspaces. | None |
 | `library:write` | Adds an entry to a workspace library, and removes one the workspace onboarded. | None |
