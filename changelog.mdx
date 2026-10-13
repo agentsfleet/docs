@@ -7,6 +7,24 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 13, 2026" tags={["What's new", "Performance", "UI"]}>
+  ## Fresh work reaches a runner on its next poll
+
+  A steer, webhook, or schedule used to wait up to four seconds for a runner's poll to come round to its fleet. A lease poll now reads where fresh work landed first, so the next poll takes it. The poll change is in the daemon; the first-line and worker-spacing changes need this release's runner.
+
+  ## What's new
+
+  - **Fresh work is found on the next poll** — marking a fleet ready also names its partition in one readiness directory, which every lease poll reads first. The poll still visits the sixteen partitions in turn, so a lost directory entry costs the old wait and never the work.
+  - **The live tail shows its first line at once** — a run's first activity frame, and its first answer chunk, post without waiting for the 250 ms batch.
+  - **Runner workers poll a quarter second apart** — four workers on the one-second idle interval no longer poll at the same instant.
+  - **Each lease logs where its time went** — `lease_completed` and `lease_failed` in the runner journal carry `wall_ms`, `bundle_ms`, `memory_ms`, `sandbox_ms`, `model_ms`, `tools_ms`, `report_ms`, and `first_token_ms`. A segment the lease never reached is left off the line.
+  - **The daemon logs how long an event waited** — `runner_lease_issued` carries `queue_wait_ms`, from the event's admission to its lease on the daemon clock.
+  - **Two new metrics** — `agentsfleet_lease_poll_dragonfly_commands_total` counts Dragonfly commands per lease poll, two when idle. `agentsfleet_fleet_ready_hint_failures_total` counts readiness-directory commands that failed or passed their 100 ms deadline, by `kind`.
+  - **A refused write tells the agent not to retry it** — the refusal for a request no rule admits, and for a secret the fleet does not have, now says the run's rules are fixed, so another path, API, or credential will be refused the same way.
+  - **Provider names read the way vendors write them** — `Fireworks`, `OpenRouter`, `NEAR AI`, and `Atlas Cloud` in the model picker and in both model tables, in one badge style.
+  - **Fleet library tables end at their last row** — the pagination bar sits under the rows, as it does on the Models table.
+</Update>
+
 <Update label="Oct 08, 2026" tags={["Upgrading", "What's new", "Runners"]}>
   ## The Rust runner replaces the previous runner
 
