@@ -25,6 +25,23 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Fleet library tables end at their last row** — the pagination bar sits under the rows, as it does on the Models table.
 </Update>
 
+<Update label="Oct 11, 2026" tags={["Security", "Bug fixes", "API", "Dashboard"]}>
+  ## A workspace mints tokens only for connections it made
+
+  A runner token is now issued only for a connection the workspace itself made. A secret stored by hand can no longer name another workspace's GitHub installation, or send a refresh to a server the connect flow never wrote.
+
+  ## Bug fixes
+
+  - **GitHub tokens follow the installation's owner** — a GitHub secret that names an installation this workspace did not connect is refused with `UZ-GH-001`, the same answer as a missing installation.
+  - **Refreshes stay with the provider** — a Zoho, Jira, or Linear secret is refreshed only at the provider's own token address or one of Zoho's seven accounts servers. Any other address is refused with `UZ-CONN-006`, and nothing is sent.
+  - **Padded installation ids are refused** — connecting GitHub with an installation id such as `0042` is refused, so one installation has one spelling.
+
+  ## What's new
+
+  - **Deleting a connector's secret disconnects it** — `DELETE /v1/workspaces/{workspace_id}/secrets/{name}` with a connector's name, such as `github`, now works like `DELETE /v1/workspaces/{workspace_id}/connectors/{provider}`. The connection and its event routing go together, and the response is still `204`.
+  - **The delete dialog names the connection** — on the Secrets page, deleting a secret that holds a live connection says which integration it disconnects, and the button reads **Delete and disconnect**.
+</Update>
+
 <Update label="Oct 08, 2026" tags={["Upgrading", "What's new", "Runners"]}>
   ## The Rust runner replaces the previous runner
 

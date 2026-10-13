@@ -365,7 +365,7 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation was uninstalled or revoked, so no token can be minted. Reconnect GitHub from the dashboard. | Keep the GitHub App installed with required repository access. |
+| <span id="UZ-GH-001"></span>`UZ-GH-001` | 409 | GitHub App reconnect required | The GitHub App installation was uninstalled or revoked, so no token can be minted. A token request is also refused with this code when the `github` secret names an installation this workspace did not connect. Reconnect GitHub from the dashboard. | Keep the GitHub App installed with required repository access. |
 | <span id="UZ-GH-002"></span>`UZ-GH-002` | 502 | GitHub token mint failed | GitHub did not return an installation token. Retry shortly; if it continues, check GitHub status and the App configuration. | Keep the GitHub App installed with required repository access. |
 
 ### Connectors
@@ -376,7 +376,7 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 | <span id="UZ-CONN-002"></span>`UZ-CONN-002` | 400 | Invalid connect state | That connection attempt expired or was already used. Start connecting again from the dashboard. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-003"></span>`UZ-CONN-003` | 502 | Connector vendor call exceeded its deadline | We couldn't reach that service right now. Try again shortly. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-004"></span>`UZ-CONN-004` | 404 | Unknown connector provider | We don't recognize that connector. Check the available connectors on the dashboard. | Check the provider connection before sending requests. |
-| <span id="UZ-CONN-006"></span>`UZ-CONN-006` | 502 | Connector OAuth exchange failed | That connection didn't go through. Try connecting again from the dashboard. | Check the provider connection before sending requests. |
+| <span id="UZ-CONN-006"></span>`UZ-CONN-006` | 502 | Connector OAuth exchange failed | That connection didn't go through, or a Zoho Desk, Jira, or Linear secret asked to refresh at an address its connect flow never wrote. That refresh is refused unsent. Connect again from the dashboard rather than editing the secret by hand. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-007"></span>`UZ-CONN-007` | 500 | Connector catalog lookup failed | We couldn't load your connectors right now. Try refreshing — if it keeps failing, contact support. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-008"></span>`UZ-CONN-008` | 403 | Connector installation ownership not verified | We couldn't verify that this GitHub installation belongs to you. Sign in with the owning GitHub account and try again. | Check the provider connection before sending requests. |
 | <span id="UZ-CONN-009"></span>`UZ-CONN-009` | 502 | Connector installation listing failed | GitHub wouldn't tell us which installations you can reach. Try connecting again from the dashboard. | The authorization code was already redeemed, so the client secret and the registered redirect address are not the cause. Check what `api.github.com` answered. |
