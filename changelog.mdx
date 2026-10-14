@@ -7,6 +7,16 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 14, 2026" tags={["Bug fixes", "API", "CLI"]}>
+  ## Logout ends its own unfinished sign-ins, and the daemon refuses an unsafe identity base
+
+  The endpoint that aborts a person's unfinished sign-ins has a path that says whose they are, `agentsfleet logout` can now reach it, and the daemon refuses to start with an identity provider base its secret key cannot safely travel to.
+
+  - **Aborting your unfinished sign-ins is `DELETE /v1/auth/sessions`** — the route that ends sign-ins you approved in the browser and never finished in a terminal moved from `/v1/auth/sessions/all`, which read as every session, to the collection itself. It only ever touches your own sign-ins. The old path is gone.
+  - **`agentsfleet logout` aborts your unfinished sign-ins** — the route now accepts your own command-line credential as well as a browser session, so logout's abort no longer fails with `401`. A tenant API key is still refused.
+  - **The daemon refuses an unsafe `CLERK_API_BASE`** — every capability read sends the identity provider's secret key to this base, so the daemon now starts only when it is `https`, or `http` on a loopback host for local work.
+</Update>
+
 <Update label="Oct 13, 2026" tags={["Bug fixes", "API", "UI"]}>
   ## Lease timings measure pickup, and model tables read providers by name
 
