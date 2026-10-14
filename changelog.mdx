@@ -25,7 +25,7 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
 
   ## What's new
 
-  - **Fresh work is found on the next poll** — marking a fleet ready also names its partition in one readiness directory, which every lease poll reads first. The poll still visits the sixteen partitions in turn, so a lost directory entry costs the old wait and never the work.
+  - **Fresh work is found on the next poll** — marking a fleet ready also signals every daemon which partition it sits in, and each daemon's next lease poll looks there beside the partition it was due to visit. The poll still visits the sixteen partitions in turn, so a lost signal costs the old wait and never the work.
   - **The live tail shows its first line at once** — a run's first activity frame, and its first answer chunk, post without waiting for the 250 ms batch.
   - **Runner workers poll a quarter second apart** — four workers on the one-second idle interval no longer poll at the same instant.
   - **Each lease logs where its time went** — `lease_completed` and `lease_failed` in the runner journal carry `wall_ms`, `bundle_ms`, `memory_ms`, `sandbox_ms`, `model_ms`, `tools_ms`, `report_ms`, and `first_token_ms`. A segment the lease never reached is left off the line.
