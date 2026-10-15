@@ -3,7 +3,7 @@ title: Quickstart
 description: Create your first fleet and send it a GitHub event.
 type: tutorial
 audience: user
-verified: 2026-09-19
+verified: 2026-10-16
 executable: false
 ---
 
@@ -83,11 +83,7 @@ Create a GitHub token that can read the repository and post comments. Keep the t
    ```json
    {
      "schema_version": 1,
-     "skill": {
-       "name": "pr-reviewer",
-       "description": "Reviews GitHub pull requests and posts review comments.",
-       "version": "0.1.0"
-     },
+     "description": "Reviews GitHub pull requests and posts review comments.",
      "instructions_md": "Read `repo` and `number` from the event.\nFetch the pull request diff from https://api.github.com/repos/{repo}/pulls/{number} with http_request and ${secrets.github.token}.\nPost one review with event COMMENT that lists correctness, security, and test gaps.\nNever approve, merge, or close a pull request.",
      "config": {
        "name": "pr-reviewer",

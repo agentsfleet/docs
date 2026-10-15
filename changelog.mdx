@@ -18,6 +18,9 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Runners upgrade with the daemon** — `POST /v1/runners/me/leases` now requires `accepted_kinds`, so a runner from an earlier build is refused.
   - **Budgets are whole nanodollars** — `daily_nanos` and `monthly_nanos` replace `daily_dollars` and `monthly_dollars`, as decimal strings. `"1000000000"` is one dollar; the caps are `"1000000000000"` a day and `"10000000000000"` a month.
   - **Platform entries start over** — repository-imported entries leave with `core.fleet_library`. An operator stages a reviewed draft, then publishes it from **Fleet library** under Platform.
+  - **Webhook URLs name their source** — `POST /v1/webhooks/{fleet_id}` is removed. Each webhook trigger receives deliveries at `POST /v1/webhooks/{fleet_id}/{source}`, so register the `url` from the fleet's `webhook_urls` with the provider again.
+  - **Every webhook source must be verifiable** — a webhook `source` must be `github`, `linear`, or `slack`, or its trigger must declare `signature.secret_ref` for a Svix-signed provider. A Definition with any other source is refused, and so is one that sets `signature.header`, `signature.prefix`, or `signature.ts_header`.
+  - **The `api` trigger is removed** — `triggers` may be empty or absent, and such a fleet runs only when it is sent a message. A Definition that names `{"type": "api"}` is refused.
 
   ## What's new
 
@@ -33,12 +36,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Drafts** — `GET` and `POST /v1/workspaces/{workspace_id}/drafts`; `GET`, `PATCH`, and `DELETE /v1/workspaces/{workspace_id}/drafts/{draft_id}`; `GET` and `POST .../drafts/{draft_id}/messages`; `POST .../drafts/{draft_id}/cancellations`; `GET .../drafts/{draft_id}/events/stream`.
   - **Library revisions** — `GET /v1/workspaces/{workspace_id}/fleet-libraries/owned`; `GET` and `DELETE .../fleet-libraries/{library_id}`; `GET` and `POST .../fleet-libraries/{library_id}/revisions`; `GET .../revisions/{revision_id}`.
   - **Models and fleet revisions** — `GET /v1/workspaces/{workspace_id}/models?purpose=authoring` lists the owner's eligible models. `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions` applies a reviewed improvement under `If-Match` and `Idempotency-Key`.
-  - **Runner authoring routes** — `POST /v1/runners/me/authoring-leases/{lease_id}/renew`, `/activity`, `/reports`, and `/model-calls`.
+  - **Runner authoring routes** — `POST /v1/runners/me/authoring-leases/{lease_id}/renew`, `/activity`, `/reports`, and `/model-calls`. A `lease_id` that is not a version 7 Universally Unique Identifier (UUIDv7) answers `400` with `UZ-REQ-001`.
   - **Save takes a reviewed source** — `POST /v1/workspaces/{workspace_id}/fleets` requires an `Idempotency-Key` header and `{source, name, review_digest, start}`. `source` is a draft candidate or a Library revision; `platform_library_id`, `tenant_library_id`, and `slack_channel_id` are gone.
+  - **Save and run now reports its first run** — with `start` set to `{"kind": "run_now", "message": "<TEXT>"}`, Save answers `201` even when the first run's queue receipt is not saved yet. The reply's `start.state` reads `pending` until then and `accepted` after, and a retry with the same `Idempotency-Key` confirms the same run.
+  - **Runner `PATCH` edits labels** — `PATCH /v1/fleets/runners/{runner_id}` takes `labels` alone or with `assigned_policy`, and replaces the runner's whole label set. A runner holds at most 32 labels of at most 64 bytes each.
   - **Fleet `PATCH` sets status and name only** — `If-Match` is required, and a missing tag answers `428` with `UZ-AUTHOR-004`. `source_markdown`, `trigger_markdown`, and `config_json` are gone from the body.
   - **Publication bodies** — `POST /v1/workspaces/{workspace_id}/fleet-libraries` takes `{draft_candidate_id, label}` with an `Idempotency-Key` header. `POST /v1/admin/fleet-libraries` stages `{workspace_id, draft_candidate_id, label}`, and `PATCH` with `published` publishes or withdraws.
-  - **Removed routes** — `GET /v1/workspaces/{workspace_id}/library-entries` (use `.../fleet-libraries/owned`), `DELETE .../library-entries/{entry_id}` (use `DELETE .../fleet-libraries/{library_id}`), `GET /v1/fleets/bundles`, and `GET /v1/runners/me/bundles/{content_hash}`. No alias remains.
-  - **Typed Definition schemas** — `FleetDefinition` and the `Definition*` schemas describe the setup document, and fleet reads return `definition` in place of Markdown.
+  - **Removed routes** — `GET /v1/workspaces/{workspace_id}/library-entries` (use `.../fleet-libraries/owned`), `DELETE .../library-entries/{entry_id}` (use `DELETE .../fleet-libraries/{library_id}`), `GET /v1/fleets/bundles`, `GET /v1/runners/me/bundles/{content_hash}`, `GET /v1/workspaces/{workspace_id}/preferences`, `DELETE /v1/auth/sessions/{session_id}` (use `DELETE /v1/auth/sessions`), `GET /v1/connectors/{provider}/callback`, and `POST /v1/webhooks/{fleet_id}`. No alias remains.
+  - **Typed Definition schemas** — `FleetDefinition` and the `Definition*` schemas describe the setup document `{schema_version, description, instructions_md, config}`, and fleet reads return `definition` in place of Markdown. `description` is required; it and `instructions_md` each allow 32,768 characters.
   - **Error codes** — `UZ-AUTHOR-001` through `UZ-AUTHOR-016` are new. `UZ-BUNDLE-001` through `UZ-BUNDLE-006`, `UZ-CATALOG-001` through `UZ-CATALOG-005`, and `UZ-AGT-011` are retired.
 
   ## CLI

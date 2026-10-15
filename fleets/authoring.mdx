@@ -3,7 +3,7 @@ title: Author a fleet
 description: Describe a fleet in a private chat, review its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-15
+verified: 2026-10-16
 executable: false
 ---
 
@@ -15,7 +15,7 @@ You describe the job in a private chat, in the dashboard or in the terminal. `ag
 
 A draft is private to the person who started it. Saving creates one fleet in the workspace. Publishing the setup to the [Fleet library](/fleets/library) is a separate choice.
 
-A fleet's setup is one Definition: a JSON document holding its name, instructions, and runtime settings. The dashboard and the terminal edit the same Definition.
+A fleet's setup is one Definition: a JSON document holding its description, instructions, and runtime settings, including its name. The dashboard and the terminal edit the same Definition.
 
 ## Before you begin
 
@@ -80,16 +80,12 @@ Use this path for scripts and repeatable setups. A Definition draft starts witho
    ```json
    {
      "schema_version": 1,
-     "skill": {
-       "name": "health-check",
-       "description": "Checks service health and reports failures.",
-       "version": "0.1.0"
-     },
-     "instructions_md": "Check each service named in the event.\nReport failed checks with their source URL.\nNever change a service.",
+     "description": "Checks service health and reports failures.",
+     "instructions_md": "Check each service named in the message.\nReport failed checks with their source URL.\nNever change a service.",
      "config": {
        "name": "health-check",
        "x-agentsfleet": {
-         "triggers": [{"type": "api"}],
+         "triggers": [],
          "tools": ["memory_recall", "memory_store"],
          "budget": {"daily_nanos": "1000000000"}
        }
@@ -97,7 +93,9 @@ Use this path for scripts and repeatable setups. A Definition draft starts witho
    }
    ```
 
-   `skill.name` and `config.name` must be the same lowercase slug. `daily_nanos` is a decimal string of nanodollars, so `"1000000000"` is one dollar a day.
+   `config.name` is the fleet's name: lowercase letters, digits, and hyphens, at most 64 characters. `description` is required, and every fleet list shows it. `daily_nanos` is a decimal string of nanodollars, so `"1000000000"` is one dollar a day.
+
+   An empty `triggers` list, or none at all, means the fleet runs only when you send it a message.
 
 2. Open a draft from the file and review it.
 
@@ -152,7 +150,7 @@ A Save that prints `installing` and exits with code `1` is waiting on a setup ch
 
 `UZ-AGT-006` means a fleet already uses the name. Review again under a different `--name`.
 
-A Definition holds 1 through 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
+A Definition holds at most 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
 
 ## Remove or undo
 

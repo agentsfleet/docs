@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-10-15
+verified: 2026-10-16
 executable: false
 ---
 
@@ -122,7 +122,7 @@ The dashboard protects edits with the version the form loaded. If another operat
 
 ## Limits
 
-One Definition allows 128 KiB of JSON. Its instructions allow 32 KiB, and the first instructions a chat model writes allow 12 KiB.
+A Definition's description allows 32,768 characters, and so do its instructions. The first instructions a chat model writes allow 12,288 characters. The whole Definition allows 448 KiB of JSON.
 
 A Definition declares at most 128 tools, 64 secrets, and 64 network hosts. A tool name allows 128 characters, a secret name 128, and a network host 255.
 

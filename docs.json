@@ -133,7 +133,6 @@
               "GET /v1/auth/sessions/{session_id}",
               "PATCH /v1/auth/sessions/{session_id}/approve",
               "POST /v1/auth/sessions/{session_id}/verify",
-              "DELETE /v1/auth/sessions/{session_id}",
               "DELETE /v1/auth/sessions",
               "POST /v1/auth/identity-events/clerk",
               "POST /v1/cli-credentials",
@@ -266,7 +265,6 @@
           {
             "group": "Workspace preferences",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/preferences",
               "PUT /v1/workspaces/{workspace_id}/preferences/{pref_key}"
             ]
           },
@@ -286,7 +284,6 @@
               "POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect",
               "GET /v1/workspaces/{workspace_id}/connectors/{provider}",
               "DELETE /v1/workspaces/{workspace_id}/connectors/{provider}",
-              "GET /v1/connectors/{provider}/callback",
               "POST /v1/connectors/{provider}/callback",
               "POST /v1/connectors/{provider}/events"
             ]
@@ -375,7 +372,7 @@
             "pages": [
               "POST /v1/ingress/{provider}",
               "POST /v1/webhooks/svix/{fleet_id}",
-              "POST /v1/webhooks/{fleet_id}",
+              "POST /v1/webhooks/{fleet_id}/{source}",
               "POST /v1/webhooks/{fleet_id}/approval",
               "POST /v1/webhooks/{fleet_id}/github"
             ]
