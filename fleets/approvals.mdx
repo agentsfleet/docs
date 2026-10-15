@@ -17,19 +17,16 @@ Some fleets ask for access that a person has to grant. A run that asks parks at 
 
 ## Before you begin
 
-Install a fleet that opens gates. Two kinds reach the inbox:
+Save a fleet that opens gates. Two kinds reach the inbox:
 
 | Kind | Raised by | Scope of a decision |
 |------|-----------|---------------------|
-| `integration_grant` | a mintable credential a fleet declares after install, or a fleet installed before grants were answered at install | Holds until somebody revokes the grant. |
-| a kind you name | a rule you write under `gates:` in `TRIGGER.md` | Whatever that rule's `blast_radius` says. |
+| `integration_grant` | a mintable credential a fleet's Definition declares, raised when you save the fleet | Holds until somebody revokes the grant. |
+| a kind you name | a rule you write under `gates` in the fleet's Definition | Whatever that rule's `blast_radius` says. |
 
-Installing a fleet that declares a mintable credential answers its grant then
-and there. You chose the fleet, its bundle names the integration, and
-`TRIGGER.md` names the repositories. No card is raised.
-
-The `github-pr-reviewer` bundle installs and reviews without asking you
-anything.
+Saving a fleet that declares a mintable credential raises its grant card.
+The fleet reads `installing` until a person approves the card. Then run
+`agentsfleet resume <FLEET_ID>` to finish setup, and the fleet reads `active`.
 
 A repository write is covered by that grant. Fleets used to raise a
 `repository_write` gate on every run, and no longer do.
@@ -124,9 +121,12 @@ fleet holds with `agentsfleet grant list --fleet <FLEET_ID>`.
 Two different scopes, and picking the wrong one costs more than you meant.
 
 To change which repositories a fleet may reach, or to drop it to read-only,
-edit `repositories:` or `repository_access` in `TRIGGER.md` and push the bundle
-with `agentsfleet fleet update`. The next minted token is scoped to what the
-fleet now declares. The grant is untouched and the fleet keeps running.
+change `repositories` or `repository_access` in a private improvement chat.
+Open the fleet's **Setup → Improve in private chat**, review the change, and
+choose **Apply reviewed setup**.
+
+The next minted token is scoped to what the fleet now declares. The grant is
+untouched and the fleet keeps running.
 
 To stop a fleet reaching the service entirely, delete its grant. A grant covers
 one fleet and one service, never one repository, so deleting it halts every

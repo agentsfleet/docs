@@ -33,7 +33,7 @@ Put that token on the host, then start `agentsfleet-runner`. [Install a runner](
 |---|---|---|---|
 | `AGENTSFLEET_API_URL` | The control plane the runner asks for work. | none, required | URL beginning with `http://` or `https://` |
 | `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
-| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, fleet bundles, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
+| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
 | `AGENTSFLEET_LOG_LEVEL` | The lowest level the runner writes to standard error. | `info` | `off`, `error`, `warn`, `info`, `debug`, `trace` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the runner sends its traces and metrics, over OpenTelemetry Protocol (OTLP). Unset sends nothing. | none | An `http` or `https` URL with a host and no query, such as `http://127.0.0.1:4318` |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | How the runner encodes what it sends. | `http/protobuf` | `http/protobuf`, `http/json` |
@@ -118,7 +118,7 @@ The network policy decides what each sandbox reaches.
 | No egress | Nothing beyond its own loopback interface. |
 | Allowlist egress | Only the addresses on the run's allowlist, and nothing else. |
 
-Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists under `network.allow` in `TRIGGER.md`. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
+Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists in `network.allow` in its Definition. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
 
 An empty Allowlist means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
 

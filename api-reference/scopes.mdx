@@ -32,7 +32,7 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | Scope | Effect | Included by |
 |---|---|---|
 | `fleet:read` | Reads fleets, events, and memory. | `fleet:write`, `fleet:admin` |
-| `fleet:write` | Creates, updates, and messages fleets. | `fleet:admin` |
+| `fleet:write` | Creates, updates, and messages fleets. Also reads and writes your own private drafts. | `fleet:admin` |
 | `fleet:admin` | Deletes fleets. | None |
 | `secret:read` | Lists secret names and metadata. | `secret:write` |
 | `secret:write` | Creates, rotates, and deletes secrets. Deleting a secret named for a connector also needs `connector:write`. | None |
@@ -45,8 +45,8 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `connector:write` | Starts a connector setup flow and disconnects a connector, including by deleting its secret. | None |
 | `billing:read` | Reads the tenant balance and charges. | None |
 | `workspace:admin` | Creates and lists workspaces. | None |
-| `library:write` | Adds an entry to a workspace library, and removes one the workspace onboarded. | None |
-| `platform-library:write` | Adds an entry to the platform library. | None |
+| `library:write` | Publishes a reviewed draft as a workspace library entry or revision, and removes an entry the workspace owns. | None |
+| `platform-library:write` | Stages a reviewed draft as a platform library entry, and edits, publishes, withdraws, or deletes platform entries. | None |
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 

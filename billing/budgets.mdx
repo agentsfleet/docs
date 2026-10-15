@@ -3,7 +3,7 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-09-12
+verified: 2026-10-15
 executable: false
 ---
 
@@ -11,15 +11,20 @@ executable: false
 
 ## What it is
 
-A fleet budget limits how much one fleet can spend. The fleet author sets the budget in `TRIGGER.md`.
+A fleet budget limits how much one fleet can spend. The fleet author sets the budget in `budget` under `config["x-agentsfleet"]` in the fleet's Definition.
 
-```yaml
-budget:
-  daily_dollars: 5.0
-  monthly_dollars: 29.0
+```json
+{
+  "budget": {
+    "daily_nanos": "5000000000",
+    "monthly_nanos": "29000000000"
+  }
+}
 ```
 
-`daily_dollars` is required. `monthly_dollars` is optional.
+Each limit is a decimal string of whole nanodollars. One dollar is `"1000000000"`, so the example allows 5 dollars a day and 29 dollars a month.
+
+`daily_nanos` is required. `monthly_nanos` is optional; leave it out for no monthly limit.
 
 ## Why it exists
 
@@ -27,7 +32,7 @@ Every workspace under one tenant shares the same credit balance. A fleet budget 
 
 The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher. It appears on screens at least 640px wide. Select the chip to open **Settings → Billing**, which holds the live figure and the charge history.
 
-The fleet owns its budget. Updating the fleet replaces the limits, and deleting the fleet removes them.
+The fleet owns its budget. Applying a reviewed setup change replaces the limits, and deleting the fleet removes them.
 
 ## How it behaves
 
@@ -35,7 +40,7 @@ The daily limit covers a rolling 24-hour window. The monthly limit covers one Co
 
 `agentsfleet` checks the limits before a run and while the run continues. A reached limit blocks new work and stops an active run at its next billing check.
 
-A blocked event does not retry. Raise the limit, update the fleet, and send a new event.
+A blocked event does not retry. Raise the limit in an improvement chat, apply the change, and send a new event.
 
 The fleet, memory, and activity stream survive a budget stop. A stopped run has no final result.
 
@@ -43,10 +48,12 @@ The fleet, memory, and activity stream survive a budget stop. A stopped run has 
 
 | Field | Default | Unit | Valid range |
 |---|---|---|---|
-| `daily_dollars` | None; required | Dollars per rolling 24 hours | More than `$0` and at most `$1,000` |
-| `monthly_dollars` | None | Dollars per UTC month | More than `$0` and at most `$10,000` |
+| `daily_nanos` | None; required | Nanodollars per rolling 24 hours | `"1"` through `"1000000000000"`, which is `$1,000` |
+| `monthly_nanos` | None | Nanodollars per UTC month | `"1"` through `"10000000000000"`, which is `$10,000` |
 
-An invalid budget blocks fleet installation. A stored budget that cannot be read blocks the next run.
+Zero, signs, decimal points, exponents, and numbers outside the range are refused. A JSON number in place of the string is refused too.
+
+An invalid budget blocks review and Save with `UZ-REQ-001`. A stored budget that cannot be read blocks the next run.
 
 `UZ-RUN-015` marks a budget stop during a run. `UZ-EXEC-015` records the final failure class.
 

@@ -15,9 +15,9 @@ executable: false
 |---|---|
 | Every command fails | Run `agentsfleet doctor`. |
 | A webhook does not create a run | Read recent webhook events. |
-| A connected GitHub App sends nothing | Check `repositories` in `TRIGGER.md`. |
+| A connected GitHub App sends nothing | Check `repositories` in the fleet's Definition. |
 | A run starts and fails | Read the activity stream error. |
-| A fleet returns the wrong result | Compare tool calls with `SKILL.md`. |
+| A fleet returns the wrong result | Compare tool calls with the fleet's instructions. |
 | New runs are blocked | Check fleet state and budgets. |
 | Files from the last message are gone | Read [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps). |
 
@@ -61,7 +61,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 3. Apply the fix named by the stable error identifier.
 
-   `UZ-AGT-008` points to invalid `TRIGGER.md` data. `UZ-BUNDLE-003` points to missing workspace secrets.
+   `UZ-REQ-001` from a chat or Save points to an invalid Definition field. A Save that stays `installing` names each missing secret or grant.
 
    `UZ-WH-010` points to a signature mismatch. `UZ-AGT-012` points to a fleet that cannot accept work.
 
@@ -75,8 +75,8 @@ Every API error carries a stable error identifier and request identifier. Use bo
    event arrived and matched no fleet. The status is green either way, so read
    the body.
 
-   Then check two things. The fleet's `TRIGGER.md` needs `repositories` beside
-   `source: github`, spelled `owner/repository`; case does not matter. And the
+   Then check two things. The fleet's webhook trigger needs `repositories` beside
+   `"source": "github"`, spelled `owner/repository`; case does not matter. And the
    fleet needs an approved integration grant.
 
    ```bash
@@ -95,6 +95,6 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 Run `agentsfleet doctor` before installation. Test one manual message before registering a webhook.
 
-Keep `SKILL.md` steps numbered and keep tool names aligned with `TRIGGER.md`. Store stable provider event identifiers for duplicate protection.
+Keep the fleet's instruction steps numbered, and name only tools its Definition declares. Store stable provider event identifiers for duplicate protection.
 
-Use fleet budgets to bound cost. Check the activity stream after every bundle update.
+Use fleet budgets to bound cost. Check the activity stream after every applied setup change.

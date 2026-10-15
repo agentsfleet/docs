@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-10-03
+verified: 2026-10-15
 executable: false
 ---
 
@@ -11,171 +11,128 @@ executable: false
 
 ## What it is
 
-A library entry is a checked fleet bundle. Each entry contains `SKILL.md`, optional `TRIGGER.md`, support files, and requirement summaries.
+A library entry is reusable fleet setup. It holds one or more immutable revisions, and each revision is a reviewed Definition with its required secrets, tools, and network hosts.
 
 The platform library is visible to every workspace. A workspace library entry is visible only inside its owning workspace.
 
 ## Why it exists
 
-The library gives each installation a known source. It also lets `agentsfleet` check required secrets, tools, and network hosts before creation.
+The library lets a workspace reuse a setup that someone already reviewed. A fleet created from an entry keeps the exact revision it was saved from.
 
 ## How it behaves
 
-Platform administrators create platform entries. Authorized workspace members create workspace entries with `agentsfleet library create`, in the dashboard, or through the API.
+Entries come only from reviewed chat drafts. Saving a fleet never publishes it, and publishing never creates a fleet.
 
-The dashboard waits 30 seconds for an import, then reports a timeout in the dialog. `agentsfleetd` allows its own GitHub fetch 60 seconds, so a large bundle over a slow link can outlast that wait.
+Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. To move a fleet forward, improve it in a private chat and apply the reviewed change.
 
-Wait for the 60-second fetch deadline, then reload the library. Import again only if the entry is still absent.
-
-Re-adding identical content to one workspace returns the existing content identity. Installing an entry creates a separate fleet owned by that workspace.
-
-`agentsfleet library` lists the gallery this workspace can install from, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns.
+`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns.
 
 ```bash
 agentsfleet library
 ```
 
 ```text
-NAME                            LIBRARY                        TIER        SECRETS    AGO
-GitHub Pull Request reviewer    github-pr-reviewer             platform    github     41d
+NAME        LIBRARY     TIER        REVISION    AGO
 <varies>
+Start from a revision: agentsfleet chat --library <library_id> --revision <revision_id>
 ```
 
-The list resolves the same entries as `agentsfleet install --library`, so an entry you can see is an entry you can install. A workspace holding no entries reads `No Fleet libraries in this workspace.` and points at `agentsfleet library create --github <owner/repo>`.
+`REVISION` is the entry's latest revision. [Install a fleet](/fleets/install) shows how to save a fleet from it.
 
-New fleets install only by library identifier. Local files can update an existing fleet with `agentsfleet fleet update`.
+A page with no entries reads `No published Fleet libraries in this page.` and shows how to publish one.
 
-## Onboard a workspace entry
+## Publish a workspace entry
 
-`agentsfleet library create` onboards an entry into the active workspace. It takes exactly one source, and none or several is rejected with exit code `4`.
+You publish from a reviewed draft. Publishing does not close the draft, so you can keep editing it.
+
+In the dashboard, review the draft and choose **Publish to Library**. Then choose **Publish new entry**, or **Publish next revision** for an entry you already own.
+
+In the terminal, publish a reviewed draft with a label. `<LABEL>` is the display name, 1 to 100 characters. `<DRAFT_ID>` and `<DIGEST>` come from the draft's review.
 
 ```bash
-agentsfleet library create --github agentsfleet/github-pr-reviewer
+agentsfleet chat <DRAFT_ID> --no-input --publish <LABEL> --review-digest <DIGEST>
 ```
 
 ```text
-✓ github-pr-reviewer onboarded.
-  Library ID: <varies>
-  Secrets: github
-  Tools: http_request
-  Network hosts: api.github.com
-  Install it with: agentsfleet install --library <varies>
+<varies>
+✓ Published Library revision <REVISION_ID>
 ```
 
-The output names what the bundle will ask for before anything is installed. Save each named secret first, then run the install command it prints.
+Inside an interactive chat, `/publish <LABEL>` does the same after a `/review`.
 
-| Source | What it reads |
-| --- | --- |
-| `--github <OWNER>/<REPOSITORY>` | A GitHub repository with `SKILL.md` at its root. `--ref <REVISION>` pins the revision to fetch. |
-| `--from <PATH>` | A local directory holding `SKILL.md`, and `TRIGGER.md` beside it when the bundle declares one. |
-| `--template <TEMPLATE_ID>` | A built-in template shipped with the client. |
+To add a revision to an entry this workspace owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
 
-`--ref` accompanies `--github` only. A name the workspace already holds is refused unless you pass `--replace`, which overwrites the stored bundle in place.
+Publishing needs the `library:write` scope.
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `--publish <LABEL>` | Publishes the reviewed draft as a new entry. | None | Text, 1 to 100 characters |
+| `--publish-to <LIBRARY_ID>` | Appends a revision to this owned entry instead. Needs `--publish` and `--library-etag`. | None | Library identifier |
+| `--library-etag <ETAG>` | The entry tag you inspected. | None | Entity tag |
+| `--review-digest <DIGEST>` | The digest of the review you inspected. | None; required | Digest text |
 
 ## List and remove workspace entries
 
-`agentsfleet library list` answers for the entries this workspace onboarded. It never shows a platform entry, because it reads a different collection from `agentsfleet library`.
+`agentsfleet library list` lists only the entries this workspace owns. It never shows a platform entry.
 
 ```bash
 agentsfleet library list
 ```
 
 ```text
-ENTRY       NAME                            SOURCE                                  ONBOARDED
-<varies>    GitHub Pull Request reviewer    github:agentsfleet/github-pr-reviewer    2026-09-21
+NAME        LIBRARY     TIER        REVISION    AGO
+<varies>
 ```
 
-A workspace holding no entries reads `This workspace has onboarded no Fleet libraries.` and names the command that adds one.
+`agentsfleet library delete` takes one identifier from the `LIBRARY` column.
 
-`agentsfleet library delete` takes one entry identifier, from the `ENTRY` column above.
+<Warning>
+  Removal is permanent. The entry and its revision history leave the gallery, and nothing restores them.
+</Warning>
 
 ```bash
-agentsfleet library delete <ENTRY_ID>
+agentsfleet library delete <LIBRARY_ID>
 ```
 
 ```text
 ✓ <varies> is no longer in this workspace's Fleet library. Fleets already installed from it keep running.
-  Onboard it again with: agentsfleet library create --github <owner/repo>
+Publish reviewed chat setup with: agentsfleet chat --help
 ```
 
-Removal is permanent. The entry leaves the install gallery, and nothing restores it. Onboard the same bundle again to get an entry back; it arrives with a new identifier.
+Fleets saved from the entry are untouched. Each keeps the revision it was saved from.
 
-Fleets installed from the entry are untouched. An install copies the bundle onto the fleet, so each fleet keeps its own `SKILL.md`, its own `TRIGGER.md`, and its own content identity.
+You can remove only an entry this workspace owns. A platform entry, another workspace's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
 
-Removing an identifier that is already gone succeeds. So does one that names another workspace's entry. Both answer the same way, so neither tells you whether the entry exists somewhere else.
+Removal needs the `library:write` scope.
 
-You need the `library:write` scope, the same scope `agentsfleet library create` needs.
+The dashboard lists the same entries at **Fleet library** in the workspace sidebar. Choose **Inspect** to read a revision, **Older revisions** for its history, or **Start chat from this revision** to open a private draft from it.
 
-The dashboard does the same work at **Fleet library** in the workspace sidebar. The page lists what this workspace owns and asks you to confirm each removal by name.
+## Platform entries
 
-Both dashboard tables show **Name**, **Source**, **Status**, **Time**, and **Actions** in that order. The platform catalog no longer shows bundle hashes.
+Platform entries come from a reviewed draft too. An operator whose session carries the `platform-library:write` scope stages the draft, and the entry starts hidden.
 
-Workspace entries show **Ready** when their checked bundle is available in the workspace gallery. Platform entries show **Draft**, **Published**, **No bundle**, or **Broken**.
+1. In a workspace chat, review the draft and choose **Stage platform entry**.
+2. Open **Fleet library** under Platform.
+3. Edit the entry's name, description, and the reason for each credential it needs.
+4. Choose **Publish**. Only published entries appear in workspace galleries.
 
-Uploaded bundles show an upload icon and their source name on both pages. An empty source name uses the entry name.
+**Withdraw** hides a published entry again. Only a withdrawn entry can be deleted. Existing fleets keep their pinned setup revision either way.
 
-GitHub sources show a GitHub icon and a repository link. The platform catalog includes its stored revision in the source text and link. Workspace entries link to the repository without a revision.
-
-## Onboard a platform entry
-
-Platform entries are added from the dashboard at **Fleet library**, under Platform, with **Create fleet library**. The page is visible only to an operator whose session carries the `platform-library:write` scope. Everyone else is redirected, and the API refuses the request independently.
-
-Enter the repository as `owner/repo`. `agentsfleet` fetches the repository, validates the bundle, stores it, and adds the catalog row **as a draft**. No workspace can see or install a draft; publishing is the only door to a workspace's library.
-
-A platform entry's identifier comes from the `name` in the bundle's `SKILL.md`, not from the repository path you type. Keep the repository name, the `SKILL.md` name, and the `TRIGGER.md` name identical. When they differ, `agentsfleet` rejects the bundle or files it under an identifier you did not expect.
-
-Onboarding the same repository twice updates the existing entry. It does not create a second one. A refetch always returns the entry to draft, so a newer bundle never reaches workspaces unreviewed.
-
-## Edit a platform entry
-
-An entry's name, repository, and ref are editable in place from the catalog's **Edit** dialog, alongside its description and the install-gate copy for each credential. The identifier is not editable — installed fleets reference it.
-
-Changing the repository or ref discards the stored bundle and returns the entry to draft. The stored bundle was built from the old repository, and an entry never advertises a source it is not serving. Fetch the bundle again, then publish.
-
-Workspaces already running the fleet are unaffected. Each install keeps the exact bundle it installed.
-
-A rename survives the next bundle fetch, as the description and credential copy always have. A pinned ref survives it too: **Fetch update** fetches at the ref the entry names, rather than resetting the entry to the repository's default branch. Credential copy is pruned to the credentials the bundle actually declares, so a credential the fleet no longer requests does not linger in the dialog.
-
-An entry that is published but holds no bundle shows as **Broken** in the catalog. It is invisible to every workspace; fetch a bundle or unpublish it.
-
-The dashboard protects edits with the row version loaded by the form. If another operator saves first, your stale edit is refused. Refresh the row, review the newer values, and apply your change again.
-
-## Prebuilt fleets
-
-Four fleets ship as their own public repository under `agentsfleet`. Each installs by its identifier.
-
-| Identifier | What it does | Secrets |
-| --- | --- | --- |
-| `github-pr-reviewer` | Reviews pull requests and posts review comments. | `github` |
-| `platform-ops` | Reads Fly.io app state and logs and Upstash Redis stats, correlates them, and posts a diagnosis to Slack. | `fly`, `upstash`, `slack`, `github` |
-| `zoho-sprint-daily-summarizer` | Summarizes the day's Zoho Sprints activity and posts a digest. | `zoho` |
-| `zoho-recruiter-daily-summarizer` | Summarizes the day's Zoho Recruit pipeline and posts a digest. | `zoho_recruit` |
-
-Two more ship as bundle folders inside the `agentsfleet` repository, under `library/`. An operator onboards each one from its folder rather than by naming a repository, and `agentsfleet library create --from <PATH>` reads the same folder into one workspace. They are built to work as a pair: the responder finds the cause, and the repairer writes the fix.
-
-| Identifier | What it does | Secrets |
-| --- | --- | --- |
-| `incident-responder` | Sweeps Grafana and Elastic on a schedule, correlates the telemetry with recent repository history, and posts a diagnosis to Slack and Jira. Its GitHub token is minted read-only, so it can name a fix but cannot open a pull request. | `elastic`, `grafana`, `github`, `jira`, `slack` |
-| `incident-repairer` | Wakes on one failed deploy run, reads the repository at the verified head, writes the fix, and opens one draft pull request. It asks for repository write access, so every one of its events parks at an approval card first. | `elastic`, `grafana`, `github`, `slack` |
-
-A prebuilt fleet appears in your library only after an operator onboards and publishes it. Until then it does not show in the gallery.
+The dashboard protects edits with the version the form loaded. If another operator saves first, your stale edit is refused. Refresh the row, review the newer values, and apply your change again.
 
 ## Limits
 
-`SKILL.md` and `TRIGGER.md` each allow 200 KiB. A bundle can contain up to 32 support files and 256 KiB across those files.
+One Definition allows 128 KiB of JSON. Its instructions allow 32 KiB, and the first instructions a chat model writes allow 12 KiB.
 
-Each support file allows 64 KiB and a 160-character safe relative path. Secret-shaped support content is rejected.
+A Definition declares at most 128 tools, 64 secrets, and 64 network hosts. A tool name allows 128 characters, a secret name 128, and a network host 255.
 
-A bundle may declare at most 32 required credentials, 64 required tools, and 64 network hosts. A bundle over any of those counts is refused at import.
+Library lists return 100 entries per page at most. Use `--starting-after <CURSOR>` with the cursor the previous page prints.
 
-A credential or tool name allows 200 bytes. A network host allows 253 bytes, the longest name that can resolve.
-
-Install-gate copy is bounded too. An entry carries reason text for at most 32 credentials, and each reason allows 500 bytes.
-
-Removing a fleet does not remove its library entry. Remove the entry itself with `agentsfleet library delete <ENTRY_ID>`.
+Removing a fleet does not remove its library entry. Remove the entry itself with `agentsfleet library delete <LIBRARY_ID>`.
 
 ## Related pages
 
 - [Install a fleet](/fleets/install)
 - [Author a fleet](/fleets/authoring)
+- [Command reference](/cli/agentsfleet)
 - [Secrets](/fleets/secrets)

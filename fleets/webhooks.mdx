@@ -13,23 +13,23 @@ executable: false
 
 A webhook sends provider events to one fleet. `agentsfleet` verifies the request before creating an event.
 
-GitHub App events can use managed ingress. Other providers can use the fleet URL printed during installation.
+GitHub App events can use managed ingress. Other providers can use the fleet URL listed in the fleet's `webhook_urls`.
 
 ## Before you begin
 
-Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to `TRIGGER.md`.
+Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in the fleet's Definition.
 
-```yaml
-x-agentsfleet:
-  triggers:
-    - type: webhook
-      source: github
-      repositories:
-        - owner/repository
-      events:
-        - pull_request
-      credential_name: github
+```json
+{
+  "type": "webhook",
+  "source": "github",
+  "repositories": ["owner/repository"],
+  "events": ["pull_request"],
+  "credential_name": "github"
+}
 ```
+
+[Author a fleet](/fleets/authoring) shows the whole Definition and how to save it.
 
 <Warning>
 `repositories` is required when the event arrives through a connected GitHub
@@ -57,7 +57,7 @@ GitHub App and a fleet URL are alternatives, not steps in one procedure.
 
 ### A connected GitHub App
 
-Install first. A grant belongs to a fleet, so the fleet has to exist before its
+Save the fleet first. A grant belongs to a fleet, so the fleet has to exist before its
 grant can be approved.
 
 1. Connect the provider once per workspace.
@@ -65,38 +65,28 @@ grant can be approved.
    Open **Settings → Integrations**, choose GitHub, and approve the access
    GitHub requests. The workspace owns the connection.
 
-2. Install the fleet.
+2. Save a fleet whose webhook trigger names your repositories.
+
+   A library entry cannot know your repository. Before you save, ask the chat
+   to set `repositories` on the webhook trigger, or edit the Definition file,
+   then review the change. `<DRAFT_ID>`, `<NAME>`, and `<DIGEST>` come from the review.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
-   ```
-
-   ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-   ```
-
-3. Name your repositories.
-
-   A library entry ships its own `TRIGGER.md` and cannot know your repository,
-   so `--library` alone leaves the fleet subscribed to nothing. Edit `TRIGGER.md`
-   in a local bundle as shown above, then push it to the installed fleet.
-
-   ```bash
-   agentsfleet fleet update <FLEET_ID> --from ./my-bundle
+   agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
    ```
 
    ```text
    <varies>
+   ✓ Fleet <NAME>: installing
+   <varies>
    ```
 
-4. Approve the fleet's integration grant.
+3. Approve the fleet's integration grant.
 
-   Each fleet needs its own approved grant before it receives events. The fleet
-   appears in **Settings → Integrations** once it is installed.
+   Saving raises the grant, and the fleet reads `installing` until a person
+   approves it with [`agentsfleet approvals`](/fleets/approvals). After the
+   approval, run `agentsfleet resume <FLEET_ID>` to finish setup. The fleet
+   then reads `active`.
 
 Register nothing on the repository. The App already delivers, and its events
 reach the fleets whose `repositories` name that repository.
@@ -105,23 +95,19 @@ reach the fleets whose `repositories` name that repository.
 
 Use this for any provider without a connected App.
 
-1. Install or update the fleet.
+1. Save the fleet, then read its webhook URLs.
+
+   `<FLEET_ID>` comes from `agentsfleet list`.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
+   agentsfleet --json fleet show <FLEET_ID>
    ```
 
    ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-     Webhook URLs (register on the upstream provider):
-       github: <varies>
+   <varies>
    ```
 
-2. Copy the URL printed for the matching source.
+2. Copy the `url` from the `webhook_urls` entry whose `source` matches the provider.
 
 3. Register the URL and signing secret with the provider.
 
@@ -135,7 +121,7 @@ Use this for any provider without a connected App.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from the install output.
+`<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
 agentsfleet events <FLEET_ID> --actor 'webhook:*' --since 1h
@@ -163,7 +149,7 @@ Rate-limited requests include `Retry-After`. The provider should wait for that d
 
 ## Remove or undo
 
-Delete the webhook from the provider first. Then remove its trigger from `TRIGGER.md` and update the fleet.
+Delete the webhook from the provider first. Then open the fleet's **Setup → Improve in private chat**, remove the trigger, review the change, and choose **Apply reviewed setup**.
 
 Deleting the fleet removes its webhook URL. Requests to the old URL then return `UZ-WH-001`.
 

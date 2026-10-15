@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Install your first fleet and send it a GitHub event.
+description: Create your first fleet and send it a GitHub event.
 type: tutorial
 audience: user
 verified: 2026-09-19
@@ -11,7 +11,7 @@ executable: false
 
 ## What you will build
 
-You will install a GitHub pull request reviewer fleet. The fleet will receive pull request events and post review comments.
+You will create a GitHub pull request reviewer fleet from a setup file. The fleet will receive pull request events and post review comments.
 
 ## Before you begin
 
@@ -74,43 +74,96 @@ Create a GitHub token that can read the repository and post comments. Keep the t
 
    GitHub gives you `<GITHUB_TOKEN>` after you create the repository token.
 
-   Create `<GITHUB_WEBHOOK_SECRET>` as a random value with at least 32 characters. Enter the same value in GitHub during step 6.
+   Create `<GITHUB_WEBHOOK_SECRET>` as a random value with at least 32 characters. Enter the same value in GitHub during step 9.
 
    The client sends both values to your workspace vault. The client does not print the values again.
 
-5. Install the review fleet.
+5. Write the fleet's Definition to `pr-reviewer.json`.
+
+   ```json
+   {
+     "schema_version": 1,
+     "skill": {
+       "name": "pr-reviewer",
+       "description": "Reviews GitHub pull requests and posts review comments.",
+       "version": "0.1.0"
+     },
+     "instructions_md": "Read `repo` and `number` from the event.\nFetch the pull request diff from https://api.github.com/repos/{repo}/pulls/{number} with http_request and ${secrets.github.token}.\nPost one review with event COMMENT that lists correctness, security, and test gaps.\nNever approve, merge, or close a pull request.",
+     "config": {
+       "name": "pr-reviewer",
+       "x-agentsfleet": {
+         "triggers": [{"type": "webhook", "source": "github", "events": ["pull_request"]}],
+         "tools": ["http_request"],
+         "credentials": ["github"],
+         "network": {"allow": ["api.github.com"]},
+         "budget": {"daily_nanos": "2000000000"}
+       }
+     }
+   }
+   ```
+
+   `daily_nanos` caps spending at 2 dollars a day. [Fleet budgets](/billing/budgets) explains the unit.
+
+6. Open a private draft from the file and review it.
+
+   `<MODEL_REF>` names an authoring model your workspace owner enabled. [Author a fleet](/fleets/authoring) shows where it comes from.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
+   agentsfleet chat --definition pr-reviewer.json --model <MODEL_REF> --no-input --review --name pr-reviewer
    ```
 
    ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-     Webhook URLs (register on the upstream provider):
-       github: <varies>
+   ✓ Draft <DRAFT_ID> created
+   Instance: pr-reviewer
+   Runtime model: <varies>
+   <varies>
+   Review digest: <DIGEST>
    ```
 
-   The first three lines are what the fleet asked for. Save the fleet identifier and webhook URL from this output. You will use both values below.
+   The review prints the setup and every secret, tool, and host it needs. Check them before you save.
 
-6. Add the webhook in GitHub.
+7. Save the fleet with the digest from the review.
 
-   Open **Repository settings → Webhooks → Add webhook**. Use the webhook URL from step 5 as the payload URL.
+   ```bash
+   agentsfleet chat <DRAFT_ID> --no-input --save --name pr-reviewer --review-digest <DIGEST>
+   ```
+
+   ```text
+   <varies>
+   ✓ Fleet pr-reviewer: active
+   ```
+
+   A fleet that reads `installing` is waiting on a setup check, such as an integration grant to approve. The lines after it name each check and its next step.
+
+8. Read the fleet's webhook URL.
+
+   `<FLEET_ID>` comes from `agentsfleet list`.
+
+   ```bash
+   agentsfleet --json fleet show <FLEET_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   The `webhook_urls` entry with `source` set to `github` holds the URL.
+
+9. Add the webhook in GitHub.
+
+   Open **Repository settings → Webhooks → Add webhook**. Use the webhook URL from step 8 as the payload URL.
 
    Choose `application/json` as the content type. Use the same webhook secret from step 4.
 
    Select **Pull requests** as the event. GitHub now sends pull request events to your fleet.
 
-7. Open a pull request in the repository.
+10. Open a pull request in the repository.
 
-   GitHub sends the event after you open the pull request. The fleet then posts a review comment.
+    GitHub sends the event after you open the pull request. The fleet then posts a review comment.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from the install output in step 5.
+`<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
 agentsfleet logs <FLEET_ID>
@@ -125,11 +178,12 @@ The activity stream should show a GitHub event. Check the pull request for the f
 
 ## What you learned
 
-You installed the client, signed in, saved a secret, and created a fleet. You also connected GitHub to the fleet.
+You installed the client, signed in, and saved a secret. You reviewed a fleet's setup, saved the fleet, and connected GitHub to it.
 
 ## Related pages
 
 - [Install the client](/cli/install)
+- [Author a fleet](/fleets/authoring)
 - [Manage secrets](/fleets/secrets)
 - [Use webhooks](/fleets/webhooks)
 - [Troubleshoot a fleet](/fleets/troubleshooting)
