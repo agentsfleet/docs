@@ -45,6 +45,18 @@ Create a workspace secret that contains the provider's signing secret. Add a web
 
 `<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret you created for it. A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
 
+The secret named by `secret_ref` holds a JSON object, and the Svix signing value goes in its `webhook_secret` field. Create the secret before you save the fleet:
+
+```bash
+agentsfleet secret create <SECRET_NAME> --data='{"webhook_secret":"<SVIX_SIGNING_SECRET>"}'
+```
+
+```text
+✓ Secret '<SECRET_NAME>' stored in vault.
+```
+
+`<SVIX_SIGNING_SECRET>` is a random value of at least 32 bytes, and the sending side signs with the same value.
+
 A Svix-signed source must be the fleet's first webhook trigger, because the Svix URL names only the fleet. A Definition that lists one after another webhook trigger is refused.
 
 <Warning>
@@ -158,7 +170,7 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 | `UZ-WH-001` | The fleet URL is wrong or deleted, or the fleet has no webhook trigger with that source. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | Create the workspace secret named by `credential_name`, which defaults to the `source` name, and put the signing value in its `webhook_secret` field. |
+| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | Create the workspace secret named by `credential_name`, which defaults to the `source` name, or by `signature.secret_ref` for a Svix-signed source, and put the signing value in its `webhook_secret` field. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.
