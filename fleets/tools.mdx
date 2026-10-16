@@ -12,7 +12,7 @@ executable: false
 
 ## What it is
 
-A tool gives a fleet one named action. The fleet author declares allowed tools in `TRIGGER.md`.
+A tool gives a fleet one named action. The fleet author declares allowed tools in the fleet's Definition.
 
 | Group | Tools |
 |---|---|
@@ -30,20 +30,17 @@ A tool gives a fleet one named action. The fleet author declares allowed tools i
 
 ## Why it exists
 
-The allowlist limits what the fleet can do. Instructions in `SKILL.md` do not grant access by themselves.
+The allowlist limits what the fleet can do. The fleet's instructions do not grant access by themselves.
 
 ## How it behaves
 
-The runtime owns the built-in tools. A fleet receives only names listed under `x-agentsfleet.tools`.
+The runtime owns the built-in tools. A fleet receives only names listed in `tools` under `config["x-agentsfleet"]`.
 
-```yaml
-x-agentsfleet:
-  tools:
-    - http_request
-    - memory_recall
-  network:
-    allow:
-      - api.github.com
+```json
+{
+  "tools": ["http_request", "memory_recall"],
+  "network": {"allow": ["api.github.com"]}
+}
 ```
 
 `http_request` also follows the network host list. An entry may be a host name or a URL. Only its host counts, so `https://api.github.com:443/repos` admits `api.github.com` on any port, for `http_request` and the sandbox alike.
@@ -60,7 +57,7 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 |---|---|
 | `cron_add` | Creates a recurring schedule from a five-field cron expression, a message, and an optional zone. The zone defaults to Coordinated Universal Time (UTC). |
 | `schedule` | Creates one follow-up at a moment within the next year. The moment rounds up to the next whole minute, which must be at least a minute away. The schedule runs once and is then removed; running it with `cron_run` counts as that one run. |
-| `cron_list` | Lists every schedule of the fleet. Each one names its source: `fleet`, `api` for a person, or `trigger` for `TRIGGER.md`. |
+| `cron_list` | Lists every schedule of the fleet. Each one names its source: `fleet`, `api` for a person, or `trigger` for a `cron` trigger in its Definition. |
 | `cron_update` | Changes, pauses, or resumes a schedule the fleet created. |
 | `cron_remove` | Deletes a schedule the fleet created. |
 | `cron_run` | Runs a schedule now. The new run waits behind the current one. A run that a schedule started cannot run a schedule now. |
@@ -109,7 +106,7 @@ A run has at most 4 children working at once and starts at most 16 in all. Past 
 
 When the run ends, every child still working ends `interrupted`.
 
-Remove a tool name from `TRIGGER.md` to revoke it. The next fleet update applies the new list to later runs.
+Remove a tool name from the Definition in an improvement chat to revoke it. Applying the reviewed change gives later runs the new list.
 
 A fleet creates at most 16 schedules itself, inside the 32 a fleet holds. The 17th fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009). Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/api-reference/error-codes#UZ-SCHED-010).
 

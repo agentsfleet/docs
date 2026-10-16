@@ -1,9 +1,9 @@
 ---
 title: Author a fleet
-description: Create the two files that define a fleet.
+description: Describe a fleet in a private chat, review its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-09-24
+verified: 2026-10-16
 executable: false
 ---
 
@@ -11,94 +11,124 @@ executable: false
 
 ## What this does
 
-You will create a fleet bundle. `SKILL.md` defines the task, while `TRIGGER.md` defines runtime access and limits.
+You describe the job in a private chat, in the dashboard or in the terminal. `agentsfleet` drafts the fleet's setup, which you review and then save.
+
+A draft is private to the person who started it. Saving creates one fleet in the workspace. Publishing the setup to the [Fleet library](/fleets/library) is a separate choice.
+
+A fleet's setup is one Definition: a JSON document holding its description, instructions, and runtime settings, including its name. The dashboard and the terminal edit the same Definition.
 
 ## Before you begin
 
-Create an empty directory. Choose a lowercase fleet name with letters, numbers, and hyphens.
+Sign in and select a workspace. The workspace owner must enable at least one model that can author setup.
+
+`<MODEL_REF>` is the `ref` of an entry returned by `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. Choose one whose `eligibility.authoring` is `true`.
+
+Each chat message is charged to the workspace owner's balance. A message the balance cannot cover fails with `UZ-AUTHOR-007`.
 
 ## Steps
 
-1. Create `SKILL.md` with required front matter and clear instructions.
+### In the dashboard
 
-   ```yaml
-   ---
-   name: health-check
-   description: Checks service health and reports failures.
-   version: 0.1.0
-   ---
+1. Open **New fleet** in the workspace sidebar.
+2. Describe the job in the chat. Each reply can change the draft setup.
+3. Choose **Review setup**. Check the instructions, triggers, tools, secrets, network hosts, and budget.
+4. Choose **Save fleet**, or **Save and run now** to send the fleet a first message.
 
-   Check each service named in the event.
-   Report failed checks with their source URL.
-   Never change a service.
-   ```
+### In the terminal
 
-   Use a stable version such as `1.2.3`: three decimal components, each no greater than `18446744073709551615`, with no leading zeros. Prerelease suffixes (`-beta`) and build suffixes (`+build`) are refused during import.
-
-2. Create `TRIGGER.md` with the same name. `agentsfleet` takes the library identifier from `name`, not from the repository path, so name the repository to match as well.
-
-   ```yaml
-   ---
-   name: health-check
-   x-agentsfleet:
-     triggers:
-       - type: api
-     tools:
-       - memory_recall
-       - memory_store
-     budget:
-       daily_dollars: 1.00
-   ---
-   ```
-
-   To have the fleet answer mentions in a Slack channel, add a `mention` trigger.
-   [Answer mentions in Slack](/fleets/slack) shows its fields.
-
-3. Put the files in a GitHub repository.
-
-   `SKILL.md` must be at the repository root. `TRIGGER.md` is optional when the default manual trigger is enough.
-
-4. Onboard the bundle as a workspace library entry.
-
-   `<OWNER>` and `<REPOSITORY>` come from the GitHub repository URL.
+1. Start a private chat with an authoring model.
 
    ```bash
-   agentsfleet library create --github <OWNER>/<REPOSITORY>
+   agentsfleet chat --model <MODEL_REF>
    ```
 
    ```text
-   ✓ health-check onboarded.
-     Library ID: <varies>
-     Secrets: <varies>
-     Tools: <varies>
-     Network hosts: <varies>
-     Install it with: agentsfleet install --library <varies>
+   /review [instance-name] · /save · /run <message> · /publish <label> · /apply · /model <ref> · /stop · /retry · /delete · /quit. Ctrl+C stops the reply being followed.
+   you ›
    ```
 
-   Pass `--from <PATH>` instead to read the bundle from a local directory. Pass
-   `--replace` to overwrite an entry the workspace already holds under this name.
+2. Describe the job at the `you ›` prompt.
 
-   The dashboard does the same job at **Fleets → Install fleet → Add library entry**.
+   Ordinary text is a chat message. A line starting with `/` is an action.
 
-5. Install the new library entry.
+3. Review the setup under the fleet name you want.
 
-   `<LIBRARY_ID>` is the identifier the previous command printed.
+   ```text
+   /review health-check
+   ```
 
-   ```bash
-   agentsfleet install --library <LIBRARY_ID>
+   The review prints the full Definition, the access it needs, and its readiness checks. Its last line reads `Review digest: <DIGEST>`.
+
+4. Save the reviewed setup.
+
+   ```text
+   /save
    ```
 
    ```text
-     Secrets: <varies>
-     Tools: <varies>
-     Network hosts: <varies>
-   ✓ health-check is live.
-     Fleet ID: <varies>
+   ✓ Fleet health-check: active
    ```
+
+   `/run <MESSAGE>` saves and sends the fleet `<MESSAGE>` once. Changing the draft after a review needs a new `/review` before saving.
+
+### From a Definition file
+
+Use this path for scripts and repeatable setups. A Definition draft starts without a chat message, so no authoring model call runs.
+
+1. Write the Definition to a file, such as `health-check.json`.
+
+   ```json
+   {
+     "schema_version": 1,
+     "description": "Checks service health and reports failures.",
+     "instructions_md": "Check each service named in the message.\nReport failed checks with their source URL.\nNever change a service.",
+     "config": {
+       "name": "health-check",
+       "x-agentsfleet": {
+         "triggers": [],
+         "tools": ["memory_recall", "memory_store"],
+         "budget": {"daily_nanos": "1000000000"}
+       }
+     }
+   }
+   ```
+
+   `config.name` is the fleet's name: lowercase letters, digits, and hyphens, at most 64 characters. `description` is required, and every fleet list shows it. `daily_nanos` is a decimal string of nanodollars, so `"1000000000"` is one dollar a day.
+
+   An empty `triggers` list, or none at all, means the fleet runs only when you send it a message.
+
+2. Open a draft from the file and review it.
+
+   ```bash
+   agentsfleet chat --definition health-check.json --model <MODEL_REF> --no-input --review --name health-check
+   ```
+
+   ```text
+   ✓ Draft <DRAFT_ID> created
+   Instance: health-check
+   Runtime model: <varies>
+   <varies>
+   Review digest: <DIGEST>
+   ```
+
+3. Save the draft with the digest you reviewed.
+
+   `<DRAFT_ID>` and `<DIGEST>` come from the previous output.
+
+   ```bash
+   agentsfleet chat <DRAFT_ID> --no-input --save --name health-check --review-digest <DIGEST>
+   ```
+
+   ```text
+   <varies>
+   ✓ Fleet health-check: active
+   ```
+
+To answer mentions in a Slack channel, add a `mention` trigger to `triggers`. [Answer mentions in Slack](/fleets/slack) shows its fields.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from the install output.
+`<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
 agentsfleet steer <FLEET_ID> "check the service list"
@@ -110,21 +140,28 @@ agentsfleet steer <FLEET_ID> "check the service list"
 
 ## Common problems
 
-`UZ-AGT-008` means `TRIGGER.md` has an invalid field or value. Keep runtime fields under `x-agentsfleet`.
+A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check and its next step, such as a missing secret or a pending integration grant. Fix the check, then run `agentsfleet resume <FLEET_ID>`.
 
-`UZ-AGT-011` means the two files use different names. Make both top-level `name` values identical.
+`UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
 
-A bundle allows 1 through 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
+`UZ-AUTHOR-008` means the authoring model is missing or disabled. In the terminal, run `/model <MODEL_REF>` with another eligible model.
+
+`UZ-REQ-001` means the Definition is invalid. The detail names the field. Every runtime setting sits under `config["x-agentsfleet"]`, and unknown keys are refused.
+
+`UZ-AGT-006` means a fleet already uses the name. Review again under a different `--name`.
+
+A Definition holds at most 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
 
 ## Remove or undo
 
-Delete the installed fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
+Delete a draft with `/delete` in the terminal chat. Deleting it removes its private messages.
 
-Delete a workspace library entry with `DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}`, or with `agentsfleet library delete <ENTRY_ID>`.
+Delete a saved fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
 
 ## Related pages
 
 - [Fleet library](/fleets/library)
+- [Command reference](/cli/agentsfleet)
 - [Tools](/fleets/tools)
 - [Webhooks](/fleets/webhooks)
 - [Secrets](/fleets/secrets)

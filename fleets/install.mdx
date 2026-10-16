@@ -1,9 +1,9 @@
 ---
 title: Install a fleet
-description: Install a fleet from your workspace library.
+description: Create a fleet from a published Library revision.
 type: how-to
 audience: user
-verified: 2026-09-24
+verified: 2026-10-15
 executable: false
 ---
 
@@ -11,11 +11,15 @@ executable: false
 
 ## What this does
 
-This creates a fleet from one library entry. Installation is the only creation step; there is no separate start command.
+This creates a fleet from one published Library revision. You review the revision's setup under your fleet name, then save it.
+
+Saving pins the fleet to that revision. A later revision of the same entry never changes the fleet until you apply it yourself.
 
 ## Before you begin
 
-Sign in and select a workspace. Save every secret required by the library entry.
+Sign in and select a workspace. Save every secret the entry needs; the review lists them.
+
+`<MODEL_REF>` names an authoring model the workspace owner enabled. [Author a fleet](/fleets/authoring) shows where it comes from. A Library draft starts without a chat message, so no authoring model call runs.
 
 ## Steps
 
@@ -26,46 +30,59 @@ Sign in and select a workspace. Save every secret required by the library entry.
    ```
 
    ```text
-   NAME                            LIBRARY                        TIER        SECRETS    AGO
-   GitHub Pull Request reviewer    github-pr-reviewer             platform    github     41d
+   NAME        LIBRARY     TIER        REVISION    AGO
    <varies>
+   Start from a revision: agentsfleet chat --library <library_id> --revision <revision_id>
    ```
 
-   The gallery holds both tiers. `TIER` reads `platform` for an entry every
-   workspace sees and `tenant` for one this workspace owns.
+   The gallery holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns. `REVISION` is the entry's latest revision.
 
-   Two entries can share a name across the tiers, so `TIER` is what tells them
-   apart. In the dashboard the same distinction is a badge on each card,
-   reading `Platform` or `This workspace`.
+2. Open a private draft from that revision and review it under your fleet name.
 
-   An entry you need but cannot see is onboarded with `agentsfleet library create`.
-
-2. Install one library entry.
+   `<LIBRARY_ID>` and `<REVISION_ID>` come from the gallery. `<NAME>` is the fleet name you choose.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
+   agentsfleet chat --library <LIBRARY_ID> --revision <REVISION_ID> --model <MODEL_REF> --no-input --review --name <NAME>
    ```
 
    ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-     Webhook URLs (register on the upstream provider):
-       github: <varies>
+   ✓ Draft <DRAFT_ID> created
+   Instance: <NAME>
+   Runtime model: <varies>
+   <varies>
+   Review digest: <DIGEST>
    ```
 
-   The requirement lines come first, so you see what the fleet was granted
-   before you see that it is live.
+   The review shows the full setup, the secrets, tools, and network hosts it needs, and a readiness line for each.
 
-   Add `--slack-channel <CHANNEL_ID>` to have the fleet answer mentions in one
-   Slack channel. [Answer mentions in Slack](/fleets/slack) covers the channel
-   identifier (ID) and how a mention picks a fleet.
+3. Save the draft with the digest you reviewed.
 
-3. Register each printed webhook URL with its provider.
+   ```bash
+   agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
+   ```
 
-   For GitHub, open **Repository settings → Webhooks → Add webhook**. Use the matching workspace webhook secret.
+   ```text
+   <varies>
+   ✓ Fleet <NAME>: active
+   ```
+
+   Add `--run-now <MESSAGE>` to send the fleet one message once it is active.
+
+4. Read the fleet's webhook URLs, if its setup declares a webhook trigger.
+
+   `<FLEET_ID>` comes from `agentsfleet list`.
+
+   ```bash
+   agentsfleet --json fleet show <FLEET_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   Each `webhook_urls` entry pairs a `source` with its `url`. For GitHub, open **Repository settings → Webhooks → Add webhook**. Use the matching workspace webhook secret.
+
+In the dashboard, open **Fleet library**, choose an entry, and choose **Start chat from this revision**.
 
 ## Verify it works
 
@@ -75,7 +92,7 @@ agentsfleet status
 
 ```text
 Fleets
-Name: github-pr-reviewer
+Name: <NAME>
 Status: active
 Events: <varies>
 Budget: <varies>
@@ -87,9 +104,13 @@ prints the command that lists them.
 
 ## Common problems
 
-`UZ-BUNDLE-003` means the workspace lacks a required secret. Create each named secret and run the install command again.
+A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check, such as a missing secret or a pending integration grant, and its next step.
 
-`UZ-AGT-006` means the fleet name already exists. Pass `--name <UNIQUE_NAME>` to install the same bundle again under a free name.
+Fix each check, then run `agentsfleet resume <FLEET_ID>` to check again. The fleet keeps its identifier while it waits.
+
+`UZ-AUTHOR-006` means the setup or its access changed after your review. Review again and save with the new digest.
+
+`UZ-AGT-006` means the fleet name already exists. Review again under a different `--name`.
 
 To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then
 `agentsfleet delete <FLEET_ID>`. Deletion releases the name.
@@ -98,10 +119,10 @@ To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then
   `agentsfleet delete` is irreversible. It takes the Fleet's events, sessions,
   schedules, integration grants, connector channels, and memory with it — a
   name is the only thing you get back. When you only need the name free, prefer
-  `--name <UNIQUE_NAME>` above and leave the existing Fleet in place.
+  a different `--name` and leave the existing Fleet in place.
 </Warning>
 
-After any failed install, run `agentsfleet list` before retrying. Retry only when the fleet is absent.
+A Save whose reply was lost, or that stays `installing`, prints a recovery line with `--operation-id` and `--candidate-id`. Repeat the same command with both flags to resume that Save without creating a second fleet.
 
 ## Remove or undo
 
@@ -128,6 +149,7 @@ agentsfleet delete <FLEET_ID>
 ## Related pages
 
 - [Fleet library](/fleets/library)
+- [Author a fleet](/fleets/authoring)
 - [Secrets](/fleets/secrets)
 - [Run and control a fleet](/fleets/running)
 - [Answer mentions in Slack](/fleets/slack)

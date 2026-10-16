@@ -133,7 +133,6 @@
               "GET /v1/auth/sessions/{session_id}",
               "PATCH /v1/auth/sessions/{session_id}/approve",
               "POST /v1/auth/sessions/{session_id}/verify",
-              "DELETE /v1/auth/sessions/{session_id}",
               "DELETE /v1/auth/sessions",
               "POST /v1/auth/identity-events/clerk",
               "POST /v1/cli-credentials",
@@ -223,10 +222,13 @@
               "POST /v1/runners/me/leases/{lease_id}/schedules/{schedule_id}/runs",
               "POST /v1/runners/me/reports",
               "POST /v1/runners/me/credentials/mint",
-              "GET /v1/runners/me/bundles/{content_hash}",
               "GET /v1/runners/me/memory/{fleet_id}",
               "POST /v1/runners/me/memory/{fleet_id}",
-              "POST /v1/runners/me/memory/{fleet_id}/recall"
+              "POST /v1/runners/me/memory/{fleet_id}/recall",
+              "POST /v1/runners/me/authoring-leases/{lease_id}/renew",
+              "POST /v1/runners/me/authoring-leases/{lease_id}/activity",
+              "POST /v1/runners/me/authoring-leases/{lease_id}/reports",
+              "POST /v1/runners/me/authoring-leases/{lease_id}/model-calls"
             ]
           },
           {
@@ -242,13 +244,27 @@
               "GET /v1/workspaces/{workspace_id}/members",
               "GET /v1/workspaces/{workspace_id}/events",
               "GET /v1/workspaces/{workspace_id}/events/stream",
-              "GET /v1/workspaces/{workspace_id}/onboarding"
+              "GET /v1/workspaces/{workspace_id}/onboarding",
+              "GET /v1/workspaces/{workspace_id}/models"
+            ]
+          },
+          {
+            "group": "Drafts",
+            "pages": [
+              "GET /v1/workspaces/{workspace_id}/drafts",
+              "POST /v1/workspaces/{workspace_id}/drafts",
+              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}",
+              "PATCH /v1/workspaces/{workspace_id}/drafts/{draft_id}",
+              "DELETE /v1/workspaces/{workspace_id}/drafts/{draft_id}",
+              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}/messages",
+              "POST /v1/workspaces/{workspace_id}/drafts/{draft_id}/messages",
+              "POST /v1/workspaces/{workspace_id}/drafts/{draft_id}/cancellations",
+              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}/events/stream"
             ]
           },
           {
             "group": "Workspace preferences",
             "pages": [
-              "GET /v1/workspaces/{workspace_id}/preferences",
               "PUT /v1/workspaces/{workspace_id}/preferences/{pref_key}"
             ]
           },
@@ -268,7 +284,6 @@
               "POST /v1/workspaces/{workspace_id}/connectors/{provider}/connect",
               "GET /v1/workspaces/{workspace_id}/connectors/{provider}",
               "DELETE /v1/workspaces/{workspace_id}/connectors/{provider}",
-              "GET /v1/connectors/{provider}/callback",
               "POST /v1/connectors/{provider}/callback",
               "POST /v1/connectors/{provider}/events"
             ]
@@ -289,21 +304,25 @@
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
+              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access"
             ]
           },
           {
             "group": "Fleet library",
             "pages": [
-              "GET /v1/fleets/bundles",
-              "GET /v1/admin/fleet-libraries",
               "GET /v1/workspaces/{workspace_id}/fleet-libraries",
-              "POST /v1/admin/fleet-libraries",
               "POST /v1/workspaces/{workspace_id}/fleet-libraries",
-              "GET /v1/workspaces/{workspace_id}/library-entries",
+              "GET /v1/workspaces/{workspace_id}/fleet-libraries/owned",
+              "GET /v1/workspaces/{workspace_id}/fleet-libraries/{library_id}",
+              "DELETE /v1/workspaces/{workspace_id}/fleet-libraries/{library_id}",
+              "GET /v1/workspaces/{workspace_id}/fleet-libraries/{library_id}/revisions",
+              "POST /v1/workspaces/{workspace_id}/fleet-libraries/{library_id}/revisions",
+              "GET /v1/workspaces/{workspace_id}/fleet-libraries/{library_id}/revisions/{revision_id}",
+              "GET /v1/admin/fleet-libraries",
+              "POST /v1/admin/fleet-libraries",
               "PATCH /v1/admin/fleet-libraries/{id}",
-              "DELETE /v1/admin/fleet-libraries/{id}",
-              "DELETE /v1/workspaces/{workspace_id}/library-entries/{entry_id}"
+              "DELETE /v1/admin/fleet-libraries/{id}"
             ]
           },
           {
@@ -353,7 +372,7 @@
             "pages": [
               "POST /v1/ingress/{provider}",
               "POST /v1/webhooks/svix/{fleet_id}",
-              "POST /v1/webhooks/{fleet_id}",
+              "POST /v1/webhooks/{fleet_id}/{source}",
               "POST /v1/webhooks/{fleet_id}/approval",
               "POST /v1/webhooks/{fleet_id}/github"
             ]

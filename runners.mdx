@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-10-08
+verified: 2026-10-16
 executable: false
 ---
 
@@ -33,7 +33,7 @@ Put that token on the host, then start `agentsfleet-runner`. [Install a runner](
 |---|---|---|---|
 | `AGENTSFLEET_API_URL` | The control plane the runner asks for work. | none, required | URL beginning with `http://` or `https://` |
 | `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
-| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, fleet bundles, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
+| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
 | `AGENTSFLEET_LOG_LEVEL` | The lowest level the runner writes to standard error. | `info` | `off`, `error`, `warn`, `info`, `debug`, `trace` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the runner sends its traces and metrics, over OpenTelemetry Protocol (OTLP). Unset sends nothing. | none | An `http` or `https` URL with a host and no query, such as `http://127.0.0.1:4318` |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | How the runner encodes what it sends. | `http/protobuf` | `http/protobuf`, `http/json` |
@@ -66,7 +66,7 @@ It counts what it could not deliver to the collector in `agentsfleet_runner_otlp
 
 ### The policy you assign
 
-Policy travels down from the dashboard. Change it under **Admin → Runners → Edit policy** and the host applies it on its next heartbeat. Nobody logs in to the host.
+Policy travels down from the dashboard. Change it under **Admin → Runners → Edit** and the host applies it on its next heartbeat. Nobody logs in to the host.
 
 | Field | What it sets | Default | Valid values |
 |---|---|---|---|
@@ -83,6 +83,12 @@ The three isolation settings differ in what enforces the boundary:
 | Landlock | The Linux kernel restricts which files the fleet can touch. |
 | Nested container | The fleet runs inside a container on a Linux host or virtual machine. |
 | None | No sandbox. Development builds only. |
+
+### Labels
+
+Labels are short names you give a runner when you enrol it. Change them under **Admin → Runners → Edit**, or send `PATCH /v1/fleets/runners/{runner_id}` with a `labels` list.
+
+The new list replaces the old one, and an empty list clears every label. A runner holds at most 32 labels of at most 64 bytes each. `agentsfleetd` reads the labels each time the runner asks for work, so the host needs no restart.
 
 ### The sandbox each run gets
 
@@ -118,7 +124,7 @@ The network policy decides what each sandbox reaches.
 | No egress | Nothing beyond its own loopback interface. |
 | Allowlist egress | Only the addresses on the run's allowlist, and nothing else. |
 
-Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists under `network.allow` in `TRIGGER.md`. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
+Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists in `network.allow` in its Definition. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
 
 An empty Allowlist means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
 
@@ -186,7 +192,7 @@ A runner that simply disappears needs no action. Its work expires and another ru
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
 - **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
 - **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
-- **Live replies need a current runner.** A runner older than `agentsfleet-runner` 0.51.0 still completes runs, but the dashboard shows each reply only when its run finishes. Update runners along with `agentsfleetd`.
+- **A runner older than `agentsfleet-runner` 0.61.0 is refused.** `POST /v1/runners/me/leases` now requires `accepted_kinds`, which an earlier build does not send, so the runner gets no work. Update runners along with `agentsfleetd`.
 
 ## Related pages
 

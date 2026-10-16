@@ -151,11 +151,10 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 |---|---|---|---|---|
 | <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secret create <NAME>` | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | The fleet could not accept work. Check that the fleet exists and is active, then retry. | Use fleet identifiers from the current workspace. |
-| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Pass `--name <UNIQUE_NAME>` to install the same bundle again — this keeps the existing Fleet. Freeing the name instead means `agentsfleet kill <FLEET_ID>` then `agentsfleet delete <FLEET_ID>`, which is irreversible and takes the Fleet's events, sessions, schedules, grants, and memory with it. | Use fleet identifiers from the current workspace. |
+| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A Fleet with this name already exists. Review the draft again under a different `--name` to save it under a free name — this keeps the existing Fleet. Freeing the name instead means `agentsfleet kill <FLEET_ID>` then `agentsfleet delete <FLEET_ID>`, which is irreversible and takes the Fleet's events, sessions, schedules, grants, and memory with it. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | We couldn't find that Fleet. It may have been deleted, or the identifier doesn't match one in this workspace. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | That action isn't available for this Fleet right now — check its current status and try again. | Use fleet identifiers from the current workspace. |
-| <span id="UZ-AGT-011"></span>`UZ-AGT-011` | 400 | Fleet files disagree on `name:` | This Fleet Bundle's files disagree on its name. `SKILL.md` and `TRIGGER.md` must match. Fix the source and try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. | Use fleet identifiers from the current workspace. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. | Use fleet identifiers from the current workspace. |
@@ -178,15 +177,28 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-SCHED-010"></span>`UZ-SCHED-010` | 403 | Schedule not created by the fleet | A fleet can change or delete only the schedules it created. A person created this one. Change it from the schedules page or `agentsfleet schedule`. | A fleet reads every schedule of its own fleet and changes only those with source `fleet`. |
 | <span id="UZ-SCHED-011"></span>`UZ-SCHED-011` | 409 | Schedule cannot run now | The schedule is paused or being removed, or the current run was started by a schedule. The response names the state in `current_state`. | Resume the schedule first. A scheduled run plans its next follow-up with `schedule` or `cron_add` instead. |
 
-### Fleet Bundles
+### Drafts and setup
+
+These codes answer private drafts, Save, Apply, and Library publication.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-BUNDLE-001"></span>`UZ-BUNDLE-001` | 400 | Invalid Fleet Bundle | That Fleet Bundle isn't valid. It's missing `SKILL.md`, or has an unsafe or oversized file. Check the source and try again. | Check Fleet Bundle files and limits before upload. |
-| <span id="UZ-BUNDLE-002"></span>`UZ-BUNDLE-002` | 404 | Fleet Bundle not found | We couldn't find that Fleet Bundle. It may not be installed in this workspace yet — check the Fleet library. | Check Fleet Bundle files and limits before upload. |
-| <span id="UZ-BUNDLE-003"></span>`UZ-BUNDLE-003` | 424 | Fleet Bundle secrets missing | This Fleet Bundle needs secrets this workspace doesn't have yet. Add the missing secrets, then install again. | Check Fleet Bundle files and limits before upload. |
-| <span id="UZ-BUNDLE-004"></span>`UZ-BUNDLE-004` | 502 | Fleet Bundle fetch failed | We couldn't fetch that Fleet Bundle from GitHub. Check the source and try again. | Check Fleet Bundle files and limits before upload. |
-| <span id="UZ-BUNDLE-005"></span>`UZ-BUNDLE-005` | 503 | Fleet Bundle storage unavailable | We couldn't store your Fleet Bundle right now. Try again shortly. | Check Fleet Bundle files and limits before upload. |
+| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | This setup is unavailable. The draft, fleet, or Library entry is missing, belongs to another person or workspace, or is a platform entry you cannot change. Use a resource available to you in this workspace. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-002"></span>`UZ-AUTHOR-002` | 409 | Setup state conflict | Finish or stop the current work before changing setup. The response names the state in `current_state`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-003"></span>`UZ-AUTHOR-003` | 412 | Setup version changed | This setup changed. Fetch the current resource and retry with its `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-004"></span>`UZ-AUTHOR-004` | 428 | Setup version required | Send the resource `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-005"></span>`UZ-AUTHOR-005` | 409 | Operation key conflict | That operation key already belongs to a different request. Reuse a key only for the same request from the same person. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-006"></span>`UZ-AUTHOR-006` | 409 | Setup review changed | This setup changed. Review it before saving. The response carries the fresh `review_digest`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-007"></span>`UZ-AUTHOR-007` | 402 | Authoring balance insufficient | The workspace balance cannot cover this authoring request. The workspace owner adds credit, or the request waits for earlier usage to settle. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-008"></span>`UZ-AUTHOR-008` | 409 | Authoring model unavailable | Choose an available authoring model. The selected model is missing, disabled, or not eligible for authoring. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-009"></span>`UZ-AUTHOR-009` | 409 | Setup policy changed | This setup needs a new review. Review the current setup before continuing. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-010"></span>`UZ-AUTHOR-010` | 422 | Authoring context too large | This request exceeds the authoring model's context limit. Shorten the request or choose a model with a larger window. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-011"></span>`UZ-AUTHOR-011` | 400 | Invalid setup cursor | Reload this list to continue. A cursor works only with the same person, filters, and page size. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-012"></span>`UZ-AUTHOR-012` | 409 | Authoring lease lost | This authoring attempt can no longer update the draft. Refresh the draft before sending another message. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-013"></span>`UZ-AUTHOR-013` | 410 | Setup resource purged | This setup was deleted. Start a new operation. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-014"></span>`UZ-AUTHOR-014` | 502 | Authoring provider failed | The authoring provider could not finish this request. Send the message again. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-015"></span>`UZ-AUTHOR-015` | 409 | Authoring usage unresolved | This model request is waiting for accounting. Wait before sending again. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-016"></span>`UZ-AUTHOR-016` | 504 | Authoring attempt timed out | This authoring attempt ran out of time. Send the message again once its accounting settles. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 
 ### Secrets
 
@@ -230,21 +242,11 @@ A conflict response also contains `current_state`. Some errors contain `user_mes
 | <span id="UZ-PREFS-001"></span>`UZ-PREFS-001` | 400 | Unknown preference key | That setting doesn't exist. Reload the page and try again. | Write only preference keys the dashboard declares, with small values. |
 | <span id="UZ-PREFS-002"></span>`UZ-PREFS-002` | 400 | Preference value too large | That setting is too large to save. Reload the page and try again. | Write only preference keys the dashboard declares, with small values. |
 
-### Fleet library catalog
-
-| Code | HTTP | Title | Why and fix | Prevent |
-|---|---|---|---|---|
-| <span id="UZ-CATALOG-001"></span>`UZ-CATALOG-001` | 404 | Fleet library entry not found | We couldn't find that fleet. It may have already been removed — refresh the page. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
-| <span id="UZ-CATALOG-002"></span>`UZ-CATALOG-002` | 409 | Cannot publish a fleet with no bundle | There's no bundle for this fleet yet. Fetch it from its repository first, then publish. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
-| <span id="UZ-CATALOG-003"></span>`UZ-CATALOG-003` | 409 | Cannot delete a published fleet | This fleet is published. Unpublish it first, then delete it. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
-| <span id="UZ-CATALOG-004"></span>`UZ-CATALOG-004` | 409 | Catalog id already taken by another repository | A different repository already owns this fleet's name. Rename the bundle, or confirm you want to replace it. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
-| <span id="UZ-CATALOG-005"></span>`UZ-CATALOG-005` | 412 | Catalog entry changed since you loaded it | Someone else edited this catalog entry since you opened it. Refresh to see their change, then re-apply your edit. | Fetch a bundle before publishing a fleet, and unpublish before deleting one. |
-
 ### Library listings
 
-These codes answer both library reads: the gallery at `/v1/workspaces/{workspace_id}/fleet-libraries`, and the entries a workspace owns at `/v1/workspaces/{workspace_id}/library-entries`. Each read issues its own page cursor. Spending one collection's cursor on the other earns `UZ-LIBRARY-001`.
+Paged model reads use these codes. The Fleet library reads at `/v1/workspaces/{workspace_id}/fleet-libraries` and `/v1/workspaces/{workspace_id}/fleet-libraries/owned` answer a malformed or mismatched cursor with `UZ-AUTHOR-011` instead.
 
-Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 earns a plain 400 with no library code. A removal that reaches the database and fails earns `UZ-LIBRARY-006`.
+Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one this workspace owns.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
@@ -280,7 +282,7 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 | <span id="UZ-RUN-012"></span>`UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant balance cannot cover another run slice. The lease does not renew, and the run stops cleanly. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed. Token counts become zero, but the renewed slice still charges for runtime. The lease still renews. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
-| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its daily_dollars or monthly_dollars limit from `TRIGGER.md`, so the run stops. The tenant balance is fine; this is the fleet's own budget. | Keep runner settings and lease health within configured limits. |
+| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its `daily_nanos` or `monthly_nanos` limit from its reviewed setup, so the run stops. The tenant balance is fine; this is the fleet's own budget. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-019"></span>`UZ-RUN-019` | 409 | Event has no thread to message | The run came from an API steer, a webhook, or a schedule, so no thread is waiting. Say it in the run's answer instead. | Use `message` only in fleets a Slack mention starts. |
 | <span id="UZ-RUN-020"></span>`UZ-RUN-020` | 409 | Run message limit reached | A run can post at most 8 messages before it answers. Put the rest in the run's answer. | Post progress at milestones, not on every step. |
@@ -309,7 +311,7 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-APPROVAL-001"></span>`UZ-APPROVAL-001` | 400 | Approval parse failed | That approval gate's config is invalid. Check the gates section in TRIGGER.md. | Resolve only current approval requests. |
+| <span id="UZ-APPROVAL-001"></span>`UZ-APPROVAL-001` | 400 | Approval parse failed | That approval gate's config is invalid. Check `gates` in the fleet's Definition. | Resolve only current approval requests. |
 | <span id="UZ-APPROVAL-002"></span>`UZ-APPROVAL-002` | 404 | Approval not found | That approval action wasn't found. It may have already timed out or been resolved elsewhere. | Resolve only current approval requests. |
 | <span id="UZ-APPROVAL-003"></span>`UZ-APPROVAL-003` | 401 | Approval invalid signature | That approval callback couldn't be verified. Check the signing secret configuration. | Resolve only current approval requests. |
 | <span id="UZ-APPROVAL-004"></span>`UZ-APPROVAL-004` | 503 | Approval service unavailable | Approvals are temporarily unavailable. We deny requests while this service is down. Try again shortly. | Resolve only current approval requests. |
@@ -341,9 +343,9 @@ Removing an entry adds no code of its own. An `entry_id` that is not a UUIDv7 ea
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
 | <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | **Retired.** A repository write is authorised by the fleet's integration grant, so no per-event approval can be missing. A run without an approved grant returns [`UZ-GRANT-001`](#UZ-GRANT-001) instead. | Check the grant with `agentsfleet grant list --fleet <FLEET_ID>`. |
-| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | **Retired.** Nothing records a binding at approval time, so nothing can drift from one. A minted token still reaches only the repositories the fleet declares. | Keep `repositories:` in `TRIGGER.md` naming every repository the fleet must reach. |
+| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | **Retired.** Nothing records a binding at approval time, so nothing can drift from one. A minted token still reaches only the repositories the fleet declares. | Keep `repositories` in the fleet's Definition naming every repository the fleet must reach. |
 | <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | A repair Pull Request already links this incident, so a second one is acknowledged and not recorded. Close the surplus Pull Request on GitHub. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
-| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | **Retired.** The 32-request allowance was counted per approval, so a long run drew more than the number its card showed. `budget.daily_dollars` bounds a fleet's spending instead. | Set `budget.daily_dollars` in `TRIGGER.md` to the most a fleet may spend in a day. |
+| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | **Retired.** The 32-request allowance was counted per approval, so a long run drew more than the number its card showed. `budget.daily_nanos` bounds a fleet's spending instead. | Set `budget.daily_nanos` in the fleet's Definition to the most a fleet may spend in a day. |
 | <span id="UZ-REPAIR-014"></span>`UZ-REPAIR-014` | 200 | Repair provenance refused | The repair branch does not match an approved write gate on workspace, Fleet, event, installation, repository, and App author. The delivery is acknowledged and nothing is recorded. | Have a human approve the repository-write gate before the run mints a write-scoped token. |
 
 ### Integration grants

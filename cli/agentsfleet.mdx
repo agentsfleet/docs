@@ -28,19 +28,22 @@ agentsfleet --help
 ```
 
 ```text
-Usage: agentsfleet [options] [command]
+DESCRIPTION
+  agentsfleet cli
 
-Options:
-  -v, --version    Show version
-  --api <url>      API base URL
-  --json           Machine-readable JSON output
-  <varies>
+USAGE
+  agentsfleet <subcommand> [flags]
 
-Commands:
-  login [options]  Authenticate via browser
-  workspace        Manage workspaces
-  fleet            Fleet management subcommands
-  <varies>
+FLAGS
+  --api <url>    API base URL
+  --json         Machine-readable JSON output
+<varies>
+SUBCOMMANDS
+  login        Authenticate via browser
+<varies>
+  chat         Create, resume, and review a private workspace chat
+  fleet        Fleet management subcommands
+<varies>
 ```
 
 ## Options
@@ -95,24 +98,100 @@ Write these after `login`. Only `agentsfleet login` reads them.
 | `agentsfleet grant list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
 | `agentsfleet grant delete --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
 
+### Chat
+
+`agentsfleet chat` creates, resumes, and reviews a private draft. It is the only way to create a fleet or a Library entry from the terminal. Only the person who starts a draft can read it.
+
+| Command | Effect |
+|---|---|
+| `agentsfleet chat --model <MODEL_REF>` | Starts a blank draft and opens an interactive chat. |
+| `agentsfleet chat <DRAFT_ID>` | Resumes a draft and prints its earlier messages. |
+| `agentsfleet chat --definition <PATH> --model <MODEL_REF>` | Starts a draft from a Definition JSON file, with no chat message. |
+| `agentsfleet chat --library <LIBRARY_ID> --revision <REVISION_ID> --model <MODEL_REF>` | Starts a draft from one Library revision, with no chat message. |
+| `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>` | Starts a draft that improves an existing fleet, with no chat message. |
+
+`<MODEL_REF>` is the `ref` of an authoring model from `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. `<SETUP_REVISION>` is the fleet's `setup_revision` field from `agentsfleet --json fleet show <FLEET_ID>`.
+
+In an interactive chat, ordinary text is a message. These actions start with `/`:
+
+| Slash command | Effect |
+|---|---|
+| `/review [INSTANCE_NAME]` | Prints the full setup, its required access, its readiness checks, and its review digest. The name selects the fleet name. |
+| `/save` | Saves the reviewed setup as a new fleet. |
+| `/run <MESSAGE>` | Saves the reviewed setup and sends the fleet `<MESSAGE>` once. |
+| `/publish <LABEL>` | Publishes the reviewed setup as a Library entry. |
+| `/apply` | Applies the reviewed improvement to its source fleet. |
+| `/model <MODEL_REF>` | Changes the authoring model for later messages. |
+| `/stop` | Cancels every accepted message in the draft that has not finished. Ctrl+C stops the reply you are following. |
+| `/retry` | Repeats the last action whose outcome was unknown. |
+| `/delete` | Deletes the draft and its private messages. |
+| `/quit` | Leaves the chat. The draft stays for `agentsfleet chat <DRAFT_ID>`. |
+
+Save, publish, and apply each use only the setup you last reviewed. A message after a review needs a new review first.
+
+Outside a terminal, add `--no-input` and name every action as a flag. This pair reviews a Definition, then saves it with the digest the review printed:
+
+```bash
+agentsfleet chat --definition <PATH> --model <MODEL_REF> --no-input --review --name <NAME>
+```
+
+```text
+✓ Draft <DRAFT_ID> created
+Instance: <NAME>
+<varies>
+Review digest: <DIGEST>
+```
+
+```bash
+agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
+```
+
+```text
+<varies>
+✓ Fleet <NAME>: active
+```
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `--model <MODEL_REF>` | Selects the authoring model for a new draft. Required unless you resume a draft. | None | Model reference |
+| `--message <TEXT>` | Sends one chat message and follows its reply. | None | 1 to 32,768 bytes |
+| `--definition <PATH>` | Starts from a Definition JSON file. | None | Readable file, at most 128 KiB |
+| `--library <LIBRARY_ID>` | Starts from a Library entry. Needs `--revision`. | None | Library identifier |
+| `--revision <REVISION_ID>` | Selects the exact Library revision. | None | Revision identifier |
+| `--fleet <FLEET_ID>` | Starts an improvement of an existing fleet. Needs `--setup-revision`. | None | Fleet identifier |
+| `--setup-revision <SETUP_REVISION>` | Selects the fleet setup revision to improve. | None | Positive whole number |
+| `--no-input` | Runs only the actions you name, with no prompt. | `false` | Boolean |
+| `--review` | Prints the full setup, access, readiness, and review digest. | `false` | Boolean |
+| `--name <NAME>` | Selects the fleet name before the review. | The draft's current fleet name | Lowercase letters, digits, and hyphens |
+| `--review-digest <DIGEST>` | The digest of the review you inspected. Required with `--save`, `--apply`, and `--publish`. | None | Digest text |
+| `--save` | Saves the reviewed setup as a new fleet. | `false` | Boolean |
+| `--run-now <TEXT>` | With `--save`, sends the new fleet this message once. | None | 1 to 32,768 bytes |
+| `--apply` | Applies the reviewed improvement to its source fleet. | `false` | Boolean |
+| `--publish <LABEL>` | Publishes the reviewed setup as a Library entry with this label. | None | 1 to 100 characters |
+| `--publish-to <LIBRARY_ID>` | With `--publish`, adds a revision to this owned entry instead. | None | Library identifier |
+| `--library-etag <ETAG>` | The entry tag you inspected. Required with `--publish-to`. | None | Entity tag |
+| `--stop` | Cancels every accepted message in the draft that has not finished. | `false` | Boolean |
+| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed |
+| `--candidate-id <ID>` | With `--operation-id`, names the setup the retried Save, Apply, or publish used. | None | Identifier the client printed |
+| `--setup-etag <ETAG>` | With `--operation-id` and `--apply`, names the fleet setup tag you inspected. | None | Identifier the client printed |
+
+One invocation takes one source and at most one of `--save`, `--apply`, and `--publish`. A digest that does not match the current review is refused with exit code `4`.
+
+A Save that leaves the fleet `installing` prints each waiting check and exits with code `1`. A Save, Apply, or publish whose reply was lost prints the `--operation-id` and `--candidate-id` values to retry with.
+
 ### Fleets
 
 | Command | Effect |
 |---|---|
-| `agentsfleet library` | Lists the workspace gallery: every entry this workspace can install, platform and workspace alike. |
-| `agentsfleet library create --github <OWNER>/<REPOSITORY>` | Onboards a workspace library entry from a GitHub repository. |
-| `agentsfleet library create --from <PATH>` | Onboards a workspace library entry from a local bundle directory. |
-| `agentsfleet library create --template <TEMPLATE_ID>` | Onboards a workspace library entry from a built-in template. |
-| `agentsfleet library list` | Lists only the entries this workspace onboarded, with the identifier each removal names. |
-| `agentsfleet library delete <ENTRY_ID>` | Removes one entry this workspace onboarded. Fleets installed from it keep running. |
-| `agentsfleet install --library <LIBRARY_ID>` | Installs one library entry. `--slack-channel <CHANNEL_ID>` also attaches the fleet to one Slack channel, so it answers mentions there. |
+| `agentsfleet library` | Lists the workspace gallery: every entry this workspace can use, platform and workspace alike. |
+| `agentsfleet library list` | Lists only the entries this workspace owns. |
+| `agentsfleet library delete <LIBRARY_ID>` | Removes one entry this workspace owns, with its revision history. Fleets saved from it keep running. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
-| `agentsfleet fleet update <FLEET_ID> --from <PATH>` | Updates a fleet from a local bundle. |
 | `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. |
 | `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
 | `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
-| `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. |
-| `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. |
+| `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. On an `installing` fleet, it checks setup again and activates the fleet when every check passes. |
+| `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. On an `installing` fleet, it cancels setup and returns the draft to editing. |
 | `agentsfleet delete <FLEET_ID>` | Deletes a killed fleet and its stored data. This cannot be undone. |
 | `agentsfleet logs [FLEET_ID]` | Shows recent activity. |
 | `agentsfleet events <FLEET_ID>` | Lists historical events with filters. |
@@ -120,15 +199,11 @@ Write these after `login`. Only `agentsfleet login` reads them.
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
-`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything installable here, platform entries included. The second lists only what this workspace onboarded, which is the set `agentsfleet library delete` can act on.
+`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what this workspace owns, which is the set `agentsfleet library delete` can act on.
 
-`agentsfleet library delete` is repeatable. Running it twice on one identifier succeeds both times, and so does running it on an identifier this workspace never owned. Removal is permanent: onboard the bundle again to get an entry back, and it arrives with a new identifier.
+`agentsfleet library delete` removes an entry permanently. Removing a platform entry, another workspace's entry, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
 
-`agentsfleet library create` takes exactly one source. Passing none, or more than one of `--github`, `--from`, and `--template`, is rejected with exit code `4`.
-
-`--ref <REVISION>` pins the revision to fetch and accompanies `--github` only. `--from <PATH>` reads a directory holding `SKILL.md`, and `TRIGGER.md` beside it when the bundle declares one.
-
-`--replace` overwrites the entry the workspace already holds under that name. Without it, a name the workspace already holds is refused.
+Fleets and Library entries come only from reviewed chat drafts. The file, GitHub, and template import commands, `agentsfleet install`, and `agentsfleet fleet update` were removed; `agentsfleet chat` replaces them.
 
 ### Approvals
 
@@ -140,7 +215,7 @@ Write these after `login`. Only `agentsfleet login` reads them.
 | `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
 | `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
 
-A fleet whose `TRIGGER.md` declares `repository_access: write` opens a gate on every run. The run parks until a person decides that gate, so an unresolved gate stops `agentsfleet steer` from finishing.
+A fleet whose Definition declares `repository_access: write` opens a gate on every run. The run parks until a person decides that gate, so an unresolved gate stops `agentsfleet steer` from finishing.
 
 A decision is final. The next run opens its own gate, and the previous decision does not carry over.
 
@@ -246,7 +321,7 @@ The codes are `MISSING_ARGUMENT`, `MISSING_OPTION_VALUE`, `MISSING_REQUIRED_OPTI
 
 API failures include a stable error code and request identifier when the server supplies them. Use both values when reporting a problem.
 
-A server failure is reported with the message the server wrote for a reader, not with its internal detail text. A refused install reads `That Fleet Bundle isn't valid. It's missing SKILL.md, or has an unsafe or oversized file. Check the source and try again.` in place of `Fleet Bundle is invalid`.
+A server failure is reported with the message the server wrote for a reader, not with its internal detail text. A Save refused after a setup change reads `This setup changed. Review it before saving.` in place of the server's detail text.
 
 The [error registry](/api-reference/error-codes) lists the message each code carries.
 
@@ -255,6 +330,7 @@ The [error registry](/api-reference/error-codes) lists the message each code car
 - [Install the client](/cli/install)
 - [Global options](/cli/flags)
 - [Client configuration](/cli/configuration)
+- [Author a fleet](/fleets/authoring)
 - [Fleet library](/fleets/library)
 - [Approve a waiting run](/fleets/approvals)
 - [Quickstart](/quickstart)

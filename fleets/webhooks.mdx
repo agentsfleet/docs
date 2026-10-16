@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-09-19
+verified: 2026-10-16
 executable: false
 ---
 
@@ -13,23 +13,51 @@ executable: false
 
 A webhook sends provider events to one fleet. `agentsfleet` verifies the request before creating an event.
 
-GitHub App events can use managed ingress. Other providers can use the fleet URL printed during installation.
+GitHub App events can use managed ingress. Other providers can use the fleet URL listed in the fleet's `webhook_urls`.
 
 ## Before you begin
 
-Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to `TRIGGER.md`.
+Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in the fleet's Definition.
 
-```yaml
-x-agentsfleet:
-  triggers:
-    - type: webhook
-      source: github
-      repositories:
-        - owner/repository
-      events:
-        - pull_request
-      credential_name: github
+```json
+{
+  "type": "webhook",
+  "source": "github",
+  "repositories": ["owner/repository"],
+  "events": ["pull_request"],
+  "credential_name": "github"
+}
 ```
+
+[Author a fleet](/fleets/authoring) shows the whole Definition and how to save it.
+
+`source` names the provider in lowercase letters, digits, and hyphens. It is also the last part of the fleet's webhook URL. Two webhook triggers on one fleet cannot share a source, and `approval` is reserved.
+
+`agentsfleet` verifies signatures from `github`, `linear`, and `slack`. Svix is a webhook delivery service that some providers send through. For a provider that signs with Svix, add a `signature` block that names the workspace secret holding the Svix signing secret.
+
+```json
+{
+  "type": "webhook",
+  "source": "<SOURCE>",
+  "signature": {"secret_ref": "<SECRET_NAME>"}
+}
+```
+
+`<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret you created for it. A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
+
+The secret named by `secret_ref` holds a JSON object, and the Svix signing value goes in its `webhook_secret` field. Create the secret before you save the fleet:
+
+```bash
+agentsfleet secret create <SECRET_NAME> --data='{"webhook_secret":"<SVIX_SIGNING_SECRET>"}'
+```
+
+```text
+✓ Secret '<SECRET_NAME>' stored in vault.
+```
+
+`<SVIX_SIGNING_SECRET>` is a random value of at least 32 bytes, and the sending side signs with the same value.
+
+A Svix-signed source must be the fleet's first webhook trigger, because the Svix URL names only the fleet. A Definition that lists one after another webhook trigger is refused.
 
 <Warning>
 `repositories` is required when the event arrives through a connected GitHub
@@ -39,8 +67,8 @@ names no repository has subscribed to nothing.
 The delivery is then answered `200` with `{"ignored": "UZ-WH-022"}`, so GitHub
 records it as successful and no run starts. Read the body, not the status.
 
-A fleet you post to directly at `/v1/webhooks/{fleet_id}` does not need it. That
-URL already names the fleet, so the sender chose it.
+A delivery posted to the fleet's own webhook URL does not need it. That URL
+already names the fleet and the source, so the sender chose both.
 </Warning>
 
 `events` works the other way round. Omit it and the fleet accepts every event
@@ -57,7 +85,7 @@ GitHub App and a fleet URL are alternatives, not steps in one procedure.
 
 ### A connected GitHub App
 
-Install first. A grant belongs to a fleet, so the fleet has to exist before its
+Save the fleet first. A grant belongs to a fleet, so the fleet has to exist before its
 grant can be approved.
 
 1. Connect the provider once per workspace.
@@ -65,38 +93,28 @@ grant can be approved.
    Open **Settings → Integrations**, choose GitHub, and approve the access
    GitHub requests. The workspace owns the connection.
 
-2. Install the fleet.
+2. Save a fleet whose webhook trigger names your repositories.
+
+   A library entry cannot know your repository. Before you save, ask the chat
+   to set `repositories` on the webhook trigger, or edit the Definition file,
+   then review the change. `<DRAFT_ID>`, `<NAME>`, and `<DIGEST>` come from the review.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
-   ```
-
-   ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-   ```
-
-3. Name your repositories.
-
-   A library entry ships its own `TRIGGER.md` and cannot know your repository,
-   so `--library` alone leaves the fleet subscribed to nothing. Edit `TRIGGER.md`
-   in a local bundle as shown above, then push it to the installed fleet.
-
-   ```bash
-   agentsfleet fleet update <FLEET_ID> --from ./my-bundle
+   agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
    ```
 
    ```text
    <varies>
+   ✓ Fleet <NAME>: installing
+   <varies>
    ```
 
-4. Approve the fleet's integration grant.
+3. Approve the fleet's integration grant.
 
-   Each fleet needs its own approved grant before it receives events. The fleet
-   appears in **Settings → Integrations** once it is installed.
+   Saving raises the grant, and the fleet reads `installing` until a person
+   approves it with [`agentsfleet approvals`](/fleets/approvals). After the
+   approval, run `agentsfleet resume <FLEET_ID>` to finish setup. The fleet
+   then reads `active`.
 
 Register nothing on the repository. The App already delivers, and its events
 reach the fleets whose `repositories` name that repository.
@@ -105,23 +123,21 @@ reach the fleets whose `repositories` name that repository.
 
 Use this for any provider without a connected App.
 
-1. Install or update the fleet.
+1. Save the fleet, then read its webhook URLs.
+
+   `<FLEET_ID>` comes from `agentsfleet list`.
 
    ```bash
-   agentsfleet install --library github-pr-reviewer
+   agentsfleet --json fleet show <FLEET_ID>
    ```
 
    ```text
-     Secrets: github
-     Tools: http_request
-     Network hosts: api.github.com
-   ✓ github-pr-reviewer is live.
-     Fleet ID: <varies>
-     Webhook URLs (register on the upstream provider):
-       github: <varies>
+   <varies>
    ```
 
-2. Copy the URL printed for the matching source.
+2. Copy the `url` from the `webhook_urls` entry whose `source` matches the provider.
+
+   Each source has its own URL, ending in `/v1/webhooks/<FLEET_ID>/<SOURCE>`. A Svix-signed source uses `/v1/webhooks/svix/<FLEET_ID>` instead.
 
 3. Register the URL and signing secret with the provider.
 
@@ -135,7 +151,7 @@ Use this for any provider without a connected App.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from the install output.
+`<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
 agentsfleet events <FLEET_ID> --actor 'webhook:*' --since 1h
@@ -151,10 +167,10 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 
 | Error | Why it happened | Fix |
 |---|---|---|
-| `UZ-WH-001` | The fleet URL is wrong or deleted. | Copy the current URL from the fleet. |
+| `UZ-WH-001` | The fleet URL is wrong or deleted, or the fleet has no webhook trigger with that source. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The trigger's `source` is not a supported provider, or the workspace has no secret for it. | Supported sources are `github`, `slack`, and `linear`. Create the workspace secret named by `credential_name`, which defaults to the `source` name, and put the signing value in its `webhook_secret` field. |
+| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | Create the workspace secret named by `credential_name`, which defaults to the `source` name, or by `signature.secret_ref` for a Svix-signed source, and put the signing value in its `webhook_secret` field. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.
@@ -163,7 +179,7 @@ Rate-limited requests include `Retry-After`. The provider should wait for that d
 
 ## Remove or undo
 
-Delete the webhook from the provider first. Then remove its trigger from `TRIGGER.md` and update the fleet.
+Delete the webhook from the provider first. Then open the fleet's **Setup → Improve in private chat**, remove the trigger, review the change, and choose **Apply reviewed setup**.
 
 Deleting the fleet removes its webhook URL. Requests to the old URL then return `UZ-WH-001`.
 

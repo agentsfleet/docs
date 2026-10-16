@@ -13,7 +13,7 @@ executable: false
 
 `agentsfleet` runs fleets that respond to events. A fleet can inspect data, call allowed tools, and return a result.
 
-Each fleet uses a `SKILL.md` file and an optional `TRIGGER.md` file. The first file defines its task; the second defines its access.
+Each fleet has one Definition. Its instructions define the task, and its runtime settings define its access.
 
 ## Why it exists
 
@@ -21,7 +21,7 @@ Use a fleet for repeated work that starts from a webhook, schedule, or message. 
 
 ## How it behaves
 
-Create a workspace, save the required secrets, and install a fleet. Then connect the trigger source shown by the install output.
+Create a workspace and save the required secrets. Describe a fleet in a private chat, review its setup, and save it. Then connect its trigger source.
 
 Every event creates one run. You can inspect the run through the activity stream.
 
