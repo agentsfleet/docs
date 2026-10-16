@@ -3,7 +3,7 @@ title: Author a fleet
 description: Describe a fleet in a private chat, review its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-16
+verified: 2026-10-17
 executable: false
 ---
 
@@ -19,7 +19,9 @@ A fleet's setup is one Definition: a JSON document holding its description, inst
 
 ## Before you begin
 
-Sign in and select a workspace. The workspace owner must enable at least one model that can author setup.
+Sign in and select a workspace. Setup chat uses eligible models configured by the workspace owner or enabled as the platform default.
+
+Each model needs credentials and saved inference settings: API format, secure HTTP (HTTPS) base URL, context window, and maximum output tokens. A model listed without these settings cannot author setup. See [Model providers](/fleets/model-providers).
 
 `<MODEL_REF>` is the `ref` of an entry returned by `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. Choose one whose `eligibility.authoring` is `true`.
 
@@ -30,7 +32,7 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 ### In the dashboard
 
 1. Open **New fleet** in the workspace sidebar.
-2. Describe the job in the chat. Each reply can change the draft setup.
+2. Check the selected model, then describe the job in the chat. New chats select an available authoring model by default. Each reply can change the draft setup.
 3. Choose **Review setup**. Check the instructions, triggers, tools, secrets, network hosts, and budget.
 4. Choose **Save fleet**, or **Save and run now** to send the fleet a first message.
 
@@ -145,6 +147,8 @@ A Save that prints `installing` and exits with code `1` is waiting on a setup ch
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
 
 `UZ-AUTHOR-008` means the authoring model is missing or disabled. In the terminal, run `/model <MODEL_REF>` with another eligible model.
+
+If the dashboard has no eligible model, open model settings. Check the saved endpoint, API format, token limits, and credentials. Loading failures show a retry action separately from missing configuration.
 
 `UZ-REQ-001` means the Definition is invalid. The detail names the field. Every runtime setting sits under `config["x-agentsfleet"]`, and unknown keys are refused.
 
