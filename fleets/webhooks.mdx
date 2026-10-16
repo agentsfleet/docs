@@ -45,6 +45,8 @@ Create a workspace secret that contains the provider's signing secret. Add a web
 
 `<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret you created for it. A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
 
+A Svix-signed source must be the fleet's first webhook trigger, because the Svix URL names only the fleet. A Definition that lists one after another webhook trigger is refused.
+
 <Warning>
 `repositories` is required when the event arrives through a connected GitHub
 App. One App delivery is offered to every fleet in the workspace. A fleet that
