@@ -7,6 +7,21 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 18, 2026" tags={["API reference", "Bug fixes"]}>
+  ## Fleet pages accept compressed response validators
+
+  Fleet pages open when compression weakens the response's entity tag (ETag). Conditional updates keep the strong version from the response body.
+
+  ## API reference
+
+  - **Killed fleets** return `404` with `UZ-AGT-009` for name or status updates after `If-Match` checks pass. Missing and outdated versions still return `428` and `412`.
+
+  ## Bug fixes
+
+  - **Fleet pages** accept matching strong and weak response validators while refusing a different version.
+  - **Platform Library updates** retain the strong body version when compression weakens the response header.
+</Update>
+
 <Update label="Oct 17, 2026" tags={["Upgrading", "API reference", "Bug fixes"]}>
   ## Setup chat uses configured models and saved inference settings
 
