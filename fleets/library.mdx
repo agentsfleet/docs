@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-10-16
+verified: 2026-10-17
 executable: false
 ---
 
@@ -22,6 +22,10 @@ The library lets a workspace reuse a setup that someone already reviewed. A flee
 ## How it behaves
 
 Entries come only from reviewed chat drafts. Saving a fleet never publishes it, and publishing never creates a fleet.
+
+The dashboard has two tabs: **All** includes published platform setups and this workspace's setups; **This workspace** shows only this workspace's setups. An empty library means no published setups are available in that view. Create a setup in chat, review it, then publish it.
+
+The library accepts reviewed Definitions. Older Markdown bundle entries were removed during the Definition rollout and do not appear. To reuse older instructions, paste them into a new setup chat and publish the reviewed result.
 
 Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. To move a fleet forward, improve it in a private chat and apply the reviewed change.
 

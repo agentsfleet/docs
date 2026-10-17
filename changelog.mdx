@@ -7,6 +7,29 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 17, 2026" tags={["Upgrading", "API reference", "Bug fixes"]}>
+  ## Setup chat uses configured models and saved inference settings
+
+  Setup chat selects an eligible configured model by default. Model endpoints, API formats, and output limits now come from the Model library.
+
+  ## Upgrading
+
+  - **Model configuration** — configure each model's inference API, HTTPS base URL, and maximum output tokens before using it. Existing rows without these settings remain unavailable for chat and fleet runs.
+  - **Daemon and runner** — upgrade both together so runtime leases carry the saved inference settings.
+
+  ## API reference
+
+  - **Model settings** — `POST /v1/admin/models` and `PATCH /v1/admin/models/{id}` accept `inference` with `api`, `base_url`, optional `dialect`, and `max_output_tokens`. Rates-only updates preserve saved inference settings.
+
+  ## Bug fixes
+
+  - **Model choices** — chat lists eligible workspace-owner models and the active platform model. A missing configuration shows a centered explanation with a settings action.
+  - **Fleet library** — **All** and **This workspace** tabs filter published setups. Empty views explain how to publish one.
+  - **Fleet list** — an empty workspace keeps its **New fleet** action without an orphaned **Your fleets** heading.
+  - **Lease review** — **Status** and the fleet link appear above expandable technical details.
+  - **Hosted access** — public website access links lead to the waitlist, including **Sign in** links.
+</Update>
+
 <Update label="Oct 15, 2026" tags={["Upgrading", "What's new", "API reference", "CLI"]}>
   ## Fleets are written in a private chat, reviewed, and saved
 
