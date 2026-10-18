@@ -7,6 +7,35 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 18, 2026" tags={["API reference", "Bug fixes"]}>
+  ## Fleet pages accept compressed response validators
+
+  Fleet pages open when compression weakens the response's entity tag (ETag). Conditional updates keep the strong version from the response body.
+
+  ## What's new
+
+  - **Dashboard navigation** uses clearer page headings, mint section markers, and brief transitions that respect reduced-motion preferences.
+  - **Fleet setup** keeps instructions visible and places runtime JSON under **Full setup details**.
+  - **Mobile tables** keep API-key actions and Billing amounts visible beside each record.
+  - **Billing** includes settled setup-chat costs beside fleet-run costs, including paid failed attempts and costs from deleted private chats.
+
+  ## API reference
+
+  - **Killed fleets** return `404` with `UZ-AGT-009` for name or status updates after `If-Match` checks pass. Missing and outdated versions still return `428` and `412`.
+  - **Cost history** returns setup rows with `charge_type: authoring` and `authoring_attempt_id`. Setup rows can have null `fleet_id`, `fleet_name`, and `event_id`.
+
+  ## Bug fixes
+
+  - **Fleet pages** accept matching strong and weak response validators while refusing a different version.
+  - **Platform Library updates** retain the strong body version when compression weakens the response header.
+  - **Private chats** load when the server omits unused draft metadata.
+  - **Activity and setup streams** reconnect before the hosting time limit and recover saved activity.
+
+  ## CLI
+
+  - **Billing totals** include setup costs. `agentsfleet billing show --limit` bounds charge records and keeps every returned charge before continuing with `next_cursor`.
+</Update>
+
 <Update label="Oct 17, 2026" tags={["Upgrading", "API reference", "Bug fixes"]}>
   ## Setup chat uses configured models and saved inference settings
 

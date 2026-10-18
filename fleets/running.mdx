@@ -3,7 +3,8 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-09-19
+verified: 2026-10-18
+product_version: 0.62.1
 executable: false
 ---
 
@@ -111,6 +112,10 @@ Some fleets are waiting on approval. Review with: agentsfleet approvals list
 ## Common problems
 
 `UZ-AGT-009` means the fleet does not exist in the active workspace. Check the workspace and fleet identifier.
+
+A killed fleet also returns `UZ-AGT-009` when you try to rename it or change its status with a current version. Create another fleet to resume work.
+
+For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for a killed fleet.
 
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
 

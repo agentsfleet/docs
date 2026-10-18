@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-09-24
+verified: 2026-10-18
 executable: false
 ---
 
@@ -284,7 +284,13 @@ credential.
 | `agentsfleet tenant provider show` | Shows the active model provider. |
 | `agentsfleet tenant provider create --secret <NAME>` | Selects a self-managed provider secret. |
 | `agentsfleet tenant provider delete` | Returns the tenant to the platform provider. |
-| `agentsfleet billing show` | Shows the tenant balance and recent charges. |
+| `agentsfleet billing show` | Shows the tenant balance, fleet-run costs, and settled setup-chat costs. |
+
+Billing includes paid failed setup attempts. The setup column shows these costs, with a work identifier for each setup attempt.
+
+`--limit <COUNT>` reads 1–100 charge records per page, with a default of 10. Use the returned `next_cursor` as `<TOKEN>` in `--cursor <TOKEN>` to read the next page.
+
+Runtime charges for the same fleet event group within each page. Every returned charge contributes to the displayed totals.
 
 ## Errors
 
