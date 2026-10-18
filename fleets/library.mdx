@@ -3,7 +3,7 @@ title: Fleet library
 description: Understand platform and workspace library entries.
 type: explanation
 audience: user
-verified: 2026-10-17
+verified: 2026-10-18
 executable: false
 ---
 
@@ -103,7 +103,9 @@ agentsfleet library delete <LIBRARY_ID>
 Publish reviewed chat setup with: agentsfleet chat --help
 ```
 
-Fleets saved from the entry are untouched. Each keeps the revision it was saved from.
+Removal deletes every revision of the entry. Fleets saved from the entry keep running on the setup they were saved with.
+
+A draft started from the entry, or published to it, stays. The draft loses its link to the entry and keeps its own content.
 
 You can remove only an entry this workspace owns. A platform entry, another workspace's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
 

@@ -167,11 +167,19 @@ If the dashboard has no eligible model, open model settings. Check the saved end
 
 `UZ-AGT-006` means a fleet already uses the name. Review again under a different `--name`.
 
+A retried draft creation, Save, Apply, or publish reuses its operation key. For 24 hours after the first attempt, the same key and request return the first result.
+
+The same key with a different request, or from another person, fails with `UZ-AUTHOR-005`. A key whose draft or Library entry was deleted fails with `UZ-AUTHOR-013`. After 24 hours, the key counts as new.
+
 A Definition holds at most 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
 
 ## Remove or undo
 
 Delete a draft with `/delete` in the terminal chat. Deleting it removes its private messages.
+
+Saving a fleet closes its draft. `agentsfleet` keeps a closed draft and its messages for 30 days, then deletes them. The draft's `expires_at` field shows when.
+
+Charges for the draft's chat messages stay in the workspace's billing records.
 
 Delete a saved fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
 

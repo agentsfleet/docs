@@ -171,7 +171,7 @@ agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIG
 | `--publish-to <LIBRARY_ID>` | With `--publish`, adds a revision to this owned entry instead. | None | Library identifier |
 | `--library-etag <ETAG>` | The entry tag you inspected. Required with `--publish-to`. | None | Entity tag |
 | `--stop` | Cancels every accepted message in the draft that has not finished. | `false` | Boolean |
-| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed |
+| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed, usable for 24 hours |
 | `--candidate-id <ID>` | With `--operation-id`, names the setup the retried Save, Apply, or publish used. | None | Identifier the client printed |
 | `--setup-etag <ETAG>` | With `--operation-id` and `--apply`, names the fleet setup tag you inspected. | None | Identifier the client printed |
 

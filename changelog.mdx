@@ -7,6 +7,31 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 18, 2026" tags={["Upgrading", "What's new", "API reference"]}>
+  ## API timestamps are RFC 3339 strings
+
+  Every timestamp the API sends is a Request for Comments (RFC) 3339 string in Coordinated Universal Time (UTC), such as `2026-10-17T18:06:49.123Z`. Unix millisecond numbers are gone. This release also rebuilds the database schemas and fixes how long closed drafts and retry keys last.
+
+  ## Upgrading
+
+  - **Compare parsed timestamps** — a whole second prints without a fraction, as `2026-10-17T18:06:49Z`. Text order is not time order, so parse before comparing.
+  - **Start from an empty database** — `agentsfleetd migrate` builds the new schemas from empty. It does not upgrade a database from an earlier release.
+  - **Daemon and runner** — upgrade both together. Runner requests no longer carry `deletion_generation`.
+
+  ## What's new
+
+  - **Closed drafts last 30 days** — saving a fleet closes its draft. The draft and its messages are deleted 30 days later, and its `expires_at` shows when.
+  - **Retry keys last 24 hours** — a retried draft creation, Save, Apply, or publish returns the first result for 24 hours. A different request under the same key fails with `UZ-AUTHOR-005`, and a deleted draft or entry with `UZ-AUTHOR-013`.
+  - **Library removal deletes every revision** — fleets saved from the entry keep their setup. Drafts started from or published to it stay, without the link.
+
+  ## API reference
+
+  - **Timestamps you send** — any RFC 3339 offset is accepted. A value finer than a millisecond is refused.
+  - **Event identifiers** — `event_id` from `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages` and from webhook deliveries is a version 7 UUID. It was `<milliseconds>-<sequence>`.
+  - **Runner status** — `GET /v1/fleets/runners` and `PATCH /v1/fleets/runners/{runner_id}` return `status` in place of `admin_state`.
+  - **Runner events** — online and offline events from `GET /v1/fleets/runners/{runner_id}/events` carry `last_seen_at` in `metadata` as an RFC 3339 string.
+</Update>
+
 <Update label="Oct 18, 2026" tags={["API reference", "Bug fixes"]}>
   ## Fleet pages accept compressed response validators
 

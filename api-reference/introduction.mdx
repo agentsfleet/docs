@@ -3,7 +3,7 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-09-19
+verified: 2026-10-18
 executable: false
 ---
 
@@ -47,7 +47,11 @@ curl https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets -H "Authori
 
 Errors use the HTTP problem details format. Each product error includes an `error_code`, a `request_id`, and a documentation URL.
 
-Identifiers use version 7 Universally Unique Identifiers (UUIDs). Timestamps use Unix milliseconds unless an operation states another unit.
+Identifiers use version 7 Universally Unique Identifiers (UUIDs).
+
+Timestamps are Request for Comments (RFC) 3339 strings in Coordinated Universal Time (UTC), such as `2026-10-17T18:06:49.123Z`. A whole second has no fraction, as in `2026-10-17T18:06:49Z`. Compare timestamps after parsing them, because text order is not time order.
+
+A timestamp you send may use any RFC 3339 offset. It may carry at most millisecond precision; a finer value is refused.
 
 ## Limits
 
