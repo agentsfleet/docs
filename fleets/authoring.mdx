@@ -3,7 +3,7 @@ title: Author a fleet
 description: Describe a fleet in a private chat, review its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-17
+verified: 2026-10-18
 executable: false
 ---
 
@@ -27,14 +27,27 @@ Each model needs credentials and saved inference settings: API format, secure HT
 
 Each chat message is charged to the workspace owner's balance. A message the balance cannot cover fails with `UZ-AUTHOR-007`.
 
+**Settings → Billing** shows settled setup-chat costs beside fleet-run costs, including paid failed attempts. Costs remain visible after you delete a private setup chat. Messages still awaiting accounting appear after their costs settle.
+
 ## Steps
 
 ### In the dashboard
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the job in the chat. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Choose **Review setup**. Check the instructions, triggers, tools, secrets, network hosts, and budget.
-4. Choose **Save fleet**, or **Save and run now** to send the fleet a first message.
+3. Choose **Review setup**. Compare the proposed task, instructions, triggers, access, and spending limits with what you asked for.
+4. Choose **Save fleet**. To request a first run immediately, enter a message and choose **Save and run now** instead.
+5. Choose **Open fleet** when the saved fleet appears. Its sections are **Chat**, **Activity**, **Memory**, **Setup**, and **Trigger**.
+
+Opening review creates no fleet and requests no run. **Save fleet** requests no first run, but configured automatic triggers can start work once setup is ready.
+
+**Fleet saved** shows setup and first-run status separately. Setup readiness means the fleet can receive work. An accepted first run can still be running.
+
+Keep unfinished setup steps and schedule registration warnings in view. Use the displayed retry action when setup needs attention.
+
+To change a saved fleet, open **Setup** and choose **Edit fleet**.
+Describe the change in the private chat, choose **Review setup**, then choose **Apply reviewed setup**.
+New work uses the updated instructions; work already running keeps its current version.
 
 ### In the terminal
 
