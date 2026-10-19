@@ -1,6 +1,6 @@
 ---
 title: Fleet library
-description: Understand platform and workspace library entries.
+description: Understand platform and account-owned library entries.
 type: explanation
 audience: user
 verified: 2026-10-19
@@ -49,7 +49,7 @@ Start from a revision: agentsfleet chat --library <library_id> --revision <revis
 
 A page with no entries reads `No published Fleet libraries in this page.` and shows how to publish one.
 
-## Publish a workspace entry
+## Publish an entry for your account
 
 You publish from a reviewed draft. Publishing does not close the draft, so you can keep editing it.
 
@@ -79,7 +79,7 @@ Publishing needs the `library:write` scope.
 | `--library-etag <ETAG>` | The entry tag you inspected. | None | Entity tag |
 | `--review-digest <DIGEST>` | The digest of the review you inspected. | None; required | Digest text |
 
-## List and remove workspace entries
+## List and remove your account's entries
 
 `agentsfleet library list` lists only the entries your account owns. It never shows a platform entry.
 

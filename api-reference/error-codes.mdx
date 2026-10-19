@@ -184,7 +184,7 @@ These codes answer private drafts, Save, Apply, and Library publication.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | This setup is unavailable. The draft, fleet, or Library entry is missing, belongs to another person or workspace, or is a platform entry you cannot change. Use a resource available to you in this workspace. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | The draft or fleet is missing or outside your access. A Library entry may be missing, belong to another account, or be a platform entry you cannot change. Use a resource available to you. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-002"></span>`UZ-AUTHOR-002` | 409 | Setup state conflict | Finish or stop the current work before changing setup. The response names the state in `current_state`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-003"></span>`UZ-AUTHOR-003` | 412 | Setup version changed | This setup changed. Fetch the current resource and retry with its `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-004"></span>`UZ-AUTHOR-004` | 428 | Setup version required | Send the resource `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
@@ -247,7 +247,7 @@ These codes answer private drafts, Save, Apply, and Library publication.
 
 Paged model reads use these codes. The Fleet library reads at `/v1/workspaces/{workspace_id}/fleet-libraries` and `/v1/workspaces/{workspace_id}/fleet-libraries/owned` answer a malformed or mismatched cursor with `UZ-AUTHOR-011` instead.
 
-Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one this workspace owns.
+Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one your account owns.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
