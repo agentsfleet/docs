@@ -6,9 +6,9 @@
     "default": "dark"
   },
   "colors": {
-    "primary": "#087568",
-    "light": "#5eead4",
-    "dark": "#087568"
+    "primary": "#06695e",
+    "light": "#b8f0ce",
+    "dark": "#06695e"
   },
   "fonts": {
     "heading": {
@@ -458,8 +458,8 @@
   },
   "background": {
     "color": {
-      "light": "#f7faf9",
-      "dark": "#131d21"
+      "light": "#f8f6f0",
+      "dark": "#151716"
     }
   }
 }

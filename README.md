@@ -10,8 +10,8 @@
 
 Each one wakes on an event — a pull request, an incident, a deploy. It investigates across your code, telemetry, and live control-plane state, then opens a scenario-backed fix. It waits for human approval before it ships or drafts the customer reply. It runs against a durable, replayable log — posts evidenced answers, never chats.
 
-[![Docs](https://img.shields.io/badge/agentsfleet-Docs-5EEAD4?style=for-the-badge)](https://docs.agentsfleet.net)
-[![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-5EEAD4?style=for-the-badge)](https://accounts.agentsfleet.net/waitlist)
+[![Docs](https://img.shields.io/badge/agentsfleet-Docs-B8F0CE?style=for-the-badge)](https://docs.agentsfleet.net)
+[![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-B8F0CE?style=for-the-badge)](https://accounts.agentsfleet.net/waitlist)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -20,16 +20,17 @@ Each one wakes on an event — a pull request, an incident, a deploy. It investi
 
 ## Development
 
-Before editing a page or API text, read `~/Projects/dotfiles/docs/DOCUMENTATION_RULES.md`.
+Before editing, read `AGENTS.md` and the product checkout's `.orly/docs/DOCUMENTATION_RULES.md`. For changelog edits, also read `.orly/docs/CHANGELOG_VOICE.md`.
 
-1. Install the [Mintlify CLI](https://www.npmjs.com/package/mint).
+1. Use Bun 1.4.3 and Node.js 24, then install the pinned documentation tools. Mintlify starts a Node.js process for its CLI.
 
 ```bash
-npm i -g mint
+bun install --frozen-lockfile
 ```
 
 ```text
-added <varies> packages in <varies>
+bun install v1.4.3 (<varies>)
+<varies>
 ```
 
 2. Enable the repository's pre-commit checks.
@@ -45,7 +46,7 @@ Git hooks enabled from .githooks
 3. Start the local preview.
 
 ```bash
-mint dev
+make dev
 ```
 
 ```text
