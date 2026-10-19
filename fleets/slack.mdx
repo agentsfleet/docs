@@ -4,10 +4,9 @@ description: Attach a fleet to a Slack channel so it answers when someone mentio
 type: how-to
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Answer mentions in Slack
 
 ## What this does
 
@@ -82,7 +81,9 @@ A mention that names no fleet goes only to a fleet that is running and has no `r
 | Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
 | Any attached fleet | Yes | The named fleet. A paused fleet sends the paused notice. |
 
-A fleet whose Definition declares `repository_access: write` answers only when a mention names it. From one mention it can open at most one draft pull request. It cannot merge the pull request, mark it ready for review, or change a workflow.
+A fleet whose Definition declares `repository_access: write` answers only when a mention names it.
+From one mention it can open at most one draft pull request (PR).
+It cannot merge the PR, mark it ready for review, or change a workflow.
 
 ### The channel's own fleet
 
@@ -146,7 +147,12 @@ To detach a fleet from the channel, remove its `mention` trigger and apply the c
 
 In the terminal, start the same chat with `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>`. `<SETUP_REVISION>` is the `setup_revision` field that `agentsfleet --json fleet show <FLEET_ID>` prints. Ask for the change, then run `/review` and `/apply`.
 
-To remove the channel's own fleet, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`. Deleting it also deletes the channel's memory. The next mention that needs it creates a new one.
+<Warning>
+Deleting the channel's own fleet permanently removes its memory, events, and other fleet records.
+The next mention that needs it creates a new fleet with empty memory.
+</Warning>
+
+To remove it, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`.
 
 Between the two commands, the channel fleet is killed, and a mention that needs it gets no answer. A channel fleet you stop instead of killing answers with the paused notice until you resume it.
 

@@ -4,10 +4,9 @@ description: Create a fleet from a published Library revision.
 type: how-to
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Install a fleet
 
 ## What this does
 
@@ -99,7 +98,7 @@ Budget: <varies>
 Waiting: 0
 ```
 
-`Waiting` counts the approvals this fleet is parked on. A count above zero also
+`Waiting` counts approvals that need your decision. A count above zero also
 prints the command that lists them.
 
 ## Common problems
@@ -112,15 +111,14 @@ Fix each check, then run `agentsfleet resume <FLEET_ID>` to check again. The fle
 
 `UZ-AGT-006` means the fleet name already exists. Review again under a different `--name`.
 
-To reuse the taken name instead, run `agentsfleet kill <FLEET_ID>` and then
-`agentsfleet delete <FLEET_ID>`. Deletion releases the name.
-
 <Warning>
-  `agentsfleet delete` is irreversible. It takes the Fleet's events, sessions,
-  schedules, integration grants, connector channels, and memory with it — a
-  name is the only thing you get back. When you only need the name free, prefer
-  a different `--name` and leave the existing Fleet in place.
+  Deleting a fleet permanently removes its events, sessions, schedules,
+  integration grants, connector channels, and memory. Choose a different name
+  to keep the existing fleet and its data.
 </Warning>
+
+To reuse the taken name, run `agentsfleet kill <FLEET_ID>`, then
+`agentsfleet delete <FLEET_ID>`. Deletion releases the name.
 
 A Save whose reply was lost, or that stays `installing`, prints a recovery line with `--operation-id` and `--candidate-id`. Repeat the same command with both flags to resume that Save without creating a second fleet.
 

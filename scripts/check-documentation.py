@@ -226,8 +226,9 @@ def lint_language(path: Path, body: str, line_offset: int) -> list[str]:
     return errors
 
 
-def parse_headings(body: str) -> list[tuple[int, int, str]]:
-    headings: list[tuple[int, int, str]] = []
+def parse_headings(body: str, title: str = "") -> list[tuple[int, int, str]]:
+    # Mintlify renders the frontmatter title before the page body.
+    headings: list[tuple[int, int, str]] = [(0, 1, title)] if title else []
     in_fence = False
     for number, line in enumerate(body.splitlines(), 1):
         if FENCE_PATTERN.match(line.strip()):
@@ -237,6 +238,17 @@ def parse_headings(body: str) -> list[tuple[int, int, str]]:
         if match:
             headings.append((number, len(match.group(1)), match.group(2).strip("`")))
     return headings
+
+
+def lint_headings(path: Path, headings: list[tuple[int, int, str]], line_offset: int) -> list[str]:
+    errors: list[str] = []
+    h1_count = sum(level == 1 for _, level, _ in headings)
+    if h1_count != 1:
+        errors.append(issue("DOC-25", path, line_offset, f"expected 1 H1, found {h1_count}"))
+    for previous, current in zip(headings, headings[1:]):
+        if current[1] > previous[1] + 1:
+            errors.append(issue("DOC-25", path, current[0] + line_offset - 1, "heading level is skipped"))
+    return errors
 
 
 def lint_fences(path: Path, body: str, line_offset: int) -> list[str]:
@@ -276,13 +288,8 @@ def lint_page(path: Path, text: str) -> list[str]:
     if len(ignores) > 3:
         errors.append(issue("DOC-35", path, 1, "more than 3 lint-ignore entries"))
 
-    headings = parse_headings(body)
-    h1_count = sum(level == 1 for _, level, _ in headings)
-    if h1_count != 1:
-        errors.append(issue("DOC-25", path, line_offset, f"expected 1 H1, found {h1_count}"))
-    for previous, current in zip(headings, headings[1:]):
-        if current[1] > previous[1] + 1:
-            errors.append(issue("DOC-25", path, current[0] + line_offset - 1, "heading level is skipped"))
+    headings = parse_headings(body, fields.get("title", ""))
+    errors.extend(lint_headings(path, headings, line_offset))
 
     page_type = fields.get("type")
     required = PAGE_SECTIONS.get(page_type, [])

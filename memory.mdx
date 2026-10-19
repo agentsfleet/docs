@@ -3,11 +3,10 @@ title: Memory
 description: Learn what a fleet can remember between events.
 type: explanation
 audience: user
-verified: 2026-09-19
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Memory
 
 ## What it is
 
@@ -57,6 +56,7 @@ The dashboard's memory panel follows the cursor to the end on its own, so it sho
 ## Limits
 
 One fleet can keep 1,000 entries. At the limit, `agentsfleet` removes the oldest non-core entry first.
+If every entry is `core`, it removes the oldest core entry.
 
 One entry can contain 16 KiB. One memory update can contain 256 KiB across all changed entries.
 

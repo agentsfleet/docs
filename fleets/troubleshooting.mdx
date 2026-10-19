@@ -3,11 +3,10 @@ title: Troubleshoot a fleet
 description: Find and fix common fleet failures.
 type: troubleshooting
 audience: user
-verified: 2026-09-17
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Troubleshoot a fleet
 
 ## Symptom
 
@@ -75,9 +74,10 @@ Every API error carries a stable error identifier and request identifier. Use bo
    event arrived and matched no fleet. The status is green either way, so read
    the body.
 
-   Then check two things. The fleet's webhook trigger needs `repositories` beside
-   `"source": "github"`, spelled `owner/repository`; case does not matter. And the
-   fleet needs an approved integration grant.
+   Set `repositories` beside `"source": "github"` in the webhook trigger.
+   Use `owner/repository`; case does not matter.
+
+   Then check the fleet's integration grant:
 
    ```bash
    agentsfleet grant list --fleet <FLEET_ID>

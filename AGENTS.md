@@ -1,18 +1,16 @@
 # Documentation project instructions
 
-> The operating model is global: every agent home symlinks to
-> `~/Projects/dotfiles/AGENTS.md`; rule pages and gates resolve from that
-> checkout. This file carries only project facts. Drive work with `orly gate`.
-
-
 ## About this project
 
 - This is the agentsfleet documentation site built on [Mintlify](https://mintlify.com)
 - Pages are MDX files with YAML frontmatter
 - Configuration lives in `docs.json`
-- Run `mint dev` to preview locally on port 3000
-- Run `mint broken-links` to check links
+- Use Bun 1.4.3 for package installation and scripts; Node.js 24 runs the Mintlify CLI
+- Run `bun install --frozen-lockfile` to install the pinned documentation tools
+- Run `make dev` to preview locally on port 3000
+- Run `bun run broken-links` to check links
 - Run `make lint` for the full validation bundle (schema, broken links, markdown link check)
+- Run `bun run orly gate verify` to check changed prose and validate the site
 - Deploys automatically on push to the default branch (Mintlify GitHub integration)
 
 ## Terminology
@@ -40,6 +38,10 @@ Forbidden terminology: `spec`, `stage`, `gate loop`, `scorecard`. These refer to
 
 - Use active voice and second person ("you")
 - Keep sentences concise — one idea per sentence
+- Before editing docs, read `.orly/dispatch/write_documentation.md` and follow its required reads
+- Apply DOC-43 before review: answer first, remove repetition, and preserve required actions and precise facts
+- Keep new changelog entries within five bullets and 120 prose words by default
+- Keep necessary upgrade or safety instructions inline; explain any budget exception in PR review notes
 - Use sentence case for headings
 - Bold for UI elements: Click **Settings**
 - Code formatting for file names, commands, paths, and code references
@@ -70,10 +72,21 @@ The rule applies to every milestone PR, not just trigger/CLI ones — schema mig
 
 Mirror `ui/packages/design-system/src/tokens.css` from the matching product branch when changing `docs.json` or `style.css`.
 
-- Page: `#131d21` dark / `#f7faf9` light.
-- Surfaces: `#1c292e`, `#26363d`, `#31434c` dark / `#ffffff`, `#edf3f1`, `#dfe9e5` light.
-- Text: `#f1f5f5` dark / `#14251f` light. Secondary: `#c6d2d5` / `#435d52`.
-- Links and selected navigation: `#5eead4` dark / `#087568` light.
+- Page: `#151716` dark / `#f8f6f0` light.
+- Surfaces: `#1c1f1d`, `#252926`, `#303631` dark / `#ffffff`, `#f0f0e9`, `#e5e9e0` light.
+- Text: `#f2f0e9` dark / `#14251f` light. Secondary: `#c0c5bc` / `#435d52`.
+- Links and selected navigation: `#b8f0ce` dark / `#06695e` light.
 - Primary action: mint with dark text in dark mode; ink with white text in light mode.
 - Typography: Bricolage Grotesque page titles, Instrument Sans reading and interface text, Commit Mono code and technical values.
 - Use flat fills and readable contrast. Keep the shipped fonts local; preserve their licenses.
+- Mirror `branding/agentsfleet-{dark,light}.svg`, `branding/agentsfleet-mark-glow.svg`, and `branding/favicon.{svg,ico}` into `logo/{dark,light,mark-glow}.svg` and `favicon.{svg,ico}`. Use the outlined wordmarks so logo lettering does not depend on installed fonts.
+
+<!-- orly:begin -->
+**Engineering harness:** read [`.orly/AGENTS.md`](.orly/AGENTS.md) for safety rules, required reading, and lifecycle gates.
+This repository's own rules take precedence.
+
+The import below loads those rules in runtimes that support imports.
+Other runtimes can follow the link above.
+
+@.orly/AGENTS.md
+<!-- orly:end -->

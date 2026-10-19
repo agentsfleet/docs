@@ -3,11 +3,10 @@ title: Install a runner
 description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
 type: how-to
 audience: operator
-verified: 2026-10-08
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Install a runner
 
 ## What this does
 
@@ -225,7 +224,14 @@ systemctl disable --now agentsfleet-runner
 Removed <varies>
 ```
 
-To roll back, first clear the current release's toolbox from `toolbox/incoming`. The runner refuses that directory while it holds two releases' manifests.
+To roll back, first clear the current release's toolbox from `toolbox/incoming`.
+The runner refuses that directory while it holds two releases' manifests.
+
+<Warning>
+This deletes the staged toolbox files. Keep the rest of the storage home;
+it holds run reports the runner has not sent yet.
+If you set `RUNNER_STORAGE_HOME`, use `toolbox/incoming` under that directory instead.
+</Warning>
 
 ```bash
 rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
@@ -234,8 +240,6 @@ rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
 ```text
 (no output)
 ```
-
-If you set `RUNNER_STORAGE_HOME`, clear `toolbox/incoming` under that directory instead. Keep the rest of the storage home, which holds run reports the runner has not sent yet.
 
 Then unpack the previous release's bundle as in steps 2 to 4. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
 

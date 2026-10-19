@@ -4,10 +4,9 @@ description: Permissions that an agentsfleet access token can carry.
 type: reference
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# API scopes
 
 ## Synopsis
 
@@ -17,11 +16,17 @@ Some scope groups use `read`, `write`, and `admin` levels. A higher level includ
 
 ## Example with output
 
-This request uses an obviously fake token. Replace the token with a tenant API key from **Settings → API Keys**.
+Copy `<WORKSPACE_ID>` from `agentsfleet workspace list`. Replace the fake token with a tenant API key from **Settings → API Keys**.
 
 ```bash
-curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_00000000'
+curl -s 'https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets' -H 'Authorization: Bearer af_test_00000000'
 ```
+
+```text
+<varies>
+```
+
+A valid key without `fleet:read` returns this scope error. The fake token above fails authentication instead.
 
 ```text
 {"title":"Insufficient scope","error_code":"UZ-AUTH-022","detail":"Missing required scope: fleet:read"}
@@ -50,7 +55,7 @@ curl -s https://api.agentsfleet.net/v1/fleets -H 'Authorization: Bearer af_test_
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 
-`agentsfleet approvals` spends the approval scopes from a terminal or a script. Listing needs `approval:read`, and approving or denying needs `approval:resolve`.
+`agentsfleet approvals` uses these scopes. Listing needs `approval:read`; approving or denying needs `approval:resolve`.
 
 Operator tokens may carry `runner:*`, `platform-key:*`, `platform-library:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
 

@@ -27,8 +27,6 @@ verified: 2026-07-12
 executable: false
 ---
 
-# Test page
-
 ## What it is
 
 This page explains a fleet.
@@ -60,8 +58,21 @@ class DocumentationCheckerTests(unittest.TestCase):
             path.write_text(content, encoding="utf-8")
             return CHECKER.lint_tree(root)
 
-    def test_should_accept_valid_page(self) -> None:
+    def test_should_accept_body_title_without_frontmatter_title(self) -> None:
+        content = VALID_PAGE.replace("title: Test page\n", "").replace("## What it is", "# Test page\n\n## What it is")
+        self.assertEqual([], self.lint(content))
+
+    def test_should_accept_mintlify_frontmatter_title(self) -> None:
         self.assertEqual([], self.lint(VALID_PAGE))
+
+    def test_should_reject_duplicate_rendered_title(self) -> None:
+        errors = self.lint(VALID_PAGE.replace("## What it is", "# Test page\n\n## What it is"))
+        self.assertTrue(any("DOC-25" in error for error in errors))
+
+    def test_should_reject_heading_jump_after_frontmatter_title(self) -> None:
+        content = VALID_PAGE.replace("## What it is", "### Details\n\n## What it is")
+        errors = self.lint(content)
+        self.assertTrue(any("heading level is skipped" in error for error in errors))
 
     def test_should_accept_fragment_without_page_fields(self) -> None:
         self.assertEqual([], self.lint("Contact support.\n", "snippets/contact.mdx"))

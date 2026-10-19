@@ -4,10 +4,9 @@ description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Command reference
 
 ## Synopsis
 
@@ -291,7 +290,8 @@ take its identifier after it.
 | `agentsfleet schedule show <FLEET_ID> <SCHEDULE_ID>` | Shows one schedule and its state at the upstream scheduler. |
 | `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` | Re-sends the schedule to the upstream scheduler. |
 
-Run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` after `UZ-SCHED-004`, the code the server returns when the upstream scheduler did not confirm a change.
+Run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` when the saved schedule reports an unconfirmed registration.
+A successful HTTP response can still carry a schedule whose synchronization failed; check its state and diagnostic message.
 
 Each option is accepted by the subcommands named beside it.
 
@@ -334,7 +334,7 @@ With `--json`, or when standard output is not a terminal, schedule commands prin
 | `agentsfleet secret create <NAME> --provider <ID> --api-key <KEY> --model <MODEL>` | Stores a model-provider credential. `--provider` and `--model` are both checked against the model catalogue your server serves — run `agentsfleet models` to list it. `--provider openai-compatible` adds a required `https` `--base-url`, makes `--api-key` optional, and accepts any `--model`. |
 | `agentsfleet secret update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data and provider options as `agentsfleet secret create`. |
 | `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
-| `agentsfleet secret list` | Lists secret names, kinds, and creation times as a table. `--json` returns the same fields it always has. |
+| `agentsfleet secret list` | Lists secret names, kinds, and creation times. Use `--json` for structured metadata. |
 | `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
 | `agentsfleet memory list --fleet <FLEET_ID>` | Lists memory entries newest first. |
 | `agentsfleet memory search <QUERY> --fleet <FLEET_ID>` | Searches memory keys and content. |
@@ -345,21 +345,24 @@ With `--json`, or when standard output is not a terminal, schedule commands prin
 
 | Command | Effect |
 |---|---|
-| `agentsfleet models` | Lists regular catalogue models: model id, display name, provider, context window, and per-million-token input, cached-input, and output rates. |
+| `agentsfleet models` | Lists regular models with names, providers, context windows, and input, cached-input, and output rates. |
 | `agentsfleet models --provider <ID>` | Lists one provider's models. |
-| `agentsfleet models --advanced` | Lists the regular models and the advanced ones together. |
+| `agentsfleet models --advanced` | Includes advanced models. Defaults to `false`. |
 
-The table prints `MODEL`, `NAME`, `PROVIDER`, `CONTEXT`, `IN/MTOK`, `CACHED/MTOK`, and `OUT/MTOK`. `CONTEXT` is the exact token count. Each rate is the exact dollar amount per million tokens, never rounded.
+The table prints `MODEL`, `NAME`, `PROVIDER`, `CONTEXT`, `IN/MTOK`, `CACHED/MTOK`, and `OUT/MTOK`.
+Context windows show exact token counts. Rates show exact dollars per million
+tokens, including zero and fractions of a cent.
 
-The client reads every catalogue page before printing. With `--json`, each model keeps its full price schedule, its context source, and when that source was verified.
+The client reads every catalogue page before printing. Use `--json` for each
+model's full price schedule, context source, and verification time.
 
-The dashboard's model picker reads the same catalogue, so both surfaces offer
-the same providers. Rates apply under platform-managed posture; a self-managed
-credential is billed by your own provider account.
+The dashboard's model picker reads the same catalogue. Model rates apply when
+you use platform credentials. Your provider bills model usage when you supply
+your own credentials.
 
-An empty catalogue means an administrator has not primed this server yet. While
-it is empty, `--provider` accepts any value and the server validates the
-credential.
+If the catalogue is empty, ask an administrator to add models. During secret
+creation, an empty or unavailable catalogue skips the client's provider check.
+The server still validates the credential.
 
 ### Tenant settings
 

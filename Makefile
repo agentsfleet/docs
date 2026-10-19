@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 
-.PHONY: dev install-hooks lint test _lint-openapi-drift
+.PHONY: dev install-hooks lint test _lint-openapi-drift _lint-links
 
 OPENAPI_URL ?= https://raw.githubusercontent.com/agentsfleet/agentsfleet/main/public/openapi.json
 
 dev:
-	npx mintlify dev
+	bun run dev
 
 install-hooks:
 	@git config core.hooksPath .githooks
@@ -16,9 +16,17 @@ test:
 	@python3 scripts/check-documentation.py .
 
 lint: test _lint-openapi-drift
-	npx mintlify validate
-	npx mintlify broken-links
-	find . -name "*.mdx" | xargs -I{} npx markdown-link-check --config .mlc-config.json {}
+	bun run validate
+	bun run broken-links
+	$(MAKE) _lint-links
+
+_lint-links:
+	@git ls-files --cached --others --exclude-standard -z '*.mdx' | \
+	while IFS= read -r -d '' page; do \
+		if [ -f "$$page" ]; then \
+			bun run check-links --config .mlc-config.json "./$$page" || exit; \
+		fi; \
+	done
 
 _lint-openapi-drift:
 	@command -v jq >/dev/null 2>&1 || { echo "jq is required for the OpenAPI drift check"; exit 1; }

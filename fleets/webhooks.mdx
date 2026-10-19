@@ -4,20 +4,23 @@ description: Send signed provider events to a fleet.
 type: how-to
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Configure a webhook
 
 ## What this does
 
 A webhook sends provider events to one fleet. `agentsfleet` verifies the request before creating an event.
 
-GitHub App events can use managed ingress. Other providers can use the fleet URL listed in the fleet's `webhook_urls`.
+Connect a GitHub App to route its events to subscribed fleets.
+For a webhook you configure yourself, use the fleet URL listed in `webhook_urls`.
 
 ## Before you begin
 
-Create a workspace secret that contains the provider's signing secret. Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in the fleet's Definition.
+For GitHub, Linear, or Slack, create a workspace secret with the signing value in its `webhook_secret` field.
+Svix setup requires operator help, as described below.
+
+Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in the fleet's Definition.
 
 ```json
 {
@@ -43,19 +46,18 @@ Create a workspace secret that contains the provider's signing secret. Add a web
 }
 ```
 
-`<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret you created for it. A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
+`<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret name your operator provides.
+A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
 
-The secret named by `secret_ref` holds a JSON object, and the Svix signing value goes in its `webhook_secret` field. Create the secret before you save the fleet:
+<Note>
+Svix setup currently requires your deployment operator's help.
+The command-line client and dashboard store JSON objects, but Svix verification requires an unwrapped signing value.
+A JSON secret containing `webhook_secret` will leave this setup blocked.
+</Note>
 
-```bash
-agentsfleet secret create <SECRET_NAME> --data='{"webhook_secret":"<SVIX_SIGNING_SECRET>"}'
-```
-
-```text
-✓ Secret '<SECRET_NAME>' stored in vault.
-```
-
-`<SVIX_SIGNING_SECRET>` is a random value of at least 32 bytes, and the sending side signs with the same value.
+Give your operator the signing secret from the sending provider's webhook settings through your approved secret-sharing channel.
+Keep its `whsec_` prefix and the full base64 value after it.
+An unprefixed or invalid value cannot verify a Svix delivery.
 
 A Svix-signed source must be the fleet's first webhook trigger, because the Svix URL names only the fleet. A Definition that lists one after another webhook trigger is refused.
 
@@ -71,17 +73,18 @@ A delivery posted to the fleet's own webhook URL does not need it. That URL
 already names the fleet and the source, so the sender chose both.
 </Warning>
 
-`events` works the other way round. Omit it and the fleet accepts every event
-type that the path supports. Name one or more and it accepts only those.
+Omit `events` to accept every event type the path supports.
+List event names to accept only those types.
 
-Managed App ingress supports `pull_request`, `workflow_run` and
-`deployment_status`. Naming anything else, or omitting `events` and expecting
-`push` or `issues`, delivers nothing.
+The connected App starts runs for `pull_request` and failed `workflow_run` events.
+Workflow events must have action `completed` and conclusion `failure`.
+Events from repair branches are ignored.
+
+`deployment_status`, `push`, and `issues` start no run, even if you name them or omit `events`.
 
 ## Steps
 
-Pick the path that matches how the provider reaches `agentsfleet`. A connected
-GitHub App and a fleet URL are alternatives, not steps in one procedure.
+Choose the procedure for a connected GitHub App or a webhook URL you configure yourself.
 
 ### A connected GitHub App
 
@@ -144,6 +147,9 @@ Use this for any provider without a connected App.
    For GitHub, open **Repository settings → Webhooks → Add webhook**. Choose the
    required event names.
 
+   The GitHub fleet URL accepts pull request (PR) actions `opened`, `reopened`, `synchronize`, and `ready_for_review`.
+   A connected App also accepts other PR actions. Both paths ignore repair branches.
+
 4. Send a provider test event.
 
    The provider owns delivery and retries. `agentsfleet` owns the URL until the
@@ -170,7 +176,7 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 | `UZ-WH-001` | The fleet URL is wrong or deleted, or the fleet has no webhook trigger with that source. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | Create the workspace secret named by `credential_name`, which defaults to the `source` name, or by `signature.secret_ref` for a Svix-signed source, and put the signing value in its `webhook_secret` field. |
+| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | For GitHub, Linear, or Slack, store `webhook_secret` in the secret named by `credential_name`, or `source` when omitted. Svix needs operator setup. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.

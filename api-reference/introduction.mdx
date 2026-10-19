@@ -4,10 +4,9 @@ description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# API introduction
 
 ## What it is
 
@@ -25,7 +24,8 @@ Most paths accept a bearer token in the `Authorization` header. Tenant API keys 
 
 Interactive users sign in with `agentsfleet login`. Login saves a durable command-line credential that starts with `afc_`. The credential resolves to the person who signed in.
 
-`GET /v1/users/me` returns the person a credential belongs to, their tenant, which credential class proved them, and the scopes they hold. It requires no scope of its own, so it is also the cheapest way to check that a credential still works.
+`GET /v1/users/me` returns your identity, tenant, credential type, and scopes.
+It requires authentication but no particular scope. Use it to check whether a credential still works.
 
 The credential stays valid until a logout, a newer login from the same computer, or a dashboard revoke ends it.
 
@@ -35,15 +35,20 @@ After that ceiling, session verification returns HTTP `503` with `UZ-AUTH-004` u
 
 Webhook and connector paths use provider signatures instead of bearer tokens. The OpenAPI security section on each operation states the required method.
 
-`<WORKSPACE_ID>` comes from `agentsfleet workspace list`. Use an obviously fake key in copied examples.
+To list fleets, copy `<WORKSPACE_ID>` from `agentsfleet workspace list`.
+Replace `<API_KEY>` with a key that has `fleet:read` access to that workspace.
+Create keys under **Settings → API keys** in the dashboard.
 
 ```bash
-curl https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets -H "Authorization: Bearer af_test_00000000"
+curl "https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets" -H "Authorization: Bearer <API_KEY>"
 ```
 
 ```text
-{"items":<varies>,"total":<varies>,"next_cursor":<varies>}
+<varies>
 ```
+
+A successful response contains `items`, `total`, and `next_cursor`.
+These values depend on your workspace. A fake or expired key returns an authentication error.
 
 Errors use the HTTP problem details format. Each product error includes an `error_code`, a `request_id`, and a documentation URL.
 
@@ -55,7 +60,11 @@ A timestamp you send may use any RFC 3339 offset. It may carry at most milliseco
 
 Money amounts are whole nanodollars, written as decimal strings. One United States (US) dollar is `"1000000000"`. Every field whose name contains `_nanos` uses this form, including balances, charges, event costs, and model rates.
 
-Except for the balance below, a nanodollar string holds digits only, with no sign, no leading zero, and no decimal point. It matches `^(0|[1-9][0-9]*)$` and never exceeds `"9223372036854775807"`. Add amounts with integer arithmetic, such as JavaScript `BigInt`, because a floating-point number loses precision past 2^53.
+Except for the balance below, a nanodollar string holds digits only, with no sign, no leading zero, and no decimal point.
+It matches `^(0|[1-9][0-9]*)$` and never exceeds `"9223372036854775807"`.
+
+Add amounts with integer arithmetic, such as JavaScript `BigInt`.
+Floating-point numbers lose precision past 2^53.
 
 `balance_nanos` from `GET /v1/tenants/me/billing` can be negative when settled usage exceeds your credit. It matches `^(0|-?[1-9][0-9]*)$`, from `"-9223372036854775808"` through `"9223372036854775807"`. Zero is always `"0"`, never `"-0"`.
 

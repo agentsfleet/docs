@@ -3,11 +3,10 @@ title: Global options
 description: Options accepted by the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-07-12
+verified: 2026-10-19
+product_version: 0.62.1
 executable: true
 ---
-
-# Global options
 
 ## Synopsis
 
@@ -52,7 +51,8 @@ Invalid command input returns `4`. Local configuration failures return `5`.
 
 An interrupted browser login returns `130`.
 
-A command group run without a subcommand prints its help on standard output and exits `0`, so `agentsfleet workspace | less` shows the same body `agentsfleet workspace --help` does.
+A command group without a subcommand prints its help and exits `0`.
+For example, `agentsfleet workspace` shows the same help as `agentsfleet workspace --help`.
 
 JSON errors include the stable product error identifier when the API supplies one. See the [error registry](/api-reference/error-codes).
 
