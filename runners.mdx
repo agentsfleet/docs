@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-10-16
+verified: 2026-10-19
 executable: false
 ---
 
@@ -150,7 +150,9 @@ At start, the runner builds one test pair with its rules and removes it. When th
 
 The runner page shows two facts side by side: what you have told the runner to do, and whether the host is answering.
 
-The first is the admin state. You set it with the actions below. It moves on its own in one case only: a draining runner becomes `drained` once its last lease finishes.
+The first is the admin state, which the API returns as `status`. You set it with the actions below.
+
+It moves on its own in one case only: a draining runner becomes `drained` once its last lease finishes.
 
 | Admin state | Meaning |
 |---|---|
@@ -184,6 +186,22 @@ You can also stop a runner deliberately:
 - **Revoke** ends its token, so the host's next request is refused.
 
 A runner that simply disappears needs no action. Its work expires and another runner takes it. Work already reported is never run twice.
+
+### Lease history
+
+Each runner page lists the leases the runner held, newest first. A lease is one piece of fleet work the runner took. `GET /v1/fleets/runners/{runner_id}/leases` returns the same list.
+
+A finished lease stays in the history for 30 days, counted from when it finished. Deleting its fleet does not remove it. A lease still running is never removed.
+
+The fleet name, event type, and actor are blank once the fleet or its event is gone. Each lease carries `destination`, which says whether you can open its fleet:
+
+| `destination` | Meaning |
+|---|---|
+| `available` | The fleet exists in your account. **Open fleet** links to it. |
+| `fleet_deleted` | The fleet was deleted. The lease keeps its fleet identifier, and no link is shown. |
+| `not_permitted` | The fleet belongs to another account. No link is shown. |
+
+The runner's lifetime totals count every lease it took, so they can exceed the history the page lists.
 
 ## Limits
 
