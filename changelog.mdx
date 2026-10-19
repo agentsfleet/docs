@@ -7,29 +7,59 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Oct 18, 2026" tags={["Upgrading", "What's new", "API reference"]}>
-  ## API timestamps are RFC 3339 strings
+<Update label="Oct 19, 2026" tags={["Upgrading", "What's new", "API reference", "Bug fixes", "CLI"]}>
+  ## Fleet setup saves directly, and the API sends exact strings
 
-  Every timestamp the API sends is a Request for Comments (RFC) 3339 string in Coordinated Universal Time (UTC), such as `2026-10-17T18:06:49.123Z`. Unix millisecond numbers are gone. This release also rebuilds the database schemas and fixes how long closed drafts and retry keys last.
+  The dashboard saves a fleet's setup without a separate review step. Every API timestamp is a Request for Comments (RFC) 3339 string in Coordinated Universal Time (UTC). Every nanodollar amount is a decimal string, and the database is rebuilt from empty.
 
   ## Upgrading
 
-  - **Compare parsed timestamps** — a whole second prints without a fraction, as `2026-10-17T18:06:49Z`. Text order is not time order, so parse before comparing.
   - **Start from an empty database** — `agentsfleetd migrate` builds the new schemas from empty. It does not upgrade a database from an earlier release.
-  - **Daemon and runner** — upgrade both together. Runner requests no longer carry `deletion_generation`.
+  - **Upgrade runners with the daemon** — renewals and reports carry one usage line per provider request in place of run totals. A report from an earlier `agentsfleet-runner` is refused with `UZ-REQ-001`.
+  - **Runner requests drop `deletion_generation`** — an authoring request that still sends it is refused.
+  - **Parse timestamps** — Unix millisecond numbers are gone. `expires_at_ms` on `GET /v1/auth/sessions/{session_id}` and `POST /v1/runners/me/credentials/mint` is now `expires_at`.
+  - **Compare parsed values** — a whole second prints without a fraction, as `2026-10-17T18:06:49Z`. Text order is not time order.
+  - **Read money as strings** — `balance_nanos`, `credit_deducted_nanos`, `cost_nanos`, and catalogue rates were JSON numbers. Every `_nanos` field now matches `^(0|[1-9][0-9]*)$`, so add amounts with integer arithmetic.
+  - **Approval fields are renamed** — `gate_kind` is `gate_type` and `timeout_at` is `expires_at`. `updated_at` is gone, and nullable `resolved_at` is added. The approvals list filter is `gate_type`.
 
   ## What's new
 
-  - **Closed drafts last 30 days** — saving a fleet closes its draft. The draft and its messages are deleted 30 days later, and its `expires_at` shows when.
-  - **Retry keys last 24 hours** — a retried draft creation, Save, Apply, or publish returns the first result for 24 hours. A different request under the same key fails with `UZ-AUTHOR-005`, and a deleted draft or entry with `UZ-AUTHOR-013`.
-  - **Library removal deletes every revision** — fleets saved from the entry keep their setup. Drafts started from or published to it stay, without the link.
+  - **Setup saves directly** — **Your fleet setup** shows the proposed setup under the chat. **Save fleet** and **Save changes** check the current setup, then save. The terminal keeps `/review` and its digest.
+  - **Setup holds triggers and schedules** — the **Trigger** tab is gone. **Setup** shows the saved purpose, instructions, version, triggers, and each schedule's state and next run.
+  - **Setup chats have titles, search, rename, and delete** — a new chat takes the first line of its first message, or of its source's description. Search covers every title and message you wrote.
+  - **Closed chats last 30 days** — saving a fleet, or saving changes to one, closes its chat. The chat and its messages are deleted 30 days later, and `expires_at` shows when.
+  - **Retry keys last 24 hours** — a retried draft creation, chat message, Save, Apply, or publish returns the first result for 24 hours. A different request under the same key fails with `409` and `UZ-AUTHOR-005`.
+  - **Deleted results answer Gone** — a retry whose first result was deleted fails with `410` and `UZ-AUTHOR-013`. After 24 hours, the key counts as new.
+  - **Library removal deletes every revision** — fleets saved from the entry keep their setup. Chats started from or published to it stay, without the link.
+  - **Library tabs read All and Workspace** — **All** shows platform setups and setups your account published. **Workspace** shows your account's setups that this workspace can use.
+  - **Runner lease history outlives its fleet** — a finished lease stays for 30 days after it finishes, even when its fleet is deleted. **Open fleet** appears only for a fleet you can open.
+  - **Charges are per provider request** — each request is priced at its own time and prompt tier, and each token category rounds up on its own. Budgets count a fleet's own runs, never its setup chat.
+  - **A billing outage lets work continue** — charges are recorded with the work and settled once billing answers. The balance never goes below zero.
+  - **Agent callsigns** — recent chats, fleet headings, runner leases, and Billing name each fleet by its callsign.
 
   ## API reference
 
   - **Timestamps you send** — any RFC 3339 offset is accepted. A value finer than a millisecond is refused.
+  - **Fleet descriptions** — fleet list items from `GET /v1/workspaces/{workspace_id}/fleets` carry nullable `description`, the saved purpose.
+  - **Schedule state** — schedules carry `description`, `run_state`, and nullable `next_run_at`. `run_state` is `scheduled`, `paused`, `activation_pending`, or `next_run_unavailable`.
+  - **Chat versions** — items from `GET /v1/workspaces/{workspace_id}/drafts` carry nullable `candidate_revision`, `setup_revision`, and `publication_revision`.
+  - **Chat search** — `GET /v1/workspaces/{workspace_id}/drafts` takes `q`, 1 to 200 characters after trimming. It matches your titles and message text, ignoring case, and binds the cursor.
+  - **Lease destination** — items from `GET /v1/fleets/runners/{runner_id}/leases` carry `destination`: `available`, `fleet_deleted`, or `not_permitted`. `fleet_name`, `event_type`, and `actor` can be null.
+  - **Advanced models** — `GET /v1/models?advanced=true` adds advanced models to the catalogue. Each row carries `display_name`, `advanced`, context evidence, and a dated `prices` schedule.
   - **Event identifiers** — `event_id` from `POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/messages` and from webhook deliveries is a version 7 UUID. It was `<milliseconds>-<sequence>`.
   - **Runner status** — `GET /v1/fleets/runners` and `PATCH /v1/fleets/runners/{runner_id}` return `status` in place of `admin_state`.
-  - **Runner events** — online and offline events from `GET /v1/fleets/runners/{runner_id}/events` carry `last_seen_at` in `metadata` as an RFC 3339 string.
+  - **Runner events** — online and offline events carry `last_seen_at` in `metadata` as an RFC 3339 string. `since` and `until` on `GET /v1/fleets/runners/{runner_id}/events` take RFC 3339 instants.
+
+  ## Bug fixes
+
+  - **Steer recovery** — when the stream drops, `agentsfleet steer` reads the exact event it sent. A busy fleet's newer events no longer hide it.
+
+  ## CLI
+
+  - **Setup chats** — `agentsfleet chat list` pages your chats with `--search`, `--limit`, `--cursor`, `--state`, and `--fleet`. `agentsfleet chat rename` and `agentsfleet chat delete` change one chat.
+  - **Schedules** — schedule commands print the server's description, status, and next run.
+  - **Models** — `agentsfleet models` prints display names, exact rates, and exact context windows. `--advanced` adds advanced models.
+  - **Billing** — `--limit` takes a whole number from 1 to 100, and totals add exact nanodollar amounts.
 </Update>
 
 <Update label="Oct 18, 2026" tags={["API reference", "Bug fixes"]}>
