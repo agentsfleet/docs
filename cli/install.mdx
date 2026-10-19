@@ -3,11 +3,10 @@ title: Install the client
 description: Install and remove the agentsfleet command-line client.
 type: how-to
 audience: user
-verified: 2026-07-12
+verified: 2026-10-19
+product_version: 0.62.1
 executable: true
 ---
-
-# Install the client
 
 ## What this does
 
@@ -42,7 +41,7 @@ Install Bun 1.4 or later. The `agentsfleet` command runs on Bun.
 
 ## Verify it works
 
-Run the local checks.
+After [signing in and selecting a workspace](/quickstart), check your connection:
 
 ```bash
 agentsfleet doctor
@@ -52,7 +51,9 @@ agentsfleet doctor
 <varies>
 ```
 
-The command checks the API, your selected workspace, and the workspace binding. A failed check returns a nonzero exit code; see the [command reference](/cli/agentsfleet#errors) for the meanings.
+The command checks the API, your selected workspace, and its saved connection.
+It fails if you have not selected a workspace. See the
+[command reference](/cli/agentsfleet#errors) for other exit codes.
 
 ## Common problems
 

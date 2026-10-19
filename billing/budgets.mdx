@@ -4,10 +4,9 @@ description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Fleet budgets
 
 ## What it is
 
@@ -62,7 +61,7 @@ Each token category on a line is rounded up to a whole nanodollar on its own. A 
 
 Under a self-managed provider key, your provider bills the tokens and `agentsfleet` charges run time only.
 
-If billing cannot answer while a run starts or renews, the run continues. Its charges are recorded with the run and settled once billing answers again.
+Charges recorded during a billing outage settle once billing answers again.
 
 Settlement charges the full amount and can take your balance below zero. New credit repays that debt before any remainder becomes spendable.
 
@@ -77,7 +76,8 @@ Zero, signs, decimal points, exponents, and numbers outside the range are refuse
 
 An invalid budget blocks review and Save with `UZ-REQ-001`. A stored budget that cannot be read blocks the next run.
 
-`UZ-RUN-015` marks a budget stop during a run. `UZ-EXEC-015` records the final failure class.
+`UZ-RUN-015` marks a budget stop during a run.
+The event's recorded failure class is `budget_breach`.
 
 ## Related pages
 

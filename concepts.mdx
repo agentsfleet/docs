@@ -3,11 +3,10 @@ title: Key concepts
 description: Understand tenants, workspaces, fleets, tools, events, and runs.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Key concepts
 
 ## What it is
 
@@ -38,7 +37,11 @@ The fleet sees secret references. The credential firewall adds secret values onl
 
 ## Limits
 
-A fleet cannot call an undeclared tool. A fleet also cannot contact a host outside its network list.
+A fleet receives only its declared tools.
+The network list restricts `http_request`, `web_fetch`, and `pushover`.
+The runner's network policy controls sandbox traffic.
+
+See [Tools](/fleets/tools) before choosing a tool for a restricted task.
 
 Daily and monthly fleet budgets can block work. Provider and account limits can also block a run.
 

@@ -3,11 +3,10 @@ title: agentsfleet documentation
 description: Create and run event-driven fleets.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# agentsfleet documentation
 
 ## What it is
 
@@ -23,13 +22,19 @@ Use a fleet for repeated work that starts from a webhook, schedule, or message. 
 
 Create a workspace and save the required secrets. Describe a fleet in a private chat, review its setup, and save it. Then connect its trigger source.
 
-Every event creates one run. You can inspect the run through the activity stream.
+An accepted event starts a run. You can inspect the run through the activity stream.
 
 Start with the [quickstart](/quickstart). It shows the shortest complete path from installation to a GitHub event.
 
 ## Limits
 
-A fleet can use only the tools, secrets, and network hosts declared in its files. Budget and account limits can stop new runs.
+A fleet receives the tools and secrets declared in its Definition.
+Its network list restricts `http_request`, `web_fetch`, and `pushover`.
+The runner's network policy controls sandbox traffic.
+
+See [Tools](/fleets/tools) for network restrictions and other limits.
+
+Budget and account limits can stop new runs.
 
 The service is in early access. Public behavior may change before version 2.0.0.
 

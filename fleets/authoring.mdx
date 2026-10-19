@@ -4,14 +4,14 @@ description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
 
-# Author a fleet
-
 ## What this does
 
-You describe the job in a private chat, in the dashboard or in the terminal. `agentsfleet` drafts the fleet's setup, which you review and then save.
+Describe the task in a private chat in the dashboard or terminal.
+`agentsfleet` drafts the setup for you to review and save.
 
 A draft is private to the person who started it. Saving creates one fleet in the workspace. Publishing the setup to the [Fleet library](/fleets/library) is a separate choice.
 
@@ -34,7 +34,7 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 ### In the dashboard
 
 1. Open **New fleet** in the workspace sidebar.
-2. Check the selected model, then describe the job in the chat. New chats select an available authoring model by default. Each reply can change the draft setup.
+2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
 3. Read **Your fleet setup** below the chat. It shows the proposed task, instructions, triggers, access, and spending limits. Keep chatting until they match what you asked for.
 4. Choose **Save fleet**. To request a first run immediately, enter a message under **Optional first run** and choose **Save and run now** instead.
 5. Choose **Open fleet** when the saved fleet appears. Its sections are **Chat**, **Activity**, **Memory**, and **Setup**.
@@ -79,14 +79,16 @@ Each chat shows the versions it reached. **Proposed** is its latest setup while 
    you ›
    ```
 
-2. Describe the job at the `you ›` prompt.
+2. Describe the task at the `you ›` prompt.
+
+   For example: "Keep team notes in memory. Save notes when asked, and recall them before answering questions."
 
    Ordinary text is a chat message. A line starting with `/` is an action.
 
 3. Review the setup under the fleet name you want.
 
    ```text
-   /review health-check
+   /review team-notes
    ```
 
    The review prints the full Definition, the access it needs, and its readiness checks. Its last line reads `Review digest: <DIGEST>`.
@@ -98,7 +100,7 @@ Each chat shows the versions it reached. **Proposed** is its latest setup while 
    ```
 
    ```text
-   ✓ Fleet health-check: active
+   ✓ Fleet team-notes: active
    ```
 
    `/run <MESSAGE>` saves and sends the fleet `<MESSAGE>` once. Changing the draft after a review needs a new `/review` before saving.
@@ -107,15 +109,15 @@ Each chat shows the versions it reached. **Proposed** is its latest setup while 
 
 Use this path for scripts and repeatable setups. A Definition draft starts without a chat message, so no authoring model call runs.
 
-1. Write the Definition to a file, such as `health-check.json`.
+1. Write the Definition to a file, such as `team-notes.json`.
 
    ```json
    {
      "schema_version": 1,
-     "description": "Checks service health and reports failures.",
-     "instructions_md": "Check each service named in the message.\nReport failed checks with their source URL.\nNever change a service.",
+     "description": "Saves and recalls team notes between runs.",
+     "instructions_md": "Use memory_store when asked to remember a note.\nUse memory_recall before answering questions about saved notes.\nIf no matching note exists, say so instead of guessing.",
      "config": {
-       "name": "health-check",
+       "name": "team-notes",
        "x-agentsfleet": {
          "triggers": [],
          "tools": ["memory_recall", "memory_store"],
@@ -132,12 +134,12 @@ Use this path for scripts and repeatable setups. A Definition draft starts witho
 2. Open a draft from the file and review it.
 
    ```bash
-   agentsfleet chat --definition health-check.json --model <MODEL_REF> --no-input --review --name health-check
+   agentsfleet chat --definition team-notes.json --model <MODEL_REF> --no-input --review --name team-notes
    ```
 
    ```text
    ✓ Draft <DRAFT_ID> created
-   Instance: health-check
+   Instance: team-notes
    Runtime model: <varies>
    <varies>
    Review digest: <DIGEST>
@@ -148,12 +150,12 @@ Use this path for scripts and repeatable setups. A Definition draft starts witho
    `<DRAFT_ID>` and `<DIGEST>` come from the previous output.
 
    ```bash
-   agentsfleet chat <DRAFT_ID> --no-input --save --name health-check --review-digest <DIGEST>
+   agentsfleet chat <DRAFT_ID> --no-input --save --name team-notes --review-digest <DIGEST>
    ```
 
    ```text
    <varies>
-   ✓ Fleet health-check: active
+   ✓ Fleet team-notes: active
    ```
 
 To answer mentions in a Slack channel, add a `mention` trigger to `triggers`. [Answer mentions in Slack](/fleets/slack) shows its fields.
@@ -163,12 +165,25 @@ To answer mentions in a Slack channel, add a `mention` trigger to `triggers`. [A
 `<FLEET_ID>` comes from `agentsfleet list`.
 
 ```bash
-agentsfleet steer <FLEET_ID> "check the service list"
+agentsfleet steer <FLEET_ID> "Remember that our release channel is #releases."
 ```
 
 ```text
 <varies>
 ```
+
+After that run finishes, ask for the saved note:
+
+```bash
+agentsfleet steer <FLEET_ID> "Which channel do we use for releases?"
+```
+
+```text
+<varies>
+```
+
+Check **Memory** for the note and the reply for `#releases`.
+Replies and tool calls vary by model; a successful Save alone does not prove that memory was used.
 
 ## Common problems
 

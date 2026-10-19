@@ -4,11 +4,9 @@ description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
 verified: 2026-10-19
-product_version: 0.51.0
+product_version: 0.62.1
 executable: false
 ---
-
-# Fleet overview
 
 ## What it is
 
@@ -24,6 +22,7 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 | State | Meaning | Next actions |
 |---|---|---|
+| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check and resume, or kill to cancel |
 | `active` | The fleet accepts new events. | Stop or kill |
 | `paused` | A service guard has blocked new events. | Resume after resolving the cause |
 | `stopped` | A user has paused new work. | Resume or kill |
@@ -31,7 +30,8 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 Saving a draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
-The fleet detail page is a focused workspace with Chat as its default view. Its summary shows status, the latest outcome, tokens, spend, and duration.
+The fleet page opens in **Chat**. Its summary shows status, the latest outcome,
+tokens, spend, and duration.
 
 Dashboard navigation, fleet headings, lease history, and billing use a stable callsign, such as `AGENT ORBIT-BCD3`. The saved purpose helps you recognize the work. The API's `name` field keeps the saved fleet name.
 
@@ -40,29 +40,27 @@ If an approval is waiting, the summary links to the workspace Approvals page fil
 Use the fleet navigation for one task at a time:
 
 - **Chat** sends instructions and shows the fleet's replies. A message is sent when you submit it, whether or not the live feed is connected. The fleet handles what arrives in order, so a busy fleet does not block you.
-- **Activity** lists the fleet's durable activity, outcome, token use, spend, and duration in a table.
-- **Memory** shows the durable lessons the fleet can use in later runs.
+- **Activity** lists saved activity, outcomes, token use, spend, and duration.
+- **Memory** shows lessons the fleet can use in later runs.
 - **Setup** shows what the fleet does, its saved instructions, its saved version, its triggers, and its schedules. **Edit fleet** opens a private chat for that saved setup.
 
 The fleet header contains stop, resume, kill, and delete controls, according to its current state.
 
 Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
 
-When you send a message, Chat moves to the latest turn. A spinner and a status word, such as **Herding…**, hold the reply's place until it starts. The message field grows for longer drafts and scrolls within the field when full.
+Sending a message moves Chat to the latest turn. A spinner shows that the
+fleet is working until its reply starts.
 
-While the fleet reasons, the reply shows **Thinking** with a running clock. It folds to **Thought** and the total time when the answer starts; choose it to read the reasoning. Each tool the fleet calls shows its name and a clock, and a finished tool shows a check mark and its duration.
+Open **Thought** to read the fleet's reasoning after its answer starts.
+Tool calls show their names, progress, and duration separately from the answer.
 
 New activity leaves your place in older messages alone. Use **Jump to latest** above the message field to return to the newest turn. On narrow screens, the fleet tabs scroll sideways and the status figures wrap.
 
 An event from a connected app shows what it carried. Its full payload is one click away. An event with no reply says whether it is still working, is waiting for approval, or failed.
 
-Chat renews quiet connections automatically. After a stable connection closes, Chat allows 25 seconds for recovery before showing a connection warning.
-
-A connection attempt that stalls for 30 seconds is retried. Chat also retries an open connection after 45 seconds without activity or a server heartbeat to recover from silent network failures. Deploy the server heartbeat before enabling the browser's silence watchdog.
-
-Chat retries failures quickly at first, with delays from one to 15 seconds. After five fast retries, it reports the feed as unavailable and keeps retrying every 30 seconds. Returning to the tab or restoring the network starts recovery immediately when the connection is missing or stale.
-
-Choose **Retry now** in the connection notice to retry without waiting. Automatic recovery continues without clicking it. Chat fetches recent durable activity after reconnecting; transient streaming fragments cannot always be recovered.
+If live updates stop, Chat reconnects and fetches recent saved activity.
+Some live reply fragments may be missing. See
+[connection recovery](/fleets/running#live-chat-connection) for retry timing and manual recovery.
 
 A message that was not delivered leaves the thread, and its text returns to the message field.
 
@@ -123,9 +121,11 @@ A fresh sandbox checks out the fleet's repositories again and holds none of the 
 
 ## Limits
 
-The fleet can use only declared tools, secrets, and network hosts. Daily or monthly budgets can block new work.
+The fleet receives only declared tools and secrets.
+[Network restrictions](/fleets/tools#how-it-behaves) depend on the tool and the runner's network policy.
+Daily or monthly budgets can block new work.
 
-The summary shows usage and outcome values from the latest durable event. A fleet with no event history shows an empty outcome instead of an estimate.
+The summary uses the latest saved event. A fleet with no history shows an empty outcome.
 
 `agentsfleet` validates the Definition in every draft, Save, and Apply. An invalid Definition never replaces the active fleet settings.
 

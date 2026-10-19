@@ -3,78 +3,69 @@ title: Use your own model provider
 description: Store a model-provider credential and run fleets on it instead of the platform default.
 type: how-to
 audience: user
-verified: 2026-10-17
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
 
-# Use your own model provider
-
 ## What this does
 
-Fleets run on the platform's model by default. Your workspace can use a model you pay for instead. Store a provider credential, then select it as your account's provider.
+Store your provider credential, then select it as your account's default model.
+A fleet keeps the model reference saved in its setup.
 
-`--provider` is checked against the model catalogue your server serves, so a
-credential that could never work is never stored. Run `agentsfleet models` to
-see that catalogue. Setup chat lists only models configured for your workspace owner and the enabled platform default.
-
-A catalogue entry alone does not make a model available. The model needs credentials and saved inference settings before chat or fleet runs can use it.
+Your provider bills model usage. Setup chat offers models configured for your
+workspace owner and the enabled platform default.
 
 ## Before you begin
 
-Select the workspace that should own the credential. Have the provider's API
-key ready, and run `agentsfleet models` to pick a provider id and model this
-server serves:
+Select the workspace that will own the credential. Have your provider's API
+key ready, then list available models:
 
 ```bash
-agentsfleet models --provider anthropic
+agentsfleet models
 ```
 
 ```text
-PROVIDER   MODEL              CONTEXT  IN/MTOK  OUT/MTOK
-anthropic  claude-fable-5     1000k    $10.00   $50.00
-anthropic  claude-haiku-4-5   200k     $1.00    $5.00
-anthropic  claude-opus-4-8    1000k    $5.00    $25.00
-anthropic  claude-sonnet-5    1000k    $3.00    $15.00
+MODEL     NAME      PROVIDER  CONTEXT  IN/MTOK  CACHED/MTOK  OUT/MTOK
+<varies>
 ```
 
-The provider column supplies `--provider` and the model column supplies
-`--model` in the next step.
+Copy `<PROVIDER_ID>` from `PROVIDER` and `<MODEL_ID>` from `MODEL`.
+Replace the fake API key below with your provider's key.
 
-A platform administrator configures each model under **Platform → Model library**. The saved settings choose the API format, secure HTTP (HTTPS) base URL, context window, and maximum output tokens.
+Add `--advanced` to include advanced models. Rates and context limits are exact;
+`--json` also includes price tiers, effective dates, and source evidence.
 
-Supported formats are OpenAI-compatible chat, OpenAI Responses, and Anthropic Messages. Output tokens must be positive and fit within the saved context window.
+A platform administrator must configure the model under **Platform → Model library** before you use it.
+Its settings define the API format, secure HTTP (HTTPS) endpoint, context window, and maximum output tokens.
 
-Configure the model before making it the platform default. The default dialog uses that model's saved endpoint and asks for its API key.
+Supported formats are OpenAI-compatible chat, OpenAI Responses, Anthropic Messages,
+Google Gemini, and Ollama.
+Output tokens must be positive and fit within the context window.
 
 ## Steps
 
 1. Store the provider credential. The provider id, API key, and model are all required.
 
    ```bash
-   agentsfleet secret create my-openai --provider openai --api-key af_test_00000000 --model gpt-5.6-sol
+   agentsfleet secret create my-model --provider <PROVIDER_ID> --api-key af_test_00000000 --model <MODEL_ID>
    ```
 
    ```text
-   ✓ Secret 'my-openai' stored in vault.
+   ✓ Secret 'my-model' stored in vault.
    ```
 
-   Provider ids are matched without case: `--provider Anthropic` stores
-   `anthropic`, the catalogue's own spelling. A provider the catalogue does not
-   price is refused, and the message names what it does price.
+   Provider identifiers ignore case. Model identifiers must match the catalogue
+   exactly, including case.
 
-   `--model` is checked the same way, against that provider's models only.
-   Model ids are matched exactly — they belong to the provider, and several are
-   case-sensitive (`MiniMaxAI/MiniMax-M3`), so a wrong-case model is refused
-   rather than silently corrected.
-
-2. Select the stored credential as the tenant provider.
+2. Select the stored credential for your account.
 
    ```bash
-   agentsfleet tenant provider create --secret my-openai
+   agentsfleet tenant provider create --secret my-model
    ```
 
    ```text
-   Tenant provider added: mode=self_managed secret=my-openai
+   Tenant provider added: mode=self_managed secret=my-model
    ```
 
 3. Confirm the active provider.
@@ -86,23 +77,29 @@ Configure the model before making it the platform default. The default dialog us
    ```text
    FIELD               VALUE
    mode                self_managed
-   provider            openai
-   model               gpt-5.6-sol
+   provider            <PROVIDER_ID>
+   model               <MODEL_ID>
    context_cap_tokens  <varies>
-   secret_ref          my-openai
+   secret_ref          my-model
    ```
 
-Fleets you install or resume after this point run on your provider.
+New setup reviews resolve your account default unless the Definition selects a model.
+Check **Runtime model** in the review before saving.
+
+Changing the account default does not replace an existing fleet's saved model reference.
+To change that reference, open **Setup → Edit fleet**, update the model, then review and save the setup.
 
 ## Point at your own endpoint
 
-A gateway uses the `openai-compatible` form. Ask an administrator to configure the matching provider and model in the Model library first.
+For a custom gateway, use `openai-compatible`. Ask an administrator to configure
+the matching provider and model in the Model library first.
 
-Its saved HTTPS base URL must match the credential's `--base-url`. Private or unsafe destinations are refused.
+Copy `<MODEL_ID>` from that configuration. Replace the example URL with the
+configured HTTPS base URL. Private or unsafe destinations are refused.
 
 ```bash
 agentsfleet secret create my-gateway --provider openai-compatible \
-  --base-url https://models.example.com/v1 --model qwen2.5-coder --api-key af_test_00000000
+  --base-url https://models.example.com/v1 --model <MODEL_ID> --api-key af_test_00000000
 ```
 
 ```text
@@ -111,22 +108,26 @@ agentsfleet secret create my-gateway --provider openai-compatible \
 
 ## Verify it works
 
-Run `agentsfleet tenant provider show` and check it names your secret. Then steer any fleet; its responses now come from your provider, and its usage lands on your provider account.
+Check that `agentsfleet tenant provider show` names your secret.
+Before testing a fleet, review its setup and confirm **Runtime model** uses your selected model reference.
+Save the updated setup if it still names the previous model.
+
+Send that fleet a message with `agentsfleet steer <FLEET_ID>`, using an identifier from `agentsfleet list`.
+Check the response and usage in your provider account.
 
 ## Common problems
 
-A `--provider` value your catalogue does not price is refused, and the message
-names what it does price. Run `agentsfleet models` for the full list. Ask an administrator to add missing models and their inference settings.
+An unknown provider or model returns the accepted values. Run
+`agentsfleet models --provider <PROVIDER_ID>` to check your choice.
+Ask an administrator to add a missing model and its inference settings.
 
-The ids `claude-cli`, `codex-cli`, `gemini-cli`, `openai-codex`, and
-`claude-code` are refused with their own message. They name local coding tools
-that carry no API key, so a stored credential could never reach them. The
-`openai-compatible` form does not help here — these tools have no endpoint.
+Local coding tools such as `claude-cli`, `codex-cli`, `gemini-cli`,
+`openai-codex`, and `claude-code` cannot serve as model providers.
+They have no model API endpoint to connect to.
 
-`--api-key` or `--model` without `--provider` is refused. The three flags describe one credential and travel together.
-
-A `--model` the provider does not serve is refused, and the message lists that
-provider's models. Run `agentsfleet models --provider <ID>` for the list.
+`--api-key` or `--model` without `--provider` is refused.
+For `openai-compatible`, the API key is optional and the model identifier comes
+from your endpoint.
 
 `--base-url` with a named provider is refused. Named providers use the endpoint saved in the Model library. The flag belongs to `openai-compatible` alone.
 
@@ -142,7 +143,9 @@ agentsfleet tenant provider delete
 Custom LLM provider removed — events will now run on agentsfleet's platform default.
 ```
 
-The stored credential stays in the vault. Delete it with `agentsfleet secret delete my-openai` when no fleet needs it.
+The stored credential stays in the vault. Delete it with
+`agentsfleet secret delete my-model` after removing its model registry entries.
+Deletion fails with `UZ-VAULT-004` while an entry still references the secret.
 
 ## Related pages
 

@@ -4,10 +4,9 @@ description: Understand platform and account-owned library entries.
 type: explanation
 audience: user
 verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Fleet library
 
 ## What it is
 
@@ -17,7 +16,7 @@ The platform library is visible to every workspace. Your account's entries are p
 
 ## Why it exists
 
-The library lets a workspace reuse a setup that someone already reviewed. A fleet created from an entry keeps the exact revision it was saved from.
+The library lets a workspace reuse a setup that someone already reviewed.
 
 ## How it behaves
 
@@ -106,8 +105,6 @@ agentsfleet library delete <LIBRARY_ID>
 ✓ <varies> is no longer in this workspace's Fleet library. Fleets already installed from it keep running.
 Publish reviewed chat setup with: agentsfleet chat --help
 ```
-
-Removal deletes every revision of the entry. Fleets saved from the entry keep running on the setup they were saved with.
 
 A draft started from the entry, or published to it, stays. The draft loses its link to the entry and keeps its own content.
 

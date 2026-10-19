@@ -3,11 +3,10 @@ title: Run context
 description: Learn how a fleet keeps useful context during long runs.
 type: explanation
 audience: user
-verified: 2026-07-12
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Run context
 
 ## What it is
 
@@ -25,10 +24,16 @@ Set these values in `context` under `config["x-agentsfleet"]` in the fleet's Def
 
 | Option | Effect | Default | Valid range |
 |---|---|---|---|
-| `tool_window` | Keeps this many recent tool results in active context. | `auto` | `auto` or a positive integer |
-| `memory_checkpoint_every` | Prompts a memory checkpoint after this many tool calls. | `5` calls | Positive integer |
+| `tool_window` | Keeps this many recent tool results in active context. | `auto` | `auto` or 0–4,294,967,295 results |
+| `memory_checkpoint_every` | Prompts a memory checkpoint after this many tool calls. | `5` calls | `auto` or 0–4,294,967,295 calls |
 | `stage_chunk_threshold` | Signals when prompt use reaches this share of the context limit. | `0.75` | `0.0` through `1.0` |
-| `context_cap_tokens` | Sets the model context limit. | Active model limit | Positive token count |
+| `context_cap_tokens` | Sets the context size used for these controls. | Active model limit | `auto` or 0–4,294,967,295 tokens |
+
+`0` selects the default for each option. The three integer options also accept `auto`.
+Changing `context_cap_tokens` does not change the model or increase its physical context limit.
+
+The automatic tool window keeps 10 results for contexts up to 200,000 tokens.
+It keeps 30 results for contexts of at least 1,000,000 tokens, and 20 otherwise.
 
 The runtime checks the threshold after each model response. Crossing the threshold records a signal; the fleet decides when to finish.
 

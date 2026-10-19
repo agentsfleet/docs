@@ -3,12 +3,10 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-10-08
-product_version: 0.51.0
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Fleet tools
 
 ## What it is
 
@@ -43,11 +41,18 @@ The runtime owns the built-in tools. A fleet receives only names listed in `tool
 }
 ```
 
-`http_request` also follows the network host list. An entry may be a host name or a URL. Only its host counts, so `https://api.github.com:443/repos` admits `api.github.com` on any port, for `http_request` and the sandbox alike.
+`http_request`, `web_fetch`, and `pushover` follow the fleet's network host list.
+An entry may be a host name or a URL.
+Only its host counts, so `https://api.github.com:443/repos` allows these tools to reach `api.github.com` on any port.
+
+Sandbox traffic also follows the runner operator's network policy.
+The fleet's list alone does not describe every destination a sandbox can reach.
 
 Secret references are filled by the credential firewall during an approved outbound request.
 
-An unknown tool is skipped and records `UZ-TOOL-005` in the activity stream. The run continues with the remaining valid tools.
+The runner refuses a run that names an unknown or unavailable tool.
+Check spelling against the list above and keep the runner updated.
+It does not silently remove that tool and continue.
 
 ### Schedule tools
 
@@ -98,7 +103,7 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
 
 Hosted runners have no display. `browser_open` and `screenshot` can fail there; use them only with a suitable self-managed runner.
 
-`web_fetch` does not use the fleet host list. Use `http_request` when a host restriction is required.
+`web_fetch` requires an allowed public secure HTTP (HTTPS) destination. Private or unsafe destinations are refused.
 
 Child agents nest two levels deep. A child can start children of its own. Those grandchildren are offered none of the six child-agent tools.
 
@@ -108,7 +113,9 @@ When the run ends, every child still working ends `interrupted`.
 
 Remove a tool name from the Definition in an improvement chat to revoke it. Applying the reviewed change gives later runs the new list.
 
-A fleet creates at most 16 schedules itself, inside the 32 a fleet holds. The 17th fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009). Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/api-reference/error-codes#UZ-SCHED-010).
+A fleet can hold 32 schedules in total, including up to 16 it creates itself.
+A 17th fleet-created schedule fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009).
+Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/api-reference/error-codes#UZ-SCHED-010).
 
 `cron_run` fails with [`UZ-SCHED-011`](/api-reference/error-codes#UZ-SCHED-011) for a paused schedule, a schedule being removed, or a run that a schedule started. It fails with [`UZ-AGT-012`](/api-reference/error-codes#UZ-AGT-012) while the fleet is paused.
 

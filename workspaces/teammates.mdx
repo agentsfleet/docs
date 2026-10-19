@@ -3,11 +3,10 @@ title: Invite teammates
 description: Invite people into your account so they can open and steer its fleets.
 type: how-to
 audience: user
-verified: 2026-10-01
+verified: 2026-10-19
+product_version: 0.62.1
 executable: false
 ---
-
-# Invite teammates
 
 ## What this does
 
@@ -73,7 +72,10 @@ Your teammate opens the workspace switcher. Their own workspaces sit under **You
 
 **We could not send the email ([`UZ-INV-005`](/api-reference/error-codes#UZ-INV-005)).** Sending again found no mail service, or the mail service refused. The invite still works, so copy its link and send it yourself.
 
-**That person already has an invite or is already a member ([`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003)).** A pending invite keeps its link in the `invited` row — copy it, or revoke the invite to send a new one. A member already has access; to invite them again, remove them first.
+**Already invited or a member ([`UZ-INV-003`](/api-reference/error-codes#UZ-INV-003)).**
+
+For a pending invite, copy the link from its `invited` row or revoke it before sending a new one.
+A member already has access; remove them before inviting them again.
 
 **Only the account owner can do this ([`UZ-AUTH-026`](/api-reference/error-codes#UZ-AUTH-026)).** A member tried to store a secret, connect an integration, or manage people. Ask the owner to make the change.
 

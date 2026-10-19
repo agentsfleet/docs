@@ -6,9 +6,11 @@
   <img src="logo/dark.svg" width="200" alt="agentsfleet" />
 </picture>
 
-**A fleet of prebuilt AI teammates for recurring engineering work.**
+**Documentation for agentsfleet.**
 
-Each one wakes on an event — a pull request, an incident, a deploy. It investigates across your code, telemetry, and live control-plane state, then opens a scenario-backed fix. It waits for human approval before it ships or drafts the customer reply. It runs against a durable, replayable log — posts evidenced answers, never chats.
+`agentsfleet` runs fleets that respond to webhooks, schedules, and messages.
+You review each fleet's tools, access, and spending limits before saving it.
+Use these docs to create fleets, inspect runs in the activity stream, and manage your workspace.
 
 [![Docs](https://img.shields.io/badge/agentsfleet-Docs-B8F0CE?style=for-the-badge)](https://docs.agentsfleet.net)
 [![Get early access](https://img.shields.io/badge/agentsfleet-Get_early_access-B8F0CE?style=for-the-badge)](https://accounts.agentsfleet.net/waitlist)

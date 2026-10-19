@@ -3,12 +3,10 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-10-18
+verified: 2026-10-19
 product_version: 0.62.1
 executable: false
 ---
-
-# Run and control a fleet
 
 ## What this does
 
@@ -52,9 +50,9 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    <varies>
    ```
 
-   A fleet whose Definition declares `repository_access: write` opens an
-   approval gate on every run. The reply arrives once you decide the gate with
-   [`agentsfleet approvals`](/fleets/approvals).
+   Approve the fleet's integration grant during setup to allow repository access.
+   That approval lasts until you revoke it. Custom approval rules can pause
+   individual runs; review those requests with [`agentsfleet approvals`](/fleets/approvals).
 
    In the dashboard chat, a reply appears as it arrives. You can send another
    message while a run is active; the new event waits its turn and keeps its
@@ -102,8 +100,8 @@ Budget: <varies>
 Waiting: <varies>
 ```
 
-`Waiting` counts the approvals the fleet is parked on. When any fleet is
-waiting, the client adds the line below.
+`Waiting` counts approvals that need your decision. When any fleet is waiting,
+the client adds this line:
 
 ```text
 Some fleets are waiting on approval. Review with: agentsfleet approvals list
@@ -119,19 +117,34 @@ For API lifecycle updates, send the strong entity tag (ETag) from the fleet body
 
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
 
-A run that produces no reply may be parked at an approval gate. Run `agentsfleet approvals list` and decide the gate it names.
+A run with no reply may be waiting for approval. Run `agentsfleet approvals list` to review the request.
 
 A message with no answer after 30 seconds reads **Couldn't confirm this message was sent.** Click **Resend**. It carries the same `operation_id`, so the fleet runs the message once.
-
-If live updates stop, a warning appears above the message box: **Live updates are temporarily unavailable. We’re reconnecting automatically.**
-
-Click **Retry now** to reconnect at once. When the stream returns, the chat fetches recent saved activity. Missed reply fragments and tool updates may remain missing.
 
 If a run fails while replying, open its event details in the dashboard and
 click **Copy diagnostic**. The copy includes the event identifier and the
 recorded failure cause. The chat keeps the failure message short.
 
 A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
+
+### Live chat connection
+
+When live updates stop, Chat reconnects. A stable connection has 25 seconds to
+recover before Chat shows a warning.
+
+A stalled connection attempt retries after 30 seconds. An open connection
+retries after 45 seconds without activity or a server heartbeat.
+
+Chat makes five fast retries, with increasing delays capped at 15 seconds.
+Then it shows **Live updates are temporarily unavailable. We’re reconnecting automatically.**
+
+It keeps retrying every 30 seconds.
+
+Click **Retry now** to reconnect immediately. Returning to the tab or restoring
+the network also starts recovery when the connection is missing or stale.
+
+After reconnecting, Chat fetches recent saved activity. Missed reply fragments
+and tool updates may remain missing.
 
 ## Remove or undo
 
