@@ -15,7 +15,8 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   ## Upgrading
 
   - **Start from an empty database** — `agentsfleetd migrate` builds the new schemas from empty. It does not upgrade a database from an earlier release.
-  - **Upgrade runners with the daemon** — renewals and reports carry one usage line per provider request in place of run totals. A report from an earlier `agentsfleet-runner` is refused with `UZ-REQ-001`.
+  - **Upgrade runners with the daemon** — renewals and reports carry one usage line per provider request, in `requests`, in place of run totals. A runner on the old usage shape is refused at its first renewal with `400` and `UZ-RUN-013`, and its run ends.
+  - **Request lines are capped** — a renewal or report carries at most 512 lines. A report past the cap, or numbering a line above `2147483647`, is refused with `400` and `UZ-REQ-001`, and `detail` names the problem.
   - **Runner requests drop `deletion_generation`** — an authoring request that still sends it is refused.
   - **Parse timestamps** — Unix millisecond numbers are gone. `expires_at_ms` on `GET /v1/auth/sessions/{session_id}` and `POST /v1/runners/me/credentials/mint` is now `expires_at`.
   - **Compare parsed values** — a whole second prints without a fraction, as `2026-10-17T18:06:49Z`. Text order is not time order.
