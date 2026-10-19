@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev install-hooks lint test _lint-openapi-drift
+.PHONY: dev install-hooks lint test _lint-openapi-drift _lint-links
 
 OPENAPI_URL ?= https://raw.githubusercontent.com/agentsfleet/agentsfleet/main/public/openapi.json
 
@@ -18,7 +18,15 @@ test:
 lint: test _lint-openapi-drift
 	bun run validate
 	bun run broken-links
-	git ls-files -z '*.mdx' | xargs -0 -I{} bun run check-links --config .mlc-config.json {}
+	$(MAKE) _lint-links
+
+_lint-links:
+	@git ls-files --cached --others --exclude-standard -z '*.mdx' | \
+	while IFS= read -r -d '' page; do \
+		if [ -f "$$page" ]; then \
+			bun run check-links --config .mlc-config.json "./$$page" || exit; \
+		fi; \
+	done
 
 _lint-openapi-drift:
 	@command -v jq >/dev/null 2>&1 || { echo "jq is required for the OpenAPI drift check"; exit 1; }
