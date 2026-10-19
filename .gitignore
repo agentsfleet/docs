@@ -1,4 +1,15 @@
 .DS_Store
 node_modules/
 .gstack/
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/orly-babysit-prs/
+!.claude/skills/orly-spec-new/
+!.claude/skills/orly-write-integration-test/
+!.claude/skills/orly-write-unit-test/
+.claude/skills/orly-*/*
+!.claude/skills/orly-babysit-prs/SKILL.md
+!.claude/skills/orly-spec-new/SKILL.md
+!.claude/skills/orly-write-integration-test/SKILL.md
+!.claude/skills/orly-write-unit-test/SKILL.md

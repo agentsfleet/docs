@@ -4,3 +4,12 @@ drafts/
 
 # Local browser state is not documentation input.
 .gstack/
+
+# Local agent instructions are not published pages.
+.orly/
+.agents/
+.claude/
+.opencode/
+AGENTS.md
+CLAUDE.md
+opencode.json

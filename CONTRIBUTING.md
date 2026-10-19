@@ -1,8 +1,6 @@
-> **Customize this file**: Tailor this template to your project by noting specific contribution types you're looking for, adding a Code of Conduct, or adjusting the writing guidelines to match your style.
-
 # Contribute to the documentation
 
-Thank you for your interest in contributing to our documentation! This guide will help you get started.
+Read `AGENTS.md` and `.orly/dispatch/write_documentation.md` before editing. For changelog entries, also read `.orly/docs/CHANGELOG_VOICE.md`.
 
 ## How to contribute
 
@@ -20,9 +18,10 @@ Thank you for your interest in contributing to our documentation! This guide wil
 4. Make changes
 5. Run `make dev`
 6. Preview your changes at `http://localhost:3000`
-7. Commit your changes and submit a pull request
+7. Run `bun run orly gate verify` to check prose, page metadata, site configuration, and links
+8. Commit your changes and submit a PR
 
-For more details on local development, see our [development guide](development.mdx).
+For setup commands and expected output, see [local development](README.md#development).
 
 ## Writing guidelines
 
