@@ -3,7 +3,7 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-10-16
+verified: 2026-10-19
 executable: false
 ---
 
@@ -179,7 +179,7 @@ Rate-limited requests include `Retry-After`. The provider should wait for that d
 
 ## Remove or undo
 
-Delete the webhook from the provider first. Then open the fleet's **Setup → Improve in private chat**, remove the trigger, review the change, and choose **Apply reviewed setup**.
+Delete the webhook from the provider first. Then open the fleet's **Setup → Edit fleet**, ask the chat to remove the trigger, and choose **Save changes**.
 
 Deleting the fleet removes its webhook URL. Requests to the old URL then return `UZ-WH-001`.
 

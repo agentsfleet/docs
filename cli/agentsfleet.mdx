@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-10-18
+verified: 2026-10-19
 executable: false
 ---
 
@@ -109,6 +109,9 @@ Write these after `login`. Only `agentsfleet login` reads them.
 | `agentsfleet chat --definition <PATH> --model <MODEL_REF>` | Starts a draft from a Definition JSON file, with no chat message. |
 | `agentsfleet chat --library <LIBRARY_ID> --revision <REVISION_ID> --model <MODEL_REF>` | Starts a draft from one Library revision, with no chat message. |
 | `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>` | Starts a draft that improves an existing fleet, with no chat message. |
+| `agentsfleet chat list` | Lists one page of your setup chats, most recently updated first. |
+| `agentsfleet chat rename <DRAFT_ID> <TITLE>` | Renames an open, idle setup chat. The saved fleet keeps its name. |
+| `agentsfleet chat delete <DRAFT_ID>` | Deletes a setup chat and its private messages after you confirm. Saved fleets keep running. |
 
 `<MODEL_REF>` is the `ref` of an authoring model from `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. `<SETUP_REVISION>` is the fleet's `setup_revision` field from `agentsfleet --json fleet show <FLEET_ID>`.
 
@@ -171,7 +174,7 @@ agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIG
 | `--publish-to <LIBRARY_ID>` | With `--publish`, adds a revision to this owned entry instead. | None | Library identifier |
 | `--library-etag <ETAG>` | The entry tag you inspected. Required with `--publish-to`. | None | Entity tag |
 | `--stop` | Cancels every accepted message in the draft that has not finished. | `false` | Boolean |
-| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed |
+| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed, usable for 24 hours |
 | `--candidate-id <ID>` | With `--operation-id`, names the setup the retried Save, Apply, or publish used. | None | Identifier the client printed |
 | `--setup-etag <ETAG>` | With `--operation-id` and `--apply`, names the fleet setup tag you inspected. | None | Identifier the client printed |
 
@@ -179,15 +182,70 @@ One invocation takes one source and at most one of `--save`, `--apply`, and `--p
 
 A Save that leaves the fleet `installing` prints each waiting check and exits with code `1`. A Save, Apply, or publish whose reply was lost prints the `--operation-id` and `--candidate-id` values to retry with.
 
+#### List, rename, and delete setup chats
+
+`agentsfleet chat list` reads one page per run, most recently updated first. It prints `TITLE`, `CHAT`, `STATUS`, `VERSIONS`, and `UPDATED`.
+
+```bash
+agentsfleet chat list --search "health check"
+```
+
+```text
+TITLE           CHAT        STATUS      VERSIONS                UPDATED
+<varies>
+More chats available. Repeat this list with --cursor <TOKEN> and the same filters.
+```
+
+`STATUS` reads `In progress`, `Setup ready`, `Saving fleet`, `Fleet saved`, or `Chat closed`. `VERSIONS` lists the recorded `Proposed`, `Saved`, and `Published` versions, such as `Proposed v3 · Saved v2`.
+
+To read the next page, run the same command with `--cursor <TOKEN>`. `<TOKEN>` is the value the previous page printed. A page with no rows reads `No setup chats match this list.`
+
+| Option | Effect | Default | Unit or range |
+|---|---|---|---|
+| `--search <TEXT>` | Matches your chat titles and message text, ignoring case. Leading and trailing spaces are trimmed. | None | 1 to 200 characters, no null (NUL) character |
+| `--limit <COUNT>` | Sets the page size. | `50` | Integer, 1 to 100 |
+| `--cursor <TOKEN>` | Reads the page after the one that printed this token. The token works only with the same filters. | None | Token the previous page printed |
+| `--state <STATE>` | Lists only chats in this state. | All states | `editing`, `saving`, or `closed` |
+| `--fleet <FLEET_ID>` | Lists only chats linked to this fleet. | None | Fleet identifier |
+| `--workspace <WORKSPACE_ID>` | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
+
+With `--json`, the command prints the server's page as returned, with `items` and `next_cursor`.
+
+`agentsfleet chat rename <DRAFT_ID> <TITLE>` sets a new title. `<TITLE>` is trimmed and must hold 1 to 100 characters, with no NUL character. A busy or closed chat fails with `UZ-AUTHOR-002`, and nothing changes.
+
+```bash
+agentsfleet chat rename <DRAFT_ID> "Nightly health check"
+```
+
+```text
+✓ Renamed setup chat to Nightly health check
+```
+
+<Warning>
+  `agentsfleet chat delete` removes the chat's private messages for good. It has no dry-run option.
+</Warning>
+
+`agentsfleet chat delete <DRAFT_ID>` asks `Delete setup chat <DRAFT_ID>? Saved fleets keep running. [y/N]` first. Pass `--yes` to skip the question. Without a terminal, or with `--json`, `--yes` is required.
+
+```bash
+agentsfleet chat delete <DRAFT_ID> --yes
+```
+
+```text
+✓ Deleted setup chat <DRAFT_ID>. Saved fleets keep running.
+```
+
+Both commands accept `--workspace <WORKSPACE_ID>`.
+
 ### Fleets
 
 | Command | Effect |
 |---|---|
-| `agentsfleet library` | Lists the workspace gallery: every entry this workspace can use, platform and workspace alike. |
-| `agentsfleet library list` | Lists only the entries this workspace owns. |
-| `agentsfleet library delete <LIBRARY_ID>` | Removes one entry this workspace owns, with its revision history. Fleets saved from it keep running. |
+| `agentsfleet library` | Lists the workspace gallery: every platform or account-owned entry this workspace can use. |
+| `agentsfleet library list` | Lists only the entries your account owns. |
+| `agentsfleet library delete <LIBRARY_ID>` | Removes one entry your account owns, with its revision history. Fleets saved from it keep running. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
-| `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. |
+| `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
 | `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
 | `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
 | `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. On an `installing` fleet, it checks setup again and activates the fleet when every check passes. |
@@ -195,13 +253,13 @@ A Save that leaves the fleet `installing` prints each waiting check and exits wi
 | `agentsfleet delete <FLEET_ID>` | Deletes a killed fleet and its stored data. This cannot be undone. |
 | `agentsfleet logs [FLEET_ID]` | Shows recent activity. |
 | `agentsfleet events <FLEET_ID>` | Lists historical events with filters. |
-| `agentsfleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. |
+| `agentsfleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. If the stream drops, it reads that exact event for up to 60 seconds, until the event finishes. |
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
-`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what this workspace owns, which is the set `agentsfleet library delete` can act on.
+`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what your account owns, which is the set `agentsfleet library delete` can act on.
 
-`agentsfleet library delete` removes an entry permanently. Removing a platform entry, another workspace's entry, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
+`agentsfleet library delete` removes an entry permanently. Removing a platform entry, another account's entry, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
 
 Fleets and Library entries come only from reviewed chat drafts. The file, GitHub, and template import commands, `agentsfleet install`, and `agentsfleet fleet update` were removed; `agentsfleet chat` replaces them.
 
@@ -215,9 +273,9 @@ Fleets and Library entries come only from reviewed chat drafts. The file, GitHub
 | `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
 | `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
 
-A fleet whose Definition declares `repository_access: write` opens a gate on every run. The run parks until a person decides that gate, so an unresolved gate stops `agentsfleet steer` from finishing.
+Saving a fleet that declares a mintable credential opens an integration grant for approval. An approved grant covers repository writes until it is revoked. Rules declared under `gates` can also ask for approval during a run; a waiting gate parks that run until someone decides it.
 
-A decision is final. The next run opens its own gate, and the previous decision does not carry over.
+See [Approvals](/fleets/approvals) for the scope of each decision and how to revoke a grant.
 
 ### Schedules
 
@@ -247,6 +305,27 @@ Each option is accepted by the subcommands named beside it.
 
 A fleet holds at most 32 schedules.
 
+`agentsfleet schedule list` prints `SCHEDULE_ID`, `SCHEDULE`, `STATUS`, `NEXT RUN`, `MESSAGE`, and `AGO`. `SCHEDULE` is the server's description of the expression with its zone, such as `At 9:00 AM (UTC)`.
+
+```bash
+agentsfleet schedule list <FLEET_ID>
+```
+
+```text
+SCHEDULE_ID   SCHEDULE            STATUS      NEXT RUN    MESSAGE     AGO
+<varies>
+```
+
+`STATUS` reads `Scheduled`, `Paused`, `Activation pending`, or `Next run unavailable`. `NEXT RUN` is a Request for Comments (RFC) 3339 time only for a scheduled row, and `—` otherwise. The server computes both.
+
+`create`, `update`, `show`, and `sync` print one line in the same terms.
+
+```text
+✓ created <SCHEDULE_ID>: At 9:00 AM (UTC) · Scheduled · Next run: <varies>
+```
+
+With `--json`, or when standard output is not a terminal, schedule commands print the server's JSON as returned. The exception is `delete`, which prints `{"deleted":true,"schedule_id":"<SCHEDULE_ID>"}` after the server confirms deletion. A schedule response missing a field the client reads fails with `SCHEDULE_RESPONSE_INVALID` and exit code `3`.
+
 ### Secrets and memory
 
 | Command | Effect |
@@ -266,12 +345,17 @@ A fleet holds at most 32 schedules.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet models` | Lists every model the server prices: provider, model id, context window, and per-million-token input and output rates. |
+| `agentsfleet models` | Lists regular catalogue models: model id, display name, provider, context window, and per-million-token input, cached-input, and output rates. |
 | `agentsfleet models --provider <ID>` | Lists one provider's models. |
+| `agentsfleet models --advanced` | Lists the regular models and the advanced ones together. |
+
+The table prints `MODEL`, `NAME`, `PROVIDER`, `CONTEXT`, `IN/MTOK`, `CACHED/MTOK`, and `OUT/MTOK`. `CONTEXT` is the exact token count. Each rate is the exact dollar amount per million tokens, never rounded.
+
+The client reads every catalogue page before printing. With `--json`, each model keeps its full price schedule, its context source, and when that source was verified.
 
 The dashboard's model picker reads the same catalogue, so both surfaces offer
 the same providers. Rates apply under platform-managed posture; a self-managed
-credential is billed by your own provider account, and its rows show a dash.
+credential is billed by your own provider account.
 
 An empty catalogue means an administrator has not primed this server yet. While
 it is empty, `--provider` accepts any value and the server validates the
@@ -288,9 +372,9 @@ credential.
 
 Billing includes paid failed setup attempts. The setup column shows these costs, with a work identifier for each setup attempt.
 
-`--limit <COUNT>` reads 1–100 charge records per page, with a default of 10. Use the returned `next_cursor` as `<TOKEN>` in `--cursor <TOKEN>` to read the next page.
+`--limit <COUNT>` reads 1 to 100 charge records per page, with a default of 10. Any value that is not a whole number in that range is refused with exit code `4`. Use the returned `next_cursor` as `<TOKEN>` in `--cursor <TOKEN>` to read the next page.
 
-Runtime charges for the same fleet event group within each page. Every returned charge contributes to the displayed totals.
+Charges for the same fleet event group within each page. Every returned charge contributes to the displayed totals, including a repeated charge and a category the client cannot label. Totals add exact nanodollar amounts, so no charge is rounded away.
 
 ## Errors
 

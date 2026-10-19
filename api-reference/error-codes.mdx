@@ -3,7 +3,7 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-10-18
+verified: 2026-10-19
 product_version: 0.62.1
 executable: false
 ---
@@ -184,7 +184,7 @@ These codes answer private drafts, Save, Apply, and Library publication.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
-| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | This setup is unavailable. The draft, fleet, or Library entry is missing, belongs to another person or workspace, or is a platform entry you cannot change. Use a resource available to you in this workspace. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
+| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | The draft or fleet is missing or outside your access. A Library entry may be missing, belong to another account, or be a platform entry you cannot change. Use a resource available to you. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-002"></span>`UZ-AUTHOR-002` | 409 | Setup state conflict | Finish or stop the current work before changing setup. The response names the state in `current_state`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-003"></span>`UZ-AUTHOR-003` | 412 | Setup version changed | This setup changed. Fetch the current resource and retry with its `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
 | <span id="UZ-AUTHOR-004"></span>`UZ-AUTHOR-004` | 428 | Setup version required | Send the resource `ETag` in `If-Match`. | Review the current setup before each Save, Apply, or publish, and keep the operation key for retries. |
@@ -247,7 +247,7 @@ These codes answer private drafts, Save, Apply, and Library publication.
 
 Paged model reads use these codes. The Fleet library reads at `/v1/workspaces/{workspace_id}/fleet-libraries` and `/v1/workspaces/{workspace_id}/fleet-libraries/owned` answer a malformed or mismatched cursor with `UZ-AUTHOR-011` instead.
 
-Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one this workspace owns.
+Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one your account owns.
 
 | Code | HTTP | Title | Why and fix | Prevent |
 |---|---|---|---|---|
@@ -281,7 +281,7 @@ Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one this 
 | <span id="UZ-RUN-010"></span>`UZ-RUN-010` | 409 | Lease exceeded max runtime | The lease reached its maximum runtime and cannot renew. The runner stops the child and reports any result. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-011"></span>`UZ-RUN-011` | 409 | Lease lost | The lease moved to another runner before renewal. The former runner must stop its child. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-012"></span>`UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant balance cannot cover another run slice. The lease does not renew, and the run stops cleanly. | Keep runner settings and lease health within configured limits. |
-| <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew request body could not be parsed. Token counts become zero, but the renewed slice still charges for runtime. The lease still renews. | Keep runner settings and lease health within configured limits. |
+| <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The renew body carries cumulative token totals this daemon no longer reads, so the lease does not renew. Upgrade the runner; it reports one line per provider request in `requests`. The detail names the retired field. | Upgrade `agentsfleet-runner` together with `agentsfleetd`. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its `daily_nanos` or `monthly_nanos` limit from its reviewed setup, so the run stops. The tenant balance is fine; this is the fleet's own budget. | Keep runner settings and lease health within configured limits. |
 | <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. | Keep runner settings and lease health within configured limits. |

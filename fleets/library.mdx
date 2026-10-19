@@ -1,9 +1,9 @@
 ---
 title: Fleet library
-description: Understand platform and workspace library entries.
+description: Understand platform and account-owned library entries.
 type: explanation
 audience: user
-verified: 2026-10-17
+verified: 2026-10-19
 executable: false
 ---
 
@@ -13,7 +13,7 @@ executable: false
 
 A library entry is reusable fleet setup. It holds one or more immutable revisions, and each revision is a reviewed Definition with its required secrets, tools, and network hosts.
 
-The platform library is visible to every workspace. A workspace library entry is visible only inside its owning workspace.
+The platform library is visible to every workspace. Your account's entries are private to that account and can be reused across its workspaces.
 
 ## Why it exists
 
@@ -23,13 +23,17 @@ The library lets a workspace reuse a setup that someone already reviewed. A flee
 
 Entries come only from reviewed chat drafts. Saving a fleet never publishes it, and publishing never creates a fleet.
 
-The dashboard has two tabs: **All** includes published platform setups and this workspace's setups; **This workspace** shows only this workspace's setups. An empty library means no published setups are available in that view. Create a setup in chat, review it, then publish it.
+The dashboard has two tabs.
+
+**All** shows platform setups and setups published by your account. **Workspace** shows setups published by your account that this workspace can use. Private setups from other accounts never appear.
+
+An empty view shows a **New fleet** action. Start a fleet setup chat, then save or publish your setup.
 
 The library accepts reviewed Definitions. Older Markdown bundle entries were removed during the Definition rollout and do not appear. To reuse older instructions, paste them into a new setup chat and publish the reviewed result.
 
 Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. To move a fleet forward, improve it in a private chat and apply the reviewed change.
 
-`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns.
+`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one your account owns.
 
 ```bash
 agentsfleet library
@@ -45,11 +49,11 @@ Start from a revision: agentsfleet chat --library <library_id> --revision <revis
 
 A page with no entries reads `No published Fleet libraries in this page.` and shows how to publish one.
 
-## Publish a workspace entry
+## Publish an entry for your account
 
 You publish from a reviewed draft. Publishing does not close the draft, so you can keep editing it.
 
-In the dashboard, review the draft and choose **Publish to Library**. Then choose **Publish new entry**, or **Publish next revision** for an entry you already own.
+In the dashboard, open **Publish to Fleet library** under the chat's setup and enter a **Library name**. Then choose **Publish new entry**, or **Publish next revision** for an entry this chat already published to.
 
 In the terminal, publish a reviewed draft with a label. `<LABEL>` is the display name, 1 to 100 characters. `<DRAFT_ID>` and `<DIGEST>` come from the draft's review.
 
@@ -64,7 +68,7 @@ agentsfleet chat <DRAFT_ID> --no-input --publish <LABEL> --review-digest <DIGEST
 
 Inside an interactive chat, `/publish <LABEL>` does the same after a `/review`.
 
-To add a revision to an entry this workspace owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
+To add a revision to an entry your account owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
 
 Publishing needs the `library:write` scope.
 
@@ -75,9 +79,9 @@ Publishing needs the `library:write` scope.
 | `--library-etag <ETAG>` | The entry tag you inspected. | None | Entity tag |
 | `--review-digest <DIGEST>` | The digest of the review you inspected. | None; required | Digest text |
 
-## List and remove workspace entries
+## List and remove your account's entries
 
-`agentsfleet library list` lists only the entries this workspace owns. It never shows a platform entry.
+`agentsfleet library list` lists only the entries your account owns. It never shows a platform entry.
 
 ```bash
 agentsfleet library list
@@ -103,9 +107,11 @@ agentsfleet library delete <LIBRARY_ID>
 Publish reviewed chat setup with: agentsfleet chat --help
 ```
 
-Fleets saved from the entry are untouched. Each keeps the revision it was saved from.
+Removal deletes every revision of the entry. Fleets saved from the entry keep running on the setup they were saved with.
 
-You can remove only an entry this workspace owns. A platform entry, another workspace's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
+A draft started from the entry, or published to it, stays. The draft loses its link to the entry and keeps its own content.
+
+You can remove only an entry your account owns. A platform entry, another account's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
 
 Removal needs the `library:write` scope.
 
@@ -115,7 +121,7 @@ The dashboard lists the same entries at **Fleet library** in the workspace sideb
 
 Platform entries come from a reviewed draft too. An operator whose session carries the `platform-library:write` scope stages the draft, and the entry starts hidden.
 
-1. In a workspace chat, review the draft and choose **Stage platform entry**.
+1. In a workspace chat, open **Publish to Fleet library** and choose **Stage platform entry**.
 2. Open **Fleet library** under Platform.
 3. Edit the entry's name, description, and the reason for each credential it needs.
 4. Choose **Publish**. Only published entries appear in workspace galleries.

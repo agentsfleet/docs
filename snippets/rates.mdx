@@ -2,8 +2,9 @@
   Single source of truth for agentsfleet pricing strings on the docs site.
 
   Each string mirrors a rate the daemon declares once, in Rust:
-    - STARTER_CREDIT — STARTER_CREDIT_NANOS in rustd/crates/afd_tenant/src/signup.rs
-    - EVENT_RATE     — RECEIVE_NANOS in rustd/crates/afd_billing/src/nanos.rs
+    - STARTER_CREDIT — STARTER_CREDIT_NANOS in rustd/crates/afd_tenant/src/signup/mod.rs
+    - EVENT_RATE     — no receive charge exists: afd_billing charges usage only
+                       (billing_and_provider_keys.md §3)
   Nanos convert to dollars through NANOS_PER_USD in afd_core::money. No client
   recomputes a charge; each renders the amount the daemon served.
 

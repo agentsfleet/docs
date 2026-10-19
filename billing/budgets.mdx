@@ -3,7 +3,7 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-10-15
+verified: 2026-10-19
 executable: false
 ---
 
@@ -43,6 +43,28 @@ The daily limit covers a rolling 24-hour window. The monthly limit covers one Co
 A blocked event does not retry. Raise the limit in an improvement chat, apply the change, and send a new event.
 
 The fleet, memory, and activity stream survive a budget stop. A stopped run has no final result.
+
+### What a budget counts
+
+A budget counts only the fleet's own runs. The setup chat that wrote or changed the fleet is charged to the workspace owner's balance, not to the fleet's budget.
+
+While billing is available, a limit is checked before each run and at each renewal while it runs. A run already in progress can pass its limit by up to one renewal of usage before it stops.
+
+If billing cannot answer, work continues and can exceed that bound. The full charge is settled later.
+
+### How charges are counted
+
+`agentsfleet` charges each provider request on its own line. A fleet run or setup chat also adds one run-time line for each stretch of time it ran. The charge history at `GET /v1/tenants/me/billing/charges` returns one row per line.
+
+Each request is priced at the rate in effect when it was made, and at the tier its whole prompt falls in. Cached reads, cache writes, and output each use their own rate.
+
+Each token category on a line is rounded up to a whole nanodollar on its own. A line can cost at most one nanodollar more per category than the exact amount, and never less.
+
+Under a self-managed provider key, your provider bills the tokens and `agentsfleet` charges run time only.
+
+If billing cannot answer while a run starts or renews, the run continues. Its charges are recorded with the run and settled once billing answers again.
+
+Settlement charges the full amount and can take your balance below zero. New credit repays that debt before any remainder becomes spendable.
 
 ## Limits
 

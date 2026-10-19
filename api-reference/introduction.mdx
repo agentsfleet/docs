@@ -3,7 +3,7 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-09-19
+verified: 2026-10-19
 executable: false
 ---
 
@@ -47,7 +47,17 @@ curl https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets -H "Authori
 
 Errors use the HTTP problem details format. Each product error includes an `error_code`, a `request_id`, and a documentation URL.
 
-Identifiers use version 7 Universally Unique Identifiers (UUIDs). Timestamps use Unix milliseconds unless an operation states another unit.
+Identifiers use version 7 Universally Unique Identifiers (UUIDs).
+
+Timestamps are Request for Comments (RFC) 3339 strings in Coordinated Universal Time (UTC), such as `2026-10-17T18:06:49.123Z`. A whole second has no fraction, as in `2026-10-17T18:06:49Z`. Compare timestamps after parsing them, because text order is not time order.
+
+A timestamp you send may use any RFC 3339 offset. It may carry at most millisecond precision; a finer value is refused.
+
+Money amounts are whole nanodollars, written as decimal strings. One United States (US) dollar is `"1000000000"`. Every field whose name contains `_nanos` uses this form, including balances, charges, event costs, and model rates.
+
+Except for the balance below, a nanodollar string holds digits only, with no sign, no leading zero, and no decimal point. It matches `^(0|[1-9][0-9]*)$` and never exceeds `"9223372036854775807"`. Add amounts with integer arithmetic, such as JavaScript `BigInt`, because a floating-point number loses precision past 2^53.
+
+`balance_nanos` from `GET /v1/tenants/me/billing` can be negative when settled usage exceeds your credit. It matches `^(0|-?[1-9][0-9]*)$`, from `"-9223372036854775808"` through `"9223372036854775807"`. Zero is always `"0"`, never `"-0"`.
 
 ## Limits
 

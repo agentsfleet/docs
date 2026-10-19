@@ -1,9 +1,9 @@
 ---
 title: Author a fleet
-description: Describe a fleet in a private chat, review its setup, and save it.
+description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-18
+verified: 2026-10-19
 executable: false
 ---
 
@@ -35,19 +35,36 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the job in the chat. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Choose **Review setup**. Compare the proposed task, instructions, triggers, access, and spending limits with what you asked for.
-4. Choose **Save fleet**. To request a first run immediately, enter a message and choose **Save and run now** instead.
-5. Choose **Open fleet** when the saved fleet appears. Its sections are **Chat**, **Activity**, **Memory**, **Setup**, and **Trigger**.
+3. Read **Your fleet setup** below the chat. It shows the proposed task, instructions, triggers, access, and spending limits. Keep chatting until they match what you asked for.
+4. Choose **Save fleet**. To request a first run immediately, enter a message under **Optional first run** and choose **Save and run now** instead.
+5. Choose **Open fleet** when the saved fleet appears. Its sections are **Chat**, **Activity**, **Memory**, and **Setup**.
 
-Opening review creates no fleet and requests no run. **Save fleet** requests no first run, but configured automatic triggers can start work once setup is ready.
+The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
+
+**Edit instructions** opens the proposed instructions for a direct edit. **Cancel editing** returns to the setup without changes.
 
 **Fleet saved** shows setup and first-run status separately. Setup readiness means the fleet can receive work. An accepted first run can still be running.
 
 Keep unfinished setup steps and schedule registration warnings in view. Use the displayed retry action when setup needs attention.
 
-To change a saved fleet, open **Setup** and choose **Edit fleet**.
-Describe the change in the private chat, choose **Review setup**, then choose **Apply reviewed setup**.
+To change a saved fleet, open **Setup** and choose **Edit fleet**. A private chat opens for the fleet's saved setup revision.
+
+Describe the change, check **Update fleet setup**, then choose **Save changes**.
 New work uses the updated instructions; work already running keeps its current version.
+
+### Find, rename, and delete setup chats
+
+The sidebar lists your chats under **Fleet setup chats**. Only you see them.
+
+A new chat is titled with the first line of your first message, cut to 100 characters. A chat started from a Definition or a Library revision takes the first line of its description. A chat with neither reads **New fleet**.
+
+Choose **Rename** beside the chat title to change it. A renamed chat keeps your title, and the saved fleet keeps its own name. A chat cannot be renamed while a reply or a Save is running, or after it closes.
+
+**Search all chats** matches your chat titles and the text of every message, ignoring case. It searches all your chats, not only the ones loaded in the sidebar.
+
+To delete a chat, choose its delete action and confirm **Delete chat**. The private conversation is removed. Saved fleets keep running, and published Library revisions stay available.
+
+Each chat shows the versions it reached. **Proposed** is its latest setup while the chat is open. **Saved** is the fleet's current setup revision, and **Published** is the Library revision it published.
 
 ### In the terminal
 
@@ -167,11 +184,27 @@ If the dashboard has no eligible model, open model settings. Check the saved end
 
 `UZ-AGT-006` means a fleet already uses the name. Review again under a different `--name`.
 
+`UZ-AUTHOR-002` on a rename means the chat is busy or closed. Wait for the reply or the Save to finish, then rename an open chat.
+
+A retried draft creation, chat message, Save, Apply, or publish reuses its operation key. For 24 hours after the first attempt, the same key and request return the first result.
+
+The same key with a different request, or from another person, fails with `409` and `UZ-AUTHOR-005`. If the first attempt's draft, message, fleet, or Library revision was deleted since, the retry fails with `410 Gone` and `UZ-AUTHOR-013`. Start a new operation with a new key.
+
+After 24 hours, the key counts as new.
+
 A Definition holds at most 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
 
 ## Remove or undo
 
-Delete a draft with `/delete` in the terminal chat. Deleting it removes its private messages.
+<Warning>
+  Deleting a setup chat removes its private messages for good. Saved fleets keep running, and published Library revisions stay.
+</Warning>
+
+Delete a chat from the sidebar, with `/delete` in the terminal chat, or with `agentsfleet chat delete <DRAFT_ID>`.
+
+Saving a fleet, or saving changes to one, closes its chat. `agentsfleet` keeps a closed chat and its messages for 30 days, then deletes them. The chat's `expires_at` field shows when.
+
+Charges for the draft's chat messages stay in the workspace's billing records.
 
 Delete a saved fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
 

@@ -3,7 +3,7 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-09-28
+verified: 2026-10-19
 product_version: 0.51.0
 executable: false
 ---
@@ -29,9 +29,11 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 | `stopped` | A user has paused new work. | Resume or kill |
 | `killed` | The fleet can never accept work again. | Delete |
 
-Saving a reviewed draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
+Saving a draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
 The fleet detail page is a focused workspace with Chat as its default view. Its summary shows status, the latest outcome, tokens, spend, and duration.
+
+Dashboard navigation, fleet headings, lease history, and billing use a stable callsign, such as `AGENT ORBIT-BCD3`. The saved purpose helps you recognize the work. The API's `name` field keeps the saved fleet name.
 
 If an approval is waiting, the summary links to the workspace Approvals page filtered to this fleet.
 
@@ -40,8 +42,7 @@ Use the fleet navigation for one task at a time:
 - **Chat** sends instructions and shows the fleet's replies. A message is sent when you submit it, whether or not the live feed is connected. The fleet handles what arrives in order, so a busy fleet does not block you.
 - **Activity** lists the fleet's durable activity, outcome, token use, spend, and duration in a table.
 - **Memory** shows the durable lessons the fleet can use in later runs.
-- **Setup** shows the fleet's instructions and runtime settings, and **Edit fleet** starts a draft from them.
-- **Trigger** shows each declared trigger and its latest delivery.
+- **Setup** shows what the fleet does, its saved instructions, its saved version, its triggers, and its schedules. **Edit fleet** opens a private chat for that saved setup.
 
 The fleet header contains stop, resume, kill, and delete controls, according to its current state.
 
@@ -73,13 +74,24 @@ Each unsent message keeps its own **Resend** and **Dismiss** until you choose on
 
 An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 8,192 bytes.
 
-The fleet's `webhook_urls` lists each provider webhook address. Trigger shows the declared source, event filters, schedule, and latest delivery without copying a webhook URL.
+The fleet's `webhook_urls` lists each provider webhook address. Setup shows each declared source and its event filters without copying a webhook URL.
 
-An improvement runs in a private draft pinned to the fleet's current setup revision. Choose **Apply reviewed setup** to make it the fleet's next revision. Running work keeps the revision it started with.
+Under **Schedule**, Setup reads each saved schedule in words with its time zone, such as `At 9:00 AM (Asia/Kolkata)`. The line below says whether it will run:
 
-The fleet keeps its identifier and memory across revisions. Applying never publishes the change to the Fleet library.
+| Shown | Meaning |
+|---|---|
+| **Next run:** a time | The schedule is active and registered. The time is the next match of its expression in its zone. |
+| **Schedule paused.** | The schedule is stored and does not fire until you resume it. |
+| **Schedule saved; activation is pending.** | The schedule is saved but not yet registered with the scheduler. |
+| **Next run time unavailable.** | The schedule will not run on its own. Registration failed, it is being deleted, its one-time run passed, or its expression has no future match. |
 
-If the fleet's setup changed after you reviewed, Apply is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006). Review the draft again, then apply.
+A fleet with no schedule reads **No schedule set.** The server works out the state and the next run when you load the page. Run history stays in **Chat** and **Activity**.
+
+An improvement runs in a private chat pinned to the fleet's current setup revision. Choose **Save changes** to make it the fleet's next revision. Running work keeps the revision it started with.
+
+The fleet keeps its identifier and memory across revisions. Saving changes never publishes them to the Fleet library.
+
+If the fleet's setup changed after the chat loaded it, **Save changes** is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006). Reload the chat, check the setup, then save again.
 
 Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
 
