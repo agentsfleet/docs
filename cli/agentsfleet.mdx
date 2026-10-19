@@ -242,8 +242,8 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 | Command | Effect |
 |---|---|
 | `agentsfleet library` | Lists the workspace gallery: every entry this workspace can use, platform and workspace alike. |
-| `agentsfleet library list` | Lists only the entries this workspace owns. |
-| `agentsfleet library delete <LIBRARY_ID>` | Removes one entry this workspace owns, with its revision history. Fleets saved from it keep running. |
+| `agentsfleet library list` | Lists only the entries your account owns. |
+| `agentsfleet library delete <LIBRARY_ID>` | Removes one entry your account owns, with its revision history. Fleets saved from it keep running. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
 | `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
@@ -257,9 +257,9 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
-`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what this workspace owns, which is the set `agentsfleet library delete` can act on.
+`agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what your account owns, which is the set `agentsfleet library delete` can act on.
 
-`agentsfleet library delete` removes an entry permanently. Removing a platform entry, another workspace's entry, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
+`agentsfleet library delete` removes an entry permanently. Removing a platform entry, another account's entry, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
 
 Fleets and Library entries come only from reviewed chat drafts. The file, GitHub, and template import commands, `agentsfleet install`, and `agentsfleet fleet update` were removed; `agentsfleet chat` replaces them.
 
@@ -273,9 +273,9 @@ Fleets and Library entries come only from reviewed chat drafts. The file, GitHub
 | `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
 | `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
 
-A fleet whose Definition declares `repository_access: write` opens a gate on every run. The run parks until a person decides that gate, so an unresolved gate stops `agentsfleet steer` from finishing.
+Saving a fleet that declares a mintable credential opens an integration grant for approval. An approved grant covers repository writes until it is revoked. Rules declared under `gates` can also ask for approval during a run; a waiting gate parks that run until someone decides it.
 
-A decision is final. The next run opens its own gate, and the previous decision does not carry over.
+See [Approvals](/fleets/approvals) for the scope of each decision and how to revoke a grant.
 
 ### Schedules
 
@@ -324,7 +324,7 @@ SCHEDULE_ID   SCHEDULE            STATUS      NEXT RUN    MESSAGE     AGO
 ✓ created <SCHEDULE_ID>: At 9:00 AM (UTC) · Scheduled · Next run: <varies>
 ```
 
-With `--json`, or when standard output is not a terminal, every schedule command prints the server's JSON as returned. A schedule response missing a field the client reads fails with `SCHEDULE_RESPONSE_INVALID` and exit code `3`.
+With `--json`, or when standard output is not a terminal, schedule commands print the server's JSON as returned. The exception is `delete`, which prints `{"deleted":true,"schedule_id":"<SCHEDULE_ID>"}` after the server confirms deletion. A schedule response missing a field the client reads fails with `SCHEDULE_RESPONSE_INVALID` and exit code `3`.
 
 ### Secrets and memory
 
@@ -345,7 +345,7 @@ With `--json`, or when standard output is not a terminal, every schedule command
 
 | Command | Effect |
 |---|---|
-| `agentsfleet models` | Lists every model the server prices: model id, display name, provider, context window, and per-million-token input, cached-input, and output rates. |
+| `agentsfleet models` | Lists regular catalogue models: model id, display name, provider, context window, and per-million-token input, cached-input, and output rates. |
 | `agentsfleet models --provider <ID>` | Lists one provider's models. |
 | `agentsfleet models --advanced` | Lists the regular models and the advanced ones together. |
 

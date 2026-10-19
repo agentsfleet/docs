@@ -55,7 +55,9 @@ A timestamp you send may use any RFC 3339 offset. It may carry at most milliseco
 
 Money amounts are whole nanodollars, written as decimal strings. One United States (US) dollar is `"1000000000"`. Every field whose name contains `_nanos` uses this form, including balances, charges, event costs, and model rates.
 
-A nanodollar string holds digits only, with no sign, no leading zero, and no decimal point. It matches `^(0|[1-9][0-9]*)$` and never exceeds `"9223372036854775807"`. Add amounts with integer arithmetic, such as JavaScript `BigInt`, because a floating-point number loses precision past 2^53.
+Except for the balance below, a nanodollar string holds digits only, with no sign, no leading zero, and no decimal point. It matches `^(0|[1-9][0-9]*)$` and never exceeds `"9223372036854775807"`. Add amounts with integer arithmetic, such as JavaScript `BigInt`, because a floating-point number loses precision past 2^53.
+
+`balance_nanos` from `GET /v1/tenants/me/billing` can be negative when settled usage exceeds your credit. It matches `^(0|-?[1-9][0-9]*)$`, from `"-9223372036854775808"` through `"9223372036854775807"`. Zero is always `"0"`, never `"-0"`.
 
 ## Limits
 

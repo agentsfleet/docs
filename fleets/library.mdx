@@ -13,7 +13,7 @@ executable: false
 
 A library entry is reusable fleet setup. It holds one or more immutable revisions, and each revision is a reviewed Definition with its required secrets, tools, and network hosts.
 
-The platform library is visible to every workspace. A workspace library entry is visible only inside its owning workspace.
+The platform library is visible to every workspace. Your account's entries are private to that account and can be reused across its workspaces.
 
 ## Why it exists
 
@@ -33,7 +33,7 @@ The library accepts reviewed Definitions. Older Markdown bundle entries were rem
 
 Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. To move a fleet forward, improve it in a private chat and apply the reviewed change.
 
-`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one this workspace owns.
+`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one your account owns.
 
 ```bash
 agentsfleet library
@@ -68,7 +68,7 @@ agentsfleet chat <DRAFT_ID> --no-input --publish <LABEL> --review-digest <DIGEST
 
 Inside an interactive chat, `/publish <LABEL>` does the same after a `/review`.
 
-To add a revision to an entry this workspace owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
+To add a revision to an entry your account owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
 
 Publishing needs the `library:write` scope.
 
@@ -81,7 +81,7 @@ Publishing needs the `library:write` scope.
 
 ## List and remove workspace entries
 
-`agentsfleet library list` lists only the entries this workspace owns. It never shows a platform entry.
+`agentsfleet library list` lists only the entries your account owns. It never shows a platform entry.
 
 ```bash
 agentsfleet library list
@@ -111,7 +111,7 @@ Removal deletes every revision of the entry. Fleets saved from the entry keep ru
 
 A draft started from the entry, or published to it, stays. The draft loses its link to the entry and keeps its own content.
 
-You can remove only an entry this workspace owns. A platform entry, another workspace's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
+You can remove only an entry your account owns. A platform entry, another account's entry, or an entry already removed answers `404` with `UZ-AUTHOR-001`. All three answer the same way, so the reply never tells you whether an entry exists elsewhere.
 
 Removal needs the `library:write` scope.
 

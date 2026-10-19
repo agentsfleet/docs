@@ -20,14 +20,14 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Runner requests drop `deletion_generation`** — an authoring request that still sends it is refused.
   - **Parse timestamps** — Unix millisecond numbers are gone. `expires_at_ms` on `GET /v1/auth/sessions/{session_id}` and `POST /v1/runners/me/credentials/mint` is now `expires_at`.
   - **Compare parsed values** — a whole second prints without a fraction, as `2026-10-17T18:06:49Z`. Text order is not time order.
-  - **Read money as strings** — `balance_nanos`, `credit_deducted_nanos`, `cost_nanos`, and catalogue rates were JSON numbers. Every `_nanos` field now matches `^(0|[1-9][0-9]*)$`, so add amounts with integer arithmetic.
+  - **Read money as strings** — `balance_nanos`, `credit_deducted_nanos`, `cost_nanos`, and catalogue rates were JSON numbers. Use integer arithmetic on their decimal strings. `balance_nanos` can be negative and matches `^(0|-?[1-9][0-9]*)$`; other `_nanos` fields match `^(0|[1-9][0-9]*)$`. Negative zero is refused.
   - **Approval fields are renamed** — `gate_kind` is `gate_type` and `timeout_at` is `expires_at`. `updated_at` is gone, and nullable `resolved_at` is added. The approvals list filter is `gate_type`.
 
   ## What's new
 
   - **Setup saves directly** — **Your fleet setup** shows the proposed setup under the chat. **Save fleet** and **Save changes** check the current setup, then save. The terminal keeps `/review` and its digest.
   - **Setup holds triggers and schedules** — the **Trigger** tab is gone. **Setup** shows the saved purpose, instructions, version, triggers, and each schedule's state and next run.
-  - **Setup chats have titles, search, rename, and delete** — a new chat takes the first line of its first message, or of its source's description. Search covers every title and message you wrote.
+  - **Setup chats have titles, search, rename, and delete** — a new chat takes the first line of its first message, or of its source's description. Search covers your chat titles and all messages in those chats.
   - **Closed chats last 30 days** — saving a fleet, or saving changes to one, closes its chat. The chat and its messages are deleted 30 days later, and `expires_at` shows when.
   - **Retry keys last 24 hours** — a retried draft creation, chat message, Save, Apply, or publish returns the first result for 24 hours. A different request under the same key fails with `409` and `UZ-AUTHOR-005`.
   - **Deleted results answer Gone** — a retry whose first result was deleted fails with `410` and `UZ-AUTHOR-013`. After 24 hours, the key counts as new.
@@ -35,8 +35,8 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   - **Library tabs read All and Workspace** — **All** shows platform setups and setups your account published. **Workspace** shows your account's setups that this workspace can use.
   - **Runner lease history outlives its fleet** — a finished lease stays for 30 days after it finishes, even when its fleet is deleted. **Open fleet** appears only for a fleet you can open.
   - **Charges are per provider request** — each request is priced at its own time and prompt tier, and each token category rounds up on its own. Budgets count a fleet's own runs, never its setup chat.
-  - **A billing outage lets work continue** — charges are recorded with the work and settled once billing answers. The balance never goes below zero.
-  - **Agent callsigns** — recent chats, fleet headings, runner leases, and Billing name each fleet by its callsign.
+  - **A billing outage lets work continue** — charges are recorded with the work and settled once billing answers. Settlement deducts the full charge, so the balance can go below zero. Added credits repay that debt first.
+  - **Agent callsigns** — recent fleets, fleet headings, runner leases, and billing name each fleet by its callsign.
 
   ## API reference
 
