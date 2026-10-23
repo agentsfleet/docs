@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.64.0
 executable: false
 ---
 
@@ -195,15 +195,15 @@ These codes answer private drafts, Save, Apply, and Library publication.
 | <span id="UZ-AUTHOR-005"></span>`UZ-AUTHOR-005` | 409 | Operation key conflict | That operation key already belongs to a different request. Reuse a key only for the same request from the same person. |
 | <span id="UZ-AUTHOR-006"></span>`UZ-AUTHOR-006` | 409 | Setup review changed | This setup changed. Review it before saving. The response carries the fresh `review_digest`. |
 | <span id="UZ-AUTHOR-007"></span>`UZ-AUTHOR-007` | 402 | Authoring balance insufficient | The workspace balance cannot cover this authoring request. The workspace owner adds credit, or the request waits for earlier usage to settle. |
-| <span id="UZ-AUTHOR-008"></span>`UZ-AUTHOR-008` | 409 | Authoring model unavailable | Choose an available authoring model. The selected model is missing, disabled, or not eligible for authoring. |
+| <span id="UZ-AUTHOR-008"></span>`UZ-AUTHOR-008` | 409 | Authoring model unavailable | The selected model is missing, disabled, or ineligible, or its credential was rejected. Replace the credential or choose another available authoring model. |
 | <span id="UZ-AUTHOR-009"></span>`UZ-AUTHOR-009` | 409 | Setup policy changed | This setup needs a new review. Review the current setup before continuing. |
 | <span id="UZ-AUTHOR-010"></span>`UZ-AUTHOR-010` | 422 | Authoring context too large | This request exceeds the authoring model's context limit. Shorten the request or choose a model with a larger window. |
 | <span id="UZ-AUTHOR-011"></span>`UZ-AUTHOR-011` | 400 | Invalid setup cursor | Reload this list to continue. A cursor works only with the same person, filters, and page size. |
 | <span id="UZ-AUTHOR-012"></span>`UZ-AUTHOR-012` | 409 | Authoring lease lost | This authoring attempt can no longer update the draft. Refresh the draft before sending another message. |
 | <span id="UZ-AUTHOR-013"></span>`UZ-AUTHOR-013` | 410 | Setup resource purged | This setup was deleted. Start a new operation. |
 | <span id="UZ-AUTHOR-014"></span>`UZ-AUTHOR-014` | 502 | Authoring provider failed | The authoring provider could not finish this request. Send the message again. |
-| <span id="UZ-AUTHOR-015"></span>`UZ-AUTHOR-015` | 409 | Authoring usage unresolved | This model request is waiting for accounting. Wait before sending again. |
-| <span id="UZ-AUTHOR-016"></span>`UZ-AUTHOR-016` | 504 | Authoring attempt timed out | This authoring attempt ran out of time. Send the message again once its accounting settles. |
+| <span id="UZ-AUTHOR-015"></span>`UZ-AUTHOR-015` | 409 | Authoring usage unresolved | An earlier attempt still has unresolved provider usage. Choose **Stop authoring** on that reply before sending a new message. Its reserved balance can still limit new work until accounting finishes. |
+| <span id="UZ-AUTHOR-016"></span>`UZ-AUTHOR-016` | 504 | Authoring attempt timed out | This attempt timed out after its provider accounting resolved. Send a new message to retry. |
 
 ### Secrets
 

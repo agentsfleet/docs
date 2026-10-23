@@ -7,6 +7,32 @@ description: "Stay up to date with the latest agentsfleet product updates, new f
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 23, 2026" tags={["Bug fixes"]}>
+  ## Edit fleet setup beside the conversation
+
+  **Edit setup** opens a private chat beside the fleet conversation. Saving applies your changes to new runs.
+
+  - **Saving** — **Save fleet** stays beside the setup-chat title. **Save changes** stays below the message field when editing a fleet.
+  - **Recent** — return to fleets and your unsaved setup chats from one sidebar section.
+  - **Streaming** — replies appear while the model answers. Live text stops when you stop a reply, and completed replies remain available after reconnecting.
+</Update>
+
+<Update label="Oct 21, 2026" tags={["What's new", "Bug fixes"]}>
+  ## Resume setup chat after Stop
+
+  Stop an uncertain setup reply, then send a new message. Earlier usage remains available for billing reconciliation.
+
+  ## What's new
+
+  - **MiniMax** — the model library includes OpenRouter's `minimax/minimax-m3.1-flash:free`. An administrator must enable it before you can select it.
+
+  ## Bug fixes
+
+  - **Recovery** — stopped attempts no longer block later replies. Existing balance and capacity limits still apply.
+  - **Credentials** — definite key rejections fail the reply; repair the credential or select another model before sending again.
+  - **Sidebar** — **Recent setup** shows chat titles in navigation text. Search and fleet recents are removed; the folded **New fleet** plus is compact.
+</Update>
+
 <Update label="Oct 19, 2026" tags={["Bug fixes"]}>
   ## Docs match the product branding
 

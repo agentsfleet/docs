@@ -3,8 +3,8 @@ title: Author a fleet
 description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.64.0
 executable: false
 ---
 
@@ -35,36 +35,52 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Read **Your fleet setup** below the chat. It shows the proposed task, instructions, triggers, access, and spending limits. Keep chatting until they match what you asked for.
-4. Choose **Save fleet**. To request a first run immediately, enter a message under **Optional first run** and choose **Save and run now** instead.
-5. Choose **Open fleet** when the saved fleet appears. Its sections are **Chat**, **Activity**, **Memory**, and **Setup**.
+3. Open the chat's **… → Edit instructions**. Check the instructions and **Review and run options**. Keep chatting until the proposal matches your task.
+4. Choose **Save fleet** beside the chat title. For an immediate first run, enter a message under **Optional first run** in the editor and choose **Save and run now**.
+5. Saving opens the fleet conversation. Its sections are **Chat**, **Activity**, and **Memory**.
 
 The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
 
-**Edit instructions** opens the proposed instructions for a direct edit. **Cancel editing** returns to the setup without changes.
+**Edit instructions** opens a panel beside the chat, or across the screen on a phone. Your unsent chat message stays in place.
 
-**Fleet saved** shows setup and first-run status separately. Setup readiness means the fleet can receive work. An accepted first run can still be running.
+Choose **Update instructions** to apply manual edits to the draft, then **Save fleet** or **Save changes** beside the chat. **Cancel editing** discards unsubmitted edits.
+
+The setup chat shows a compact saved-version summary. Setup and first-run warnings remain visible when setup needs attention.
 
 Keep unfinished setup steps and schedule registration warnings in view. Use the displayed retry action when setup needs attention.
 
-To change a saved fleet, open **Setup** and choose **Edit fleet**. A private chat opens for the fleet's saved setup revision.
+To change a saved fleet, choose **Edit setup** in its header. A private chat opens beside the fleet conversation, based on its saved setup revision. On a phone, the editor fills the page.
 
-Describe the change, check **Update fleet setup**, then choose **Save changes**.
+Describe the change, review it through **Edit instructions**, then choose **Save changes** beside the chat.
 New work uses the updated instructions; work already running keeps its current version.
+
+### Recover a stopped or failed reply
+
+**Queued…** means your message is waiting to start. **Working…** means a reply has started.
+
+If the provider outcome is uncertain, choose **Stop authoring**, then send a new message.
+Earlier usage stays under review, and its reserved balance can limit new work until accounting finishes.
+
+A definite credential rejection fails the reply without requiring **Stop**.
+Ask the credential owner to replace the key, or choose another available authoring model before sending a new message.
+A key that worked earlier can expire or be revoked.
+
+**Stop** keeps setup changes already accepted into the proposal. Review the current proposal before saving.
+Stopping setup chat leaves saved fleets running.
 
 ### Find, rename, and delete setup chats
 
-The sidebar lists your chats under **Fleet setup chats**. Only you see them.
+The sidebar lists fleets and your unsaved setup chats under **Recent**. Select a fleet to return to its conversation.
 
 A new chat is titled with the first line of your first message, cut to 100 characters. A chat started from a Definition or a Library revision takes the first line of its description. A chat with neither reads **New fleet**.
 
-Choose **Rename** beside the chat title to change it. A renamed chat keeps your title, and the saved fleet keeps its own name. A chat cannot be renamed while a reply or a Save is running, or after it closes.
+Choose **… → Rename chat** above the conversation to change its title. A renamed chat keeps your title, and the saved fleet keeps its own name.
 
-**Search all chats** matches your chat titles and the text of every message, ignoring case. It searches all your chats, not only the ones loaded in the sidebar.
+You cannot rename a chat while a reply or Save is running, while earlier usage is being checked, or after the chat closes.
 
 To delete a chat, choose its delete action and confirm **Delete chat**. The private conversation is removed. Saved fleets keep running, and published Library revisions stay available.
 
-Each chat shows the versions it reached. **Proposed** is its latest setup while the chat is open. **Saved** is the fleet's current setup revision, and **Published** is the Library revision it published.
+Hover or focus a setup-chat row to read its full title and status. The editor identifies the saved fleet revision on which your changes are based.
 
 ### In the terminal
 
@@ -191,7 +207,8 @@ A Save that prints `installing` and exits with code `1` is waiting on a setup ch
 
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
 
-`UZ-AUTHOR-008` means the authoring model is missing or disabled. In the terminal, run `/model <MODEL_REF>` with another eligible model.
+`UZ-AUTHOR-008` means the authoring model is unavailable, including a rejected credential. Repair its configuration or select another eligible model.
+In the terminal, run `/model <MODEL_REF>` to change models.
 
 If the dashboard has no eligible model, open model settings. Check the saved endpoint, API format, token limits, and credentials. Loading failures show a retry action separately from missing configuration.
 

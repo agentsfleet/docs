@@ -3,8 +3,8 @@ title: Use your own model provider
 description: Store a model-provider credential and run fleets on it instead of the platform default.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.64.0
 executable: false
 ---
 
@@ -87,7 +87,7 @@ New setup reviews resolve your account default unless the Definition selects a m
 Check **Runtime model** in the review before saving.
 
 Changing the account default does not replace an existing fleet's saved model reference.
-To change that reference, open **Setup → Edit fleet**, update the model, then review and save the setup.
+To change that reference, choose **Edit setup** in the fleet header. Update the model in the chat, then review and save the setup.
 
 ## Point at your own endpoint
 
@@ -116,6 +116,10 @@ Send that fleet a message with `agentsfleet steer <FLEET_ID>`, using an identifi
 Check the response and usage in your provider account.
 
 ## Common problems
+
+A saved key can expire or be revoked. If setup chat reports `UZ-AUTHOR-008` after a credential rejection, replace the key or select another model.
+
+The rejected reply fails without requiring **Stop**. If the provider outcome is uncertain, follow [setup-chat recovery](/fleets/authoring#recover-a-stopped-or-failed-reply).
 
 An unknown provider or model returns the accepted values. Run
 `agentsfleet models --provider <PROVIDER_ID>` to check your choice.

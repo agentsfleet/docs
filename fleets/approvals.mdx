@@ -3,8 +3,8 @@ title: Approve a waiting run
 description: Review requested access, approve or deny it, and revoke standing grants.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.64.0
 executable: false
 ---
 
@@ -122,8 +122,8 @@ Then run `agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>`.
 
 To change which repositories a fleet may reach, or to drop it to read-only,
 change `repositories` or `repository_access` in a private improvement chat.
-Open the fleet's **Setup → Edit fleet**, ask for the change, check the
-updated setup, and choose **Save changes**.
+Choose **Edit setup** in the fleet header, then ask for the change.
+Review the updated setup through **… → Edit instructions**, then choose **Save changes** beside the chat.
 
 The next service credential uses the updated repository access. The grant stays
 approved, and the fleet keeps running.
