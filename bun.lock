@@ -5,14 +5,14 @@
     "": {
       "name": "@agentsfleet/docs",
       "devDependencies": {
-        "@agentsfleet/orly": "0.15.0",
+        "@agentsfleet/orly": "0.17.0",
         "markdown-link-check": "3.15.0",
         "mint": "4.2.1065",
       },
     },
   },
   "packages": {
-    "@agentsfleet/orly": ["@agentsfleet/orly@0.15.0", "", { "dependencies": { "@babel/parser": "7.29.9", "@babel/types": "7.29.8", "zod": "4.6.5" }, "bin": { "orly": "bin/orly" } }, "sha512-YaKF5GibH6/xSNKksf4oPpO1vi+85qmrSIveDTODnHwymWIKMQuXgIPuu7OniPhjD/duWJRU9TfbSib5mV+BRA=="],
+    "@agentsfleet/orly": ["@agentsfleet/orly@0.17.0", "", { "dependencies": { "@babel/parser": "7.29.9", "@babel/types": "7.29.8", "zod": "4.6.5" }, "bin": { "orly": "bin/orly" } }, "sha512-+4+JHrFDBWzV1cxp01sa+78wl1ZJMvKVwxwu7TG8s+JacYLVFJnJR/SMT9DgZoaLxBC4czLlbvLDrOw6UFOXLQ=="],
 
     "@alcalzone/ansi-tokenize": ["@alcalzone/ansi-tokenize@0.2.5", "", { "dependencies": { "ansi-styles": "^6.2.1", "is-fullwidth-code-point": "^5.0.0" } }, "sha512-3NX/MpTdroi0aKz134A6RC2Gb2iXVECN4QaAXnvCIxxIm3C3AVB1mkUe8NaaiyvOpDfsrqWhYtj+Q6a62RrTsw=="],
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "orly_version": "0.15.0",
+  "orly_version": "0.17.0",
   "packs": [],
   "commands": {
     "conform": [
@@ -112,8 +112,8 @@
     ".orly/audits/msid-ui.sh": "sha256:50fa3a6dd3edb5e1e75722509259c753858687213e8aba6fc4159ba84185401f",
     ".orly/audits/rule-ledger-lib.sh": "sha256:168182658aa0d53bf08bbd571f81e04d538fc5b9b0c6d0006e57c6974c083164",
     ".orly/audits/scope.sh": "sha256:83725913f561729377f4b913495823e749ed64de5aeb9eda8fa1b35e01ef707b",
-    ".orly/audits/spec-template.sh": "sha256:ea2aa79fd39c632e88be4d5b9f755beabfdd844c2c3fa882a0d13f9822daae29",
-    ".orly/audits/spec-template.ts": "sha256:fcfc1534a8d33586835b456cf0d27284ffb3441fa00abe75848c2db6a05af247",
+    ".orly/audits/spec-template.sh": "sha256:403046b83d8be1fa8279940f39a6aae2b23336e9a33d53d2af8b227406fffd2f",
+    ".orly/audits/spec-template.ts": "sha256:ef10e170d86731d40cab6a9466b9ce26b9b20f6974b122e6defd870af40749e1",
     ".orly/audits/ufs-strings.awk": "sha256:a6ef0f62d627f3c09f64c9d8b6e33ea6b25d85ccf2585cfddb2f3500be1a80c0",
     ".orly/audits/ufs.sh": "sha256:18b93033a91ea5ef2d7f453fc1f893201245e17a6932f67a8227c4ebb707e19e",
     ".orly/dispatch/lib.sh": "sha256:63b5e2b8e962808ce41523f122e34a75d316e58bf4026c3aafab54c28e73ea97",
@@ -128,7 +128,7 @@
     ".orly/dispatch/write_mdx.md": "sha256:70ce22667e2ca60e1bf623d5ba0ca1a9bcc0586faf018d44328ddfeaa2cd4306",
     ".orly/dispatch/write_pr_description.md": "sha256:2e1a91b09e98faa0971968092b53be8d087c617fc1b9afb267b2deeccc5372e0",
     ".orly/dispatch/write_python.md": "sha256:2b6fd567a12ccb92f19f29669cc9b1a2254127b49501a057b155991adde54988",
-    ".orly/dispatch/write_spec.md": "sha256:ffc8f991965faed799f8ce83ff4052a3de18defafdfe0d112ab2ebf176804ee4",
+    ".orly/dispatch/write_spec.md": "sha256:a1b89dcf110985b949ec8277f7a79241fedab4da2744ac727019f53c1a152bfb",
     ".orly/dispatch/write_ts_adhere_bun.md": "sha256:466784d3161014c6dc735a6e55831a83dad66883db15027cc0543f62a9dd7f11",
     ".orly/dispatch/write_ts_adhere_bun.sh": "sha256:3244892292500a18f5a053c9f1e954ef0ff51cb79b7ae83883aa3350289d1fa2",
     ".orly/docs/CHANGELOG_VOICE.md": "sha256:c523f2a1002aff6583ad6570fb93acc322229e7421f6c889685084a47fe00195",

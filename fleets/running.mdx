@@ -3,14 +3,16 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.65.0
 executable: false
 ---
 
 ## What this does
 
 These commands show fleet activity and change lifecycle state. Every command uses the active workspace.
+
+The dashboard uses your chosen fleet name in **Your fleets** and the conversation header. Open a card to return to that fleet.
 
 ## Before you begin
 
@@ -65,7 +67,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    If you scroll back, a turn someone else sends does not move you. Click
    **Jump to latest** to follow it.
 
-4. Stop new work while keeping the fleet resumable.
+4. Stop new work while keeping the fleet resumable. In the dashboard, open the fleet header’s **… → Stop** and confirm.
 
    ```bash
    agentsfleet stop <FLEET_ID>
@@ -121,9 +123,12 @@ A run with no reply may be waiting for approval. Run `agentsfleet approvals list
 
 A message with no answer after 30 seconds reads **Couldn't confirm this message was sent.** Click **Resend**. It carries the same `operation_id`, so the fleet runs the message once.
 
-If a run fails while replying, open its event details in the dashboard and
-click **Copy diagnostic**. The copy includes the event identifier and the
-recorded failure cause. The chat keeps the failure message short.
+A failed reply keeps any partial text in the conversation. Choose **Try again** when available to send the original request again.
+A retry creates another run and can incur another charge.
+
+Before retrying a request that changes an outside service, check whether the action already completed. A new run can repeat completed actions.
+
+Open **View details** for diagnostics. Event details also offer **Copy diagnostic**, which includes the event identifier and recorded failure cause.
 
 A lifecycle command sends a write again only when the connection was refused, the name did not resolve, or the server declined it. A reset after sending or a timeout surfaces the error instead, because the server may have processed the write. Check `agentsfleet doctor`, then run the command again.
 
@@ -149,6 +154,8 @@ and tool updates may remain missing.
 ## Remove or undo
 
 Stopping is reversible with `resume`. Killing is permanent but keeps the fleet records until deletion.
+
+In the dashboard, choose **… → Kill** from the fleet header. Confirm the permanent action in the dialog.
 
 Deleting removes all fleet records and cannot be undone. The client has no dry-run option for either command.
 
