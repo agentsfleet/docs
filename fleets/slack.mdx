@@ -4,7 +4,7 @@ description: Attach a fleet to a Slack channel so it answers when someone mentio
 type: how-to
 audience: user
 verified: 2026-10-23
-product_version: 0.64.0
+product_version: 0.65.0
 executable: false
 ---
 
@@ -16,7 +16,7 @@ Slack sometimes delivers one mention twice. The second delivery starts no second
 
 ## Before you begin
 
-Connect Slack to your workspace at **Settings → Integrations**. See [Connect a provider](/fleets/connectors) for the full procedure.
+Open the account menu and choose **Connect apps**. Connect Slack to the active workspace. See [Connect a provider](/fleets/connectors) for the full procedure.
 
 Invite the `agentsfleet` Slack app to the channel. The app receives mentions only in channels it belongs to.
 
@@ -53,7 +53,7 @@ Find the channel identifier (ID) in Slack. Open the channel's details and copy *
    ✓ Fleet <NAME>: active
    ```
 
-   In the dashboard, review the setup through **… → Edit instructions**, then choose **Save fleet** beside the chat.
+   In the dashboard, review the setup through **… → Edit instructions** beside the chat title. Choose **Save fleet** in the header.
 
 3. Mention the app in the channel and ask your question.
 
@@ -135,7 +135,7 @@ A fleet you save under that name with the channel fleet's exact runtime settings
 
 A mention from a bot, an edited message, or the app's own reply starts no run.
 
-A mention from a Slack workspace that is not connected to an `agentsfleet` workspace starts no run. Connect Slack again from **Settings → Integrations**.
+A mention from a Slack workspace that is not connected to an `agentsfleet` workspace starts no run. Connect Slack again from **Connect apps** in the account menu.
 
 ## Remove or undo
 
@@ -143,7 +143,7 @@ To detach a fleet from the channel, remove its `mention` trigger and apply the c
 
 1. Open the fleet in the dashboard and choose **Edit setup** in its header.
 2. Ask the chat to remove the Slack mention trigger.
-3. Open **… → Edit instructions** and check that the trigger is gone. Choose **Save changes** beside the chat.
+3. Open **Edit instructions manually** below the setup conversation and check that the trigger is gone. Choose **Save changes** in the setup footer.
 
 In the terminal, start the same chat with `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>`. `<SETUP_REVISION>` is the `setup_revision` field that `agentsfleet --json fleet show <FLEET_ID>` prints. Ask for the change, then run `/review` and `/apply`.
 
