@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.64.0
 executable: false
 ---
 
@@ -42,9 +42,10 @@ Use the fleet navigation for one task at a time:
 - **Chat** sends instructions and shows the fleet's replies. A message is sent when you submit it, whether or not the live feed is connected. The fleet handles what arrives in order, so a busy fleet does not block you.
 - **Activity** lists saved activity, outcomes, token use, spend, and duration.
 - **Memory** shows lessons the fleet can use in later runs.
-- **Setup** shows what the fleet does, its saved instructions, its saved version, its triggers, and its schedules. **Edit fleet** opens a private chat for that saved setup.
 
-The fleet header contains stop, resume, kill, and delete controls, according to its current state.
+Choose **Edit setup** in the fleet header to open a private setup chat beside the conversation. Closing the editor returns to the conversation.
+
+Other controls include stop, resume, kill, and delete, according to the fleet's state.
 
 Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
 
@@ -72,18 +73,18 @@ Each unsent message keeps its own **Resend** and **Dismiss** until you choose on
 
 An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 8,192 bytes.
 
-The fleet's `webhook_urls` lists each provider webhook address. Setup shows each declared source and its event filters without copying a webhook URL.
+The fleet API's `webhook_urls` lists each provider webhook address. Open **Edit setup → … → Edit instructions** to review declared triggers and their filters.
 
-Under **Schedule**, Setup reads each saved schedule in words with its time zone, such as `At 9:00 AM (Asia/Kolkata)`. The line below says whether it will run:
+Each schedule's `description` states its timing and time zone, such as `At 9:00 AM (Asia/Kolkata)`. Its `run_state` and nullable `next_run_at` describe whether it will run:
 
-| Shown | Meaning |
+| `run_state` | Meaning |
 |---|---|
-| **Next run:** a time | The schedule is active and registered. The time is the next match of its expression in its zone. |
-| **Schedule paused.** | The schedule is stored and does not fire until you resume it. |
-| **Schedule saved; activation is pending.** | The schedule is saved but not yet registered with the scheduler. |
-| **Next run time unavailable.** | The schedule will not run on its own. Registration failed, it is being deleted, its one-time run passed, or its expression has no future match. |
+| `scheduled` | The schedule is active and registered. `next_run_at` is the next match of its expression in its zone. |
+| `paused` | The schedule is stored and does not fire until you resume it. |
+| `activation_pending` | The schedule is saved but not yet registered with the scheduler. |
+| `next_run_unavailable` | The schedule will not run on its own. Registration failed, it is being deleted, its one-time run passed, or its expression has no future match. |
 
-A fleet with no schedule reads **No schedule set.** The server works out the state and the next run when you load the page. Run history stays in **Chat** and **Activity**.
+The server works out the state and next run when you request the fleet. Run history stays in **Chat** and **Activity**.
 
 An improvement runs in a private chat pinned to the fleet's current setup revision. Choose **Save changes** to make it the fleet's next revision. Running work keeps the revision it started with.
 
