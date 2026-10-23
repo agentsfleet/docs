@@ -3,8 +3,8 @@ title: Connect a provider
 description: Connect a workspace to GitHub, Slack, Zoho Desk, Jira, or Linear.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.65.0
 executable: false
 ---
 
@@ -20,9 +20,15 @@ You must own the account that holds the workspace.
 You also need permission to connect the provider account.
 Supported providers are GitHub, Slack, Zoho Desk, Jira, and Linear.
 
+**Connect apps** lists the providers offered by the platform. Opening this page creates no connection.
+
+**Connected** means the workspace holds saved connection data. Provider calls can still fail if that access expires or is revoked.
+
+If a provider needs platform setup, choose **Request access** to register your interest. This does not connect the provider.
+
 ## Steps
 
-1. Open **Settings → Integrations** in the dashboard.
+1. Open the account menu and choose **Connect apps** in the dashboard.
 
 2. Choose a provider and click **Connect**.
 
@@ -63,7 +69,7 @@ One GitHub App installation can belong to only one workspace. Another workspace 
 
 ## Remove or undo
 
-Disconnect the connector from the Integrations page. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
+Disconnect the connector from **Connect apps**. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
 
 Revoke the application from the provider's account settings. The next connector call fails and the dashboard asks for reconnection.
 

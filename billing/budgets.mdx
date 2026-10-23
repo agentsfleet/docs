@@ -3,8 +3,8 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-23
+product_version: 0.65.0
 executable: false
 ---
 
@@ -27,7 +27,7 @@ Each limit is a decimal string of whole nanodollars. One dollar is `"1000000000"
 
 ## Why it exists
 
-Every workspace under one tenant shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
+Every workspace in one account shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
 
 The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher. It appears on screens at least 640px wide. Select the chip to open **Settings → Billing**, which holds the live figure and the charge history.
 
@@ -52,6 +52,10 @@ While billing is available, a limit is checked before each run and at each renew
 If billing cannot answer, work continues and can exceed that bound. The full charge is settled later.
 
 ### How charges are counted
+
+In **Settings → Billing**, **Model** shows its published display name when available. **Usage** separates input and output counts.
+
+**Occurred** shows relative time; hover to see the exact timestamp. Unavailable usage stays marked as unavailable.
 
 `agentsfleet` charges each provider request on its own line. A fleet run or setup chat also adds one run-time line for each stretch of time it ran. The charge history at `GET /v1/tenants/me/billing/charges` returns one row per line.
 

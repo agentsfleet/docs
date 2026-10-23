@@ -4,7 +4,7 @@ description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
 verified: 2026-10-23
-product_version: 0.64.0
+product_version: 0.65.0
 executable: false
 ---
 
@@ -35,15 +35,18 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Open the chat's **… → Edit instructions**. Check the instructions and **Review and run options**. Keep chatting until the proposal matches your task.
-4. Choose **Save fleet** beside the chat title. For an immediate first run, enter a message under **Optional first run** in the editor and choose **Save and run now**.
+3. Open **Edit instructions manually** below the conversation. Review the instructions and **Review and publish options**. Keep chatting until the proposal matches your task.
+4. Choose **Save fleet** beside the chat title. For an immediate first run, open **Review and publish options**, enter **Optional first run**, and choose **Save and run now**.
 5. Saving opens the fleet conversation. Its sections are **Chat**, **Activity**, and **Memory**.
 
 The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
 
-**Edit instructions** opens a panel beside the chat, or across the screen on a phone. Your unsent chat message stays in place.
+**Edit instructions manually** expands the editor below setup chat. Folding the editor keeps your unsaved text.
 
-Choose **Update instructions** to apply manual edits to the draft, then **Save fleet** or **Save changes** beside the chat. **Cancel editing** discards unsubmitted edits.
+Choose **Update instructions** to apply manual edits to the draft. Then choose **Save fleet** or **Save changes**. Unsaved manual edits block those save actions.
+
+An untouched editor follows changes from setup chat. If chat changes the setup during manual editing, your text remains available and a conflict blocks updates.
+Choose **Discard manual changes and load latest** to replace that local text with the current proposal.
 
 The setup chat shows a compact saved-version summary. Setup and first-run warnings remain visible when setup needs attention.
 
@@ -51,12 +54,18 @@ Keep unfinished setup steps and schedule registration warnings in view. Use the 
 
 To change a saved fleet, choose **Edit setup** in its header. A private chat opens beside the fleet conversation, based on its saved setup revision. On a phone, the editor fills the page.
 
-Describe the change, review it through **Edit instructions**, then choose **Save changes** beside the chat.
+Describe the change, review it through **Edit instructions manually**, then choose **Save changes** below the setup composer.
+Your unsent message in the fleet conversation stays in place.
+
 New work uses the updated instructions; work already running keeps its current version.
 
 ### Recover a stopped or failed reply
 
 **Queued…** means your message is waiting to start. **Working…** means a reply has started.
+
+A failed reply keeps any partial text and shows its failure message. Choose **Try again** when available to retry the original request.
+
+Open **View details** for diagnostics. A retry can incur another model charge.
 
 If the provider outcome is uncertain, choose **Stop authoring**, then send a new message.
 Earlier usage stays under review, and its reserved balance can limit new work until accounting finishes.
@@ -70,7 +79,9 @@ Stopping setup chat leaves saved fleets running.
 
 ### Find, rename, and delete setup chats
 
-The sidebar lists fleets and your unsaved setup chats under **Recent**. Select a fleet to return to its conversation.
+The sidebar lists saved fleets under **Fleets**. Select a fleet to return to its conversation.
+
+Open **New fleet → Unfinished setups** to resume a private unsaved chat. Only the person who started the chat can see it.
 
 A new chat is titled with the first line of your first message, cut to 100 characters. A chat started from a Definition or a Library revision takes the first line of its description. A chat with neither reads **New fleet**.
 
@@ -80,7 +91,7 @@ You cannot rename a chat while a reply or Save is running, while earlier usage i
 
 To delete a chat, choose its delete action and confirm **Delete chat**. The private conversation is removed. Saved fleets keep running, and published Library revisions stay available.
 
-Hover or focus a setup-chat row to read its full title and status. The editor identifies the saved fleet revision on which your changes are based.
+Hover or focus an unfinished setup row to read its full title and status. The editor identifies the saved revision beneath your changes.
 
 ### In the terminal
 
@@ -232,7 +243,7 @@ A Definition holds at most 8 triggers. One webhook allows 1 through 16 event nam
   Deleting a setup chat removes its private messages for good. Saved fleets keep running, and published Library revisions stay.
 </Warning>
 
-Delete a chat from the sidebar, with `/delete` in the terminal chat, or with `agentsfleet chat delete <DRAFT_ID>`.
+Delete a chat from **Unfinished setups**, with `/delete` in the terminal chat, or with `agentsfleet chat delete <DRAFT_ID>`.
 
 Saving a fleet, or saving changes to one, closes its chat. `agentsfleet` keeps a closed chat and its messages for 30 days, then deletes them. The chat's `expires_at` field shows when.
 
