@@ -3,8 +3,8 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-24
+product_version: 0.65.0
 executable: false
 ---
 
@@ -73,7 +73,7 @@ Write these after `login`. Only `agentsfleet login` reads them.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet login` | Signs in through a browser and saves a durable credential for this computer. |
+| `agentsfleet login` | Opens browser sign-in. Choose **Authorize**, then enter the displayed code in your terminal to save this computer's credential. |
 | `agentsfleet logout` | Revokes this computer's credential and any unfinished sign-in, then clears local credentials. Browser sessions stay signed in. |
 | `agentsfleet whoami` | Shows who this terminal is signed in as, the credential's source (`environment` or `file`), and the server it talks to. |
 | `agentsfleet doctor` | Checks client settings, authentication, and API access. |

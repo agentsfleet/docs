@@ -3,8 +3,8 @@ title: Client configuration
 description: Environment variables and value order for the agentsfleet client.
 type: reference
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-24
+product_version: 0.65.0
 executable: false
 ---
 
@@ -12,7 +12,11 @@ executable: false
 
 The client reads command options, environment variables, saved login data, and built-in defaults. A value earlier in the documented order wins.
 
-For authentication, `AGENTSFLEET_API_KEY` overrides the saved login credential. The `login` command approves in a browser. It accepts no token on the command line and reads no token from piped input.
+For authentication, `AGENTSFLEET_API_KEY` overrides the saved login credential.
+
+Run `agentsfleet login`, then choose **Authorize** in the browser. Return to the terminal and enter the displayed code to finish signing in. Continue only if you started the sign-in.
+
+The command accepts no token on the command line and reads no token from piped input.
 
 Login also records the server it signed into. Later commands reach that same server unless you name another one.
 

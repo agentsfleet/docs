@@ -1,46 +1,42 @@
 ---
-title: agentsfleet documentation
-description: Create and run event-driven fleets.
+title: Welcome to agentsfleet
+description: Create a fleet, give it a task, and review the result.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-24
+product_version: 0.65.0
 executable: false
 ---
 
 ## What it is
 
-`agentsfleet` runs fleets that respond to events. A fleet can inspect data, call allowed tools, and return a result.
-
-Each fleet has one Definition. Its instructions define the task, and its runtime settings define its access.
+`agentsfleet` runs fleets that respond to messages, webhooks, and schedules.
+Each fleet follows instructions you review before saving.
 
 ## Why it exists
 
-Use a fleet for repeated work that starts from a webhook, schedule, or message. You keep approval over sensitive actions.
+Give repeated work a fleet you can message, inspect, and stop.
 
 ## How it behaves
 
-Create a workspace and save the required secrets. Describe a fleet in a private chat, review its setup, and save it. Then connect its trigger source.
+Start with [your first fleet](/quickstart). Describe a task, review the setup, and send a message.
 
-An accepted event starts a run. You can inspect the run through the activity stream.
+When you need more:
 
-Start with the [quickstart](/quickstart). It shows the shortest complete path from installation to a GitHub event.
+- [Connect an app](/fleets/connectors) for access to another service.
+- [Add a webhook](/fleets/webhooks) to start work when an event arrives.
+- [Use memory](/memory) to keep useful information between runs.
+- [Manage your workspace](/workspaces/managing) to organize fleets and access.
 
 ## Limits
 
-A fleet receives the tools and secrets declared in its Definition.
-Its network list restricts `http_request`, `web_fetch`, and `pushover`.
-The runner's network policy controls sandbox traffic.
+Review tools, access, and spending limits before saving.
+Setup chats and runs use the workspace owner's balance.
 
-See [Tools](/fleets/tools) for network restrictions and other limits.
-
-Budget and account limits can stop new runs.
-
-The service is in early access. Public behavior may change before version 2.0.0.
+`agentsfleet` is in early access. Public behavior may change before version 2.0.0.
 
 ## Related pages
 
-- [Quickstart](/quickstart)
-- [Key concepts](/concepts)
-- [Author a fleet](/fleets/authoring)
-- [Command index](/cli/agentsfleet)
+- [How agentsfleet works](/concepts)
+- [Command reference](/cli/agentsfleet)
+- [Troubleshooting](/fleets/troubleshooting)

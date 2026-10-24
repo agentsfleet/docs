@@ -42,56 +42,65 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Start here",
             "pages": [
               "index",
               "quickstart",
-              "concepts",
-              "concepts/context-lifecycle",
-              "memory"
+              "concepts"
             ]
           },
           {
-            "group": "Fleets",
+            "group": "Work with fleets",
             "pages": [
-              "fleets/overview",
-              "fleets/install",
-              "fleets/running",
-              "fleets/approvals",
-              "fleets/secrets",
-              "fleets/model-providers",
-              "fleets/connectors",
-              "fleets/slack",
-              "fleets/webhooks",
               "fleets/authoring",
-              "fleets/tools",
+              "fleets/running",
+              "fleets/overview",
               "fleets/library",
-              "fleets/troubleshooting"
+              "fleets/install",
+              "fleets/approvals"
             ]
           },
           {
-            "group": "Workspaces",
+            "group": "Connect apps and tools",
+            "pages": [
+              "fleets/connectors",
+              "fleets/secrets",
+              "fleets/tools",
+              "fleets/webhooks",
+              "fleets/slack"
+            ]
+          },
+          {
+            "group": "Memory and context",
+            "pages": [
+              "memory",
+              "concepts/context-lifecycle"
+            ]
+          },
+          {
+            "group": "Workspace and account",
             "pages": [
               "workspaces/overview",
               "workspaces/managing",
-              "workspaces/teammates"
-            ]
-          },
-          {
-            "group": "Runners",
-            "pages": [
-              "runners",
-              "runners/install"
-            ]
-          },
-          {
-            "group": "Cost control",
-            "pages": [
+              "workspaces/teammates",
+              "fleets/model-providers",
               "billing/budgets"
             ]
           },
           {
-            "group": "CLI reference",
+            "group": "Help and updates",
+            "pages": [
+              "fleets/troubleshooting",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI reference",
+        "groups": [
+          {
+            "group": "Command line",
             "pages": [
               "cli/install",
               "cli/agentsfleet",
@@ -100,9 +109,9 @@
             ]
           },
           {
-            "group": "Updates",
+            "group": "Tutorials",
             "pages": [
-              "changelog"
+              "tutorials/github-pr-reviewer"
             ]
           }
         ]
@@ -157,7 +166,7 @@
             ]
           },
           {
-            "group": "Tenants",
+            "group": "Account management",
             "pages": [
               "GET /v1/tenants/me/workspaces",
               "GET /v1/tenants/me/members",
@@ -169,7 +178,7 @@
             ]
           },
           {
-            "group": "Tenant provider",
+            "group": "Model provider credentials",
             "pages": [
               "GET /v1/tenants/me/provider",
               "PUT /v1/tenants/me/provider",
@@ -177,14 +186,14 @@
             ]
           },
           {
-            "group": "Tenant balance",
+            "group": "Balance and usage",
             "pages": [
               "GET /v1/tenants/me/billing",
               "GET /v1/tenants/me/billing/charges"
             ]
           },
           {
-            "group": "Tenant models",
+            "group": "Account models",
             "pages": [
               "GET /v1/tenants/me/models",
               "POST /v1/tenants/me/models",
@@ -193,7 +202,7 @@
             ]
           },
           {
-            "group": "Fleet",
+            "group": "Runner administration",
             "pages": [
               "POST /v1/runners",
               "GET /v1/fleets/runners",
@@ -205,7 +214,7 @@
             ]
           },
           {
-            "group": "Runner plane",
+            "group": "Runner API",
             "pages": [
               "GET /v1/runners/me",
               "POST /v1/runners/me/heartbeats",
@@ -232,7 +241,7 @@
             ]
           },
           {
-            "group": "Model Library",
+            "group": "Model catalog",
             "pages": [
               "GET /v1/models"
             ]
@@ -249,7 +258,7 @@
             ]
           },
           {
-            "group": "Drafts",
+            "group": "Private setup chats",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/drafts",
               "POST /v1/workspaces/{workspace_id}/drafts",
@@ -378,7 +387,7 @@
             ]
           },
           {
-            "group": "Admin",
+            "group": "Platform administration",
             "pages": [
               "GET /v1/admin/platform-keys",
               "PUT /v1/admin/platform-keys",
@@ -387,6 +396,18 @@
               "POST /v1/admin/models",
               "PATCH /v1/admin/models/{id}",
               "DELETE /v1/admin/models/{id}"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Runner operations",
+        "groups": [
+          {
+            "group": "Runners",
+            "pages": [
+              "runners",
+              "runners/install"
             ]
           }
         ]
