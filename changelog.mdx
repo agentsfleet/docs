@@ -7,6 +7,16 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 24, 2026" tags={["CLI"]}>
+  ## Authorize terminal sign-in without copying a code
+
+  `agentsfleet login` uses your browser on the same computer. Compare the check codes before choosing **Authorize**, and the terminal completes sign-in after approval.
+
+  - **Cancellation** — press **Esc** while waiting. Once **Finalizing sign-in…** appears, keep the terminal open until it reports the result.
+  - **Another device** — use `agentsfleet login --no-open` for manual six-digit code entry, including remote terminals.
+  - **Browser launch** — if the browser does not open, use the printed link on the same computer.
+</Update>
+
 <Update label="Oct 24, 2026" tags={["Bug fixes", "CLI"]}>
   ## Clearer page loading and terminal sign-in
 
