@@ -3,8 +3,8 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-24
+product_version: 0.65.0
 executable: false
 ---
 
@@ -74,7 +74,7 @@ Policy travels down from the dashboard. Change it under **Admin → Runners → 
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
 | Network policy | What the sandbox may reach on the network. | Allow all egress | Allow all egress, No egress, Allowlist egress |
 | Allowlist | Registry hosts the sandbox may reach under Allowlist egress. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
-| Workers | How many events the host runs at once. A higher count starts more workers at the next heartbeat; a lower one lets running work finish. | 1 | 1 to 64 |
+| Workers | How much work the host runs at once. Higher counts start more workers at the next heartbeat. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
 
 The three isolation settings differ in what enforces the boundary:
@@ -153,14 +153,14 @@ The runner page shows two facts side by side: what you have told the runner to d
 
 The first is the admin state, which the API returns as `status`. You set it with the actions below.
 
-It moves on its own in one case only: a draining runner becomes `drained` once its last lease finishes.
+Only `active` runners can send authenticated requests.
 
 | Admin state | Meaning |
 |---|---|
 | `active` | Takes work. The normal state. |
-| `cordoned` | Takes no new work. Use **Drain** when existing work should finish. |
-| `draining` | Takes no new work and finishes what it has. Becomes `drained` on its own once the last lease ends. |
-| `drained` | Finished draining. Idle, and stays there until you change it. |
+| `cordoned` | Stops new work and blocks runner requests. |
+| `draining` | Drain requested; runner requests are blocked. |
+| `drained` | No remaining work; runner requests stay blocked. |
 | `revoked` | Its token is blocked. This is terminal for the enrolled host. |
 
 The second is liveness. The host reports it through its heartbeat; you cannot set it.
@@ -183,8 +183,14 @@ The runner page carries the verdict of those checks beside the runner's state an
 You can also stop a runner deliberately:
 
 - **Cordon** stops new work reaching it.
-- **Drain** lets its current work finish, then leaves it idle.
+- **Drain** requests a drain and stops new work reaching it.
 - **Revoke** ends its token, so the host's next request is refused.
+
+<Warning>
+Cordon and Drain also block renewals and completion reports for work already running.
+Wait for the runner to finish and report its work before using either action.
+Unreported work can expire and run again elsewhere.
+</Warning>
 
 A runner that disappears needs no manual reassignment.
 Unfinished work becomes available again after its lease expires.
