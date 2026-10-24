@@ -52,21 +52,27 @@ For a connected GitHub App, follow [Configure a webhook](/fleets/webhooks#a-conn
    <varies>
    ```
 
-3. Sign in through your browser.
+3. Sign in through a browser on the same computer as your terminal.
 
    ```bash
    agentsfleet login
    ```
 
    ```text
-   Login session
-   session_id: <varies>
+   Connect your terminal
+   Open this link on this computer:
    login_url: <varies>
+   Check code: <varies>
+   Waiting for authorization… (Esc to cancel)
    browser: opened
-   login complete
+   <varies>
+   Finalizing sign-in…
+   ✓ signed in as <varies> — <varies>
    ```
 
-   Choose **Authorize** in your browser. Return to your terminal and enter the six-digit code when prompted.
+   Compare the check code in your browser with your terminal. Choose **Authorize** only if you started the sign-in and both codes match.
+
+   For a remote terminal or another device, use `agentsfleet login --no-open` and follow [manual sign-in](/cli/agentsfleet#browser-on-another-device).
 
    Login keeps your previous workspace if it is still available; otherwise it selects the first available workspace.
    Check `agentsfleet workspace show` before saving secrets.

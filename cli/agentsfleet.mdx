@@ -64,16 +64,75 @@ Write these after `login`. Only `agentsfleet login` reads them.
 
 | Option | Effect | Default | Unit or range |
 |---|---|---|---|
-| `--no-open` | Prints the login URL instead of opening a browser. | `false` | Boolean |
+| `--no-open` | Uses manual code entry and prints a URL you can open on another device. | `false` | Boolean |
 | `--no-input` | Returns an error instead of asking a question. | `false` | Boolean |
 | `--force` | Signs in again even when this computer already holds a credential. | `false` | Boolean |
-| `--token-name <LABEL>` | Labels this sign-in on the approval page and in `agentsfleet whoami`. | The platform family name | Text |
+| `--token-name <LABEL>` | Sets a label on this sign-in request. | The platform family name | 1 to 64 characters from space through tilde |
+
+#### Browser on this computer
+
+1. Start sign-in from an interactive terminal on the same computer as your browser.
+
+   ```bash
+   agentsfleet login
+   ```
+
+   ```text
+   Connect your terminal
+   Open this link on this computer:
+   login_url: <varies>
+   Check code: <varies>
+   Waiting for authorization… (Esc to cancel)
+   browser: opened
+   <varies>
+   Finalizing sign-in…
+   ✓ signed in as <varies> — <varies>
+   ```
+
+2. Compare the check code in your browser with the code in your terminal.
+3. Choose **Authorize** only if you started the sign-in and both codes match.
+
+After approval, the client saves this computer's credential and checks your identity. The terminal then shows your name and account.
+Choose **Deny** if you did not start the sign-in or the codes differ.
+
+Press **Esc** or **Ctrl+C** while waiting to cancel. The waiting request expires after five minutes.
+
+Once **Finalizing sign-in…** appears, cancellation is disabled until sign-in finishes. Keep the terminal open until it reports the result.
+
+If the browser does not open, open the printed `login_url` on this computer.
+If the browser cannot reach your terminal, cancel while waiting and restart with `--no-open`.
+Start a new sign-in if the request expires.
+
+#### Browser on another device
+
+Use manual code entry for a remote terminal, such as a Secure Shell (SSH) session, or a browser on another device.
+
+1. Start manual sign-in in your interactive terminal.
+
+   ```bash
+   agentsfleet login --no-open
+   ```
+
+   ```text
+   Login session
+   session_id: <varies>
+   login_url: <varies>
+   browser: not opened (open URL manually)
+   Enter the 6-digit verification code shown in your browser: <varies>
+   ```
+
+2. Open the printed `login_url` in your browser.
+3. Choose **Authorize** only if you started this sign-in.
+4. Enter the browser's six-digit verification code in the terminal that started sign-in.
+
+The terminal reports **signed in as** with your name and account after sign-in succeeds.
+Manual sign-in requires terminal input, so omit `--no-input`.
 
 ### Account and diagnosis
 
 | Command | Effect |
 |---|---|
-| `agentsfleet login` | Opens browser sign-in. Choose **Authorize**, then enter the displayed code in your terminal to save this computer's credential. |
+| `agentsfleet login` | Opens same-computer browser authorization and saves a credential after approval. |
 | `agentsfleet logout` | Revokes this computer's credential and any unfinished sign-in, then clears local credentials. Browser sessions stay signed in. |
 | `agentsfleet whoami` | Shows who this terminal is signed in as, the credential's source (`environment` or `file`), and the server it talks to. |
 | `agentsfleet doctor` | Checks client settings, authentication, and API access. |
