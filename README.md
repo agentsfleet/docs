@@ -70,7 +70,7 @@ bun run orly gate verify
   🟢 cmd.verify.docs: <varies>
 ```
 
-Orly 0.15.0 keeps the writing rules in this checkout. Reinstall dependencies after cloning; `make install-hooks` enables checks at commit and push.
+Orly 0.17.0 keeps the writing rules in this checkout. Reinstall dependencies after cloning; `make install-hooks` enables checks at commit and push.
 
 ## Publishing
 

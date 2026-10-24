@@ -1,53 +1,50 @@
 ---
-title: Key concepts
-description: Understand tenants, workspaces, fleets, tools, events, and runs.
+title: How agentsfleet works
+description: Learn how a fleet turns a message or event into a result.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-24
+product_version: 0.65.0
 executable: false
 ---
 
 ## What it is
 
-`agentsfleet` groups your account into four main resources.
+A fleet follows saved instructions to handle repeated work.
 
-| Resource | Purpose |
+| Term | Meaning |
 |---|---|
-| Tenant | Owns identity, billing, provider settings, and workspaces. |
-| Workspace | Groups fleets, secrets, connectors, and access. |
-| Fleet | Handles one recurring outcome from one or more triggers. |
-| Tool | Gives a fleet one named action, such as an HTTP request. |
+| Fleet | A saved task with instructions, tools, and spending limits. |
+| Trigger | What starts work, such as a message, webhook, or schedule. |
+| Event | One incoming delivery to the fleet. |
+| Run | The fleet's work on one event. |
+| Tool | An action the fleet may use, such as a request to another service. |
+| Workspace | The home for fleets, secrets, connections, and member access. |
 
-An event is one incoming delivery. A run is the fleet's work on one event.
+Your account owns its workspaces, billing, and model settings. The API calls the account a `tenant`.
 
 ## Why it exists
 
-The hierarchy keeps billing, access, and secrets separate from each fleet's task. A workspace can hold several fleets that share approved secrets.
+You set up repeated work once, then review results in the fleet's conversation and activity stream.
+Workspace permissions control who can access the fleet.
 
 ## How it behaves
 
-You create a workspace. The tenant owns the workspace until an account administrator removes the account data.
+Describe a task in a private setup chat. Review the proposed instructions, access, and budget, then save the fleet.
 
-You save a fleet in one workspace from a reviewed draft. The workspace owns the fleet, and an authorized member can stop or delete it.
+A message or another declared trigger starts a run. The fleet uses its allowed tools and returns a result.
+Memory can keep useful information for later runs.
 
-A trigger creates an event. The fleet opens one run, calls allowed tools, and records results in the activity stream.
-
-The fleet sees secret references. The credential firewall adds secret values only when an allowed network call leaves the sandbox.
+Authorized workspace members can stop, resume, or kill a fleet. Deleting a killed fleet removes its records permanently.
 
 ## Limits
 
-A fleet receives only its declared tools.
-The network list restricts `http_request`, `web_fetch`, and `pushover`.
-The runner's network policy controls sandbox traffic.
-
-See [Tools](/fleets/tools) before choosing a tool for a restricted task.
-
-Daily and monthly fleet budgets can block work. Provider and account limits can also block a run.
+A fleet receives only its declared tools and secrets. [Network restrictions](/fleets/tools#how-it-behaves) depend on the tool and runner settings.
+Budgets, account balance, and model limits can block new work.
 
 ## Related pages
 
-- [Fleet overview](/fleets/overview)
-- [Workspace overview](/workspaces/overview)
-- [Secrets](/fleets/secrets)
-- [Run context](/concepts/context-lifecycle)
+- [Your first fleet](/quickstart)
+- [Fleet lifecycle and activity](/fleets/overview)
+- [Workspace access](/workspaces/overview)
+- [Memory](/memory)

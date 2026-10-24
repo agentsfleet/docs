@@ -1,0 +1,205 @@
+---
+title: Build a GitHub PR reviewer
+description: Create your first fleet and send it a GitHub event.
+type: tutorial
+audience: user
+verified: 2026-10-24
+product_version: 0.65.0
+executable: false
+---
+
+## What you will build
+
+You will create a GitHub pull request (PR) reviewer fleet from a Definition file.
+It will receive PR events and post review comments.
+
+## Before you begin
+
+If you need hosted access, [join the waitlist](https://accounts.agentsfleet.net/waitlist). Public website access links open the waitlist, including **Sign in** links.
+
+If you already have access, sign in to the dashboard to manage your workspace. Choose **Manage account** for your profile and sign-in security. You can also open [account settings](https://app.agentsfleet.net/settings/account) directly.
+
+You need Bun 1.4 or later, an `agentsfleet` account, and a GitHub repository that you can manage.
+
+Your workspace owner must enable a model with credentials, an API format, an endpoint, and token limits.
+Copy its eligible `ref` from `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`; step 6 calls this `<MODEL_REF>`.
+
+Create a GitHub token that can read the repository and post comments. Keep the token ready for step 4.
+
+These steps use a repository webhook and a saved token.
+For a connected GitHub App, follow [Configure a webhook](/fleets/webhooks#a-connected-github-app) instead.
+
+## Steps
+
+1. Install the `agentsfleet` command-line interface.
+
+   ```bash
+   bun install --global @agentsfleet/cli
+   ```
+
+   ```text
+   installed @agentsfleet/cli with binaries:
+    - agentsfleet
+   ```
+
+2. Check the installed version.
+
+   ```bash
+   agentsfleet --version
+   ```
+
+   ```text
+   <varies>
+   ```
+
+3. Sign in through your browser.
+
+   ```bash
+   agentsfleet login
+   ```
+
+   ```text
+   Login session
+   session_id: <varies>
+   login_url: <varies>
+   browser: opened
+   login complete
+   ```
+
+   Choose **Authorize** in your browser. Return to your terminal and enter the six-digit code when prompted.
+
+   Login keeps your previous workspace if it is still available; otherwise it selects the first available workspace.
+   Check `agentsfleet workspace show` before saving secrets.
+   Use `agentsfleet workspace use <WORKSPACE_ID>` to switch, with an identifier from `agentsfleet workspace list`.
+
+4. Save the GitHub secret in your active workspace.
+
+   Replace `<GITHUB_TOKEN>` with your repository token.
+   Generate `<GITHUB_WEBHOOK_SECRET>` as a random value of at least 32 bytes; GitHub will use the same value in step 9.
+
+   <Warning>
+   This inline example can leave credentials in shell history.
+   For regular use, pipe JSON from your secret manager to `agentsfleet secret create github --data=@-`.
+   </Warning>
+
+   ```bash
+   agentsfleet secret create github --data='{"host":"api.github.com","token":"<GITHUB_TOKEN>","webhook_secret":"<GITHUB_WEBHOOK_SECRET>"}'
+   ```
+
+   ```text
+   ✓ Secret 'github' stored in vault.
+   ```
+
+   `host` binds the outgoing token to `api.github.com`.
+   The client stores the values without printing them again.
+
+5. Write the fleet's Definition to `pr-reviewer.json`.
+
+   ```json
+   {
+     "schema_version": 1,
+     "description": "Reviews GitHub pull requests and posts review comments.",
+     "instructions_md": "Read `repo` and `number` from the event.\nFetch the pull request diff from https://api.github.com/repos/{repo}/pulls/{number} with http_request and ${secrets.github.token}.\nPost one review with event COMMENT that lists correctness, security, and test gaps.\nNever approve, merge, or close a pull request.",
+     "config": {
+       "name": "pr-reviewer",
+       "x-agentsfleet": {
+         "triggers": [{"type": "webhook", "source": "github", "events": ["pull_request"]}],
+         "tools": ["http_request"],
+         "credentials": ["github"],
+         "network": {"allow": ["api.github.com"]},
+         "budget": {"daily_nanos": "2000000000"}
+       }
+     }
+   }
+   ```
+
+   `daily_nanos` caps spending at 2 dollars a day. [Fleet budgets](/billing/budgets) explains the unit.
+
+6. Open a private draft from the file and review it.
+
+   Use the `<MODEL_REF>` from **Before you begin**.
+   This file starts a draft without making an authoring-model request.
+
+   ```bash
+   agentsfleet chat --definition pr-reviewer.json --model <MODEL_REF> --no-input --review --name pr-reviewer
+   ```
+
+   ```text
+   ✓ Draft <DRAFT_ID> created
+   Instance: pr-reviewer
+   Runtime model: <varies>
+   <varies>
+   Review digest: <DIGEST>
+   ```
+
+   The review prints the setup, runtime model, and required access. Check them before you save.
+   The authoring model and runtime model can differ.
+
+7. Save the fleet with the digest from the review.
+
+   ```bash
+   agentsfleet chat <DRAFT_ID> --no-input --save --name pr-reviewer --review-digest <DIGEST>
+   ```
+
+   ```text
+   <varies>
+   ✓ Fleet pr-reviewer: active
+   ```
+
+   A fleet that reads `installing` is waiting on a setup check, such as an integration grant to approve. The lines after it name each check and its next step.
+
+8. Read the fleet's webhook URL.
+
+   `<FLEET_ID>` comes from `agentsfleet list`.
+
+   ```bash
+   agentsfleet --json fleet show <FLEET_ID>
+   ```
+
+   ```text
+   <varies>
+   ```
+
+   The `webhook_urls` entry with `source` set to `github` holds the URL.
+
+9. Add the webhook in GitHub.
+
+   Open **Repository settings → Webhooks → Add webhook**. Use the webhook URL from step 8 as the payload URL.
+
+   Choose `application/json` as the content type. Use the same webhook secret from step 4.
+
+   Select **Pull requests** as the event. GitHub now sends PR events to your fleet.
+
+10. Open a PR in the repository.
+
+    GitHub sends the event after you open the PR. The fleet then attempts the review and posts its comment.
+
+## Verify it works
+
+`<FLEET_ID>` comes from `agentsfleet list`.
+
+```bash
+agentsfleet logs <FLEET_ID>
+```
+
+```text
+Event Stream
+  <varies>  webhook:github  <varies>
+```
+
+The activity stream should show a GitHub event. Check the PR for the fleet's review comment.
+
+Review text and tool calls vary by model. If the run fails, inspect the event and follow [Troubleshoot a fleet](/fleets/troubleshooting).
+
+## What you learned
+
+You installed the client, signed in, and saved a secret. You reviewed a fleet's setup, saved the fleet, and connected GitHub to it.
+
+## Related pages
+
+- [Your first fleet](/quickstart)
+- [Install the client](/cli/install)
+- [Author a fleet](/fleets/authoring)
+- [Manage secrets](/fleets/secrets)
+- [Use webhooks](/fleets/webhooks)
+- [Troubleshoot a fleet](/fleets/troubleshooting)
