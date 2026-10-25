@@ -14,7 +14,10 @@ The client reads command options, environment variables, saved login data, and b
 
 For authentication, `AGENTSFLEET_API_KEY` overrides the saved login credential.
 
-Run `agentsfleet login`, then choose **Authorize** in the browser. Return to the terminal and enter the displayed code to finish signing in. Continue only if you started the sign-in.
+Run `agentsfleet login` with a browser on the same computer. Compare the check code in both places before choosing **Authorize**. The terminal completes sign-in after approval.
+
+For a remote terminal or another device, use `agentsfleet login --no-open` with manual code entry.
+See [terminal sign-in](/cli/agentsfleet#browser-on-this-computer) for cancellation, browser launch failures, and manual steps.
 
 The command accepts no token on the command line and reads no token from piped input.
 
@@ -35,7 +38,7 @@ AGENTSFLEET_API_URL=https://api.agentsfleet.net agentsfleet --version
 | Name | Effect | Default | Valid range |
 |---|---|---|---|
 | `AGENTSFLEET_API_URL` | Sets the API base URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
-| `AGENTSFLEET_DASHBOARD_URL` | Sets the browser login URL. | `https://app.agentsfleet.net` | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_DASHBOARD_URL` | Sets the dashboard origin for browser sign-in. | `https://app.agentsfleet.net` | `http://` or `https://` origin; no extra path, query, fragment, or credentials |
 | `AGENTSFLEET_API_KEY` | Authenticates every request and overrides saved login data. Nothing is written to disk. | None | Valid tenant API key starting with `agt_t` |
 | `AGENTSFLEET_STATE_DIR` | Stores local credentials, settings, and telemetry consent. | `~/.config/agentsfleet` | Writable directory path |
 | `NO_COLOR` | Disables color when set to a nonempty value. | Unset | Any nonempty text |
@@ -49,7 +52,7 @@ The API URL uses this order: `--api`, `AGENTSFLEET_API_URL`, the server recorded
 
 An invalid URL returns exit code `4`. A missing credential returns exit code `1`.
 
-A network failure returns exit code `2`. The client does not change saved login data after a network failure.
+Most commands report network failures with exit code `2`. Login reports sign-in failures with exit code `1`.
 
 A saved credential that records no server returns exit code `1` with error code `DEPLOYMENT_UNKNOWN`. Nothing is sent. Pass `--api <API_URL>`, set `AGENTSFLEET_API_URL`, or run `agentsfleet login` again.
 

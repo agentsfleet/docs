@@ -3,8 +3,8 @@ title: Global options
 description: Options accepted by the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-25
+product_version: 0.65.0
 executable: true
 ---
 
@@ -45,7 +45,8 @@ agentsfleet --version
 
 The client returns exit code `0` after success. Authentication and unexpected failures return `1`.
 
-Network failures return `2`. API failures return `3`.
+Most commands return `2` for network failures and `3` for API failures.
+Login returns `1` for those sign-in failures.
 
 Invalid command input returns `4`. Local configuration failures return `5`.
 
