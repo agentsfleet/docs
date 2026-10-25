@@ -7,6 +7,21 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 26, 2026" tags={["What's new", "API reference"]}>
+  ## Continue long conversations and review your spending
+
+  Setup chats and fleet runs summarize older messages when the model's working space gets close to full. Billing shows confirmed charges across your account.
+
+  ## What's new
+
+  - **Conversations** — summaries make room for more replies. [Context limits](/concepts/context-lifecycle), spending limits and run limits still apply.
+  - **Billing** — open **Settings → Billing** and choose a period, fleet or model. [Totals cover every page](/billing/budgets#review-your-spending).
+
+  ## API reference
+
+  - **Reports** — read confirmed charges at `GET /v1/tenants/me/billing/reports/current` and individual charges at `GET /v1/tenants/me/billing/activities/{activity_id}/charges`.
+</Update>
+
 <Update label="Oct 24, 2026" tags={["CLI"]}>
   ## Authorize terminal sign-in without copying a code
 
