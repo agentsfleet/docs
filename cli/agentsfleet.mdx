@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-10-24
+verified: 2026-10-25
 product_version: 0.65.0
 executable: false
 ---
@@ -449,6 +449,8 @@ Charges for the same fleet event group within each page. Every returned charge c
 | `4` | The invocation was rejected: a missing argument, a missing or unrecognized flag, a value that failed validation, or an unknown command. |
 | `5` | Local configuration is missing or invalid. |
 | `130` | You interrupted the command. |
+
+Login reports network and API sign-in failures with exit code `1`.
 
 A rejected invocation is answered before any request is sent. The form is always the same: what is wrong, then the command that puts it right. What is wrong may be an absent argument, a value that failed validation, or an unrecognized command.
 
