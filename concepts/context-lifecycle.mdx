@@ -1,49 +1,85 @@
 ---
-title: Run context
-description: Learn how a fleet keeps useful context during long runs.
+title: Conversation context
+description: How long conversations keep working as older messages are summarized.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-26
+product_version: 0.65.0
 executable: false
 ---
 
 ## What it is
 
-Each model has a context limit. Tool results consume that context during a run.
+A model can use only a limited amount of conversation at once.
+That working space is its **context window**.
 
-`agentsfleet` can checkpoint findings and remove older tool results from the active context. The activity stream keeps the recorded events.
+When the window gets close to full, `agentsfleet` summarizes older messages and keeps recent messages ready for the next reply.
+This works in setup chat and during fleet runs.
+
+Your original conversation and saved fleet instructions stay available.
 
 ## Why it exists
 
-A long investigation can make many tool calls. Context controls keep recent evidence available without losing saved findings.
+Messages, instructions and tool results all take space in the context window.
+A shorter summary makes room for the conversation to continue.
+This process is called **compaction**.
 
 ## How it behaves
 
-Set these values in `context` under `config["x-agentsfleet"]` in the fleet's Definition.
+Compaction normally starts around 90 percent of the selected model's context window.
+It can start sooner to leave room for a reply or to respect a smaller limit you chose.
+
+The summary is asked to keep the goal, decisions, findings and unfinished work.
+Tool requests stay with their results so the model can follow what happened.
+Creating a summary uses the model and is billed like other model requests.
+
+### What you see
+
+During compaction, the conversation shows **Context summarizing…**.
+After the summary is saved, it shows **Context summarized, resuming…** until the reply continues.
+An unsuccessful summary can show **Context summarization interrupted.**
+
+After a reconnect, the conversation reloads its saved history and clears temporary status messages.
+
+### What carries over
+
+Setup summaries stay private to the person who started the chat, within that workspace.
+Saving a fleet keeps its reviewed instructions.
+Later setup chats use the same summarizing behavior.
+
+During a fleet run, summarizing continues the same run.
+A later event starts a new run and uses information saved in fleet memory.
+Workspace memory follows the fleet's access permissions.
+
+Account-wide memory is not available.
+
+### Runtime options
+
+Models measure text in **tokens**, small pieces of text they read or write.
+Set these options in `context` under `config["x-agentsfleet"]` in the fleet's Definition.
 
 | Option | Effect | Default | Valid range |
 |---|---|---|---|
-| `tool_window` | Keeps this many recent tool results in active context. | `auto` | `auto` or 0–4,294,967,295 results |
-| `memory_checkpoint_every` | Prompts a memory checkpoint after this many tool calls. | `5` calls | `auto` or 0–4,294,967,295 calls |
-| `stage_chunk_threshold` | Signals when prompt use reaches this share of the context limit. | `0.75` | `0.0` through `1.0` |
-| `context_cap_tokens` | Sets the context size used for these controls. | Active model limit | `auto` or 0–4,294,967,295 tokens |
+| `context_cap_tokens` | Requests a smaller working window, up to the selected model's limit. | Active model limit | `auto` or 0–4,294,967,295 tokens |
+| `stage_chunk_threshold` | Starts summarizing at this fraction of the working window, capped at 90 percent. | `0.90` | `0.0` through `1.0` |
+| `memory_checkpoint_every` | Saves pending fleet memory after this many tool calls. | `5` calls | `auto` or 0–4,294,967,295 calls |
+| `tool_window` | Keeps the saved setting; compaction decides which complete tool exchanges stay in the working window. | `auto` | `auto` or 0–4,294,967,295 results |
 
-`0` selects the default for each option. The three integer options also accept `auto`.
-Changing `context_cap_tokens` does not change the model or increase its physical context limit.
-
-The automatic tool window keeps 10 results for contexts up to 200,000 tokens.
-It keeps 30 results for contexts of at least 1,000,000 tokens, and 20 otherwise.
-
-The runtime checks the threshold after each model response. Crossing the threshold records a signal; the fleet decides when to finish.
-
-A later event starts a new run. The fleet can recall the prior checkpoint from memory.
+`0` selects the default for each option.
+The integer options also accept `auto`.
+Changing `context_cap_tokens` never increases the model's context window.
 
 ## Limits
 
-The threshold does not interrupt a running tool call. Budget, lease, memory, and process limits can stop a run.
+A summary can miss details.
+Keep exact instructions in the saved fleet setup and save important findings in fleet memory.
 
-No continuation starts without a new trigger. Send a new message or event when you want the fleet to continue.
+If summarizing fails or is cancelled, the current turn stops.
+The original messages and last complete summary stay available.
+Other conversations can continue.
+
+Spending limits and run limits still apply.
+Summarizing does not start another event or increase a spending limit.
 
 ## Related pages
 

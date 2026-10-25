@@ -3,7 +3,7 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-10-23
+verified: 2026-10-26
 product_version: 0.65.0
 executable: false
 ---
@@ -29,7 +29,11 @@ Each limit is a decimal string of whole nanodollars. One dollar is `"1000000000"
 
 Every workspace in one account shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
 
-The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher. It appears on screens at least 640px wide. Select the chip to open **Settings → Billing**, which holds the live figure and the charge history.
+The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher.
+It appears on screens at least 640px wide.
+
+Select the chip to open **Settings → Billing** and review recorded charges.
+The header continues to show your available balance.
 
 The fleet owns its budget. Applying a reviewed setup change replaces the limits, and deleting the fleet removes them.
 
@@ -51,13 +55,52 @@ While billing is available, a limit is checked before each run and at each renew
 
 If billing cannot answer, work continues and can exceed that bound. The full charge is settled later.
 
-### How charges are counted
+### Review your spending
 
-In **Settings → Billing**, **Model** shows its published display name when available. **Usage** separates input and output counts.
+Open **Settings → Billing** to see confirmed charges across your account's workspaces.
+These are called **settled charges**.
 
-**Occurred** shows relative time; hover to see the exact timestamp. Unavailable usage stays marked as unavailable.
+Choose **Month to date** or **Today**, then filter by fleet or model.
+Both periods use Coordinated Universal Time (UTC), so a day starts at midnight UTC.
 
-`agentsfleet` charges each provider request on its own line. A fleet run or setup chat also adds one run-time line for each stretch of time it ran. The charge history at `GET /v1/tenants/me/billing/charges` returns one row per line.
+The totals cover all matching activity in the selected period, including activity on later pages.
+**Spending breakdown** groups those charges by fleet and model.
+
+Each activity groups charges from one fleet run or private setup attempt.
+Expand an activity to see its charges and usage.
+**Setup chat** hides private draft titles and messages.
+
+Input tokens are pieces of text the model reads; output tokens are pieces it writes.
+The details show those counts, model names, charges and run time.
+When a model name is unavailable, Billing shows its recorded identifier.
+
+Some older charges combine model use and run time in one amount.
+Billing keeps that recorded amount because separate historical prices are unavailable.
+
+Each report includes charges confirmed by the time it was opened.
+Pending usage stays outside its totals; newer reports can include charges confirmed later.
+Missing usage information does not mean that usage was free.
+
+Changing a filter starts a new report.
+Moving between pages keeps the same report time, so its totals stay consistent.
+
+If loading fails, use **Retry report** or **Retry charges**.
+A loading error is shown as an error, rather than as zero spending.
+
+**Add credits** opens an email to support.
+
+### Read charges through the API
+
+`GET /v1/tenants/me/billing/reports/current` returns the report.
+`GET /v1/tenants/me/billing/activities/{activity_id}/charges` returns one activity's individual charges.
+Both require `billing:read` and use your signed-in account.
+
+For activity charges, include `activity_type=runtime` for a fleet run or `activity_type=setup` for a setup attempt.
+To match an existing report, keep its period, fleet and model filters, and `through_at` cutoff.
+Use `starting_after` to read later pages without changing those values.
+
+`agentsfleet` records each provider request and each billed stretch of runtime separately.
+`GET /v1/tenants/me/billing/charges` returns those individual records.
 
 Each request is priced at the rate in effect when it was made, and at the tier its whole prompt falls in. Cached reads, cache writes, and output each use their own rate.
 
