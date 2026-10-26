@@ -12,13 +12,17 @@ description: "Product changes and upgrade notes."
 
   Choose a model in fleet chat to save it for future chat, webhook and scheduled runs.
 
+  ## Upgrading
+
+  Fleet responses no longer include `needs_re_review`. Remove checks for that field from API clients. The CLI and server can upgrade separately.
+
   ## What's new
 
   - **Models** — confirmed changes appear in **Chat** and **Activity**. Saving keeps unsent messages and private setup edits.
 
   ## API reference
 
-  - **Fleet responses** — `needs_re_review` is removed. Current readiness checks remain; catalogue changes no longer require another review.
+  - **Fleet responses** — current readiness checks remain; catalogue changes no longer require another review.
 
   ## Bug fixes
 
