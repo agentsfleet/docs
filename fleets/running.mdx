@@ -3,7 +3,7 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-10-23
+verified: 2026-10-26
 product_version: 0.65.0
 executable: false
 ---
@@ -67,6 +67,12 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    If you scroll back, a turn someone else sends does not move you. Click
    **Jump to latest** to follow it.
 
+   To change the fleet's model, choose a model in the chat composer. The saved choice applies to future chat, webhook and scheduled runs.
+
+   Saving keeps your unsent message and private setup edits. **Model changed** appears in **Chat** and **Activity** after the save.
+
+   Choose **Run details** to open usage and duration details. Press **Escape** or click outside the details to close them.
+
 4. Stop new work while keeping the fleet resumable. In the dashboard, open the fleet header’s **… → Stop** and confirm.
 
    ```bash
@@ -118,6 +124,8 @@ A killed fleet also returns `UZ-AGT-009` when you try to rename it or change its
 For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for a killed fleet.
 
 `UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
+
+If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 
 A run with no reply may be waiting for approval. Run `agentsfleet approvals list` to review the request.
 

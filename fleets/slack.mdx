@@ -143,7 +143,7 @@ To detach a fleet from the channel, remove its `mention` trigger and apply the c
 
 1. Open the fleet in the dashboard and choose **Edit setup** in its header.
 2. Ask the chat to remove the Slack mention trigger.
-3. Open **Edit instructions manually** below the setup conversation and check that the trigger is gone. Choose **Save changes** in the setup footer.
+3. Open **Edit instructions manually** below the setup conversation and check that the trigger is gone. Choose **Save changes** in the fleet header.
 
 In the terminal, start the same chat with `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>`. `<SETUP_REVISION>` is the `setup_revision` field that `agentsfleet --json fleet show <FLEET_ID>` prints. Ask for the change, then run `/review` and `/apply`.
 
