@@ -22,7 +22,7 @@ Use these docs to create fleets, inspect runs in the activity stream, and manage
 
 ## Development
 
-Before editing, read `AGENTS.md` and this repository's `.orly/dispatch/write_documentation.md`. For changelog edits, also read `.orly/docs/CHANGELOG_VOICE.md`.
+Before editing, read `AGENTS.md`, `.orly/standards/docs.md` and `.orly/standards/docs-pages.md`. For changelog edits, also read `.orly/standards/changelog.md`.
 
 1. Use Bun 1.4.3 and Node.js 24, then install the pinned documentation tools. Mintlify starts a Node.js process for its CLI.
 
@@ -70,7 +70,7 @@ bun run orly gate verify
   🟢 cmd.verify.docs: <varies>
 ```
 
-Orly 0.17.0 keeps the writing rules in this checkout. Reinstall dependencies after cloning; `make install-hooks` enables checks at commit and push.
+Orly keeps the writing rules in this checkout, at the version `package.json` pins. Reinstall dependencies after cloning; `make install-hooks` enables checks at commit and push.
 
 ## Publishing
 
