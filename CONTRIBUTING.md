@@ -1,6 +1,6 @@
 # Contribute to the documentation
 
-Read `AGENTS.md` and `.orly/dispatch/write_documentation.md` before editing. For changelog entries, also read `.orly/docs/CHANGELOG_VOICE.md`.
+Read `AGENTS.md`, `.orly/standards/docs.md` and `.orly/standards/docs-pages.md` before editing. For changelog entries, also read `.orly/standards/changelog.md`.
 
 ## How to contribute
 

@@ -14,7 +14,7 @@
     "check-links": "markdown-link-check"
   },
   "devDependencies": {
-    "@agentsfleet/orly": "0.17.0",
+    "@agentsfleet/orly": "0.26.0",
     "markdown-link-check": "3.15.0",
     "mint": "4.2.1065"
   }
