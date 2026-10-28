@@ -318,7 +318,8 @@
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions",
-              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access"
+              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/authoring-context"
             ]
           },
           {
