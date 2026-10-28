@@ -38,6 +38,8 @@ Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in 
 GitHub, Linear and Slack use their built-in signing rules. Other sources require
 a `verifier` object. Choose the recipe that matches your provider's webhook guide.
 
+All three body recipes use SHA-256 with a Hash-based Message Authentication Code (HMAC), keyed by the stored signing secret. Other digest algorithms fail verification.
+
 | `scheme` | Signature format | `header` |
 |---|---|---|
 | `body-hex-sha256` | `sha256=` followed by hex over the raw body | required |
