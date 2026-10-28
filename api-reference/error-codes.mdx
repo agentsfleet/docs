@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-10-23
-product_version: 0.64.0
+verified: 2026-10-28
+product_version: 0.71.0
 executable: false
 ---
 
@@ -128,7 +128,7 @@ Use the current response or event details when diagnosing a new failure.
 | <span id="UZ-WH-002"></span>`UZ-WH-002` | 400 | Malformed webhook | Webhook payload could not be parsed. Check Content-Type and body. |
 | <span id="UZ-WH-010"></span>`UZ-WH-010` | 401 | Invalid webhook signature | The webhook signature did not verify. The stored signing secret must match the one configured upstream. |
 | <span id="UZ-WH-011"></span>`UZ-WH-011` | 401 | Stale webhook timestamp | The signed timestamp differs by more than 5 minutes. Correct the sender clock before retrying. |
-| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | The trigger has no usable signing secret. GitHub, Linear, and Slack require `webhook_secret` in the named JSON secret. Svix requires operator setup with an unwrapped `whsec_` value; see [webhooks](/fleets/webhooks#before-you-begin). |
+| <span id="UZ-WH-020"></span>`UZ-WH-020` | 401 | Webhook credential not configured | The trigger has no usable signing secret. Store the sender's signing value in the named JSON secret's `webhook_secret` field. Svix uses its `whsec_` value in that field too; see [webhooks](/fleets/webhooks#before-you-begin). |
 | <span id="UZ-WH-021"></span>`UZ-WH-021` | 200 | Connector installation is not mapped | The App installation has no workspace connection. Reconnect it, then redeliver. App deliveries return HTTP `200` with this code in `ignored`. |
 | <span id="UZ-WH-022"></span>`UZ-WH-022` | 200 | No fleet subscription matched | No active fleet matched the repository and event with an approved integration grant. Fix its subscription or grant. App deliveries return HTTP `200` with this code in `ignored`. |
 | <span id="UZ-WH-030"></span>`UZ-WH-030` | 413 | Webhook payload too large | The webhook body exceeds the 1 MiB limit. Reduce the payload size. |

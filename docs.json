@@ -315,6 +315,7 @@
               "GET /v1/workspaces/{workspace_id}/fleets",
               "POST /v1/workspaces/{workspace_id}/fleets",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/authoring-context",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions",
@@ -385,7 +386,6 @@
             "group": "Webhooks",
             "pages": [
               "POST /v1/ingress/{provider}",
-              "POST /v1/webhooks/svix/{fleet_id}",
               "POST /v1/webhooks/{fleet_id}/{source}",
               "POST /v1/webhooks/{fleet_id}/approval",
               "POST /v1/webhooks/{fleet_id}/github"
