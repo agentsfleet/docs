@@ -7,6 +7,28 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 28, 2026" tags={["What's new", "API reference", "Bug fixes"]}>
+  ## Receive signed events from more providers
+
+  Choose a signing recipe for a custom webhook source. Each source has its own URL, including Svix senders.
+
+  ## Upgrading
+
+  Replace `signature.secret_ref` with `credential_name` and `verifier.scheme: "svix-v1"`. Store the Svix key in the credential's `webhook_secret` field and use the URL Save returns. The former Svix URL returns `404`.
+
+  ## What's new
+
+  - **Webhooks** — [declare a signing recipe](/fleets/webhooks) with a provider's signature header.
+
+  ## API reference
+
+  - **Connectors** — the workspace list includes account labels alongside connection status.
+
+  ## Bug fixes
+
+  - **Connections** — the page shows loading and retry feedback. Failed browser returns offer a fresh connection attempt.
+</Update>
+
 <Update label="Oct 26, 2026" tags={["What's new", "API reference", "Bug fixes"]}>
   ## Choose the model for future fleet runs
 

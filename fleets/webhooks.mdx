@@ -3,8 +3,8 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-10-23
-product_version: 0.65.0
+verified: 2026-10-28
+product_version: 0.71.0
 executable: false
 ---
 
@@ -17,8 +17,7 @@ For a webhook you configure yourself, use the fleet URL listed in `webhook_urls`
 
 ## Before you begin
 
-For GitHub, Linear, or Slack, create a workspace secret with the signing value in its `webhook_secret` field.
-Svix setup requires operator help, as described below.
+Create a workspace secret with the sender's signing value in its `webhook_secret` field. For Svix, keep the full `whsec_` value in that field. Use **Secrets** or the [secrets command](/fleets/secrets).
 
 Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in the fleet's Definition.
 
@@ -36,30 +35,37 @@ Add a webhook trigger to the `triggers` list under `config["x-agentsfleet"]` in 
 
 `source` names the provider in lowercase letters, digits, and hyphens. It is also the last part of the fleet's webhook URL. Two webhook triggers on one fleet cannot share a source, and `approval` is reserved.
 
-`agentsfleet` verifies signatures from `github`, `linear`, and `slack`. Svix is a webhook delivery service that some providers send through. For a provider that signs with Svix, add a `signature` block that names the workspace secret holding the Svix signing secret.
+GitHub, Linear and Slack use their built-in signing rules. Other sources require
+a `verifier` object. Choose the recipe that matches your provider's webhook guide.
+
+| `scheme` | Signature format | `header` |
+|---|---|---|
+| `body-hex-sha256` | `sha256=` followed by hex over the raw body | required |
+| `body-hex` | bare hex over the raw body | required |
+| `body-base64-sha256` | standard padded base64 over the raw body | required |
+| `slack-v0` | Slack version and timestamp | omitted; fixed Slack headers |
+| `svix-v1` | Svix identifier and timestamp | omitted; fixed Svix headers |
+
+For example, a provider that sends a prefixed hex signature can use:
 
 ```json
 {
   "type": "webhook",
-  "source": "<SOURCE>",
-  "signature": {"secret_ref": "<SECRET_NAME>"}
+  "source": "acme",
+  "credential_name": "acme-signing",
+  "verifier": {"scheme": "body-hex-sha256", "header": "x-acme-signature"}
 }
 ```
 
-`<SOURCE>` is your name for the provider. `<SECRET_NAME>` is the workspace secret name your operator provides.
-A Definition that names any other source without a `signature` block is refused, and the detail lists the sources it accepts.
+An authored header must be an HTTP token of 1–128 characters, without spaces.
+GitHub, Linear and Slack reject a `verifier` override.
 
-<Note>
-Svix setup currently requires your deployment operator's help.
-The command-line client and dashboard store JSON objects, but Svix verification requires an unwrapped signing value.
-A JSON secret containing `webhook_secret` will leave this setup blocked.
-</Note>
+For a Svix sender, use
+`"verifier": {"scheme": "svix-v1"}` and store its `whsec_` value in the named
+credential's `webhook_secret` field. Trigger order does not affect routing.
 
-Give your operator the signing secret from the sending provider's webhook settings through your approved secret-sharing channel.
-Keep its `whsec_` prefix and the full base64 value after it.
-An unprefixed or invalid value cannot verify a Svix delivery.
-
-A Svix-signed source must be the fleet's first webhook trigger, because the Svix URL names only the fleet. A Definition that lists one after another webhook trigger is refused.
+Verification accepts signed incoming events. You still register the URL with
+the sender; choosing a recipe creates no provider subscription or account access.
 
 <Warning>
 `repositories` is required when the event arrives through a connected GitHub
@@ -139,7 +145,7 @@ Use this for any provider without a connected App.
 
 2. Copy the `url` from the `webhook_urls` entry whose `source` matches the provider.
 
-   Each source has its own URL, ending in `/v1/webhooks/<FLEET_ID>/<SOURCE>`. A Svix-signed source uses `/v1/webhooks/svix/<FLEET_ID>` instead.
+   Each source has its own URL, ending in `/v1/webhooks/<FLEET_ID>/<SOURCE>`, including Svix senders. The former `/v1/webhooks/svix/<FLEET_ID>` address returns `404`; replace it with the URL Save returns.
 
 3. Register the URL and signing secret with the provider.
 
@@ -175,7 +181,7 @@ A successful request returns HTTP `202`. A filtered or inactive event returns HT
 | `UZ-WH-001` | The fleet URL is wrong or deleted, or the fleet has no webhook trigger with that source. | Copy the current URL from the fleet. |
 | `UZ-WH-010` | The signature does not match. | Use the same signing secret on both sides. |
 | `UZ-WH-011` | The signed timestamp differs by more than 5 minutes. | Correct the sender clock. |
-| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | For GitHub, Linear, or Slack, store `webhook_secret` in the secret named by `credential_name`, or `source` when omitted. Svix needs operator setup. |
+| `UZ-WH-020` | The workspace has no usable signing secret for the trigger. | Store `webhook_secret` in the secret named by `credential_name`, or `source` when omitted. Svix requires its full valid `whsec_` value in that field. |
 | `UZ-WH-030` | The body exceeds 1 MiB. | Filter or shorten the provider body. |
 
 Providers can deliver the same event more than once. Use a stable provider event identifier and make fleet actions safe to repeat.

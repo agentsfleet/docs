@@ -3,8 +3,8 @@ title: Connect a provider
 description: Connect a workspace to GitHub, Slack, Zoho Desk, Jira, or Linear.
 type: how-to
 audience: user
-verified: 2026-10-23
-product_version: 0.65.0
+verified: 2026-10-28
+product_version: 0.71.0
 executable: false
 ---
 
@@ -22,7 +22,11 @@ Supported providers are GitHub, Slack, Zoho Desk, Jira, and Linear.
 
 **Connect apps** lists the providers offered by the platform. Opening this page creates no connection.
 
-**Connected** means the workspace holds saved connection data. Provider calls can still fail if that access expires or is revoked.
+**Connected** means the workspace holds saved authorization. Each card shows its account label when available.
+
+The page does not contact providers to check access. Provider calls can still fail if access expires or is revoked.
+
+A connection grants only the approved permissions. It does not add every action the provider offers; for example, the current Zoho Desk connection supports reading organization data.
 
 If a provider needs platform setup, choose **Request access** to register your interest. This does not connect the provider.
 
@@ -59,9 +63,11 @@ The provider state should be `connected`. A fleet without an approved grant cann
 
 ## Common problems
 
-`not_connected` means the browser setup did not finish. Start the connection again from the dashboard.
+`not_connected` means no saved connection is available. Start the connection again from the dashboard. If the browser return fails or takes longer than 25 seconds, use the recovery page to return to **Connect apps** and start a fresh attempt. 
 
-`reconnect_required` means the provider rejected a saved credential. Reconnect the provider, then retry the fleet action.
+Never reuse a previous callback URL.
+
+If a provider rejects saved access, reconnect it and retry the fleet action. The connection page cannot detect revocation before a provider call.
 
 When an expiring access token is rejected, the next connector call uses the saved refresh token. A revoked refresh token requires reconnection.
 
@@ -71,7 +77,7 @@ One GitHub App installation can belong to only one workspace. Another workspace 
 
 Disconnect the connector from **Connect apps**. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
 
-Revoke the application from the provider's account settings. The next connector call fails and the dashboard asks for reconnection.
+Revoke the application from the provider's account settings. The next connector call fails until you reconnect with valid access.
 
 Remove any fleet integration grants that should no longer use the provider. Revoking a connector does not delete fleet history.
 
