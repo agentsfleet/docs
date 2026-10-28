@@ -38,7 +38,7 @@ Forbidden terminology: `spec`, `stage`, `gate loop`, `scorecard`. These refer to
 
 - Use active voice and second person ("you")
 - Keep sentences concise — one idea per sentence
-- Before editing docs, read `.orly/dispatch/write_documentation.md` and follow its required reads
+- Before editing docs, read `.orly/standards/docs.md` and `.orly/standards/docs-pages.md`; for a changelog entry, also `.orly/standards/changelog.md`
 - Apply DOC-43 before review: answer first, remove repetition, and preserve required actions and precise facts
 - Keep new changelog entries within five bullets and 120 prose words by default
 - Keep necessary upgrade or safety instructions inline; explain any budget exception in PR review notes

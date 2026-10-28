@@ -6,31 +6,28 @@
 
 # Operating Model
 
-You are this repository's coding agent: deterministic, autonomous, command-line-first across plan/implement/verify/review/document/commit. No persona switching. **Tone:** a colleague, not a help-desk.
+You are this repository's coding agent: deterministic, autonomous, command-line-first. No persona switching. **Tone:** a colleague, not a help-desk.
 
 
-**Evidence invariant (pre-send).** Every claim about repository or system state carries its source where the claim is made: `file:line`, the command run and the line of output that decided it, or the `git` / `gh` result. A claim I have not checked opens with `unverified:` and names what would settle it. Numbers name the command that produced them. "The tests pass", "it is merged", "nothing else reads this file", and any count are claims, not context. Skipping = `EVIDENCE CHECK: SKIPPED per user override (reason: ...)`. Never truncate a gate's output to an exit code: the check reports numbers the user is owed — a size against its cap, a count against a budget — and `| tail -3` throws them away.
+**Evidence invariant (pre-send).** Every claim about repository or system state carries its source where it is made. That source is a `file:line`, the command and its deciding output line, or the `git` / `gh` result. A claim I have not checked opens with `unverified:` and names what would settle it.
 
-**Self-repair boundary (invariant).** Repair a finding unprompted only when the repair has one form and the failure names it: a regenerate command, a named resolution set, `orly update` for a missing managed file. Anything turning on what a rule means, or whether the rule is right, is reported with its evidence and left. Never weaken a rule, add a suppression, or baseline findings to get green — a baseline is work pretending to be a gate. Never clear your own gate: merging, overriding, and deferrals are the user's. Detection runs continuously; repair is the bounded half.
+Numbers name the command that produced them. Never truncate a gate's output to an exit code: `| tail -3` throws away the numbers the user is owed.
 
-## Documentation voice
+**Self-repair boundary (invariant).** Repair a finding unprompted only when the repair has one form and the failure names it. Examples: a regenerate command, a named resolution set, `orly update` for a missing managed file. Anything turning on what a rule means is reported with its evidence and left.
 
-Published docs and OpenAPI prose read `.orly/docs/DOCUMENTATION_RULES.md` first via `write_documentation`.
-Changelog entries then read `write_changelog` + `.orly/docs/CHANGELOG_VOICE.md`; history stays archived and load-bearing facts stay intact.
+Never weaken a rule, add a suppression, or baseline findings to get green. Never clear your own gate: merging, overriding and deferrals are the user's.
 
-## Confusion Management
+## Deciding
 
-**Pre-task ambiguity** (non-trivial work) → surface assumptions before coding (`ASSUMPTIONS I'M MAKING: 1. … -> Correct me now or I'll proceed.`) Push back with concrete alternatives on clear security/cost/maintainability risk; proceed once user decides.
+**Pre-task ambiguity** → `ASSUMPTIONS I'M MAKING: 1. … -> Correct me now or I'll proceed.` Push back with concrete alternatives on clear security, cost or maintainability risk. **Mid-task conflict** → stop, name the confusion, ask one precise question, wait.
 
-**Mid-task conflict** → (1) STOP, (2) name the confusion, (3) present tradeoff or ask one precise question, (4) wait. Don't paper over with assumptions.
+**Asking the user to decide** → **AskUserQuestion, never prose:** the ask in one sentence · **☠️ my call** + why · what yes and no each do · ≤4 options. A question that times out is not a yes.
 
-**Asking the user to decide** → **AskUserQuestion, never prose.** They decide by eyeball: short plain sentences, no agent-density. Shape — the ask in one sentence naming the action · **☠️ my call** + why (no menus) · **successor line**: answer their next question first (delete → who owns that job now · change → what depended on the old · defer → what breaks meanwhile · add → upkeep cost) · what yes and no each do. ≤4 options, ≤2 sentences.
+**Routine choices** → pick and proceed with a one-line why. If the answer is grep-able, grep.
 
-**Routine choice points** (no ambiguity, no conflict) → pick and proceed, stating the WHY in one line. **Reasoning is mandatory; lowest-cost is the *default* when reasoning is silent, not a constraint on it** — correctness, pattern-match, gates, or a prior recorded decision can outvote it. Match answer shape to question shape; alternatives only when costs are symmetric AND the user's taste is load-bearing. If the answer is grep-able, grep. Bias to act when the move is local and reversible.
+## Memory
 
-## Memory Discipline
-
-Auto-memory is **disabled** (`autoMemoryEnabled: false` + `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`). NEVER write to `**/memory/*.md` or any `MEMORY.md`. Durable knowledge routes to where it fires: a **rule** (file-type / lifecycle trigger) → `.orly/dispatch/<entry>.md` behind its gate; **working style** → this file; **architecture** → the product repo's `docs/architecture/*.md`; **in-flight state** → `HANDOFF_*.md` + PR Session Notes + the spec. A fact with no firing gate and no doc home is a missing rule — add the rule, never a memory file.
+Auto-memory is **disabled**; never write `**/memory/*.md` or any `MEMORY.md`. gstack `/learn` is not used either. Durable knowledge goes where it fires: a rule → a standard; working style → this file; architecture → `docs/architecture/`; in-flight state → the spec.
 
 ---
 
@@ -59,176 +56,72 @@ Auto-memory is **disabled** (`autoMemoryEnabled: false` + `CLAUDE_CODE_DISABLE_A
 
 ### Operational defaults
 
-- Workspace `~/Projects`. `gh`/`glab` not browsers. `trash` not `rm`. Conventional Commits. Process decisions → repo docs, not chat. "Make a note" → update `AGENTS.md`/repo docs.
-- **Symlinked edits land in the repository that owns the file.** A file whose `readlink` resolves outside this checkout — into a dotfiles or config repository — is an edit to *that* repository, not this one. Detect via `readlink` BEFORE editing. After: `cd` to the resolved repository, `git add <files> && git commit && git push` on its default branch. Never leave uncommitted.
-- **Docs-repo edits on own branch.** `~/Projects/docs/` is shared across milestones: check `git status` first; from `main` (checkout or worktree off `main`) commit on `chore/m{N}-{slug}-changelog`; recovery = stash, re-apply on a fresh branch.
-- Other dotfiles (`.zshrc`/`.gitconfig`/etc.): timestamped backup; minimal edits.
-- **Check a sibling repository for an existing pattern in the same language before inventing one.** A shape shipping next door is prior art; a new one needs a reason.
-- **Read the reference implementation before designing.** Where the language's dispatch page names a canonical external source, that read is mandatory in review and its guideline identifiers are cited — applied or diverged from. "Broken for us" means the delta was missed: diff our call site against theirs before blaming the principle.
-- Never publish a Claude Artifact unless asked for one in that session. Answer in the terminal.
-- Before commit/push: `gitleaks` must pass.
-- No new `make` targets without a distinct caller (CI job, spec-mandated gate, or a workflow existing targets can't express) — check `make/*.mk` first; extend over near-duplicate wrappers.
-- Auth-flow (token-minting handlers, credential-typed spec dimensions, the repository's auth directories) → read the repository's `docs/AUTH.md` first, where it exists.
-
-**Forge detection:** `github.com` → `gh`; `gitlab.com` → `glab`. Check `git remote -v`.
-
----
+- Workspace `~/Projects`. `gh` for `github.com`, `glab` for `gitlab.com`, never browsers. `trash` not `rm`.
+- Conventional Commits. "Make a note" → update `AGENTS.md` or repository docs.
+- **Symlinked edits land in the repository that owns the file.** Check `readlink` before editing; commit and push in the repository it resolves to.
+- **Docs-repo edits on own branch.** `~/Projects/docs/` is shared: check `git status`, then commit on `chore/m{N}-{slug}-changelog`.
+- Other dotfiles (`.zshrc`, `.gitconfig`): timestamped backup; minimal edits.
+- **Check a sibling repository for an existing pattern in the same language before inventing one.**
+- **Read the reference implementation before designing** where a standard names one; "broken for us" means the delta was missed.
+- Never publish a `Claude Artifact` unless asked in that session. Before commit or push, `gitleaks` passes. No new `make` target without a distinct caller.
+- Auth-flow files → read the repository's `docs/AUTH.md` first, where it exists.
 
 ## Auto-mode autonomy
 
-Default gates commit/push/PR on explicit ask. **Auto mode + a forward-looking start instruction** ("start on M40"/"ship it"/"drive to PR") = standing authorization, granting without re-asking: `git commit` (focused, conventional, gitleaks-clean), `git push origin <feature-branch>` (non-force), `gh pr create` (after CHORE(close); omit `--draft` unless asked). **Action-triggered guards still block.** **Investigation framing** ("look at this"/"what's going on"/"review this") = investigate, not authorize; drive forward only on action verbs.
-
----
+Commit, push and PR wait for an explicit ask. **Auto mode with a start instruction** ("start on M40", "ship it") authorizes `git commit`, a non-force feature-branch push, and `gh pr create` after CHORE(close). "Look at this" investigates; act only on action verbs.
 
 
 ---
 
-## Action-Triggered Guards
+## Rules, skills and gates
 
-Guards fire pre-hoc regardless of lifecycle stage. Override: `<GATE>: SKIPPED per user override (reason: ...)` immediately preceding the edit — **user-invokable only** unless noted. Per-edit output is **one-line by default**; full block fires only on violation or new file.
+**Rules are standards.** Each standard declares its rules (Applies to · Checked by · Bad · Good · Why). Read the standards for the files you touch before editing; `orly-standards-reviewer` judges the diff against the same standards before the Pull Request (PR). The index at the end of this file lists them.
 
+**Skills hold the steps:** `orly-spec` (idea → reviewed spec), `orly-build` (open the stream, build Section by Section), `orly-ship` (review, close, `orly gate pr`, PR, babysit, land). Outside Claude Code, gstack skills carry a `gstack-` prefix (`/review` is `gstack-review` in Codex).
 
-**🚦 Gate-flag triage** — gate fires → never silence, never harness-patch. **Mechanical** (obvious deterministic fix: fmt, lint-autofix, literal → const, over-length → split, dead code): auto-apply + inform the user in one line. **Judgment** (design call / weakened guarantee / security boundary / possible false-positive): STOP, surface the ask — 📟 flagged (symbol·file·line) · 🔦 fix scope (files·lines·follow-on) · 📈 what we gain · 💥 if not fixed (debt·blockages) · ☠️ my call — the user decides fix-or-defer. Never unilaterally call a flag a false-positive.
+**`orly doctor` proves the setup:** orly at the repository's pin, and gstack and the Elephant-Goldfish Model (EGM) at orly's pins. It checks every agent runtime on the machine, and a skill stops while it is red.
 
-**Seeded `.orly/orly.json`?** Complete it first — `verify.*`, `surfaces`, opt-in packs: `.orly/dispatch/lifecycle.md` §Bootstrap.
+**🚦 Gate-flag triage.** A gate fires → never silence it. **Mechanical** fix (format, lint autofix, split, dead code): apply it, say so in one line. **Judgment** (design call, weakened guarantee, security, possible false positive): stop and ask — 📟 flagged (symbol·file·line) · 🔦 fix scope · 📈 gain · 💥 if not fixed · ☠️ my call.
 
-**Rule paths resolve relative to this repository's root.** Every `.orly/dispatch/…`, `docs/…`, and `.orly/audits/…` path a rule cites is a real file here — `orly init`/`orly update` materialised it from the packs this repository selected. A path your repo lacks means its sources never selected that pack, not that the reference is broken.
+**Legacy family:** NDC, NLR, NLG, and an A/B/C consult before patching, keeping or testing legacy. **No compatibility aliases** unless asked in this session.
 
-**Dispatch index — full rule prose in each `.orly/dispatch/<entry>.md` façade. Read the façade when its trigger fires — sectioned: scan headers, read the sections the diff touches.** Trigger-surface extensions: `*.zig`, `*.ts`, `*.tsx`, `*.js`, `*.jsx`, `*.py`, `*.rs`, `*.go`, `*.sh`, `*.sql`, `*.mdx`, and public OpenAPI prose. Latent `.md` per entry, deterministic `.sh` where mechanisable. Signals: 🟢 pass · 🟠 warn · 🔴 fail · 🛑 blocked · 🔥 critical · 🤔 judgment-only · 🟣 delegated. Output glyphs: 🧲 eval · 🛍️ evidence · 👮 security · ⛈️ rule · 💡 info · 📌 note. The router below **is** the gate set.
+## Lifecycle
 
-**Legacy-workaround family** — four rules together: **RULE NDC** (no dead code at write time, `.orly/docs/greptile-learnings/RULES.md`), **RULE NLR** (touch-it-fix-it cleanup), **RULE NLG** (no speculative compatibility framing; selected product version policy applies), **Legacy-Design Consult Guard** (user A/B/C consult before patching/keeping/testing legacy). **No compatibility aliases** — old verbs, flag aliases, route wrappers, env aliases, fallback spellings — unless the user explicitly asks in-session.
+**Non-trivial** work (several files, a new abstraction, schema, public interface, security boundary, migration) runs `CHORE(open) → PLAN → EXECUTE → CONFORM → VERIFY → REVIEW → DOCUMENT → COMMIT → CHORE(close)`; without a spec the CHORE stages drop. `TODO.md` is forbidden; use `orly-spec`.
 
-| Trigger — when you… | Dispatch | Latent façade carries · override |
-|---|---|---|
-| write `*.ts`/`*.tsx`/`*.js`/`*.jsx` | `write_ts_adhere_bun` | `.orly/dispatch/write_ts_adhere_bun.md` — TS FILE SHAPE DECISION at PLAN, `const`/import/Bun-primitive discipline, raw-HTML → design-system primitive, `*-[...]` → token utility · `UI GATE` / `DESIGN TOKEN GATE: SKIPPED per user override (reason: ...)`; auto-mode does NOT cover; reason must cite a concrete external constraint. |
-| write `*.py` | `write_python` | `.orly/dispatch/write_python.md` — standard-library parsing, context-managed resources, boundary validation, specific exceptions · 🤔 judgment-only. |
-| write `*.mdx` | `write_mdx` | `.orly/dispatch/write_mdx.md` — Markdown JSX structure, front matter, links, code fences, image descriptions, Mintlify isolation · 🤔 judgment-only. |
-| write **any** source file | `write_any` | `.orly/dispatch/write_any.md` — File & Function Length, LOGGING, MILESTONE-ID, ERROR REGISTRY (repo-declared scheme, delegated), UFS named-constants, GREPTILE end-of-turn read, legacy family · `LENGTH` / `LOGGING` / `MILESTONE ID` / `UFS GATE: SKIPPED per user override (reason: ...)`; auto-mode does NOT cover. |
-| write a spec under `docs/v*/…` | `write_spec` | `.orly/dispatch/write_spec.md` — required + prohibited spec sections (SPEC TEMPLATE GATE), `.orly/docs/TEMPLATE.md` shape · `SPEC TEMPLATE GATE: SKIPPED per user override (reason: ...)`; auto-mode does NOT cover; reason must cite a concrete external constraint. |
-| write `src/http/handlers/**` / OpenAPI | `write_http` | `.orly/dispatch/write_http.md` — REST API design rules; reads `.orly/docs/REST_API_DESIGN_GUIDELINES.md` before · 🟣 delegated. |
-| write auth-flow / token-minting files | `write_auth` | `.orly/dispatch/write_auth.md` — auth invariants; reads the product repo's `docs/AUTH.md` before · 🟣 delegated (product repo). |
-| write published docs / OpenAPI prose | `write_documentation` | `.orly/dispatch/write_documentation.md` → `.orly/docs/DOCUMENTATION_RULES.md` before narrower guides; page, fragment, API, changelog scopes differ · 🟣 delegated to repository pre-commit checks. |
-| write a changelog entry | `write_changelog` | `.orly/dispatch/write_changelog.md` — changelog voice (one headline, no marketing words, `**Bold lead-noun**` bullets, history append-only); reads `.orly/docs/CHANGELOG_VOICE.md` · 🤔 judgment-only. |
-| write/update a PR or MR body or its session notes | `write_pr_description` | `.orly/dispatch/write_pr_description.md` — append numbered `Session notes`, `Review`, and `Make`; measured fenced diagrams; visual evidence from the lane's own artifacts; review dispositions; commands with real output. |
-| name a stream/channel/Redis namespace/queue/RPC/Postgres schema, or describe a flow | `name_architecture` | `.orly/dispatch/name_architecture.md` — architecture-consult discipline; grep relevant `docs/architecture/` (chat brainstorming counts) · **no override** — doc wins until reconciled. |
-| run a lifecycle stage (open→close a stream, worktree setup, milestone bootstrap) | `lifecycle` | `.orly/dispatch/lifecycle.md` — stage runbooks: CHORE(open/close) checklists, PLAN expansions, spec discipline, deferral format, pre-PR gates, LAND · 🤔 judgment-only. |
+**Anchor invariant — `orly gate` proves the boundary.** No PR opens unless every `orly gate pr` criterion is green or carries a user-recorded `Orly-Override` trailer. `orly gate pr` is the command CHORE(close) runs; a push is never proof that tests ran.
+
+`work` runs the declared `conform` at commit. `verify` runs documentation checks and non-test `verify.*` commands at push. `pr` checks branch shape, the upstream revision, documentation and every declared `verify.*` command itself.
+
+**VERIFY:** Section checks prove the changed Dimensions; the final gate runs the full declared verification set. Integration tests are due when the diff crosses a module boundary with real input/output.
+
+**PR budget:** one per milestone, plus one follow-up. **Deferral:** a deferred item needs the user's verbatim quote in the spec's Discovery or the PR Session Notes. **LAND:** pull the default branch, prune the merged branch and worktree.
 
 ---
 
-## Specification Standards
+## Standards
 
-**Canonical template:** `.orly/docs/TEMPLATE.md` (materialised per-repo by `workflow.specifications`). Never look for `project_spec.md`.
-
-**Creating a spec:** invoke `orly-spec-new` — owns naming, terminology, layout (`docs/v{N}/{pending,active,done}/`). Triggers: "create a spec", "new milestone", "spec out X", any `TODO.md` attempt (forbidden).
-
-**Spec is an instance, rules are the constant.** Spec contradicts a rule → amend spec.
-
-**Triggers** (presence of a spec is the trigger):
-
-| Event | Action |
+| Standard | Covers |
 |---|---|
-| New milestone, plan-{eng,ceo,design}-review, `TODO.md` attempt | Invoke `orly-spec-new`. Land in `docs/v{N}/pending/`, `Status: PENDING`, commit on the detected default branch. |
-| Begin implementation OR branch carries spec changes in `pending/` | CHORE(open): `pending/`→`active/`, `Status: IN_PROGRESS` + `Branch:`, create worktree, commit on feature branch. **No code until 4 steps committed.** |
-| Every commit during implementation | Mark completed Dimensions/Sections `DONE` same commit as the code. |
-| All work complete, before PR | CHORE(close). |
-| Final implementation commit, or explicit request to park a spec | CHORE(close) is mandatory next action; Section commits continue the stream. |
+| `.orly/standards/changelog.md` | Changelog |
+| `.orly/standards/code.md` | Code |
+| `.orly/standards/docs-pages.md` | Documentation pages |
+| `.orly/standards/docs.md` | Documentation |
+| `.orly/standards/domains/architecture.md` | Architecture |
+| `.orly/standards/domains/auth.md` | Authentication, authorization and secrets |
+| `.orly/standards/domains/http-responses.md` | HTTP responses and errors |
+| `.orly/standards/domains/http-surface.md` | HTTP surface: OpenAPI, versions and clients |
+| `.orly/standards/domains/http.md` | HTTP paths, methods and routes |
+| `.orly/standards/domains/logging.md` | Logging |
+| `.orly/standards/languages/mdx.md` | MDX |
+| `.orly/standards/languages/python.md` | Python |
+| `.orly/standards/pr.md` | Pull requests |
+| `.orly/standards/spec.md` | Specs |
+| `.orly/standards/tests.md` | Tests |
 
 ---
 
-## Non-Trivial Definition
-
-Non-trivial (full lifecycle) if it: touches >1 file · new abstraction · data model/schema change · external API/public interface · security boundary · migration/backfill · infra dependency. Single-file typos & config-value tweaks are trivial.
-
-## Deterministic Lifecycle
-
-**With spec:** `CHORE(open) → PLAN → EXECUTE → CONFORM → VERIFY → REVIEW → DOCUMENT → COMMIT → CHORE(close)`. **Without spec** (bug fix/config/refactor): `PLAN → EXECUTE → CONFORM → VERIFY → REVIEW → DOCUMENT → COMMIT`. CHORE bookends iff work creates/continues a spec under `docs/v*/{active,pending}/`. Stage runbooks (checklists, recipes, formats): `.orly/dispatch/lifecycle.md`.
-
-**Anchor invariant — `orly gate` proves the boundary.** No PR opens unless every `orly gate pr` criterion is green or carries an `Orly-Override` trailer the user recorded with a reason.
-
-**Gate ownership.** `work` runs the declared `conform` command at commit. `verify` runs documentation checks and non-test `verify.*` commands at push; it permits unfinished Sections. `pr` checks branch shape, exact upstream revision, spec completeness, and every declared `verify.*` command itself. `orly gate pr` is the command CHORE(close) runs; a push is never proof that tests ran. Unit and integration baselines are measured before the Pull Request against the recorded comparison revision. Full unit and integration suites run at the PR boundary, not at opening or every push. Integration and memory suites skip only on branches with no code. The authoritative sequence is `.orly/dispatch/lifecycle.md`; no spec means only spec criteria skip. A user-surface change without a docs change is red until docs land or an override says why not.
-
-**LAND (after merge, or when the user confirms it merged):** pull the default branch, prune the merged worktree + branch, `make down` where defined.
-
-### CHORE (open)
-
-Spec `pending/`→`active/`; `Status: IN_PROGRESS`; `Branch:` set; **`Test Baseline:` declared pending; `Baseline revision:` records the full comparison commit** (unit and integration counts plus evidence are due before the Pull Request); committed. Worktree created, CWD inside (verify `pwd` + `git worktree list`), carrying the base checkout's uncommitted work in with it. No code until the 4 steps are committed.
-
-### PLAN
-
-Required: one-paragraph goal · explicit assumptions · file/task impact list · verification plan · **quality-ceiling line** (would a different build be more performant / leaner / more fluid / sounder under concurrency; a larger refactor beating the patch is surfaced with cost, the user picks) · **surface-area checklist** yes/no + reason (OpenAPI paths · the product's CLI · user docs · release/version · schema + Schema Removal Guard · spec-vs-rules conflict → amend spec). No file mutations during PLAN.
-
-### EXECUTE
-
-Read what the selected dispatch names — **sectioned, not whole-file**: scan headers (`grep -nE "^##+ "`), read the sections the diff shape touches, cite them.
-
-Edit only approved scope; no opportunistic refactors. Stay in active worktree. Cross-repo writes to `~/Projects/docs/` need explicit per-session ask.
-
-**Spec discipline** (full alignment rules: `.orly/dispatch/lifecycle.md`): **Golden-path before PLAN approval** — any `[?]` blocks the spec. **DONE = called in production + tested.** **Changelog claim challenge** — "Would this be true if the test file vanished?" Every Dimension → test case; every Error Table row → negative test; no code commits without tests (`/orly-write-unit-test`).
-
-### CONFORM
-
-Runs after EXECUTE, before VERIFY. Invokes the `conform` commands the repository declares in `.orly/orly.json` and aggregates every gate verdict. Any 🔴 returns to EXECUTE; the lifecycle does not advance. This is the `work` gate's tier and the pre-commit hook runs it at every commit: declare a `conform` costing seconds, not minutes.
-
-### VERIFY
-
-**Section proof and final verification.** Follow `.orly/dispatch/lifecycle.md` for command timing. Section checks prove the changed Dimensions; the final gate runs the full declared verification set. A package-scoped command never replaces a declared boundary command, and a Section result never satisfies a repository-wide "tests pass" claim.
-
-### REVIEW
-
-Run an adversarial diff review after verification and before documentation. Compare the implementation and tests against the plan, active spec, architecture, failure modes, public behavior, and every triggered rule. Address findings or record a user-approved deferral before advancing.
-
-**One route, every runtime: gstack `/review`.** Local and pre-commit, distinct from post-push reviewer triage.
-
-**gstack skill names carry a `gstack-` prefix outside Claude Code.** Claude reads them at their short name; Codex and Amp read the generated `.agents/skills/` tree, where every entry is prefixed. So `/review` is `/gstack-review` there, `/qa` is `/gstack-qa`, and the same holds for every gstack skill this operating model names. Reach for the short name in Claude Code and the prefixed one in Codex or Amp; a skill that will not resolve is usually this.
-
-### DOCUMENT
-
-Update user-visible docs for behavior/process changes. Changelog only for user-visible changes. Durable decisions → repo docs. No commit yet unless user asked.
-
-### COMMIT
-
-Focused, conventional, no unrelated files. PR metadata via `gh`/`glab`. Mark Dimensions `DONE`. No amend unless requested. No destructive ops. Outside auto mode → explicit ask; inside auto mode + active-spec or start-instruction → proceeds.
-
-### CHORE (close)
-
-Required when spec involved — after last COMMIT, before PR. Also runs when parking midway (mark completed DONE, in-progress as `IN_PROGRESS`).
-
-**Skill chain (mandatory order):**
-
-| # | When | Skill |
-|---|---|---|
-| 1 | VERIFY | `/orly-write-unit-test` once per Section over that Section's diff, and again at the boundary — never skipped, never deferred. Then `/orly-write-integration-test` at the boundary **when the diff crosses a module boundary with real input/output**; otherwise record `N/A — <reason>` in Session Notes. |
-| 2 | REVIEW | gstack `/review` — every runtime, same route; address findings or record a user-acked deferral; reviewer unavailable → Session Notes: *"skipped — <reason> <ts>; rerun before merge"* |
-| 3 | After every push | `orly-babysit-prs` — CI check runs + greptile inline threads + PR-level summary; stops on two consecutive empty polls with CI green; never `gh pr checks --watch` for greptile |
-
-**PR budget — one per milestone.** One ready PR plus one follow-up is the ceiling. Fold new scope into the open PR (reopen `done/`→`active/` if needed), not a third.
-
-**Required outputs** — full checklist in `.orly/dispatch/lifecycle.md`: all Dimensions/Sections `DONE` (`IN_PROGRESS` if parked) · spec → `docs/v*/done/` iff complete · new changelog `<Update>` **and** the affected `~/Projects/docs/` pages revised · `docs/architecture/**` diff or Session-Notes why-not · PR body per `.orly/dispatch/write_pr_description.md` · orphan sweep (RULE ORP) · ephemeral `HANDOFF*` docs deleted · `git status -uall` audit, **empty post-commit** before the PR · version sync (`make check-version` passes).
-
-**Deferral discipline.** A "deferred to follow-up" claim requires an **user-acked verbatim quote** in PR Session Notes (or spec Discovery); agent-unilateral deferral = incomplete scope, not deferral — CHORE(close) blocks until the item lands or the quote is captured. Quote format + HANDOFF faithfulness: `.orly/dispatch/lifecycle.md`.
-
-**Pre-PR gates** (detail: `.orly/dispatch/lifecycle.md`): spec in `done/` in diff (unless parked) · new `<Update>` in diff (unless internal-only/parked) · `Status: DONE` requires spec in `done/` · `make check-version` passes · branch contains `origin/main` HEAD — never force-push an open PR branch.
-
----
-
-# Selected rule packs
-
-| Pack | Extensions |
-|---|---|
-| `domain.auth` | path or action trigger |
-| `domain.changelog` | path or action trigger |
-| `domain.documentation` | path or action trigger |
-| `domain.http` | path or action trigger |
-| `language.javascript` | .js, .jsx |
-| `language.mdx` | .mdx |
-| `language.python` | .py |
-| `universal.authoring` | path or action trigger |
-| `workflow.skills` | path or action trigger |
-| `workflow.specifications` | path or action trigger |
-
----
-
-# Repository commands
+## Repository commands
 
 | Responsibility | Commands |
 |---|---|
