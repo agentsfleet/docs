@@ -115,6 +115,7 @@ Commit, push and PR wait for an explicit ask. **Auto mode with a start instructi
 | `.orly/standards/domains/logging.md` | Logging |
 | `.orly/standards/languages/mdx.md` | MDX |
 | `.orly/standards/languages/python.md` | Python |
+| `.orly/standards/languages/typescript.md` | TypeScript |
 | `.orly/standards/pr.md` | Pull requests |
 | `.orly/standards/spec.md` | Specs |
 | `.orly/standards/tests.md` | Tests |
