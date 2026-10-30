@@ -13,7 +13,7 @@ Read `AGENTS.md`, `.orly/standards/docs.md` and `.orly/standards/docs-pages.md` 
 ### Option 2: Local development
 
 1. Fork and clone this repository, then open the cloned repository's directory
-2. Use Bun 1.4.3 and Node.js 24, then install the pinned tools: `bun install --frozen-lockfile`
+2. Use Bun 1.4.4 and Node.js 24, then install the pinned tools: `bun install --frozen-lockfile`
 3. Create a branch for your changes
 4. Make changes
 5. Run `make dev`

@@ -5,7 +5,7 @@
 - This is the agentsfleet documentation site built on [Mintlify](https://mintlify.com)
 - Pages are MDX files with YAML frontmatter
 - Configuration lives in `docs.json`
-- Use Bun 1.4.3 for package installation and scripts; Node.js 24 runs the Mintlify CLI
+- Use Bun 1.4.4 for package installation and scripts; Node.js 24 runs the Mintlify CLI
 - Run `bun install --frozen-lockfile` to install the pinned documentation tools
 - Run `make dev` to preview locally on port 3000
 - Run `bun run broken-links` to check links
