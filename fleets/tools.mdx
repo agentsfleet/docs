@@ -101,6 +101,20 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
 
 `http_request` accepts only hosts allowed by the fleet policy. Responses allow up to 1 MiB.
 
+<Note>
+  This feature is coming soon. A `GET` without a body follows up to three redirects.
+
+  Every destination must pass the fleet's existing network and request rules. Other methods and requests with a body return the first response.
+</Note>
+
+Review and save each exact download host in the Definition before using redirected downloads, such as GitHub job logs. A redirect cannot add a host to the policy. All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
+
+The whole redirected read has a 30-second deadline. Intermediate bodies are discarded.
+
+The final result includes its status, content type and redirect count. Temporary download paths and signatures stay private under the tool's known-target masking rules.
+
+Truncation and replaced non-UTF-8 bytes appear before the response body. If your task requires complete text, instruct the fleet to stop when it sees either notice or an unusable content type. For a Continuous Integration (CI) investigation, require the exact run attempt, job metadata and usable log text before diagnosing the failure.
+
 Hosted runners have no display. `browser_open` and `screenshot` can fail there; use them only with a suitable self-managed runner.
 
 `web_fetch` requires an allowed public secure HTTP (HTTPS) destination. Private or unsafe destinations are refused.
