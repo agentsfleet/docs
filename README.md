@@ -24,14 +24,14 @@ Use these docs to create fleets, inspect runs in the activity stream, and manage
 
 Before editing, read `AGENTS.md`, `.orly/standards/docs.md` and `.orly/standards/docs-pages.md`. For changelog edits, also read `.orly/standards/changelog.md`.
 
-1. Use Bun 1.4.3 and Node.js 24, then install the pinned documentation tools. Mintlify starts a Node.js process for its CLI.
+1. Use Bun 1.4.4 and Node.js 24, then install the pinned documentation tools. Mintlify starts a Node.js process for its CLI.
 
 ```bash
 bun install --frozen-lockfile
 ```
 
 ```text
-bun install v1.4.3 (<varies>)
+bun install v1.4.4 (<varies>)
 <varies>
 ```
 
