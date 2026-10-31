@@ -3,8 +3,8 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-10-31
+product_version: 0.71.0
 executable: false
 ---
 
@@ -71,6 +71,7 @@ The native API also accepts these settings under `config["x-agentsfleet"].networ
 ```
 
 `http_egress` defaults to `restricted`; `allow` names additional exact domains.
+`allow` accepts up to 64 entries, each 1 to 255 characters.
 `package_manager_domains` defaults to `false`.
 
 Enable the package preset to allow the standard npm, Python, Rust and Go registries through HTTP tools.
@@ -136,18 +137,21 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
   Every destination must pass the fleet's existing network and request rules. Other methods and requests with a body return the first response.
 </Note>
 
-In restricted mode, review and save each exact download host before using redirected downloads, such as GitHub job logs.
+In restricted mode, review and save each exact download host outside the enabled package preset before using redirected downloads.
 A redirect cannot add a host to the policy.
 
 All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
 
 The whole redirected read has a 30-second deadline. Intermediate bodies are discarded.
 
-The final result includes its status, content type and redirect count. Temporary download paths and signatures stay private under the tool's known-target masking rules.
+After a redirect, the final response shows its status and redirect count.
+A returned content type appears before the body.
+Temporary download paths and signatures stay private under the tool's known-target masking rules.
 
 Truncation and replaced non-UTF-8 bytes appear before the response body. If your task requires complete text, instruct the fleet to stop when it sees either notice or an unusable content type. For a Continuous Integration (CI) investigation, require the exact run attempt, job metadata and usable log text before diagnosing the failure.
 
-Hosted runners have no display. `browser_open` and `screenshot` can fail there; use them only with a suitable self-managed runner.
+`browser`, `browser_open` and `screenshot` are currently unavailable on every runner.
+Use `http_request` or `web_fetch` for HTTP reads.
 
 `web_fetch` requires an allowed public secure HTTP (HTTPS) destination. Private or unsafe destinations are refused.
 
@@ -167,7 +171,8 @@ Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/ap
 
 `message` posts at most 8 lines per run, each at most 4,096 bytes. The 9th line fails with [`UZ-RUN-020`](/api-reference/error-codes#UZ-RUN-020). A run started from the API, a webhook, or a schedule has no thread, so `message` fails with [`UZ-RUN-019`](/api-reference/error-codes#UZ-RUN-019).
 
-If Slack refuses a line, or has not taken it within 12 seconds, `message` reports the line as not delivered. The run continues, and its answer still reaches the thread.
+If Slack refuses a line, or has not taken it within 12 seconds, `message` reports the line as not delivered.
+The run continues; final-answer delivery follows its own retries and can also fail.
 
 ## Related pages
 

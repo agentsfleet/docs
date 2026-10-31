@@ -12,15 +12,17 @@ description: "Product changes and upgrade notes."
 
   <Note>This feature is coming soon.</Note>
 
+  Your fleet reads temporary log downloads through the HTTP egress policy you approve.
+
   ## What's new
 
-  - **HTTP egress** — request public HTTPS access, standard package registry domains or additional exact domains in fleet setup. Review and save the proposed policy; see [HTTP egress settings](/fleets/tools#http-egress-settings).
+  - **HTTP egress** — choose public HTTPS, package registries or additional exact domains in setup. Review and save the policy; see [HTTP egress settings](/fleets/tools#http-egress-settings).
 
   ## Bug fixes
 
-  - **Downloads** — bodyless `http_request` GET calls follow up to three admitted redirects within one 30-second deadline. Restricted policies require reviewed download hosts; see [tool limits](/fleets/tools#limits).
-  - **Headers** — an origin change permanently removes supplied headers, so a temporary download host receives no GitHub authorization header.
-  - **Source text** — responses show content type and completeness notices before the body. Instructions can stop an investigation when required logs are truncated or unusable.
+  - **Downloads** — bodyless `http_request` GET calls follow up to three admitted redirects within one 30-second deadline. Restricted access requires the allowlist or package preset; see [tool limits](/fleets/tools#limits).
+  - **Headers** — an origin change permanently removes supplied headers, including GitHub authorization.
+  - **Source text** — completeness notices precede the body. Instruct the fleet to stop on unusable required logs.
 </Update>
 
 <Update label="Oct 28, 2026" tags={["What's new", "API reference", "Bug fixes"]}>
