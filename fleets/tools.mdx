@@ -54,6 +54,35 @@ The runner refuses a run that names an unknown or unavailable tool.
 Check spelling against the list above and keep the runner updated.
 It does not silently remove that tool and continue.
 
+### HTTP egress settings
+
+<Note>This feature is coming soon.</Note>
+
+Ask for HTTP access in the fleet's setup chat, then review and save the proposed Definition.
+The native API also accepts these settings under `config["x-agentsfleet"].network`:
+
+```json
+{
+  "http_egress": "restricted",
+  "package_manager_domains": true,
+  "allow": ["api.github.com"],
+  "read_only": true
+}
+```
+
+`http_egress` defaults to `restricted`; `allow` names additional exact domains.
+`package_manager_domains` defaults to `false`.
+
+Enable the package preset to allow the standard npm, Python, Rust and Go registries through HTTP tools.
+It includes `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `static.crates.io`, `crates.io`, `index.crates.io`, `proxy.golang.org` and `sum.golang.org`.
+
+For public secure HTTP (HTTPS) access, set `http_egress` to `public`.
+You then need no individual domain list for HTTP tools.
+Private or reserved addresses, credential bindings, repository limits and read-only rules still apply.
+
+These settings do not enlarge sandbox network access.
+Dedicated dashboard controls are coming later; the setup review describes the saved HTTP egress policy.
+
 ### Schedule tools
 
 A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and fires it; the runner keeps no timer.
@@ -107,7 +136,10 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
   Every destination must pass the fleet's existing network and request rules. Other methods and requests with a body return the first response.
 </Note>
 
-Review and save each exact download host in the Definition before using redirected downloads, such as GitHub job logs. A redirect cannot add a host to the policy. All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
+In restricted mode, review and save each exact download host before using redirected downloads, such as GitHub job logs.
+A redirect cannot add a host to the policy.
+
+All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
 
 The whole redirected read has a 30-second deadline. Intermediate bodies are discarded.
 

@@ -12,9 +12,13 @@ description: "Product changes and upgrade notes."
 
   <Note>This feature is coming soon.</Note>
 
+  ## What's new
+
+  - **HTTP egress** — request public HTTPS access, standard package registry domains or additional exact domains in fleet setup. Review and save the proposed policy; see [HTTP egress settings](/fleets/tools#http-egress-settings).
+
   ## Bug fixes
 
-  - **Downloads** — bodyless `http_request` GET calls follow up to three admitted redirects within one 30-second deadline. Review each exact download host and save it in the Definition first; see [tool limits](/fleets/tools#limits).
+  - **Downloads** — bodyless `http_request` GET calls follow up to three admitted redirects within one 30-second deadline. Restricted policies require reviewed download hosts; see [tool limits](/fleets/tools#limits).
   - **Headers** — an origin change permanently removes supplied headers, so a temporary download host receives no GitHub authorization header.
   - **Source text** — responses show content type and completeness notices before the body. Instructions can stop an investigation when required logs are truncated or unusable.
 </Update>
