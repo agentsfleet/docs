@@ -3,8 +3,8 @@ title: Author a fleet
 description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-10-26
-product_version: 0.65.0
+verified: 2026-10-31
+product_version: 0.71.0
 executable: false
 ---
 
@@ -35,33 +35,39 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Choose **… → Edit instructions** beside the chat title to review the proposed instructions. Keep chatting until the proposal matches your task.
-4. Choose **Save fleet** beside the chat title. For an immediate first run, open **Edit instructions → Review and run options**. Enter **Optional first run**, then choose **Save and run now**.
-5. Saving opens the fleet conversation. Its sections are **Chat**, **Activity**, and **Memory**.
+3. Choose **… → Instructions** beside the chat title to review the proposal. Keep chatting until it matches your task.
+4. Choose **Save fleet** beside the chat title. The status above the message field shows **Saving**, then the confirmed setup version.
+5. Choose **Open fleet** to open the saved fleet. Its sections are **Chat**, **Activity**, and **Memory**. Your private setup conversation remains available.
 
 The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
 
-For a saved fleet, **Edit instructions manually** expands the editor below setup chat. Folding the editor keeps your unsaved text.
+Choose **… → Instructions** to open the instruction editor. Closing it keeps your unsaved text.
 
-Choose **Update instructions** to apply manual edits to the draft. Then choose **Save fleet** or **Save changes**. Unsaved manual edits block those save actions.
+Choose **Save changes** in the editor. For an existing fleet, this saves a new setup version. For a new proposal, choose **Save fleet** afterward.
 
 An untouched editor follows changes from setup chat. If chat changes the setup during manual editing, your text remains available and a conflict blocks updates.
 Choose **Discard manual changes and load latest** to replace that local text with the current proposal.
 
-The setup chat shows a compact saved-version summary. Setup and first-run warnings remain visible when setup needs attention.
+The status above the message field shows **Reading setup**, **Refining setup**, **Saving**, or **Publishing** during the corresponding work.
+Only a confirmed saved version or publication receives a success tick. An uncertain response shows **Update not confirmed** and retains the retry operation.
+
+Publishing remains separate from saving. After publication, **New fleet** opens private authoring from that exact Library revision.
+The published setup excludes your private conversation.
+
+Open **Show more** to expand a long message and **Show less** to fold it. A reply you watched stream stays open when it finishes.
 
 Keep unfinished setup steps and schedule registration warnings in view. Use the displayed retry action when setup needs attention.
 
 To change a saved fleet, choose **Edit setup** in its header. A private chat opens beside the fleet conversation, based on its saved setup revision. On a phone, the editor fills the page.
 
-Describe the change, review it through **Edit instructions manually**, then choose **Save changes** in the fleet header.
+Describe the change, review it through **… → Instructions**, then choose **Save changes** in the fleet header.
 Your unsent message in the fleet conversation stays in place.
 
 New work uses the updated instructions; work already running keeps its current version.
 
 ### Recover a stopped or failed reply
 
-**Queued…** means your message is waiting to start. **Working…** means a reply has started.
+**Queued…** means your message is waiting to start. **Refining setup…** means an authoring reply has started.
 
 A failed reply keeps any partial text and shows its failure message. Choose **Try again** when available to retry the original request.
 
@@ -94,6 +100,9 @@ To delete a chat, choose its delete action and confirm **Delete chat**. The priv
 Hover or focus an unfinished setup row to read its full title and status. The editor identifies the saved revision beneath your changes.
 
 ### In the terminal
+
+Saves from the command-line interface (CLI) show **Setup saved via CLI** beside their version in the dashboard.
+Older receipts without origin metadata keep the general saved-version label.
 
 1. Start a private chat with an authoring model.
 

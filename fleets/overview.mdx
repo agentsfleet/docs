@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-10-24
-product_version: 0.65.0
+verified: 2026-10-31
+product_version: 0.71.0
 executable: false
 ---
 
@@ -55,7 +55,12 @@ Sending a message moves Chat to the latest turn. A spinner shows that the
 fleet is working until its reply starts.
 
 Open **Thought** to read the fleet's reasoning after its answer starts.
-Tool calls show their names, progress, and duration separately from the answer.
+
+Open **Ran commands** to inspect grouped tool activity, then open an individual **Ran command**.
+Its panel shows recorded input, output, duration, and **Success** or **Failed**.
+Running, interrupted, and unknown outcomes retain their own labels; a missing outcome never receives a success tick.
+
+Long messages offer **Show more** and **Show less**. Replies already open during streaming stay open when they finish.
 
 New activity leaves your place in older messages alone. Use **Jump to latest** above the message field to return to the newest turn. On narrow screens, the fleet tabs scroll sideways and the status figures wrap.
 
