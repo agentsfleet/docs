@@ -7,6 +7,27 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Oct 31, 2026" tags={["What's new", "API reference", "Bug fixes", "CLI"]}>
+  ## Follow setup progress and inspect commands
+
+  ## What's new
+
+  - **Chat** groups commands with expandable input, output, and recorded outcomes. Long messages offer **Show more** and **Show less**.
+  - **Setup** shows saving and publishing progress above the message field. Confirmed results offer **Open fleet** or **New fleet**.
+
+  ## API reference
+
+  - **Save and Apply** accept optional `origin` display metadata: `cli`, `dashboard`, or `chat`. Retries preserve the first accepted receipt.
+
+  ## Bug fixes
+
+  - **Access** uses one GitHub approval link and clearer public/restricted network labels. Accordion animations respect reduced motion.
+
+  ## CLI
+
+  - New terminal saves identify their origin beside the confirmed version in chat.
+</Update>
+
 <Update label="Oct 28, 2026" tags={["What's new", "API reference", "Bug fixes"]}>
   ## Receive signed events from more providers
 
