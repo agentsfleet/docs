@@ -81,7 +81,8 @@ For public secure HTTP (HTTPS) access, set `http_egress` to `public`.
 You then need no individual domain list for HTTP tools.
 Private or reserved addresses, credential bindings, repository limits and read-only rules still apply.
 
-These settings do not enlarge sandbox network access.
+`http_egress` and `package_manager_domains` do not enlarge sandbox network access.
+Entries in `allow` can also admit sandbox destinations when `read_only` is `false`, subject to the runner operator's policy.
 Dedicated dashboard controls are coming later; the setup review describes the saved HTTP egress policy.
 
 ### Schedule tools
