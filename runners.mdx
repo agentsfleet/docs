@@ -3,8 +3,8 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-10-24
-product_version: 0.65.0
+verified: 2026-10-31
+product_version: 0.71.0
 executable: false
 ---
 
@@ -72,8 +72,8 @@ Policy travels down from the dashboard. Change it under **Admin → Runners → 
 | Field | What it sets | Default | Valid values |
 |---|---|---|---|
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
-| Network policy | What the sandbox may reach on the network. | Allow all egress | Allow all egress, No egress, Allowlist egress |
-| Allowlist | Registry hosts the sandbox may reach under Allowlist egress. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
+| Network policy | What the sandbox may reach on the network. | Public internet access | Public internet access, No internet access, Restricted access |
+| Allowed registry domains | Registry hosts the sandbox may reach under Restricted access. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
 | Workers | How much work the host runs at once. Higher counts start more workers at the next heartbeat. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
 
@@ -121,13 +121,13 @@ The network policy decides what each sandbox reaches.
 
 | Network policy | What the sandbox reaches |
 |---|---|
-| Allow all egress | The host's own network, shared with the host. |
-| No egress | Nothing beyond its own loopback interface. |
-| Allowlist egress | Only the addresses on the run's allowlist, and nothing else. |
+| Public internet access | The host's own network, shared with the host. |
+| No internet access | Nothing beyond its own loopback interface. |
+| Restricted access | Only the addresses on the run's allowlist, and nothing else. |
 
-Under Allowlist egress, the runner builds the allowlist when a run starts. It joins the policy's Allowlist with the hosts the fleet lists in `network.allow` in its Definition. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
+Under Restricted access, the runner builds the allowlist when a run starts. It joins the policy's allowed registry domains with the hosts the fleet lists in `network.allow` in its Definition. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
 
-An empty Allowlist means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
+An empty allowed-registry list means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
 
 The runner looks up each host's Internet Protocol version 4 (IPv4) addresses on the host itself. The sandbox finds those names in its own `/etc/hosts` and has no Domain Name System (DNS) resolver. Traffic to port 53 is dropped, so a name outside the list never resolves.
 
@@ -135,17 +135,17 @@ Each sandbox joins the host through its own virtual Ethernet pair. `nf_tables` r
 
 The runner refuses a run before its sandbox starts when a listed host has no IPv4 address. It also refuses a run whose allowlist holds more than 256 addresses. The run then fails with "the egress allowlist could not be resolved into addresses this runner can admit".
 
-A host from `network.allow` may not resolve to a private or reserved address, such as `10.0.0.0/8`, `100.64.0.0/10` or the cloud metadata address `169.254.169.254`. Such a run fails with "the fleet allows an egress host at a private or reserved address". Hosts in the runner's Allowlist are exempt, so an operator can point one at a package mirror on its own network.
+A host from `network.allow` may not resolve to a private or reserved address, such as `10.0.0.0/8`, `100.64.0.0/10` or the cloud metadata address `169.254.169.254`. Such a run fails with "the fleet allows an egress host at a private or reserved address". Hosts in the runner's allowed registry domains are exempt, so an operator can point one at a package mirror on its own network.
 
 In both cases the runner's log names the host and never an address.
 
-Allowlist egress needs three things from the host:
+Restricted access needs three things from the host:
 
 - a kernel with `nf_tables`
 - IPv4 forwarding on, `net.ipv4.ip_forward=1`
 - no host firewall whose forward policy drops traffic
 
-At start, the runner builds one test pair with its rules and removes it. When that fails, the heartbeat reports `egress_enforcement: false`. A runner assigned Allowlist egress then reads degraded with the reason `egress enforcement unavailable`.
+At start, the runner builds one test pair with its rules and removes it. When that fails, the heartbeat reports `egress_enforcement: false`. A runner assigned Restricted access then reads degraded with the reason `egress enforcement unavailable`.
 
 ### The states a runner shows
 
@@ -217,7 +217,7 @@ The runner's lifetime totals count every lease it took, so they can exceed the h
 
 ## Limits
 
-- **Allowlist egress is IPv4 only.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
+- **Restricted access is IPv4 only.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
 - **A run keeps the addresses it started with.** A host whose address changes during a run stays unreachable until the next run looks it up again.
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
 - **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
