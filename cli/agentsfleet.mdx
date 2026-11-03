@@ -3,8 +3,8 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-10-25
-product_version: 0.65.0
+verified: 2026-11-02
+product_version: 0.72.0
 executable: false
 ---
 
@@ -313,6 +313,11 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 | `agentsfleet events <FLEET_ID>` | Lists historical events with filters. |
 | `agentsfleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. If the stream drops, it reads that exact event for up to 60 seconds, until the event finishes. |
 
+Press **Ctrl+C** to stop local waiting and HTTP retries. An accepted message can keep running on the fleet.
+Inspect `agentsfleet events <FLEET_ID>` before sending the message again.
+
+Event polling reports permanent access or request errors immediately; its timeout also bounds an active read.
+
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
 
 `agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what your account owns, which is the set `agentsfleet library delete` can act on.
@@ -330,6 +335,9 @@ Fleets and Library entries come only from reviewed chat drafts. The file, GitHub
 | `agentsfleet approvals show <GATE_ID>` | Shows one gate, including the reach an approval grants. |
 | `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
 | `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
+
+If the list reaches its page limit with more results available, the command reports an incomplete list.
+Narrow the request with `agentsfleet approvals list --fleet <FLEET_ID>`.
 
 Saving a fleet that declares a mintable credential opens an integration grant for approval. An approved grant covers repository writes until it is revoked. Rules declared under `gates` can also ask for approval during a run; a waiting gate parks that run until someone decides it.
 

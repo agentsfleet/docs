@@ -7,6 +7,25 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 02, 2026" tags={["Bug fixes", "CLI", "UI"]}>
+  ## Clearer fleet activity and interruptible terminal requests
+
+  Read incoming messages and recover from interrupted requests with clearer next steps.
+
+  ## Bug fixes
+
+  - **Approvals** — Rows stay visible while your decision saves.
+  - **Chat** — Slack deliveries show readable messages, tool summaries name their actions, and interrupted responses offer expandable details.
+
+  ## CLI
+
+  - **Cancellation** — Ctrl+C stops local HTTP waiting and retries. An accepted fleet message may continue; inspect events before sending again.
+  - **Polling** — Permanent read errors return directly, and the overall deadline bounds active reads.
+  - **Approval lists** — An incomplete paginated list reports an error; narrow it with `--fleet`.
+
+  See the [command reference](/cli/agentsfleet) for recovery commands.
+</Update>
+
 <Update label="Oct 31, 2026" tags={["What's new", "API reference", "Bug fixes", "CLI"]}>
   ## Follow setup progress and inspect commands
 
