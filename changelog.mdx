@@ -7,6 +7,24 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 03, 2026" tags={["What's new", "Bug fixes"]}>
+  ## Replies start while the sandbox is built
+
+  <Note>This feature is coming soon.</Note>
+
+  Your fleet starts answering before its sandbox and repositories are ready.
+
+  ## What's new
+
+  - **First reply** — starts once the setup checks pass, while the sandbox is still being built.
+  - **Sandbox tools** — wait only for what is left of the build.
+
+  ## Bug fixes
+
+  - **Failed setup** — a sandbox or checkout that fails no longer ends the run; its sandbox tools report the sandbox unavailable.
+  - **Run completion** — reports before the workspace disk is cleaned up.
+</Update>
+
 <Update label="Nov 02, 2026" tags={["Bug fixes", "CLI", "UI"]}>
   ## Clearer fleet activity and interruptible terminal requests
 
