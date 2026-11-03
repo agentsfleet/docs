@@ -3,8 +3,8 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-10-26
-product_version: 0.65.0
+verified: 2026-11-03
+product_version: 0.72.0
 executable: false
 ---
 
@@ -92,6 +92,16 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    ```text
    ✓ <varies> resumed.
    ```
+
+### Inspect current work in chat
+
+**Current work** appears above the message field when the fleet has unfinished work.
+Rows show saved status, such as **Queued**, **In progress** or **Waiting**.
+Expand one to read its objective, **What counts as done?**, and accepted setup version.
+
+Choose **Refresh** to read the latest saved progress.
+If a refresh fails, the panel labels any retained data as last confirmed progress.
+Losing access or switching workspace clears that data; a failed refresh never confirms completion.
 
 ## Verify it works
 
