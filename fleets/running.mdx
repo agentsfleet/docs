@@ -3,8 +3,8 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-11-03
-product_version: 0.72.0
+verified: 2026-11-04
+product_version: 0.73.0
 executable: false
 ---
 
@@ -95,6 +95,8 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 
 ### Inspect current work in chat
 
+<Note>This feature is coming soon.</Note>
+
 **Current work** appears above the message field when the fleet has unfinished work.
 Rows show saved status, such as **Queued**, **In progress** or **Waiting**.
 Expand one to read its objective, **What counts as done?**, and accepted setup version.
@@ -102,6 +104,24 @@ Expand one to read its objective, **What counts as done?**, and accepted setup v
 Choose **Refresh** to read the latest saved progress.
 If a refresh fails, the panel labels any retained data as last confirmed progress.
 Losing access or switching workspace clears that data; a failed refresh never confirms completion.
+
+### Read schedule activity
+
+<Note>This feature is coming soon.</Note>
+
+Fleet chat shows schedule changes with their human description, timezone, saved message and status.
+Registration success says **registered with the scheduler**.
+
+A failed sync shows its stored reason and says it will retry on the next sync.
+Use **Retry registration** or **Retry sync** in the current schedule controls to retry sooner.
+
+Each fire shows its message, followed by the recorded run outcome.
+Queued fires stay visible while waiting for a runner.
+**Run details** opens that fire's record after the run starts; expand grouped fires to inspect each run.
+
+A removal request precedes confirmed removal.
+A missed one-time schedule says it expired without firing.
+History keeps the message from that occurrence; current controls show the latest schedule state and next run when available.
 
 ## Verify it works
 
