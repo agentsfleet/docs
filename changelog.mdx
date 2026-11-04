@@ -7,6 +7,22 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 04, 2026" tags={["What's new", "Performance", "Observability"]}>
+  ## Chat replies finish sooner
+
+  <Note>This feature is coming soon.</Note>
+
+  A chat message now reaches an idle runner as soon as it arrives, and its reply completes in fewer round trips. It needs `agentsfleet-runner` 0.73.0 or later: install that release's bundle as [Install a runner](/runners/install) shows, then run `systemctl restart agentsfleet-runner`.
+
+  ## What's new
+
+  - **Pickup** — an idle runner is woken the moment work arrives.
+  - **Fleet memory** — arrives with the work, so the first model call skips a memory read.
+  - **Completion** — the answer and the memories it saved settle in one report.
+  - **Round-trip stages** — `agentsfleet_fleet_delivery_stage_seconds` adds `event_to_complete`, the chat round trip, and two of its parts, `lease_to_report` and `report_to_complete`.
+  - **Held heartbeats** — `agentsfleet_runner_wake_answers_total` counts how each one ended, by `reason`.
+</Update>
+
 <Update label="Nov 03, 2026" tags={["What's new", "Bug fixes"]}>
   ## Replies start while the sandbox is built
 
