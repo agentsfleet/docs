@@ -7,6 +7,22 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 04, 2026" tags={["Upgrading", "What's new"]}>
+  ## Smaller runner toolbox
+
+  The runner toolbox omits system package managers and Perl while keeping its common development tools.
+
+  ## Upgrading
+
+  - **Perl workflows** — Replace Perl programs and Git helpers that require Perl before switching toolbox images.
+
+  ## What's new
+
+  - **Toolbox** — Git, Python, Node.js, uv, ripgrep, jq and curl remain available in the smaller read-only image.
+
+  See [runner tools](/runners#tools-inside-a-sandbox) for supported Git operations.
+</Update>
+
 <Update label="Nov 04, 2026" tags={["What's new", "Performance", "Observability"]}>
   ## Chat replies finish sooner
 
