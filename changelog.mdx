@@ -7,6 +7,22 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 04, 2026" tags={["Bug fixes"]}>
+  ## Commands finish when the sandbox stops answering
+
+  <Note>This feature is coming soon.</Note>
+
+  Shell and Git calls return when their command ending does not arrive.
+
+  ## Bug fixes
+
+  - **Command waits** — The runner allows the command timeout plus five seconds for cleanup and output delivery.
+  - **Unconfirmed outcomes** — `interrupted` preserves available output; inspect the command's effects before repeating it.
+  - **Later calls** — A missing ending closes the sandbox connection, so later calls fail promptly.
+
+  See [command endings](/fleets/tools#command-endings) for timeout defaults and recovery.
+</Update>
+
 <Update label="Nov 04, 2026" tags={["Upgrading", "What's new"]}>
   ## Smaller runner toolbox
 

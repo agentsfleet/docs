@@ -3,8 +3,8 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-04
+product_version: 0.73.0
 executable: false
 ---
 
@@ -53,6 +53,19 @@ Secret references are filled by the credential firewall during an approved outbo
 The runner refuses a run that names an unknown or unavailable tool.
 Check spelling against the list above and keep the runner updated.
 It does not silently remove that tool and continue.
+
+### Command endings
+
+`shell` and `git` accept `timeout_ms`, with a ten-second default and a ten-minute maximum.
+A confirmed process timeout returns `timed_out`.
+
+<Note>This feature is coming soon.</Note>
+
+The runner also bounds its wait for the command's ending, allowing five extra seconds for cleanup and output delivery.
+If no ending arrives, the tool returns `interrupted` with available output and closes its sandbox connection.
+Later calls on that connection fail promptly.
+
+The command's outcome remains unknown; inspect its effects before asking the fleet to repeat it.
 
 ### HTTP egress settings
 
