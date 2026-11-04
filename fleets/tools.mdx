@@ -3,8 +3,8 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-04
+product_version: 0.73.0
 executable: false
 ---
 
@@ -54,6 +54,19 @@ The runner refuses a run that names an unknown or unavailable tool.
 Check spelling against the list above and keep the runner updated.
 It does not silently remove that tool and continue.
 
+### Command endings
+
+`shell` and `git` accept `timeout_ms`, with a ten-second default and a ten-minute maximum.
+A confirmed process timeout returns `timed_out`.
+
+<Note>This feature is coming soon.</Note>
+
+The runner also bounds its wait for the command's ending, allowing five extra seconds for cleanup and output delivery.
+If no ending arrives, the tool returns `interrupted` with available output and closes its sandbox connection.
+Later calls on that connection fail promptly.
+
+The command's outcome remains unknown; inspect its effects before asking the fleet to repeat it.
+
 ### HTTP egress settings
 
 <Note>This feature is coming soon.</Note>
@@ -100,6 +113,11 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 | `cron_runs` | Lists a schedule's runs, newest first, 50 at a time. A `schedule` follow-up's run stays listed after the follow-up is removed. |
 
 A schedule the fleet creates appears beside your own on the fleet's schedules list, with source `fleet`. You can change or delete it there like any other schedule.
+
+<Note>This feature is coming soon.</Note>
+
+Schedule changes, registration results and fire messages also appear in [fleet chat](/fleets/running#read-schedule-activity).
+Once a fired run starts, choose **Run details** beside its activity to inspect its recorded result.
 
 `agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. If the fleet is paused when a `schedule` follow-up is due, or `agentsfleet` could not register the follow-up before its moment, the follow-up is removed without running.
 

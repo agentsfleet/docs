@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-11-02
+verified: 2026-11-03
 product_version: 0.72.0
 executable: false
 ---
@@ -189,6 +189,13 @@ In an interactive chat, ordinary text is a message. These actions start with `/`
 | `/quit` | Leaves the chat. The draft stays for `agentsfleet chat <DRAFT_ID>`. |
 
 Save, publish, and apply each use only the setup you last reviewed. A message after a review needs a new review first.
+
+<Note>Completion questions and saved success criteria are coming soon.</Note>
+
+When the proposal includes success criteria, `/review` prints **What counts as done?** with each question and its **Yes** and **No** meanings.
+
+Ask setup chat to revise them, review again, then save or apply a new version.
+Work already started keeps its saved success criteria.
 
 Outside a terminal, add `--no-input` and name every action as a flag. This pair reviews a Definition, then saves it with the digest the review printed:
 

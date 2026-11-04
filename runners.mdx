@@ -53,7 +53,7 @@ The runner sends uncompressed. Any `OTEL_EXPORTER_OTLP_COMPRESSION` variable, a 
 
 With an endpoint set, the runner sends one trace for each run. The trace holds the run, each model turn, and each tool call, with the lease and event identifiers.
 
-It also sends eight counts and timings with no tenant or fleet name on them:
+It also sends counts and timings with no tenant or fleet name on them:
 
 - model turn time and retries, by provider
 - sandbox start time
