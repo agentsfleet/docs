@@ -328,7 +328,19 @@ Inspect `agentsfleet events <FLEET_ID>` before sending the message again.
 Steered durable work prints selected decision models, recovery progress, command arguments and available output.
 Command endings distinguish success, failure and interruption.
 After a stream failure, the exact-event read restores saved activity and the final reply without resending your request.
+
 Output previews and retained-history limits are labelled; missing confirmation never means success.
+File-edit previews label requested or confirmed local changes separately from publication.
+Recovery shows unique ciphertext bytes acknowledged, known missing bytes and reused bytes.
+
+Repeated object references do not increase these counts. Missing bytes describe known
+remaining transfers; they are not a prediction of files still being scanned.
+After following a message, text mode reads its latest recorded task's repository
+progress: confirmed head, latest publication receipt and saved check dependency.
+
+A published head requires a confirmed receipt. Saved checks identify their exact
+head and run attempt; reading them does not start a new remote check.
+JSON mode keeps human-readable progress out of standard output.
 
 
 Event polling reports permanent access or request errors immediately; its timeout also bounds an active read.

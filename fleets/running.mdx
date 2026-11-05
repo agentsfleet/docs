@@ -112,6 +112,7 @@ Losing access or switching workspace clears that data; a failed refresh never co
 Task replies show request interpretation, goal assessment, saving and restoration progress.
 Expand the activity summary to read the recorded steps and transfer counts.
 Commands keep their arguments, result status and available output beside the reply.
+
 Private model reasoning and recovery contents do not appear in this activity.
 
 An input acknowledgement confirms receipt or incorporation, not task completion.
@@ -120,8 +121,25 @@ An interrupted operation remains unconfirmed until a later recorded result estab
 
 After reconnecting, chat reads saved activity and keeps newer progress already received.
 Earlier steps outside the retained window have an explicit notice.
-The CLI shows command results and decision/recovery progress while following your message.
+The command-line interface (CLI) shows command results and decision/recovery progress while following your message.
+
 If its stream ends, it reads the saved event and prints the confirmed final reply when available.
+
+Expand **Current work** to inspect the repository head, publication receipt and
+saved check results for the active dependency. A local edit or recovery point
+does not prove publication. Only a confirmed publication receipt shows a
+**Published head**.
+
+Check results identify the dependency head, workflow and
+run attempt; the wait's update time is not a fresh remote check time.
+
+Recovery distinguishes preparation, scanning, upload, verification and restore.
+Byte counts separate acknowledged ciphertext, known missing ciphertext and reused
+ciphertext. Repeated references count once.
+
+**Recovery point saved** requires
+the native manifest acknowledgement, and **Saved progress restored** requires
+restored files and conversation.
 
 ### Read schedule activity
 
