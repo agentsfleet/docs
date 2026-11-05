@@ -323,6 +323,14 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 Press **Ctrl+C** to stop local waiting and HTTP retries. An accepted message can keep running on the fleet.
 Inspect `agentsfleet events <FLEET_ID>` before sending the message again.
 
+<Note>This feature is coming soon.</Note>
+
+Steered durable work prints selected decision models, recovery progress, command arguments and available output.
+Command endings distinguish success, failure and interruption.
+After a stream failure, the exact-event read restores saved activity and the final reply without resending your request.
+Output previews and retained-history limits are labelled; missing confirmation never means success.
+
+
 Event polling reports permanent access or request errors immediately; its timeout also bounds an active read.
 
 `agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.

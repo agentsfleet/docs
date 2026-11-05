@@ -3,7 +3,7 @@ title: Run and control a fleet
 description: Inspect, message, stop, resume, kill, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-11-04
+verified: 2026-11-05
 product_version: 0.73.0
 executable: false
 ---
@@ -104,6 +104,24 @@ Expand one to read its objective, **What counts as done?**, and accepted setup v
 Choose **Refresh** to read the latest saved progress.
 If a refresh fails, the panel labels any retained data as last confirmed progress.
 Losing access or switching workspace clears that data; a failed refresh never confirms completion.
+
+### Follow durable task progress
+
+<Note>This feature is coming soon.</Note>
+
+Task replies show request interpretation, goal assessment, saving and restoration progress.
+Expand the activity summary to read the recorded steps and transfer counts.
+Commands keep their arguments, result status and available output beside the reply.
+Private model reasoning and recovery contents do not appear in this activity.
+
+An input acknowledgement confirms receipt or incorporation, not task completion.
+A saved recovery point preserves progress; completion also requires the task's accepted criteria and current validation evidence.
+An interrupted operation remains unconfirmed until a later recorded result establishes its outcome.
+
+After reconnecting, chat reads saved activity and keeps newer progress already received.
+Earlier steps outside the retained window have an explicit notice.
+The CLI shows command results and decision/recovery progress while following your message.
+If its stream ends, it reads the saved event and prints the confirmed final reply when available.
 
 ### Read schedule activity
 

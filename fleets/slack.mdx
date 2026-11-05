@@ -3,8 +3,8 @@ title: Answer mentions in Slack
 description: Attach a fleet to a Slack channel so it answers when someone mentions agentsfleet there.
 type: how-to
 audience: user
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-05
+product_version: 0.73.0
 executable: false
 ---
 
@@ -84,6 +84,22 @@ A mention that names no fleet goes only to a fleet that is running and has no `r
 A fleet whose Definition declares `repository_access: write` answers only when a mention names it.
 From one mention it can open at most one draft pull request (PR).
 It cannot merge the PR, mark it ready for review, or change a workflow.
+
+### Authorize ongoing work from Slack
+
+<Note>This feature is coming soon.</Note>
+
+Durable work requires a verified link between the Slack sender and a current member of the connected workspace.
+Connect Slack while signed in to that workspace. The completed Slack authorization must identify your Slack user.
+A connection identifying only the app does not authorize a person to start durable work.
+
+The fleet interprets the sender's own mention as the request.
+Quoted thread text, channel membership and display names cannot grant permission to act.
+Removing workspace access prevents further authorized execution from that person's retained task inputs.
+Disconnecting Slack removes its person links; a later connection must establish them again.
+
+Existing PR repair also requires the fleet's reviewed existing-PR setup and current repository grant.
+It targets that PR only, preserves human pushes and never merges it.
 
 ### The channel's own fleet
 
