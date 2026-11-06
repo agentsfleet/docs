@@ -75,7 +75,14 @@ Policy travels down from the dashboard. Change it under **Admin → Runners → 
 | Network policy | What the sandbox may reach on the network. | Public internet access | Public internet access, No internet access, Restricted access |
 | Allowed registry domains | Registry hosts the sandbox may reach under Restricted access. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
 | Workers | How much work the host runs at once. Higher counts start more workers at the next heartbeat. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
+| Durable tasks | Whether this runner can take new work that continues across runs. Existing running work keeps its accepted settings. | On | On, Off |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
+
+<Note>The Durable tasks setting is coming soon.</Note>
+
+**Durable tasks** starts On for new and upgraded runner configurations.
+Turning it Off stops new durable assignments; running work keeps its recovery and reporting duties.
+Older runner software still needs an upgrade before it can take durable work.
 
 The three isolation settings differ in what enforces the boundary:
 

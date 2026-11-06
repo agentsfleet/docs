@@ -7,23 +7,28 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
-<Update label="Nov 05, 2026" tags={["What's new", "CLI"]}>
+<Update label="Nov 05, 2026" tags={["Upgrading", "What's new", "CLI"]}>
   ## Durable work preserves progress and authority
 
   <Note>This feature is coming soon.</Note>
 
-  Follow ongoing work through verified recovery and detailed activity.
+  Follow ongoing work through recovery and recorded activity.
+
+  ## Upgrading
+
+  Slack mentions run configured fleets only; add and save a mention trigger for channels that previously used an automatic resident.
+  Clients of `GET /v1/admin/models` must follow `next_cursor` until null.
 
   ## What's new
 
-  - **Recovery** — Saved files and conversation resume under current task permissions; failed saves block automatic continuation.
-  - **Existing PRs** — Tested changes publish only to the authorized PR, with checks against concurrent human pushes.
-  - **Slack requests** — Durable work requires a verified sender link and current workspace access.
-  - **Chat activity** — Expand decisions, transfers and command results; reconnect restores retained progress.
+  - **Runner configuration** — **Durable tasks** defaults to On; Off stops new assignments while running work continues.
+  - **Recovery** — Saved work resumes under current permissions.
+  - **Existing PRs** — Publication preserves concurrent human pushes.
+  - **Chat activity** — Tasks, outputs, changes and configured sources update beside your draft.
 
   ## CLI
 
-  - **Steer output** — Read command outcomes, recovery progress and the confirmed final reply after a stream interruption.
+  - **Steer output** — Follow command outcomes, recovery and confirmed replies across reconnects.
 
   See [durable task progress](/fleets/running#follow-durable-task-progress) and [Slack authority](/fleets/slack#authorize-ongoing-work-from-slack).
 </Update>

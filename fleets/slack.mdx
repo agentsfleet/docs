@@ -75,7 +75,7 @@ A mention that names no fleet goes only to a fleet that is running and has no `r
 
 | The channel has | The mention names a fleet | Who answers |
 |---|---|---|
-| No attached fleet | No | The channel's own fleet, described below |
+| No attached fleet | No | Nobody. Configure and save a fleet for this channel. |
 | One running fleet without write access | No | That fleet |
 | Several running fleets without write access | No | Nobody. A notice lists the fleets' names. |
 | Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
@@ -103,13 +103,13 @@ Disconnecting Slack removes its person links; a later connection must establish 
 Existing PR repair also requires the fleet's reviewed existing-PR setup and current repository grant.
 It targets that PR only, preserves human pushes and never merges it.
 
-### The channel's own fleet
+### Channels without a configured fleet
 
-`agentsfleet` creates one fleet per channel the first time a mention reaches no attached fleet or needs a notice. Its name is `slack-channel-<TEAM_ID>-<CHANNEL_ID>`, in lower case.
+An unconfigured channel starts no model call and creates no fleet.
+Add a mention trigger to a fleet, review its instructions and save the setup before mentioning the app.
 
-This fleet answers from a model with no tools and no network access. Its budget is `daily_nanos: "1000000000"`, so it spends at most 1 dollar a day. When you ask for something it cannot reach, it tells you to set up a fleet in `agentsfleet chat` with a `mention` trigger for this channel.
-
-Its memory belongs to the channel, and no other fleet reads it. It also posts the channel's notices.
+Previously created channel fleets remain available with their stored instructions and history.
+Review their instructions and add a mention trigger if you want them to keep replying.
 
 ## Verify it works
 
@@ -147,10 +147,6 @@ In a private channel, the fleet sees only your mention. The Slack app cannot rea
 
 If Slack loses its reply to a posted answer, `agentsfleet` checks the thread before it posts again. The answer appears once. In a private channel `agentsfleet` cannot check, so the answer can appear twice.
 
-A fleet you save under the name `slack-channel-<TEAM_ID>-<CHANNEL_ID>` with settings of its own is never used as the channel's own fleet. While it holds that name, a mention that needs the channel's own fleet starts no run. Rename or delete that fleet.
-
-A fleet you save under that name with the channel fleet's exact runtime settings counts as the channel's own fleet. It answers in that fleet's place.
-
 A mention from a bot, an edited message, or the app's own reply starts no run.
 
 A mention from a Slack workspace that is not connected to an `agentsfleet` workspace starts no run. Connect Slack again from **Connect apps** in the account menu.
@@ -166,13 +162,14 @@ To detach a fleet from the channel, remove its `mention` trigger and apply the c
 In the terminal, start the same chat with `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>`. `<SETUP_REVISION>` is the `setup_revision` field that `agentsfleet --json fleet show <FLEET_ID>` prints. Ask for the change, then run `/review` and `/apply`.
 
 <Warning>
-Deleting the channel's own fleet permanently removes its memory, events, and other fleet records.
-The next mention that needs it creates a new fleet with empty memory.
+Deleting a fleet permanently removes its memory, events, and other fleet records.
+Later mentions do not recreate it.
 </Warning>
 
 To remove it, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`.
 
-Between the two commands, the channel fleet is killed, and a mention that needs it gets no answer. A channel fleet you stop instead of killing answers with the paused notice until you resume it.
+Between the two commands, the fleet is killed and cannot answer.
+A configured fleet you stop instead of killing sends the paused notice until you resume it.
 
 ## Related pages
 

@@ -97,17 +97,27 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 
 <Note>This feature is coming soon.</Note>
 
-**Current work** appears above the message field when the fleet has unfinished work.
-Rows show saved status, such as **Queued**, **In progress** or **Waiting**.
-Expand one to read its objective, **What counts as done?**, and accepted setup version.
+**Current work** appears beside the conversation on desktop.
+On smaller screens, open **Work context** to inspect it.
+Expand an item for its objective, **What counts as done?**, accepted setup version and available pull request (PR) link.
 
-Choose **Refresh** to read the latest saved progress.
-If a refresh fails, the panel labels any retained data as last confirmed progress.
-Losing access or switching workspace clears that data; a failed refresh never confirms completion.
+Discuss work in the ordinary message field; you do not need to select an item first.
+The fleet interprets questions, changes to existing work and new requests against the conversation.
+It asks for clarification when the intended work is unclear.
+
+Progress follows the live conversation and reconnects automatically.
+Interrupted reads label retained data as last confirmed progress.
+Losing access or switching workspace clears that data; an interrupted read never confirms completion.
+
+Incoming progress preserves your draft and reading position while you compose.
 
 ### Follow durable task progress
 
 <Note>This feature is coming soon.</Note>
+
+**Durable tasks** defaults to On under **Admin → Runners**.
+Turning it Off stops new durable assignments; running work keeps its accepted settings.
+Older runners continue ordinary work until you upgrade them.
 
 Task replies show request interpretation, goal assessment, saving and restoration progress.
 Expand the activity summary to read the recorded steps and transfer counts.
