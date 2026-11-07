@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-11-04
+verified: 2026-11-07
 product_version: 0.73.0
 executable: false
 ---
@@ -12,7 +12,8 @@ executable: false
 
 A runner is a host that runs your fleets. It takes work from `agentsfleetd`, runs it inside a sandbox, and reports the result back.
 
-You enrol every runner from the dashboard. The host holds one token and nothing else. It never holds a database credential, a cache credential, or vault access.
+You enrol every runner from the dashboard. Startup requires a runner token.
+The runner receives provider credentials only for authorized calls, without database credentials, cache credentials, or direct vault access.
 
 ## Why it exists
 
@@ -69,13 +70,39 @@ It counts what it could not deliver to the collector in `agentsfleet_runner_otlp
 
 Policy travels down from the dashboard. Change it under **Admin → Runners → Edit** and the host applies it on its next heartbeat. Nobody logs in to the host.
 
+<Note>The grouped editor and TypeSafe Jev default are coming soon.</Note>
+
+The editor groups isolation, network access, durable work, and advanced settings.
+The fields scroll while **Save** stays visible.
+
 | Field | What it sets | Default | Valid values |
 |---|---|---|---|
+| Sandbox engine | The host runtime. The dashboard shows the supported engine without changing the host's startup settings. | Bubblewrap | Bubblewrap |
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
-| Network policy | What the sandbox may reach on the network. | Public internet access | Public internet access, No internet access, Restricted access |
-| Allowed registry domains | Registry hosts the sandbox may reach under Restricted access. Only each entry's host counts, so a port or scheme in it is ignored. | empty, which means the default registry set | Up to 32 comma-separated host names |
-| Workers | How much work the host runs at once. Higher counts start more workers at the next heartbeat. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
+| Network policy | What the sandbox may reach on the network. | Public internet access | Public internet access, No internet access, Approved destinations only |
+| Package download sites | Registry or mirror hosts used with **Approved destinations only**. Custom hosts replace the standard package list. | empty, which uses standard package sites | Up to 32 comma-separated host names |
+| Workers | How much work the host runs at once. Increasing beyond its startup worker count requires a runner restart. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
+| Durable tasks | Let the runner continue tasks across sessions. Changes apply to new work. | enabled | enabled, disabled |
+| Decision model | The reviewed model used for request and goal checks. The dashboard retains existing model selections. | TypeSafe Jev, when enabled in the catalogue | Enabled reviewed decision models, or an explicit None choice |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
+
+**Approved destinations only** combines each fleet's approved websites with the runner's package download sites.
+The package list applies only in this mode; its disabled field retains saved hosts for later use.
+
+### TypeSafe Jev credentials
+
+A platform admin enables the reviewed `jev-latest` model and stores its API key in the platform-admin workspace's encrypted Secrets.
+Use the secret name `typesafe` and field `api_key`.
+The deployment must identify that workspace through `PLATFORM_ADMIN_WORKSPACE_ID`.
+
+The dashboard preselects the enabled Jev catalogue entry; it does not create a model or save a provider key.
+If Jev is unavailable, configure it or select another enabled decision model before saving.
+
+Choosing **None** deliberately continues without a decision model, including when the operator lacks model catalogue access.
+API clients still supply their decision model identifier explicitly.
+
+The daemon reads the provider key for each authorized decision call.
+A missing or revoked key blocks that call without using an environment-key fallback.
 
 The three isolation settings differ in what enforces the boundary:
 

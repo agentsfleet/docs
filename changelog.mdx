@@ -7,6 +7,37 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 08, 2026" tags={["What's new"]}>
+  ## Explicit proxy for identity requests
+
+  <Note>This change is coming soon.</Note>
+
+  Deployments that require an outbound proxy can set `IDENTITY_HTTP_PROXY_URL` for signing-key reads, capability reads, and Clerk metadata writeback.
+  Unset keeps direct access. Invalid values refuse startup; proxy failures do not fall back to direct access.
+  Certificate and session-token verification stay enabled.
+</Update>
+
+<Update label="Nov 07, 2026" tags={["What's new", "UI", "CLI"]}>
+  ## Runner settings and readable setup reviews
+
+  <Note>These changes are coming soon.</Note>
+
+  Runner editing groups related settings and keeps **Save** visible.
+
+  ## What's new
+
+  - **Runner defaults** — New runners start with Landlock isolation and durable tasks enabled; the dashboard selects configured TypeSafe Jev.
+  - **Status icons** — Setup, fleet summaries, runners, app connections, Secrets, and Models use shared colors.
+  - **Network settings** — **Approved destinations only** explains how fleet websites and package download sites combine.
+  - **Chat progress** — Setup and fleet conversations share a moving text highlight; reduced-motion and high-contrast preferences keep text static.
+
+  ## CLI
+
+  - **Setup reviews** — Configuration and required access use readable sections; `--json` retains the structured response.
+
+  See [runner settings](/runners#the-policy-you-assign) and [terminal chat](/cli/agentsfleet#chat).
+</Update>
+
 <Update label="Nov 04, 2026" tags={["What's new", "Bug fixes"]}>
   ## Schedule activity in fleet chat
 
