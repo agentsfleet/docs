@@ -3,7 +3,7 @@ title: Author a fleet
 description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-11-04
+verified: 2026-11-08
 product_version: 0.73.0
 executable: false
 ---
@@ -37,7 +37,7 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
 3. Choose **… → Instructions** beside the chat title to review the proposal. Keep chatting until it matches your task.
 4. Choose **Save fleet** beside the chat title. The status above the message field shows **Saving**, then the confirmed setup version.
-5. Choose **Open fleet** to open the saved fleet. Its sections are **Chat**, **Activity**, and **Memory**. Your private setup conversation remains available.
+5. Choose **Open fleet** to open the saved fleet. The conversation opens directly; use its summary icon for durable tasks and saved context. Your private setup conversation remains available.
 
 The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
 
@@ -74,9 +74,9 @@ Keep unfinished setup steps in view.
 Saved schedules show their registration state and a retry action when needed.
 Schedule changes and registration results appear as [activity in fleet chat](/fleets/running#read-schedule-activity).
 
-To change a saved fleet, choose **Edit setup** in its header. A private chat opens beside the fleet conversation, based on its saved setup revision. On a phone, the editor fills the page.
+To change a saved fleet, select the header pencil, labelled **Edit setup**. The setup conversation opens on its own page, based on the saved revision. Its back arrow returns to the fleet conversation.
 
-Describe the change, review it through **… → Instructions**, then choose **Save changes** in the fleet header.
+Describe the change and review instructions through the pencil beside the summary icon. Choose **Save changes** to apply the setup.
 Your unsent message in the fleet conversation stays in place.
 
 New work uses the updated instructions; work already running keeps its current version.

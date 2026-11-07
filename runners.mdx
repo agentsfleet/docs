@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-11-07
+verified: 2026-11-08
 product_version: 0.73.0
 executable: false
 ---
@@ -79,15 +79,17 @@ The fields scroll while **Save** stays visible.
 |---|---|---|---|
 | Sandbox engine | The host runtime. The dashboard shows the supported engine without changing the host's startup settings. | Bubblewrap | Bubblewrap |
 | Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
-| Network policy | What the sandbox may reach on the network. | Public internet access | Public internet access, No internet access, Approved destinations only |
-| Package download sites | Registry or mirror hosts used with **Approved destinations only**. Custom hosts replace the standard package list. | empty, which uses standard package sites | Up to 32 comma-separated host names |
+| Enable all public internet access | Allow outbound connections, subject to each fleet’s own rules. | enabled | enabled, disabled |
+| Enable package manager domains | Allow the standard package registry hosts while public access is off. | native package preset | enabled, disabled |
+| Additional allowed domains | Open the pencil popup to add exact hosts, optionally with ports. | none | Up to 32 total hosts, including the enabled package preset |
 | Workers | How much work the host runs at once. Increasing beyond its startup worker count requires a runner restart. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
 | Durable tasks | Let the runner continue tasks across sessions. Changes apply to new work. | enabled | enabled, disabled |
 | Decision model | The reviewed model used for request and goal checks. The dashboard retains existing model selections. | TypeSafe Jev, when enabled in the catalogue | Enabled reviewed decision models, or an explicit None choice |
 | Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
 
-**Approved destinations only** combines each fleet's approved websites with the runner's package download sites.
-The package list applies only in this mode. You can edit and save hosts while another network mode is selected.
+Turn off **Enable all public internet access** to limit outbound connections. Enable package manager domains or add hosts through the pencil beside **Additional allowed domains**.
+
+Turning off both switches with no additional domains blocks outbound connections. **Save** in the popup updates the form; **Save** in the runner editor applies the assignment. Unchanged popup saves preserve inactive hosts in an existing blocked assignment.
 
 ### TypeSafe Jev credentials
 
@@ -154,15 +156,18 @@ Perl-based helpers such as `git request-pull` and `git filter-branch` are unsupp
 
 The network policy decides what each sandbox reaches.
 
-| Network policy | What the sandbox reaches |
+| Controls | What the sandbox reaches |
 |---|---|
-| Public internet access | The host's own network, shared with the host. |
-| No internet access | Nothing beyond its own loopback interface. |
-| Approved destinations only | Only the addresses on the run's allowlist, and nothing else. |
+| Public internet access enabled | The host’s network, subject to each fleet’s rules. |
+| Public access off, package domains or additional hosts enabled | Allowed addresses only. |
+| Both switches off, no additional domains | Nothing beyond its loopback interface. |
 
-The runner builds the allowlist when a run starts with **Approved destinations only**. It combines **Package download sites** with the hosts under `network.allow` in the fleet's Definition. A fleet that sets `read_only` keeps its hosts off the list and reaches them only through `http_request`.
+For limited network access, the runner combines enabled package hosts and additional allowed domains with the fleet’s `network.allow` hosts.
+A fleet that sets `read_only` reaches its hosts only through `http_request`.
 
-An empty package-site list means the runner's default registry set. That set is `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
+The package preset includes `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
+Custom domains supplement this preset when package manager domains are enabled.
+Wildcard domains are unsupported; add each exact host.
 
 The runner looks up each host's Internet Protocol version 4 (IPv4) addresses on the host itself. The sandbox finds those names in its own `/etc/hosts` and has no Domain Name System (DNS) resolver. Traffic to port 53 is dropped, so a name outside the list never resolves.
 
@@ -172,11 +177,11 @@ The runner refuses a run before its sandbox starts when a listed host has no IPv
 
 Hosts under `network.allow` must resolve to public addresses. Private or reserved addresses include `10.0.0.0/8`, `100.64.0.0/10` and the cloud metadata address `169.254.169.254`. A host resolving to one fails the run with "the fleet allows an egress host at a private or reserved address".
 
-**Package download sites** are exempt, so you can use a package mirror on your own network.
+Runner-approved package hosts and additional domains are exempt, so you can use a package mirror on your own network.
 
 In both cases the runner's log names the host and never an address.
 
-**Approved destinations only** needs three things from the host:
+Limited network access needs three things from the host:
 
 - a kernel with `nf_tables`
 - IPv4 forwarding on, `net.ipv4.ip_forward=1`
@@ -184,7 +189,7 @@ In both cases the runner's log names the host and never an address.
 
 At start, the runner tests an isolated network pair and removes it. A failed test reports `egress_enforcement: false` in the heartbeat.
 
-A runner assigned **Approved destinations only** then reads degraded with the reason `egress enforcement unavailable`.
+A runner assigned limited network access then reads degraded with the reason `egress enforcement unavailable`.
 
 ### The states a runner shows
 
@@ -256,7 +261,7 @@ The runner's lifetime totals count every lease it took, so they can exceed the h
 
 ## Limits
 
-- **Approved destinations only supports IPv4.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
+- **Limited network access supports IPv4.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
 - **A run keeps the addresses it started with.** A host whose address changes during a run stays unreachable until the next run looks it up again.
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
 - **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
