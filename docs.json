@@ -241,7 +241,24 @@
               "POST /v1/runners/me/authoring-leases/{lease_id}/renew",
               "POST /v1/runners/me/authoring-leases/{lease_id}/activity",
               "POST /v1/runners/me/authoring-leases/{lease_id}/reports",
-              "POST /v1/runners/me/authoring-leases/{lease_id}/model-calls"
+              "POST /v1/runners/me/authoring-leases/{lease_id}/model-calls",
+              "GET /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/objects",
+              "GET /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/pages/{page_id}",
+              "GET /v1/runners/me/leases/{lease_id}/tasks/effects",
+              "GET /v1/runners/me/leases/{lease_id}/tasks/effects/{effect_id}",
+              "GET /v1/runners/me/leases/{lease_id}/tasks/inputs",
+              "PATCH /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}",
+              "PATCH /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/pins/{pin_id}",
+              "PATCH /v1/runners/me/leases/{lease_id}/tasks/decisions/{call_id}",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/bindings",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/checkpoints",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/authorizations",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/objects",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/uploads",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/decisions",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/effects",
+              "POST /v1/runners/me/leases/{lease_id}/tasks/input-receipts",
+              "PUT /v1/runners/me/leases/{lease_id}/tasks/checkpoints/{checkpoint_id}/pages/{page_id}"
             ]
           },
           {
@@ -320,7 +337,10 @@
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access",
-              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/authoring-context"
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/authoring-context",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/tasks",
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/tasks/{task_id}",
+              "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/tasks/{task_id}"
             ]
           },
           {
