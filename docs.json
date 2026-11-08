@@ -225,6 +225,7 @@
               "POST /v1/runners/me/leases/{lease_id}/activity",
               "POST /v1/runners/me/leases/{lease_id}/tool-calls",
               "POST /v1/runners/me/leases/{lease_id}/messages",
+              "POST /v1/runners/me/leases/{lease_id}/folds",
               "GET /v1/runners/me/leases/{lease_id}/context-checkpoints/{branch_id}",
               "PUT /v1/runners/me/leases/{lease_id}/context-checkpoints/{branch_id}",
               "GET /v1/runners/me/leases/{lease_id}/schedules",
