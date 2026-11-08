@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-11-03
-product_version: 0.72.0
+verified: 2026-11-08
+product_version: 0.75.0
 executable: false
 ---
 
@@ -30,28 +30,22 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 Saving a draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
-The fleet page opens in **Chat**. Its summary shows status, the latest outcome,
-tokens, spend, and duration.
+The fleet page opens directly in its conversation. Use the left navigation to switch fleets or return to **Your fleets**.
+Choose the model beside the Send arrow; changing it preserves your unsent message.
 
-Dashboard navigation, conversation headings, and billing show your chosen fleet name.
-Runner lease history uses a stable callsign, such as `AGENT ORBIT-BCD3`.
-Billing uses the callsign when the fleet name is unavailable.
+Select the pencil, labelled **Edit setup**, to open the saved setup conversation.
+Its back arrow returns to the fleet conversation.
+Both chats share the composer and text loading highlight.
 
-If an approval is waiting, the summary links to the workspace Approvals page filtered to this fleet.
+Select the summary icon beside the pencil to open **Fleet summary**.
+**Durable tasks** shows unfinished work, with its objective, saved success criteria and progress.
+Outputs and Changes appear when recorded data exists; Sources lists saved repository context.
 
-Use the fleet navigation for one task at a time:
-
-- **Chat** sends instructions and shows the fleet's replies. A message is sent when you submit it, whether or not the live feed is connected. The fleet handles what arrives in order, so a busy fleet does not block you.
-- **Activity** lists saved activity, outcomes, token use, spend, and duration.
-- **Memory** shows lessons the fleet can use in later runs.
-
-Choose **Edit setup** in the fleet header to open a private setup chat beside the conversation. Closing the editor returns to the conversation.
-
-<Note>Current work is coming soon.</Note>
-
-When the fleet has unfinished work, **Current work** appears above the message field.
-Expand a row to read its objective, saved success criteria and accepted setup version.
+On a phone, the same summary action opens a drawer.
+Closing the summary preserves your message.
 Messages stay in the fleet conversation; each work item has no separate chat.
+
+The back arrow on the fleet conversation returns to **Your fleets**.
 
 Other controls include stop, resume, kill, and delete, according to the fleet's state.
 
@@ -90,7 +84,7 @@ Each unsent message keeps its own **Resend** and **Dismiss** until you choose on
 
 An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 8,192 bytes.
 
-The fleet API's `webhook_urls` lists each provider webhook address. Choose **Edit setup**, then **… → Instructions** beside the setup chat title to review declared triggers and their filters.
+The fleet API's `webhook_urls` lists each provider webhook address. Select the **Edit setup** pencil, then the **Edit instructions** pencil beside the setup chat title to review declared triggers and their filters.
 
 Each schedule's `description` states its timing and time zone, such as `At 9:00 AM (Asia/Kolkata)`. Its `run_state` and nullable `next_run_at` describe whether it will run:
 

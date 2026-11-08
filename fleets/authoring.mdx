@@ -3,8 +3,8 @@ title: Author a fleet
 description: Describe a fleet in a private chat, check its setup, and save it.
 type: how-to
 audience: user
-verified: 2026-11-04
-product_version: 0.73.0
+verified: 2026-11-08
+product_version: 0.75.0
 executable: false
 ---
 
@@ -35,9 +35,9 @@ Each chat message is charged to the workspace owner's balance. A message the bal
 
 1. Open **New fleet** in the workspace sidebar.
 2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Choose **… → Instructions** beside the chat title to review the proposal. Keep chatting until it matches your task.
+3. Select the **Edit instructions** pencil beside the chat title to review the proposal. Keep chatting until it matches your task.
 4. Choose **Save fleet** beside the chat title. The status above the message field shows **Saving**, then the confirmed setup version.
-5. Choose **Open fleet** to open the saved fleet. Its sections are **Chat**, **Activity**, and **Memory**. Your private setup conversation remains available.
+5. Choose **Open fleet** to open the saved fleet. The conversation opens directly; use its summary icon for durable tasks and saved context. Your private setup conversation remains available.
 
 The proposed setup creates no fleet and requests no run. **Save fleet** checks the current setup, then saves it. It requests no first run, but configured automatic triggers can start work once setup is ready.
 
@@ -47,7 +47,7 @@ Choose **Review pull requests** on the empty setup screen to load a starting req
 Edit the request before choosing **Send**; selecting the suggestion saves nothing and requests no access.
 You can also start with your own message.
 
-Choose **… → Instructions** to open the instruction editor. Closing it keeps your unsaved text.
+Select the **Edit instructions** pencil to open the instruction editor. Closing it keeps your unsaved text.
 
 Choose **Save changes** in the editor. For an existing fleet, this saves a new setup version. For a new proposal, choose **Save fleet** afterward.
 
@@ -74,9 +74,9 @@ Keep unfinished setup steps in view.
 Saved schedules show their registration state and a retry action when needed.
 Schedule changes and registration results appear as [activity in fleet chat](/fleets/running#read-schedule-activity).
 
-To change a saved fleet, choose **Edit setup** in its header. A private chat opens beside the fleet conversation, based on its saved setup revision. On a phone, the editor fills the page.
+To change a saved fleet, select the header pencil, labelled **Edit setup**. The setup conversation opens on its own page, based on the saved revision. Its back arrow returns to the fleet conversation.
 
-Describe the change, review it through **… → Instructions**, then choose **Save changes** in the fleet header.
+Describe the change and review instructions through the **Edit instructions** pencil beside the summary icon. Choose **Save changes** to apply the setup.
 Your unsent message in the fleet conversation stays in place.
 
 New work uses the updated instructions; work already running keeps its current version.
