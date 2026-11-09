@@ -77,7 +77,7 @@ The runner writes no report files and replays no results from a previous process
 A connection loss keeps pending results in memory while the runner reconnects.
 Process loss can discard results or usage that the daemon has not accepted.
 
-On service shutdown, the runner allows thirty seconds for accepted work and result delivery.
+On service shutdown, the runner allows thirty-five seconds for accepted work and result delivery.
 It then stops remaining work and allows five seconds for worker cleanup.
 Process exit can discard results still awaiting acknowledgement.
 
