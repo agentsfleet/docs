@@ -7,6 +7,27 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+
+<Update label="Nov 09, 2026" tags={["Breaking", "Performance", "API"]}>
+  ## Runners receive work over one connection
+
+  Idle runners receive work over an authenticated connection that prefers HTTP/3 with HTTP/2 fallback.
+
+  ## Upgrading
+
+  - **Runner releases** — Upgrade `agentsfleetd` and `agentsfleet-runner` together. The command-line interface (CLI) needs no transport update.
+  - **Listener access** — Set `AGENTSFLEET_RUNNER_STREAM_URL` and allow access to the private listener, following [runner installation](/runners/install).
+
+  ## What's new
+
+  - **Result recovery** — Unacknowledged results retry from memory. Process loss can lose unsent results or usage.
+  - **Runner controls** — Policy updates, revocation and token rotation notify connected runners; heartbeats repair lost notifications.
+
+  ## API reference
+
+  - **Runner operations** — Work, heartbeats, renewals, progress, reports and fleet setup use the native connection; their previous HTTP operations are removed.
+</Update>
+
 <Update label="Nov 08, 2026" tags={["UI"]}>
   ## Shared chat controls and simpler runner networking
 

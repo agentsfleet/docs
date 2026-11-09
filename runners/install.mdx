@@ -3,14 +3,14 @@ title: Install a runner
 description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
 type: how-to
 audience: operator
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-09
+product_version: 0.75.0
 executable: false
 ---
 
 ## What this does
 
-You install `agentsfleet-runner` on a Linux host and start it as a service. The runner then asks `agentsfleetd` for work and runs each run in a sandbox.
+You install `agentsfleet-runner` on a Linux host and start it as a service. The runner then receives work from `agentsfleetd` over one connection and runs each run in a sandbox.
 
 A runner needs two things from the same release. One is the runner binary, a single static file. The other is the toolbox, a read-only disk image that becomes the root of every sandbox.
 
@@ -26,7 +26,16 @@ You need a host with these:
 - bubblewrap 0.8.0 or later, installed at `/usr/bin/bwrap`.
 - For limited network access, `nf_tables` in the kernel and `net.ipv4.ip_forward=1`.
 
-You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to create one. Run every step below as root.
+You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to create one.
+Run every step below as root.
+
+Your service operator supplies the private listener's Hypertext Transfer Protocol Secure (HTTPS) origin.
+They also supply a network route to it.
+Allow User Datagram Protocol (UDP) for HTTP/3 and Transmission Control Protocol (TCP) for HTTP/2 on its port, normally 4443.
+
+Both transports require Transport Layer Security (TLS) 1.3 with `X25519MLKEM768` key exchange.
+If the listener uses a private certificate issuer, obtain its public certificate bundle from your operator.
+The certificate must match the listener's hostname or address.
 
 ## Steps
 
@@ -108,14 +117,24 @@ You also need a runner token. [Runners](/runners#enrolling-a-host) shows how to 
 
    Leave the bill of materials and the scan out. Every `toolbox-` file ending in `.json` counts as a manifest, and the runner refuses more than one.
 
-8. Write the two required variables to `/etc/default/agentsfleet-runner`. Replace `<API_URL>` with your `agentsfleetd` address and `<RUNNER_TOKEN>` with the token the dashboard showed.
+8. Write the three required variables to `/etc/default/agentsfleet-runner` with root-only read permissions.
+
+   Replace `<API_URL>` with your control-plane address and `<RUNNER_TOKEN>` with the dashboard token.
+   Your operator supplies `<STREAM_ORIGIN>`, such as `https://runner.example.net:4443`, without a path, query, fragment or embedded credentials.
 
    ```ini
    AGENTSFLEET_API_URL=<API_URL>
+   AGENTSFLEET_RUNNER_STREAM_URL=<STREAM_ORIGIN>
    AGENTSFLEET_RUNNER_TOKEN=<RUNNER_TOKEN>
    ```
 
-   [Runners](/runners#enrolling-a-host) lists the optional variables, such as the telemetry endpoint.
+   For a private issuer, add the public bundle's local path as `<CA_CERT_FILE>`:
+
+   ```ini
+   AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE=<CA_CERT_FILE>
+   ```
+
+   [Runners](/runners#enrolling-a-host) lists the remaining optional variables.
 
 9. Write the service to `/etc/systemd/system/agentsfleet-runner.service`.
 
@@ -208,6 +227,8 @@ Open **Admin → Runners** in the dashboard. The new runner reads `online` withi
 
 ## Common problems
 
+- **The service names `AGENTSFLEET_RUNNER_STREAM_URL`.** Set the operator-provided HTTPS origin, with no path or embedded credentials.
+- **The runner cannot connect.** Check its private network route, listener port and certificate issuer. A certificate mismatch requires a corrected certificate or origin.
 - **The service stops at start and names the toolbox.** The `toolbox/incoming` directory must hold one release's image, manifest, and signature, from the same release as the binary. A manifest for another runner version or another architecture is refused.
 - **`probe` exits 1.** Read the first check with `"ok": false`. Its `detail` names what the host lacks, such as Landlock, bubblewrap, EROFS, or a cgroup controller.
 - **The runner reads degraded with `egress enforcement unavailable`.** It is assigned limited network access, but the host failed the egress test. Turn on `net.ipv4.ip_forward`, check that the kernel has `nf_tables`, and restart the service.
@@ -228,8 +249,8 @@ To roll back, first clear the current release's toolbox from `toolbox/incoming`.
 The runner refuses that directory while it holds two releases' manifests.
 
 <Warning>
-This deletes the staged toolbox files. Keep the rest of the storage home;
-it holds run reports the runner has not sent yet.
+This deletes the staged toolbox files.
+Keep the rest of the storage home to retain repository mirrors and recovery data.
 If you set `RUNNER_STORAGE_HOME`, use `toolbox/incoming` under that directory instead.
 </Warning>
 
@@ -243,7 +264,9 @@ rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
 
 Then unpack the previous release's bundle as in steps 2 to 4. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
 
-To remove the runner for good, revoke it under **Admin → Runners**. Deleting `/var/lib/agentsfleet-runner` also deletes any run reports the runner has not sent yet.
+To remove the runner for good, revoke it under **Admin → Runners**.
+Deleting `/var/lib/agentsfleet-runner` removes its toolbox, repository mirrors and sandbox files.
+Unacknowledged results exist only in the running process and can be lost when that process stops.
 
 ## Related pages
 
