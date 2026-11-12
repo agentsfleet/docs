@@ -13,7 +13,7 @@ executable: false
 Review what a fleet wants to do before granting access. A run that needs
 approval waits until someone approves or denies its request.
 
-Use `agentsfleet approvals` to inspect requests and decide them from your terminal.
+Use `agentsfleet fleet approvals` to inspect requests and decide them from your terminal.
 
 ## Before you begin
 
@@ -26,7 +26,7 @@ Two kinds of request can appear:
 
 Saving a fleet that needs service credentials creates its grant request.
 The fleet reads `installing` until someone approves it. Then run
-`agentsfleet resume <FLEET_ID>` to finish setup, and the fleet reads `active`.
+`agentsfleet fleet resume <FLEET_ID>` to finish setup, and the fleet reads `active`.
 
 A repository write uses that standing grant. You do not approve every run separately.
 
@@ -37,7 +37,7 @@ Sign in and select the workspace that owns the fleet. A tenant API key needs `ap
 1. List the gates waiting in the active workspace.
 
    ```bash
-   agentsfleet approvals list
+   agentsfleet fleet approvals list
    ```
 
    ```text
@@ -52,7 +52,7 @@ Sign in and select the workspace that owns the fleet. A tenant API key needs `ap
    `<GATE_ID>` comes from the `GATE` column.
 
    ```bash
-   agentsfleet approvals show <GATE_ID>
+   agentsfleet fleet approvals show <GATE_ID>
    ```
 
    ```text
@@ -65,7 +65,7 @@ Sign in and select the workspace that owns the fleet. A tenant API key needs `ap
 3. Decide the gate.
 
    ```bash
-   agentsfleet approvals approve <GATE_ID>
+   agentsfleet fleet approvals approve <GATE_ID>
    ```
 
    ```text
@@ -75,7 +75,7 @@ Sign in and select the workspace that owns the fleet. A tenant API key needs `ap
    Deny the request if it asks for more access than the task needs.
 
    ```bash
-   agentsfleet approvals deny <GATE_ID>
+   agentsfleet fleet approvals deny <GATE_ID>
    ```
 
    ```text
@@ -85,7 +85,7 @@ Sign in and select the workspace that owns the fleet. A tenant API key needs `ap
 ## Verify it works
 
 ```bash
-agentsfleet status
+agentsfleet fleet status
 ```
 
 ```text
@@ -98,17 +98,17 @@ Waiting: 0
 ```
 
 `Waiting` counts requests that need your decision. Approving a waiting run lets
-it continue, and `agentsfleet steer` returns its reply.
+it continue, and `agentsfleet fleet steer` returns its reply.
 
 ## Common problems
 
 `UZ-APPROVAL-002` means the gate is no longer open. It timed out, or someone decided it in the dashboard. List the gates again.
 
-`UZ-APPROVAL-006` means someone decided this gate first. Run `agentsfleet approvals show <GATE_ID>` to read the outcome and who recorded it.
+`UZ-APPROVAL-006` means someone decided this gate first. Run `agentsfleet fleet approvals show <GATE_ID>` to read the outcome and who recorded it.
 
 `UZ-GRANT-001` means the fleet has no approved grant for the service.
 No credential is issued, and the run makes no provider call. Check with
-`agentsfleet grant list --fleet <FLEET_ID>`.
+`agentsfleet fleet grants list --fleet <FLEET_ID>`.
 
 `UZ-REPAIR-010` and `UZ-REPAIR-011` are retired and no longer returned. Both described a per-event repository-write gate that is no longer raised. A run that cannot write now fails with `UZ-GRANT-001` instead.
 
@@ -117,8 +117,8 @@ No credential is issued, and the run makes no provider call. Check with
 A request can be decided once. Denying it ends the waiting run without granting
 access. An approved integration grant can later be revoked.
 
-To revoke a grant, copy `<GRANT_ID>` from `agentsfleet grant list --fleet <FLEET_ID>`.
-Then run `agentsfleet grant delete <GRANT_ID> --fleet <FLEET_ID>`.
+To revoke a grant, copy `<GRANT_ID>` from `agentsfleet fleet grants list --fleet <FLEET_ID>`.
+Then run `agentsfleet fleet grants revoke <GRANT_ID> --fleet <FLEET_ID>`.
 
 To change which repositories a fleet may reach, or to drop it to read-only,
 change `repositories` or `repository_access` in a private improvement chat.

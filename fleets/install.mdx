@@ -69,7 +69,7 @@ Sign in and select a workspace. Save every secret the entry needs; the review li
 
 4. Read the fleet's webhook URLs, if its setup declares a webhook trigger.
 
-   `<FLEET_ID>` comes from `agentsfleet list`.
+   `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
    agentsfleet --json fleet show <FLEET_ID>
@@ -86,7 +86,7 @@ In the dashboard, open **Fleet library**, choose an entry, and choose **New flee
 ## Verify it works
 
 ```bash
-agentsfleet status
+agentsfleet fleet status
 ```
 
 ```text
@@ -105,7 +105,7 @@ prints the command that lists them.
 
 A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check, such as a missing secret or a pending integration grant, and its next step.
 
-Fix each check, then run `agentsfleet resume <FLEET_ID>` to check again. The fleet keeps its identifier while it waits.
+Fix each check, then run `agentsfleet fleet resume <FLEET_ID>` to check again. The fleet keeps its identifier while it waits.
 
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review again and save with the new digest.
 
@@ -117,8 +117,8 @@ Fix each check, then run `agentsfleet resume <FLEET_ID>` to check again. The fle
   to keep the existing fleet and its data.
 </Warning>
 
-To reuse the taken name, run `agentsfleet kill <FLEET_ID>`, then
-`agentsfleet delete <FLEET_ID>`. Deletion releases the name.
+To reuse the taken name, run `agentsfleet fleet kill <FLEET_ID>`, then
+`agentsfleet fleet delete <FLEET_ID>`. Deletion releases the name.
 
 A Save whose reply was lost, or that stays `installing`, prints a recovery line with `--operation-id` and `--candidate-id`. Repeat the same command with both flags to resume that Save without creating a second fleet.
 
@@ -126,10 +126,10 @@ A Save whose reply was lost, or that stays `installing`, prints a recovery line 
 
 Deleting a fleet removes its events, telemetry, sessions, grants, keys, and memory. This loss cannot be undone.
 
-`<FLEET_ID>` comes from `agentsfleet list`. Kill the fleet before deleting it.
+`<FLEET_ID>` comes from `agentsfleet fleet list`. Kill the fleet before deleting it.
 
 ```bash
-agentsfleet kill <FLEET_ID>
+agentsfleet fleet kill <FLEET_ID>
 ```
 
 ```text
@@ -137,7 +137,7 @@ agentsfleet kill <FLEET_ID>
 ```
 
 ```bash
-agentsfleet delete <FLEET_ID>
+agentsfleet fleet delete <FLEET_ID>
 ```
 
 ```text

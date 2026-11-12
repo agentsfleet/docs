@@ -7,6 +7,36 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 13, 2026" tags={["CLI"]}>
+  ## Commands grouped by resource, scoped operator help and aligned errors
+
+  <Note>These changes are coming soon, in CLI 0.77.0.</Note>
+
+  ## Upgrading
+
+  Root fleet commands moved under the resource they act on. The old spellings are removed, not aliased, so scripts must change. Upgrade the CLI and the server together: a server running this release prints hints in the new spellings.
+
+  | Before | Now |
+  |---|---|
+  | `agentsfleet list`, `status`, `stop`, `resume`, `kill`, `delete`, `steer`, `logs`, `events` | `agentsfleet fleet list`, `fleet status`, … `fleet events` |
+  | `agentsfleet approvals …`, `schedule …`, `memory …` | `agentsfleet fleet approvals …`, `fleet schedule …`, `fleet memory …` |
+  | `agentsfleet grant list`, `grant delete` | `agentsfleet fleet grants list`, `fleet grants revoke` |
+  | `agentsfleet models [--provider]` | `agentsfleet models list [--provider]` |
+  | `agentsfleet tenant provider show`, `create`, `delete` | `agentsfleet models current`, `models use`, `models reset` |
+  | `agentsfleet secret …`, `workspace secrets` | `agentsfleet secrets …`, `secrets open` |
+  | `agentsfleet connector …` | `agentsfleet connections …` |
+  | `agentsfleet api-key …` | `agentsfleet api-keys …` |
+  | `agentsfleet billing show` | `agentsfleet usage show` |
+
+  ## What's new
+
+  - **Scoped operator help** — `agentsfleet platform` and its families appear in help, suggestions and completions only for an account holding a scope that can use them. Hidden commands still run, and the server still decides.
+  - **Shell completions** — `agentsfleet --completions bash|zsh|fish|powershell` prints a script scoped to the signed-in account. Write it to a file and regenerate it after you sign in, change server, or gain or lose a scope.
+  - **Readable errors** — Every failure prints one block: the message, then `code`, `usage`, `did you mean`, `suggestion` and `request`, with values in one column. A usage error no longer prints the full help above it. `--json` error output is unchanged.
+
+  See the [command reference](/cli/agentsfleet).
+</Update>
+
 <Update label="Nov 08, 2026" tags={["UI"]}>
   ## Shared chat controls and simpler runner networking
 

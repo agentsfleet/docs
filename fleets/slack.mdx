@@ -101,10 +101,10 @@ Its memory belongs to the channel, and no other fleet reads it. It also posts th
 
 3. Open the fleet in the dashboard. Its trigger card reads **Chat mention** with the channel ID.
 
-4. List the fleet's events. `<FLEET_ID>` comes from `agentsfleet list`.
+4. List the fleet's events. `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
-   agentsfleet events <FLEET_ID>
+   agentsfleet fleet events <FLEET_ID>
    ```
 
    ```text
@@ -119,7 +119,7 @@ A notice replaces an answer when `agentsfleet` cannot pick one fleet. Each notic
 |---|---|---|
 | `Several fleets answer in this channel` | The mention named no fleet, and more than one could answer. | Start the message with one of the listed names. |
 | `The fleets attached here answer only when named` | Every attached fleet has repository write access or is paused. | Start the message with one of the listed names. |
-| `<NAME> is paused and cannot answer` | The named fleet is paused. | Run the `agentsfleet resume` command the notice prints. |
+| `<NAME> is paused and cannot answer` | The named fleet is paused. | Run the `agentsfleet fleet resume` command the notice prints. |
 
 A notice appears 30 to 60 seconds after the mention.
 
@@ -152,7 +152,7 @@ Deleting the channel's own fleet permanently removes its memory, events, and oth
 The next mention that needs it creates a new fleet with empty memory.
 </Warning>
 
-To remove it, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`.
+To remove it, run `agentsfleet fleet kill <FLEET_ID>` and then `agentsfleet fleet delete <FLEET_ID>`.
 
 Between the two commands, the channel fleet is killed, and a mention that needs it gets no answer. A channel fleet you stop instead of killing answers with the paused notice until you resume it.
 

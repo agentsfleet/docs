@@ -40,10 +40,10 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 2. Read the fleet's recent errors.
 
-   `<FLEET_ID>` comes from `agentsfleet list`.
+   `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
-   agentsfleet events <FLEET_ID> --since 1h --json
+   agentsfleet fleet events <FLEET_ID> --since 1h --json
    ```
 
    ```text
@@ -80,7 +80,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
    Then check the fleet's integration grant:
 
    ```bash
-   agentsfleet grant list --fleet <FLEET_ID>
+   agentsfleet fleet grants list --fleet <FLEET_ID>
    ```
 
    ```text

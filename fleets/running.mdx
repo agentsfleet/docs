@@ -16,14 +16,14 @@ The dashboard uses your chosen fleet name in **Your fleets** and the conversatio
 
 ## Before you begin
 
-Install a fleet. Copy its identifier from `agentsfleet list`.
+Install a fleet. Copy its identifier from `agentsfleet fleet list`.
 
 ## Steps
 
 1. List fleet identifiers.
 
    ```bash
-   agentsfleet list
+   agentsfleet fleet list
    ```
 
    ```text
@@ -35,7 +35,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    `<FLEET_ID>` comes from the list output.
 
    ```bash
-   agentsfleet logs <FLEET_ID>
+   agentsfleet fleet logs <FLEET_ID>
    ```
 
    ```text
@@ -45,7 +45,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 3. Send a manual message.
 
    ```bash
-   agentsfleet steer <FLEET_ID> "check current health"
+   agentsfleet fleet steer <FLEET_ID> "check current health"
    ```
 
    ```text
@@ -54,7 +54,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 
    Approve the fleet's integration grant during setup to allow repository access.
    That approval lasts until you revoke it. Custom approval rules can pause
-   individual runs; review those requests with [`agentsfleet approvals`](/fleets/approvals).
+   individual runs; review those requests with [`agentsfleet fleet approvals`](/fleets/approvals).
 
    In the dashboard chat, a reply appears as it arrives. You can send another
    message while a run is active; the new event waits its turn and keeps its
@@ -76,7 +76,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 4. Stop new work while keeping the fleet resumable. In the dashboard, open the fleet header’s **… → Stop** and confirm.
 
    ```bash
-   agentsfleet stop <FLEET_ID>
+   agentsfleet fleet stop <FLEET_ID>
    ```
 
    ```text
@@ -86,7 +86,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 5. Resume the fleet.
 
    ```bash
-   agentsfleet resume <FLEET_ID>
+   agentsfleet fleet resume <FLEET_ID>
    ```
 
    ```text
@@ -126,7 +126,7 @@ History keeps the message from that occurrence; current controls show the latest
 ## Verify it works
 
 ```bash
-agentsfleet status
+agentsfleet fleet status
 ```
 
 ```text
@@ -142,7 +142,7 @@ Waiting: <varies>
 the client adds this line:
 
 ```text
-Some fleets are waiting on approval. Review with: agentsfleet approvals list
+Some fleets are waiting on approval. Review with: agentsfleet fleet approvals list
 ```
 
 ## Common problems
@@ -157,7 +157,7 @@ For API lifecycle updates, send the strong entity tag (ETag) from the fleet body
 
 If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 
-A run with no reply may be waiting for approval. Run `agentsfleet approvals list` to review the request.
+A run with no reply may be waiting for approval. Run `agentsfleet fleet approvals list` to review the request.
 
 A message with no answer after 30 seconds reads **Couldn't confirm this message was sent.** Click **Resend**. It carries the same `operation_id`, so the fleet runs the message once.
 
@@ -198,7 +198,7 @@ In the dashboard, choose **… → Kill** from the fleet header. Confirm the per
 Deleting removes all fleet records and cannot be undone. The client has no dry-run option for either command.
 
 ```bash
-agentsfleet kill <FLEET_ID>
+agentsfleet fleet kill <FLEET_ID>
 ```
 
 ```text
@@ -206,7 +206,7 @@ agentsfleet kill <FLEET_ID>
 ```
 
 ```bash
-agentsfleet delete <FLEET_ID>
+agentsfleet fleet delete <FLEET_ID>
 ```
 
 ```text

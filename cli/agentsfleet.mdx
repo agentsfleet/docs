@@ -3,8 +3,8 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-11-03
-product_version: 0.72.0
+verified: 2026-11-13
+product_version: 0.77.0
 executable: false
 ---
 
@@ -17,6 +17,8 @@ agentsfleet [GLOBAL_OPTIONS] <COMMAND>
 ```
 
 `<COMMAND>` comes from the tables below. Run any command with `--help` to see its accepted values.
+
+Every fleet command sits under `agentsfleet fleet`. Help lists `agentsfleet platform` commands only when your account holds a scope that can use them. A hidden command still runs, and the server still decides.
 
 Identifier placeholders come from the matching create or list command. You choose name, path, provider, message, and query values.
 
@@ -57,6 +59,7 @@ SUBCOMMANDS
 | `--api <API_URL>` | Sends requests to this API URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
 | `--json` | Prints JSON when the command supports it. | `false` | Boolean |
 | `-h`, `--help` | Prints help and exits. | `false` | Boolean |
+| `--completions <SHELL>` | Prints a completion script for `bash`, `zsh`, `fish` or `powershell` and exits. Write it to a file and regenerate it after you sign in, change server, or gain or lose a scope. | Not set | `bash`, `zsh`, `fish`, `powershell`, `sh`, `pwsh` |
 
 ### Login options
 
@@ -145,16 +148,13 @@ Manual sign-in requires terminal input, so omit `--no-input`.
 | `agentsfleet workspace list` | Lists workspaces. |
 | `agentsfleet workspace use <WORKSPACE_ID>` | Selects the active workspace on this computer. |
 | `agentsfleet workspace show [WORKSPACE_ID]` | Shows one workspace. |
-| `agentsfleet workspace secrets` | Prints the secret command and dashboard path. |
 | `agentsfleet workspace delete <WORKSPACE_ID>` | Removes one workspace from local client state. Remote data remains. |
-| `agentsfleet api-key create --name <NAME>` | Creates a tenant API key. `--name` is required, and the raw key appears once. |
-| `agentsfleet api-key list` | Lists tenant API keys. |
-| `agentsfleet api-key revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
-| `agentsfleet api-key delete <API_KEY_ID>` | Deletes metadata for a revoked tenant API key. |
-| `agentsfleet connector list` | Lists connector setup and connection state. |
-| `agentsfleet connector show <PROVIDER>` | Shows one connector. |
-| `agentsfleet grant list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
-| `agentsfleet grant delete --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
+| `agentsfleet api-keys create --name <NAME>` | Creates a tenant API key. `--name` is required, and the raw key appears once. |
+| `agentsfleet api-keys list` | Lists tenant API keys. |
+| `agentsfleet api-keys revoke <API_KEY_ID>` | Revokes a tenant API key. Calls using that key fail. |
+| `agentsfleet api-keys delete <API_KEY_ID>` | Deletes metadata for a revoked tenant API key. |
+| `agentsfleet connections list` | Lists connector setup and connection state. |
+| `agentsfleet connections show <PROVIDER>` | Shows one connector. |
 
 ### Chat
 
@@ -314,22 +314,24 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 | `agentsfleet library list` | Lists only the entries your account owns. |
 | `agentsfleet library delete <LIBRARY_ID>` | Removes one entry your account owns, with its revision history. Fleets saved from it keep running. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
-| `agentsfleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
-| `agentsfleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
-| `agentsfleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
-| `agentsfleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. On an `installing` fleet, it checks setup again and activates the fleet when every check passes. |
-| `agentsfleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. On an `installing` fleet, it cancels setup and returns the draft to editing. |
-| `agentsfleet delete <FLEET_ID>` | Deletes a killed fleet and its stored data. This cannot be undone. |
-| `agentsfleet logs [FLEET_ID]` | Shows recent activity. |
-| `agentsfleet events <FLEET_ID>` | Lists historical events with filters. |
-| `agentsfleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. If the stream drops, it reads that exact event for up to 60 seconds, until the event finishes. |
+| `agentsfleet fleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
+| `agentsfleet fleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
+| `agentsfleet fleet stop <FLEET_ID>` | Stops new work. You can resume the fleet. |
+| `agentsfleet fleet resume <FLEET_ID>` | Resumes a stopped or paused fleet. On an `installing` fleet, it checks setup again and activates the fleet when every check passes. |
+| `agentsfleet fleet kill <FLEET_ID>` | Marks a fleet as killed. This cannot be undone. On an `installing` fleet, it cancels setup and returns the draft to editing. |
+| `agentsfleet fleet delete <FLEET_ID>` | Deletes a killed fleet and its stored data. This cannot be undone. |
+| `agentsfleet fleet logs [FLEET_ID]` | Shows recent activity. |
+| `agentsfleet fleet events <FLEET_ID>` | Lists historical events with filters. |
+| `agentsfleet fleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. If the stream drops, it reads that exact event for up to 60 seconds, until the event finishes. |
+| `agentsfleet fleet grants list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
+| `agentsfleet fleet grants revoke --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
 
 Press **Ctrl+C** to stop local waiting and HTTP retries. An accepted message can keep running on the fleet.
-Inspect `agentsfleet events <FLEET_ID>` before sending the message again.
+Inspect `agentsfleet fleet events <FLEET_ID>` before sending the message again.
 
 Event polling reports permanent access or request errors immediately; its timeout also bounds an active read.
 
-`agentsfleet delete` has no dry-run option. Run `agentsfleet kill` first, then check the fleet identifier before deletion.
+`agentsfleet fleet delete` has no dry-run option. Run `agentsfleet fleet kill` first, then check the fleet identifier before deletion.
 
 `agentsfleet library` and `agentsfleet library list` answer different questions. The first lists everything this workspace can use, platform entries included. The second lists only what your account owns, which is the set `agentsfleet library delete` can act on.
 
@@ -341,14 +343,14 @@ Fleets and Library entries come only from reviewed chat drafts. The file, GitHub
 
 | Command | Effect |
 |---|---|
-| `agentsfleet approvals list` | Lists the gates waiting for a decision in the active workspace. |
-| `agentsfleet approvals list --fleet <FLEET_ID>` | Lists the waiting gates for one fleet. |
-| `agentsfleet approvals show <GATE_ID>` | Shows one gate, including the reach an approval grants. |
-| `agentsfleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
-| `agentsfleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
+| `agentsfleet fleet approvals list` | Lists the gates waiting for a decision in the active workspace. |
+| `agentsfleet fleet approvals list --fleet <FLEET_ID>` | Lists the waiting gates for one fleet. |
+| `agentsfleet fleet approvals show <GATE_ID>` | Shows one gate, including the reach an approval grants. |
+| `agentsfleet fleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
+| `agentsfleet fleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
 
 If the list reaches its page limit with more results available, the command reports an incomplete list.
-Narrow the request with `agentsfleet approvals list --fleet <FLEET_ID>`.
+Narrow the request with `agentsfleet fleet approvals list --fleet <FLEET_ID>`.
 
 Saving a fleet that declares a mintable credential opens an integration grant for approval. An approved grant covers repository writes until it is revoked. Rules declared under `gates` can also ask for approval during a run; a waiting gate parks that run until someone decides it.
 
@@ -361,14 +363,14 @@ take its identifier after it.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet schedule create <FLEET_ID> --cron <EXPRESSION> --message <TEXT>` | Creates a schedule that wakes a fleet on a cron expression. |
-| `agentsfleet schedule list <FLEET_ID>` | Lists the schedules a fleet holds. |
-| `agentsfleet schedule update <FLEET_ID> <SCHEDULE_ID>` | Changes an existing schedule. |
-| `agentsfleet schedule delete <FLEET_ID> <SCHEDULE_ID>` | Deletes one schedule. |
-| `agentsfleet schedule show <FLEET_ID> <SCHEDULE_ID>` | Shows one schedule and its state at the upstream scheduler. |
-| `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` | Re-sends the schedule to the upstream scheduler. |
+| `agentsfleet fleet schedule create <FLEET_ID> --cron <EXPRESSION> --message <TEXT>` | Creates a schedule that wakes a fleet on a cron expression. |
+| `agentsfleet fleet schedule list <FLEET_ID>` | Lists the schedules a fleet holds. |
+| `agentsfleet fleet schedule update <FLEET_ID> <SCHEDULE_ID>` | Changes an existing schedule. |
+| `agentsfleet fleet schedule delete <FLEET_ID> <SCHEDULE_ID>` | Deletes one schedule. |
+| `agentsfleet fleet schedule show <FLEET_ID> <SCHEDULE_ID>` | Shows one schedule and its state at the upstream scheduler. |
+| `agentsfleet fleet schedule sync <FLEET_ID> <SCHEDULE_ID>` | Re-sends the schedule to the upstream scheduler. |
 
-Run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>` when the saved schedule reports an unconfirmed registration.
+Run `agentsfleet fleet schedule sync <FLEET_ID> <SCHEDULE_ID>` when the saved schedule reports an unconfirmed registration.
 A successful HTTP response can still carry a schedule whose synchronization failed; check its state and diagnostic message.
 
 Each option is accepted by the subcommands named beside it.
@@ -383,10 +385,10 @@ Each option is accepted by the subcommands named beside it.
 
 A fleet holds at most 32 schedules.
 
-`agentsfleet schedule list` prints `SCHEDULE_ID`, `SCHEDULE`, `STATUS`, `NEXT RUN`, `MESSAGE`, and `AGO`. `SCHEDULE` is the server's description of the expression with its zone, such as `At 9:00 AM (UTC)`.
+`agentsfleet fleet schedule list` prints `SCHEDULE_ID`, `SCHEDULE`, `STATUS`, `NEXT RUN`, `MESSAGE`, and `AGO`. `SCHEDULE` is the server's description of the expression with its zone, such as `At 9:00 AM (UTC)`.
 
 ```bash
-agentsfleet schedule list <FLEET_ID>
+agentsfleet fleet schedule list <FLEET_ID>
 ```
 
 ```text
@@ -408,24 +410,25 @@ With `--json`, or when standard output is not a terminal, schedule commands prin
 
 | Command | Effect |
 |---|---|
-| `agentsfleet secret create <NAME>` | Stores a JSON object in the workspace vault under a name that is free. A name already in use is reported as skipped, and nothing is written. |
-| `agentsfleet secret create <NAME> --provider <ID> --api-key <KEY> --model <MODEL>` | Stores a model-provider credential. `--provider` and `--model` are both checked against the model catalogue your server serves — run `agentsfleet models` to list it. `--provider openai-compatible` adds a required `https` `--base-url`, makes `--api-key` optional, and accepts any `--model`. |
-| `agentsfleet secret update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data and provider options as `agentsfleet secret create`. |
-| `agentsfleet secret show <NAME>` | Confirms that a secret exists without showing its value. |
-| `agentsfleet secret list` | Lists secret names, kinds, and creation times. Use `--json` for structured metadata. |
-| `agentsfleet secret delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
-| `agentsfleet memory list --fleet <FLEET_ID>` | Lists memory entries newest first. |
-| `agentsfleet memory search <QUERY> --fleet <FLEET_ID>` | Searches memory keys and content. |
+| `agentsfleet secrets create <NAME>` | Stores a JSON object in the workspace vault under a name that is free. A name already in use is reported as skipped, and nothing is written. |
+| `agentsfleet secrets create <NAME> --provider <ID> --api-key <KEY> --model <MODEL>` | Stores a model-provider credential. `--provider` and `--model` are both checked against the model catalogue your server serves — run `agentsfleet models list` to list it. `--provider openai-compatible` adds a required `https` `--base-url`, makes `--api-key` optional, and accepts any `--model`. |
+| `agentsfleet secrets update <NAME>` | Replaces a stored secret without releasing its name. It accepts the same data and provider options as `agentsfleet secrets create`. |
+| `agentsfleet secrets show <NAME>` | Confirms that a secret exists without showing its value. |
+| `agentsfleet secrets list` | Lists secret names, kinds, and creation times. Use `--json` for structured metadata. |
+| `agentsfleet secrets delete <NAME>` | Deletes a secret. Fleets using the secret fail on their next use. |
+| `agentsfleet secrets open` | Prints the secret command and dashboard path. |
+| `agentsfleet fleet memory list --fleet <FLEET_ID>` | Lists memory entries newest first. |
+| `agentsfleet fleet memory search <QUERY> --fleet <FLEET_ID>` | Searches memory keys and content. |
 
-`agentsfleet secret delete` has no dry-run option. The deleted secret value cannot be recovered.
+`agentsfleet secrets delete` has no dry-run option. The deleted secret value cannot be recovered.
 
 ### Model catalogue
 
 | Command | Effect |
 |---|---|
-| `agentsfleet models` | Lists regular models with names, providers, context windows, and input, cached-input, and output rates. |
-| `agentsfleet models --provider <ID>` | Lists one provider's models. |
-| `agentsfleet models --advanced` | Includes advanced models. Defaults to `false`. |
+| `agentsfleet models list` | Lists regular models with names, providers, context windows, and input, cached-input, and output rates. |
+| `agentsfleet models list --provider <ID>` | Lists one provider's models. |
+| `agentsfleet models list --advanced` | Includes advanced models. Defaults to `false`. |
 
 The table prints `MODEL`, `NAME`, `PROVIDER`, `CONTEXT`, `IN/MTOK`, `CACHED/MTOK`, and `OUT/MTOK`.
 Context windows show exact token counts. Rates show exact dollars per million
@@ -446,10 +449,10 @@ The server still validates the credential.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet tenant provider show` | Shows the active model provider. |
-| `agentsfleet tenant provider create --secret <NAME>` | Selects a self-managed provider secret. |
-| `agentsfleet tenant provider delete` | Returns the tenant to the platform provider. |
-| `agentsfleet billing show` | Shows the tenant balance, fleet-run costs, and settled setup-chat costs. |
+| `agentsfleet models current` | Shows the active model provider. |
+| `agentsfleet models use --secret <NAME>` | Selects a self-managed provider secret. |
+| `agentsfleet models reset` | Returns the tenant to the platform provider. |
+| `agentsfleet usage show` | Shows the tenant balance, fleet-run costs, and settled setup-chat costs. |
 
 Billing includes paid failed setup attempts. The setup column shows these costs, with a work identifier for each setup attempt.
 
@@ -474,9 +477,9 @@ Login reports network and API sign-in failures with exit code `1`.
 A rejected invocation is answered before any request is sent. The form is always the same: what is wrong, then the command that puts it right. What is wrong may be an absent argument, a value that failed validation, or an unrecognized command.
 
 ```
-$ agentsfleet events
+$ agentsfleet fleet events
 ✕ error: missing required argument 'fleet_id'
-  Suggestion: usage: agentsfleet events [options] <fleet_id>
+  Suggestion: usage: agentsfleet fleet events [options] <fleet_id>
 ```
 
 Under `--json` the same rejection is a parseable envelope on standard error, carrying a stable `code` you can switch on:
