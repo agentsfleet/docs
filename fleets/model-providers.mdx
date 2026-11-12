@@ -3,7 +3,7 @@ title: Use your own model provider
 description: Store a model-provider credential and run fleets on it instead of the platform default.
 type: how-to
 audience: user
-verified: 2026-11-11
+verified: 2026-11-12
 product_version: 0.76.0
 executable: false
 ---
@@ -146,8 +146,8 @@ Local coding tools such as `claude-cli`, `codex-cli`, `gemini-cli`,
 They have no model API endpoint to connect to.
 
 `--api-key` or `--model` without `--provider` is refused.
-For `openai-compatible`, the API key is optional and the model identifier comes
-from your endpoint.
+For `openai-compatible`, provide an API key and an HTTPS endpoint. The model
+must also be configured in the catalogue before it can be activated.
 
 `--base-url` with a named provider is refused. Named providers use the endpoint saved in the Model library. The flag belongs to `openai-compatible` alone.
 
