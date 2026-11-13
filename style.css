@@ -4,16 +4,8 @@
  * Custom CSS supplies variable weights, technical type, and reading rhythm.
  */
 @font-face {
-  font-family: "Instrument Sans";
-  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
+  font-family: "Manrope Variable";
+  src: url("/fonts/Manrope-Variable.woff2") format("woff2");
   font-weight: 200 800;
   font-style: normal;
   font-display: swap;
@@ -73,9 +65,9 @@ code, pre, kbd, samp {
   font-family: var(--font-mono);
 }
 
-/* Reading sections use the interface face; display type stays on page titles. */
+/* Headings and reading text use the shared interface face. */
 #content-area :is(h2, h3, h4, h5, h6) {
-  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-family: "Manrope Variable", system-ui, sans-serif;
 }
 
 #content-area :is(p, li) {
