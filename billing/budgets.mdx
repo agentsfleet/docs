@@ -3,8 +3,8 @@ title: Fleet budgets
 description: Daily and monthly spending limits for one fleet.
 type: explanation
 audience: user
-verified: 2026-10-26
-product_version: 0.65.0
+verified: 2026-11-12
+product_version: 0.76.0
 executable: false
 ---
 
@@ -29,11 +29,8 @@ Each limit is a decimal string of whole nanodollars. One dollar is `"1000000000"
 
 Every workspace in one account shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
 
-The dashboard header shows what is left of that balance on every page, as a **Credits** chip beside the workspace switcher.
-It appears on screens at least 640px wide.
-
-Select the chip to open **Settings → Billing** and review recorded charges.
-The header continues to show your available balance.
+Open the account menu to see your available balance and choose **Usage** for recorded charges.
+The expanded desktop sidebar also shows a **Credits** link to Usage.
 
 The fleet owns its budget. Applying a reviewed setup change replaces the limits, and deleting the fleet removes them.
 
@@ -57,14 +54,18 @@ If billing cannot answer, work continues and can exceed that bound. The full cha
 
 ### Review your spending
 
-Open **Settings → Billing** to see confirmed charges across your account's workspaces.
+Open **Usage** in the account menu to see confirmed charges across your account's workspaces.
 These are called **settled charges**.
 
-Choose **Month to date** or **Today**, then filter by fleet or model.
+Choose **Month to date** or **Today**, then filter by fleet.
+Open **More filters** to select a model or another month.
 Both periods use Coordinated Universal Time (UTC), so a day starts at midnight UTC.
 
 The totals cover all matching activity in the selected period, including activity on later pages.
-**Spending breakdown** groups those charges by fleet and model.
+**By fleet** groups settled charges by fleet.
+Expand **Charge details** for individual activities and the fleet/model spending breakdown.
+
+Daily spending is unavailable until the API supplies daily totals.
 
 Each activity groups charges from one fleet run or private setup attempt.
 Expand an activity to see its charges and usage.

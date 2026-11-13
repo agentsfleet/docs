@@ -20,6 +20,36 @@ agentsfleet [GLOBAL_OPTIONS] <COMMAND>
 
 Identifier placeholders come from the matching create or list command. You choose name, path, provider, message, and query values.
 
+## Platform administration
+
+Platform administration is available in the terminal. The dashboard has no Platform settings page.
+
+The server checks the signed-in credential’s scopes on every request. A command appearing in help does not grant permission to run it.
+
+| Command group | Purpose | Required scopes |
+|---|---|---|
+| `agentsfleet platform keys` | Inspect or set the platform default provider and model. Stored keys stay hidden. | `platform-key:read` for list; `platform-key:admin` for set/delete |
+| `agentsfleet platform models` | List, inspect and maintain the priced model catalogue. | `model:read` for reads; `model:admin` for writes |
+| `agentsfleet platform fleet-library` | Maintain staged and published platform setups. | `platform-library:write` |
+| `agentsfleet platform runners` | Inspect hosts, enroll them, update policy and manage their lifecycle. | `runner:read`, `runner:enroll` or `runner:write`, according to the operation |
+
+Choose a catalogued model backed by an existing provider credential in the named workspace:
+
+```bash
+agentsfleet platform keys set --provider <PROVIDER_ID> --workspace <WORKSPACE_ID> --model <MODEL_ID>
+```
+
+```text
+Platform default selected
+Provider  <PROVIDER_ID>
+Model     <MODEL_ID>
+Active    Yes
+```
+
+The command confirms the stored default metadata without revealing the key.
+
+`--api-key-stdin` accepts a piped key and also requires workspace ownership and `secret:write`. `--replace` replaces an existing named credential and requires `--api-key-stdin`. Use `agentsfleet platform keys list` to inspect the result.
+
 ## Example with output
 
 ```bash

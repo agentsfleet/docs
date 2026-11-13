@@ -3,8 +3,8 @@ title: Use your own model provider
 description: Store a model-provider credential and run fleets on it instead of the platform default.
 type: how-to
 audience: user
-verified: 2026-10-23
-product_version: 0.64.0
+verified: 2026-11-12
+product_version: 0.76.0
 executable: false
 ---
 
@@ -12,6 +12,9 @@ executable: false
 
 Store your provider credential, then select it as your account's default model.
 A fleet keeps the model reference saved in its setup.
+
+Each configured model names the workspace that owns its provider key.
+Switching workspaces does not move that key or change the model's saved reference.
 
 Your provider bills model usage. Setup chat offers models configured for your
 workspace owner and the enabled platform default.
@@ -36,7 +39,7 @@ Replace the fake API key below with your provider's key.
 Add `--advanced` to include advanced models. Rates and context limits are exact;
 `--json` also includes price tiers, effective dates, and source evidence.
 
-A platform administrator must configure the model under **Platform → Model library** before you use it.
+A platform administrator must configure the model through `agentsfleet platform models` before you use it.
 Its settings define the API format, secure HTTP (HTTPS) endpoint, context window, and maximum output tokens.
 
 Supported formats are OpenAI-compatible chat, OpenAI Responses, Anthropic Messages,
@@ -44,6 +47,16 @@ Google Gemini, and Ollama.
 Output tokens must be positive and fit within the context window.
 
 ## Steps
+
+In the dashboard, open the workspace's **Models** page and choose **Create model**.
+Choose a provider and model, then **Add new key** or **Use saved key**.
+The saved-key list includes compatible credentials from this workspace, with values hidden.
+
+Enable **Make active** to select this model as your account default, then choose **Create model**.
+If registration or activation fails after saving the key, use the offered retry or status check.
+The form retains completed work and avoids saving the same key again.
+
+For the command-line interface (CLI), use these steps:
 
 1. Store the provider credential. The provider id, API key, and model are all required.
 
@@ -61,12 +74,15 @@ Output tokens must be positive and fit within the context window.
 2. Select the stored credential for your account.
 
    ```bash
-   agentsfleet tenant provider create --secret my-model
+   agentsfleet tenant provider create --workspace <WORKSPACE_ID> --secret my-model
    ```
 
    ```text
    Tenant provider added: mode=self_managed secret=my-model
    ```
+
+   Use the identifier of the workspace where you stored `my-model`.
+   Omitting `--workspace` uses your selected workspace.
 
 3. Confirm the active provider.
 
@@ -130,8 +146,8 @@ Local coding tools such as `claude-cli`, `codex-cli`, `gemini-cli`,
 They have no model API endpoint to connect to.
 
 `--api-key` or `--model` without `--provider` is refused.
-For `openai-compatible`, the API key is optional and the model identifier comes
-from your endpoint.
+For `openai-compatible`, provide an API key and an HTTPS endpoint. The model
+must also be configured in the catalogue before it can be activated.
 
 `--base-url` with a named provider is refused. Named providers use the endpoint saved in the Model library. The flag belongs to `openai-compatible` alone.
 
