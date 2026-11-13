@@ -39,7 +39,7 @@ description: "Product changes and upgrade notes."
   - **Stop, resume and kill** — These commands are removed with no alias. `agentsfleet fleet archive <FLEET_ID>` cancels live work and keeps history; it cannot be undone.
   - **Delete** — `agentsfleet fleet delete` works in any status and cancels live work first. `DELETE` returns `204` and no longer returns `409`.
   - **Setup checks** — Approving a fleet's last missing grant finishes setup with no further command. After fixing any other check, run `agentsfleet fleet activate <FLEET_ID>`, or send `{"status":"active"}` from the API.
-  - **Tripped gates** — An anomaly rule or an `auto_kill` rule now archives the fleet instead of pausing it. Set the fleet up again in a new chat.
+  - **Tripped gates** — A runaway anomaly rule now archives the fleet instead of pausing it. Set the fleet up again in a new chat. A gate rule now always asks a person; its `behavior` field and `auto_kill` are removed.
   - **Statuses** — A fleet reads `installing`, `active` or `archived`. `stopped`, `paused`, `killed` and `UZ-AGT-010` are gone.
 
   ## What's new

@@ -30,6 +30,8 @@ Two kinds of request can appear:
 | `integration_grant` | Saving a fleet that needs credentials from a connected service | Covers that fleet and service until revoked. |
 | A kind you name | A rule under `gates` in the fleet's Definition | Covers the actions described by the rule's `blast_radius`. |
 
+An action with no matching rule runs without asking. Add a rule only for the actions you want to approve first.
+
 Saving a fleet that needs service credentials creates its grant request.
 The fleet reads `installing` until someone approves it. Approving the last
 missing grant finishes setup in the same request, and the fleet reads `active`.
