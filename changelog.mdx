@@ -7,6 +7,27 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 11, 2026" tags={["UI", "Security", "API", "CLI"]}>
+  ## Fleet conversations and workspace model keys
+
+  Fleet conversations keep setup, activity and Summary together.
+
+  <Note>These changes are coming soon.</Note>
+
+  ## Upgrading
+
+  - **Development database** — Reinitialize the development database before using this schema. No existing model references are backfilled.
+  - **Model clients** — Upgrade the server and command-line interface (CLI) together. Supply `workspace_id` when registering a model or selecting a self-managed provider.
+
+  ## What's new
+
+  - **Chat** — Activity and decisions stay with the fleet. Choose **Approve** or **Deny** in Summary, without a separate approval inbox.
+  - **Models** — Add or reuse a provider key inside **Create model**. Each model retains its credential workspace.
+  - **Account** — Security combines API keys and signed-in sessions. Personal account opens native identity controls. Archive retains fleet history; Permanently delete removes it.
+
+  See [model provider setup](/fleets/model-providers) for the dashboard and CLI steps.
+</Update>
+
 <Update label="Nov 08, 2026" tags={["UI"]}>
   ## Shared chat controls and simpler runner networking
 
