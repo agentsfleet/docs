@@ -316,6 +316,7 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet fleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
 | `agentsfleet fleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
+| `agentsfleet fleet activate <FLEET_ID>` | Checks an `installing` fleet's setup again and activates it when every check passes. While a check still fails, it prints `installing` and the `agentsfleet fleet show` command to run. An archived fleet returns `UZ-AGT-009`. |
 | `agentsfleet fleet archive <FLEET_ID>` | Cancels live work and setup, and keeps the fleet's history readable. This cannot be undone. On an `installing` fleet, it also returns the draft to editing. |
 | `agentsfleet fleet delete <FLEET_ID>` | Deletes a fleet in any status, with its history and stored data. It cancels live work first. This cannot be undone. |
 | `agentsfleet fleet logs [FLEET_ID]` | Shows recent activity. |

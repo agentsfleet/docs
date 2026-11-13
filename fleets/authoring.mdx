@@ -251,7 +251,7 @@ Replies and tool calls vary by model; a successful Save alone does not prove tha
 
 A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check and its next step, such as a missing secret or a pending integration grant.
 
-Fix the check. Approving the last missing grant finishes setup, and the fleet reads `active`.
+Fix the check. Approving the last missing grant finishes setup, and the fleet reads `active`. For any other check, run `agentsfleet fleet activate <FLEET_ID>` after the fix.
 
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
 

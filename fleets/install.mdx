@@ -107,7 +107,17 @@ A Save that prints `installing` and exits with code `1` is waiting on a setup ch
 
 Fix each check. Approving the last missing grant finishes setup, and the fleet reads `active`. The fleet keeps its identifier while it waits.
 
-An API client checks setup again with `PATCH` on the fleet and the body `{"status":"active"}`.
+After you fix a missing secret, connection, model, or wallet balance, check setup again:
+
+```bash
+agentsfleet fleet activate <FLEET_ID>
+```
+
+```text
+✓ <varies> active.
+```
+
+While a check still fails, the fleet stays `installing`. The command then prints `agentsfleet fleet show <FLEET_ID>` as the next step. An API client sends `PATCH` with `{"status":"active"}` instead.
 
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review again and save with the new digest.
 

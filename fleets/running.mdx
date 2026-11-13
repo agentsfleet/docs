@@ -1,6 +1,6 @@
 ---
 title: Run and control a fleet
-description: Inspect, message, archive, and delete a fleet.
+description: Inspect, message, activate, archive, and delete a fleet.
 type: how-to
 audience: user
 verified: 2026-11-04
@@ -133,7 +133,7 @@ An archived fleet also returns `UZ-AGT-009` when you try to rename it or change 
 
 For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for an archived fleet.
 
-`UZ-AGT-012` means the fleet is still installing or was archived, so it refuses new work. Check its status with `agentsfleet fleet show <FLEET_ID>`.
+`UZ-AGT-012` means the fleet is still installing or was archived, so it refuses new work. Check its status with `agentsfleet fleet show <FLEET_ID>`. After you fix setup, run `agentsfleet fleet activate <FLEET_ID>` to activate an installing fleet.
 
 If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 

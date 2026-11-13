@@ -22,7 +22,7 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 | State | Meaning | Next actions |
 |---|---|---|
-| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check, or archive to cancel setup |
+| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check and activate, or archive to cancel setup |
 | `active` | The fleet accepts new events. | Archive or delete |
 | `archived` | The fleet never accepts work again. Its history stays readable. | Delete, or set up a new fleet |
 
