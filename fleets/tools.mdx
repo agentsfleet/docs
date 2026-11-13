@@ -119,7 +119,7 @@ A schedule the fleet creates appears beside your own on the fleet's schedules li
 Schedule changes, registration results and fire messages also appear in [fleet chat](/fleets/running#read-schedule-activity).
 Once a fired run starts, choose **Run details** beside its activity to inspect its recorded result.
 
-`agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. If the fleet is paused when a `schedule` follow-up is due, or `agentsfleet` could not register the follow-up before its moment, the follow-up is removed without running.
+`agentsfleet` replaces any value from the fleet's secrets with `«secret:NAME»` in a schedule's message before it saves the schedule. A `schedule` follow-up is removed without running if the fleet is inactive when it is due. The same happens if `agentsfleet` could not register it before its moment.
 
 ### Message tool
 
@@ -186,7 +186,7 @@ A fleet can hold 32 schedules in total, including up to 16 it creates itself.
 A 17th fleet-created schedule fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009).
 Changing or deleting a schedule a person created fails with [`UZ-SCHED-010`](/api-reference/error-codes#UZ-SCHED-010).
 
-`cron_run` fails with [`UZ-SCHED-011`](/api-reference/error-codes#UZ-SCHED-011) for a paused schedule, a schedule being removed, or a run that a schedule started. It fails with [`UZ-AGT-012`](/api-reference/error-codes#UZ-AGT-012) while the fleet is paused.
+`cron_run` fails with [`UZ-SCHED-011`](/api-reference/error-codes#UZ-SCHED-011) for a paused schedule, a schedule being removed, or a run that a schedule started. It fails with [`UZ-AGT-012`](/api-reference/error-codes#UZ-AGT-012) while the fleet is not active.
 
 `message` posts at most 8 lines per run, each at most 4,096 bytes. The 9th line fails with [`UZ-RUN-020`](/api-reference/error-codes#UZ-RUN-020). A run started from the API, a webhook, or a schedule has no thread, so `message` fails with [`UZ-RUN-019`](/api-reference/error-codes#UZ-RUN-019).
 

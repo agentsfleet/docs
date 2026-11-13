@@ -1,6 +1,6 @@
 ---
 title: Run and control a fleet
-description: Inspect, message, stop, resume, kill, and delete a fleet.
+description: Inspect, message, archive, and delete a fleet.
 type: how-to
 audience: user
 verified: 2026-11-04
@@ -73,26 +73,6 @@ Install a fleet. Copy its identifier from `agentsfleet fleet list`.
 
    Choose **Run details** to open usage and duration details. Press **Escape** or click outside the details to close them.
 
-4. Stop new work while keeping the fleet resumable. In the dashboard, open the fleet header’s **… → Stop** and confirm.
-
-   ```bash
-   agentsfleet fleet stop <FLEET_ID>
-   ```
-
-   ```text
-   ✓ <varies> stopped.
-   ```
-
-5. Resume the fleet.
-
-   ```bash
-   agentsfleet fleet resume <FLEET_ID>
-   ```
-
-   ```text
-   ✓ <varies> resumed.
-   ```
-
 ### Inspect current work in chat
 
 <Note>This feature is coming soon.</Note>
@@ -149,11 +129,11 @@ Some fleets are waiting on approval. Review with: agentsfleet fleet approvals li
 
 `UZ-AGT-009` means the fleet does not exist in the active workspace. Check the workspace and fleet identifier.
 
-A killed fleet also returns `UZ-AGT-009` when you try to rename it or change its status with a current version. Create another fleet to resume work.
+An archived fleet also returns `UZ-AGT-009` when you try to rename it or change its status with a current version. Create another fleet to continue the work.
 
-For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for a killed fleet.
+For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for an archived fleet.
 
-`UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
+`UZ-AGT-012` means the fleet is still installing or was archived, so it refuses new work. Check its status with `agentsfleet fleet show <FLEET_ID>`.
 
 If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 
@@ -191,19 +171,21 @@ and tool updates may remain missing.
 
 ## Remove or undo
 
-Stopping is reversible with `resume`. Killing is permanent but keeps the fleet records until deletion.
+<Warning>
+  Archiving and deleting cannot be undone. The client has no dry-run option for either command.
+</Warning>
 
-In the dashboard, choose **… → Kill** from the fleet header. Confirm the permanent action in the dialog.
-
-Deleting removes all fleet records and cannot be undone. The client has no dry-run option for either command.
+Archiving cancels the fleet's live work and setup. The fleet never runs again, and its history stays readable.
 
 ```bash
-agentsfleet fleet kill <FLEET_ID>
+agentsfleet fleet archive <FLEET_ID>
 ```
 
 ```text
-✓ <varies> killed.
+✓ <varies> archived.
 ```
+
+Deleting removes the fleet and all its records, in any status. It cancels live work first.
 
 ```bash
 agentsfleet fleet delete <FLEET_ID>

@@ -157,9 +157,9 @@ Use the current response or event details when diagnosing a new failure.
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | **Retired.** Check the fleet state and the event details for the current failure. |
 | <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Review the draft under a different `--name` to keep it. Deleting the existing fleet permanently removes its events, sessions, schedules, grants, and memory; only do that if you intend to remove it. |
 | <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. |
-| <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace, or a lifecycle update targets a killed fleet after its version checks pass. |
-| <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | That action isn't available for this Fleet right now — check its current status and try again. |
-| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. |
+| <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace, or a lifecycle update targets an archived fleet after its version checks pass. |
+| <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | **Retired.** Delete now works in any status, and archive works on any fleet that is not archived. |
+| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is not active | This Fleet is still installing or was archived, so it refuses new work. Check it with `agentsfleet fleet show <FLEET_ID>`. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. |
 | <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. |

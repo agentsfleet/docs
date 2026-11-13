@@ -22,11 +22,11 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 | State | Meaning | Next actions |
 |---|---|---|
-| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check and resume, or kill to cancel |
-| `active` | The fleet accepts new events. | Stop or kill |
-| `paused` | A service guard has blocked new events. | Resume after resolving the cause |
-| `stopped` | A user has paused new work. | Resume or kill |
-| `killed` | The fleet can never accept work again. | Delete |
+| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check, or archive to cancel setup |
+| `active` | The fleet accepts new events. | Archive or delete |
+| `archived` | The fleet never accepts work again. Its history stays readable. | Delete, or set up a new fleet |
+
+You can delete a fleet in any status. A service guard archives a fleet when an anomaly rule or an `auto_kill` rule trips. Archiving cannot be undone, so set the fleet up again in a new chat.
 
 Saving a draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
 
@@ -47,7 +47,7 @@ Messages stay in the fleet conversation; each work item has no separate chat.
 
 The back arrow on the fleet conversation returns to **Your fleets**.
 
-Other controls include stop, resume, kill, and delete, according to the fleet's state.
+To retire a fleet, archive or delete it. See [Run and control a fleet](/fleets/running#remove-or-undo).
 
 Each Chat entry shows its sender, the time, and what happened. Your own messages read `Operator`. The fleet's replies read the fleet's name.
 
@@ -103,9 +103,9 @@ The fleet keeps its identifier and memory across revisions. Saving changes never
 
 If the fleet's setup changed after the chat loaded it, **Save changes** is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006). Reload the chat, check the setup, then save again.
 
-Stopping a fleet lets the current run finish. Killing a fleet keeps its records but blocks all later work.
+Archiving a fleet cancels its live work and setup. It keeps the fleet's records and blocks all later work.
 
-Deleting a killed fleet removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
+Deleting a fleet cancels its live work and removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
 
 ### What a follow-up message keeps
 
@@ -126,7 +126,6 @@ The next run starts in a fresh sandbox when any of these is true:
 - More than 10 minutes passed since the last run finished.
 - The last run failed.
 - The fleet's repositories or network access changed.
-- The fleet was stopped, paused, or killed.
 - The runner restarted, went offline, needed the room for other fleets, or could not resume the sandbox.
 
 A fresh sandbox checks out the fleet's repositories again and holds none of the last run's other files. Keep what must last longer in the fleet's [memory](/memory).

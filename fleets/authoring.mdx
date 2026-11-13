@@ -249,7 +249,9 @@ Replies and tool calls vary by model; a successful Save alone does not prove tha
 
 ## Common problems
 
-A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check and its next step, such as a missing secret or a pending integration grant. Fix the check, then run `agentsfleet fleet resume <FLEET_ID>`.
+A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check and its next step, such as a missing secret or a pending integration grant.
+
+Fix the check. Approving the last missing grant finishes setup, and the fleet reads `active`.
 
 `UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
 
@@ -284,7 +286,7 @@ Saving a fleet, or saving changes to one, closes its chat. `agentsfleet` keeps a
 
 Charges for the draft's chat messages stay in the workspace's billing records.
 
-Delete a saved fleet only after killing it. Deletion also removes its events, grants, keys, and memory.
+You can delete a saved fleet in any status. Deletion cancels its live work and removes its events, grants, keys, and memory.
 
 ## Related pages
 

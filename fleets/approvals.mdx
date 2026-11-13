@@ -25,8 +25,8 @@ Two kinds of request can appear:
 | A kind you name | A rule under `gates` in the fleet's Definition | Covers the actions described by the rule's `blast_radius`. |
 
 Saving a fleet that needs service credentials creates its grant request.
-The fleet reads `installing` until someone approves it. Then run
-`agentsfleet fleet resume <FLEET_ID>` to finish setup, and the fleet reads `active`.
+The fleet reads `installing` until someone approves it. Approving the last
+missing grant finishes setup in the same request, and the fleet reads `active`.
 
 A repository write uses that standing grant. You do not approve every run separately.
 
