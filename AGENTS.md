@@ -77,7 +77,7 @@ Mirror `ui/packages/design-system/src/tokens.css` from the matching product bran
 - Text: `#f2f0e9` dark / `#14251f` light. Secondary: `#c0c5bc` / `#435d52`.
 - Links and selected navigation: `#b8f0ce` dark / `#06695e` light.
 - Primary action: mint with dark text in dark mode; ink with white text in light mode.
-- Typography: Bricolage Grotesque page titles, Instrument Sans reading and interface text, Commit Mono code and technical values.
+- Typography: Manrope page titles, reading and interface text, Commit Mono code and technical values.
 - Use flat fills and readable contrast. Keep the shipped fonts local; preserve their licenses.
 - Mirror `branding/agentsfleet-{dark,light}.svg`, `branding/agentsfleet-mark-glow.svg`, and `branding/favicon.{svg,ico}` into `logo/{dark,light,mark-glow}.svg` and `favicon.{svg,ico}`. Use the outlined wordmarks so logo lettering does not depend on installed fonts.
 
