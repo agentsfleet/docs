@@ -12,14 +12,14 @@
   },
   "fonts": {
     "heading": {
-      "family": "Bricolage Grotesque",
-      "source": "/fonts/BricolageGrotesque-Variable.woff2",
+      "family": "Manrope Variable",
+      "source": "/fonts/Manrope-Variable.woff2",
       "format": "woff2",
       "weight": 600
     },
     "body": {
-      "family": "Instrument Sans",
-      "source": "/fonts/InstrumentSans-Variable.woff2",
+      "family": "Manrope Variable",
+      "source": "/fonts/Manrope-Variable.woff2",
       "format": "woff2",
       "weight": 400
     }
