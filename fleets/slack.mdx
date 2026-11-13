@@ -79,7 +79,7 @@ A mention that names no fleet goes only to a fleet that is running and has no `r
 | One running fleet without write access | No | That fleet |
 | Several running fleets without write access | No | Nobody. A notice lists the fleets' names. |
 | Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
-| Any attached fleet | Yes | The named fleet. An archived fleet sends the archived notice. |
+| Any attached fleet | Yes | The named fleet. For an archived fleet, an active fleet in the channel posts the archived notice; with none, no notice is sent. |
 
 A fleet whose Definition declares `repository_access: write` answers only when a mention names it.
 From one mention it can open at most one draft pull request (PR).

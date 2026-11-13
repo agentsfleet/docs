@@ -165,6 +165,7 @@ Use the current response or event details when diagnosing a new failure.
 | <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. |
 | <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This `operation_id` was used with a different message or sender; workspace API keys count as one sender. Retry the original request unchanged, or use a new `operation_id` for a new message. The response carries `current_state: "admitted"`. |
 | <span id="UZ-AGT-017"></span>`UZ-AGT-017` | 404 | Tool call not found | No full output was kept for this call on this event, or the call is outside this workspace. Use the call identifier shown in the thread. Its saved preview may still contain the first and last lines. |
+| <span id="UZ-AGT-020"></span>`UZ-AGT-020` | 409 | Fleet is archived | This Fleet is archived and can't change. Delete it, or set up a new Fleet. |
 
 ### Schedules
 

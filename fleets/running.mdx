@@ -129,7 +129,7 @@ Some fleets are waiting on approval. Review with: agentsfleet fleet approvals li
 
 `UZ-AGT-009` means the fleet does not exist in the active workspace. Check the workspace and fleet identifier.
 
-An archived fleet also returns `UZ-AGT-009` when you try to rename it or change its status with a current version. Create another fleet to continue the work.
+An archived fleet returns `UZ-AGT-020` when you try to rename it or change its status. It still appears in `agentsfleet fleet show`. Create another fleet to continue the work.
 
 For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for an archived fleet.
 
