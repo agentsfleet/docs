@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-10-28
-product_version: 0.71.0
+verified: 2026-11-09
+product_version: 0.75.0
 executable: false
 ---
 
@@ -296,6 +296,9 @@ Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one your 
 | <span id="UZ-RUN-018"></span>`UZ-RUN-018` | 409 | Self-test refused: runner is revoked | A revoked runner cannot receive a self-test. Enroll a replacement runner. |
 | <span id="UZ-RUN-019"></span>`UZ-RUN-019` | 409 | Event has no thread to message | The run came from an API steer, a webhook, or a schedule, so no thread is waiting. Say it in the run's answer instead. |
 | <span id="UZ-RUN-020"></span>`UZ-RUN-020` | 409 | Run message limit reached | A run can post at most 8 messages before it answers. Put the rest in the run's answer. |
+| <span id="UZ-RUN-021"></span>`UZ-RUN-021` | 409 | Runner stream superseded | A newer connection owns this runner. Stop the duplicate process and keep one intended process per runner token. |
+| <span id="UZ-RUN-022"></span>`UZ-RUN-022` | 409 | Lease cancelled | The fleet was killed. Stop that lease and report its final result. |
+| <span id="UZ-RUN-023"></span>`UZ-RUN-023` | 400 | Runner protocol unsupported | Upgrade `agentsfleet-runner` and `agentsfleetd` together so they use the same runner protocol. |
 
 ### Runs
 

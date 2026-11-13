@@ -1,14 +1,16 @@
 ---
-title: Fleet library
+title: Plugins and Fleet library
 description: Understand platform and account-owned library entries.
 type: explanation
 audience: user
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-12
+product_version: 0.76.0
 executable: false
 ---
 
 ## What it is
+
+The dashboard calls reusable fleet setups **Plugins**. The API and command-line interface (CLI) retain the Fleet library names.
 
 A library entry is reusable fleet setup. It holds one or more immutable revisions, and each revision is a reviewed Definition with its required secrets, tools, and network hosts.
 
@@ -22,22 +24,18 @@ The library lets a workspace reuse a setup that someone already reviewed.
 
 Entries come only from reviewed chat drafts. Saving a fleet never publishes it, and publishing never creates a fleet.
 
-The dashboard has two tabs.
+The dashboard lists your account’s published setups under **Your plugins**. Private setups from other accounts never appear. The terminal gallery also lists available platform setups.
 
-**All** shows platform setups and setups published by your account. **Workspace** shows setups published by your account that this workspace can use. Private setups from other accounts never appear.
+Choose **Create in chat** to write a new setup. Start a fleet setup chat, then save or publish your setup.
 
-An empty view shows a **New fleet** action. Start a fleet setup chat, then save or publish your setup.
-
-The library accepts reviewed Definitions. Older Markdown bundle entries were removed during the Definition rollout and do not appear. To reuse older instructions, paste them into a new setup chat and publish the reviewed result.
-
-Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. To move a fleet forward, improve it in a private chat and apply the reviewed change.
+Each new fleet starts from one pinned revision. A later revision of the entry does not change fleets saved from an earlier one. Plugins do not compose capabilities into an existing fleet.
 
 ### Start from a revision link
 
-Publish a reviewed setup, such as **Review pull requests**, to reuse its instructions as an editable starting point.
+Publish a reviewed pull-request setup to reuse its instructions as an editable starting point.
 
-1. Open **Fleet library** and choose **Inspect** on the entry.
-2. Select the revision you want, then choose **New fleet**.
+1. Open **Plugins** and choose the menu beside a setup.
+2. Read **Inspect setup**, or use **Choose a saved version** to inspect an earlier revision. Choose **Use for new fleet**.
 3. Copy the resulting browser address to start another setup from that same revision.
 
 The recipient needs access to the workspace and Library entry. A link grants no additional access and includes no private setup conversation.
@@ -66,7 +64,9 @@ A page with no entries reads `No published plugins on this page.` and shows how 
 
 You publish from a reviewed draft. Publishing does not close the draft, so you can keep editing it.
 
-In the dashboard, open **Publish to Fleet library** under the chat's setup and enter a **Library name**. Then choose **Publish new entry**, or **Publish next revision** for an entry this chat already published to.
+In the dashboard, open **Publish plugin** and enter a **Plugin name**. Choose **Publish new entry**, or **Publish next revision** for the selected owned entry. **Edit setup** opens a private chat pinned to that plugin revision.
+
+If an unpublished edit was reloaded, choose **Update an existing plugin** and select its destination before publishing the next revision. Selecting a destination does not publish. Existing fleets keep their pinned setup.
 
 In the terminal, publish a reviewed draft with a label. `<LABEL>` is the display name, 1 to 100 characters. `<DRAFT_ID>` and `<DIGEST>` come from the draft's review.
 
@@ -126,22 +126,17 @@ You can remove only an entry your account owns. A platform entry, another accoun
 
 Removal needs the `library:write` scope.
 
-The dashboard lists the same entries at **Fleet library** in the workspace sidebar.
-Choose **Inspect** to read a revision or **Older revisions** for its history.
-Choose **New fleet** to open private authoring from the selected revision.
+The dashboard lists your account’s entries under **Plugins**. Open a setup’s menu for **Edit setup**, **Use for new fleet**, or **Choose a saved version**.
 
 ## Platform entries
 
 Platform entries come from a reviewed draft too. An operator whose session carries the `platform-library:write` scope stages the draft, and the entry starts hidden.
 
-1. In a workspace chat, open **Publish to Fleet library** and choose **Stage platform entry**.
-2. Open **Fleet library** under Platform.
-3. Edit the entry's name, description, and the reason for each credential it needs.
-4. Choose **Publish**. Only published entries appear in workspace galleries.
+Use `agentsfleet platform fleet-library` in the terminal. Its commands list, inspect, stage, update, publish, unpublish and delete platform entries. Platform administration has no dashboard page.
 
-**Withdraw** hides a published entry again. Only a withdrawn entry can be deleted. Existing fleets keep their pinned setup revision either way.
+Publishing and metadata edits require the entry’s current `--etag`. If another operator writes first, reread the entry and review the newer values before retrying. **Unpublish** hides a published entry; only an unpublished entry can be deleted.
 
-The dashboard protects edits with the version the form loaded. If another operator saves first, your stale edit is refused. Refresh the row, review the newer values, and apply your change again.
+Existing fleets keep their pinned setup revision.
 
 ## Limits
 

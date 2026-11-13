@@ -3,7 +3,7 @@ title: Runners
 description: What a runner does, the policy you assign it, and when it stops taking work.
 type: explanation
 audience: operator
-verified: 2026-11-08
+verified: 2026-11-09
 product_version: 0.75.0
 executable: false
 ---
@@ -29,13 +29,15 @@ External actions must be safe to repeat if the first runner acted before losing 
 
 Open **Admin → Runners → Add runner** and fill in the policy. `agentsfleetd` mints a runner token and shows it once. Copy it before you close the dialog, because it is never shown again.
 
-Put that token on the host, then start `agentsfleet-runner`. [Install a runner](/runners/install) covers the binary and its toolbox. The host reads two required variables and six optional ones:
+Put that token on the host, then start `agentsfleet-runner`. [Install a runner](/runners/install) covers the binary and its toolbox. The host reads three required variables and seven optional ones:
 
 | Variable | What it sets | Default | Valid values |
 |---|---|---|---|
-| `AGENTSFLEET_API_URL` | The control plane the runner asks for work. | none, required | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_API_URL` | The control plane for retained HTTP operations, such as credentials and memory access. | none, required | URL beginning with `http://` or `https://` |
+| `AGENTSFLEET_RUNNER_STREAM_URL` | The private runner listener for work and results. | none, required | An `https://` origin, such as `https://runner.example.net:4443`, with no credentials, path, query or fragment |
+| `AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE` | Extra trusted certificate-authority roots, in Privacy-Enhanced Mail (PEM) format. | operating-system trust store | A readable public certificate bundle |
 | `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
-| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, unsent reports, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
+| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, repository mirrors, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
 | `AGENTSFLEET_LOG_LEVEL` | The lowest level the runner writes to standard error. | `info` | `off`, `error`, `warn`, `info`, `debug`, `trace` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the runner sends its traces and metrics, over OpenTelemetry Protocol (OTLP). Unset sends nothing. | none | An `http` or `https` URL with a host and no query, such as `http://127.0.0.1:4318` |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | How the runner encodes what it sends. | `http/protobuf` | `http/protobuf`, `http/json` |
@@ -45,6 +47,39 @@ Put that token on the host, then start `agentsfleet-runner`. [Install a runner](
 An unreadable log level falls back to `info`. A missing or malformed address or token stops the runner at start and names the variable.
 
 No policy value is read from the host. A runner that carried its own isolation setting could disagree with the dashboard, and nothing would compare the two.
+
+### The runner connection
+
+Each host opens one authenticated connection to the private runner listener.
+Work, progress, results and fleet setup calls share that connection.
+
+The runner prefers HTTP/3 and uses HTTP/2 after eligible connection failures.
+A healthy connection keeps its chosen transport until it closes.
+
+Allow User Datagram Protocol (UDP) and Transmission Control Protocol (TCP) to the listener's port, normally 4443.
+Both transports require Transport Layer Security (TLS) 1.3 with `X25519MLKEM768` key exchange.
+The listener's certificate must match the hostname or address in `AGENTSFLEET_RUNNER_STREAM_URL`.
+
+Your operator supplies a private network route to that listener.
+Set `AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE` when its certificate uses a private issuer.
+The runner needs the public issuer certificate, never the issuer's signing key or the server's private key.
+
+An explicit `HTTPS_PROXY` selects HTTP/2 through an HTTP CONNECT proxy.
+`NO_PROXY` selects hosts that bypass that proxy.
+Certificate failures stop connection setup; fallback keeps the same verification requirements.
+
+### Results during an outage
+
+The runner retries unacknowledged results from memory with jittered delays of 250 milliseconds to sixty seconds.
+The daemon saves accepted results and billing records.
+The runner writes no report files and replays no results from a previous process.
+
+A connection loss keeps pending results in memory while the runner reconnects.
+Process loss can discard results or usage that the daemon has not accepted.
+
+On service shutdown, the runner allows thirty-five seconds for accepted work and result delivery.
+It then stops remaining work and allows five seconds for worker cleanup.
+Process exit can discard results still awaiting acknowledgement.
 
 ### What the runner sends to a collector
 
@@ -68,7 +103,9 @@ It counts what it could not deliver to the collector in `agentsfleet_runner_otlp
 
 ### The policy you assign
 
-Policy travels down from the dashboard. Change it under **Admin → Runners → Edit** and the host applies it on its next heartbeat. Nobody logs in to the host.
+Change the policy under **Admin → Runners → Edit**.
+`agentsfleetd` sends the update over the existing connection.
+The next heartbeat checks the policy again if that update is lost.
 
 <Note>The grouped editor and TypeSafe Jev default are coming soon.</Note>
 
@@ -118,7 +155,7 @@ The three isolation settings differ in what enforces the boundary:
 
 Labels are short names you give a runner when you enrol it. Change them under **Admin → Runners → Edit**, or send `PATCH /v1/fleets/runners/{runner_id}` with a `labels` list.
 
-The new list replaces the old one, and an empty list clears every label. A runner holds at most 32 labels of at most 64 bytes each. `agentsfleetd` reads the labels each time the runner asks for work, so the host needs no restart.
+The new list replaces the old one, and an empty list clears every label. A runner holds at most 32 labels of at most 64 bytes each. `agentsfleetd` reads the labels before offering work, so the host needs no restart.
 
 ### The sandbox each run gets
 
@@ -228,7 +265,7 @@ You can also stop a runner deliberately:
 
 - **Cordon** stops new work reaching it.
 - **Drain** requests a drain and stops new work reaching it.
-- **Revoke** ends its token, so the host's next request is refused.
+- **Revoke** blocks its token and tells the runner to stop.
 
 <Warning>
 Cordon and Drain also block renewals and completion reports for work already running.
@@ -266,7 +303,7 @@ The runner's lifetime totals count every lease it took, so they can exceed the h
 - **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
 - **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
 - **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
-- **Use matching runner and server releases.** Runners older than `agentsfleet-runner` 0.61.0 cannot accept work from the current server.
+- **Upgrade the runner and server together.** Both must support the same runner protocol; the previous HTTP work operations are removed.
 
 ## Related pages
 
