@@ -7,6 +7,50 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 13, 2026" tags={["Breaking", "CLI", "API"]}>
+  ## Commands grouped by resource, scoped operator help and aligned errors
+
+  <Note>These changes are coming soon, in CLI 0.77.0.</Note>
+
+  ## Upgrading
+
+  Root fleet commands moved under the resource they act on. The old spellings are removed, not aliased, so scripts must change. Upgrade the CLI and the server together: a server running this release prints hints in the new spellings.
+
+  | Before | Now |
+  |---|---|
+  | `agentsfleet list`, `status`, `delete`, `steer`, `logs`, `events` | `agentsfleet fleet list`, `fleet status`, … `fleet events` |
+  | `agentsfleet stop`, `resume`, `kill` | `agentsfleet fleet activate`, `fleet archive` or `fleet delete` |
+  | `agentsfleet approvals …`, `schedule …`, `memory …` | `agentsfleet fleet approvals …`, `fleet schedule …`, `fleet memory …` |
+  | `agentsfleet grant list`, `grant delete` | `agentsfleet fleet grants list`, `fleet grants revoke` |
+  | `agentsfleet models [--provider]` | `agentsfleet models list [--provider]` |
+  | `agentsfleet tenant provider show`, `create`, `delete` | `agentsfleet models current`, `models use`, `models reset` |
+  | `agentsfleet secret …` | `agentsfleet secrets …` |
+  | `agentsfleet workspace secrets`, `secrets open` | Removed; open **Secrets** in the dashboard |
+  | `agentsfleet library`, `library list`, `library delete` | `agentsfleet plugins`, `plugins list`, `plugins delete` |
+  | `agentsfleet chat --library`, `--library-etag` | `agentsfleet chat --plugin`, `--plugin-etag` |
+  | `agentsfleet chat delete <DRAFT_ID> --yes` | `agentsfleet chat delete <DRAFT_ID>`, with no prompt |
+  | `agentsfleet platform keys set` | `agentsfleet platform keys use` |
+  | `agentsfleet connector …` | `agentsfleet connections …` |
+  | `agentsfleet api-key …` | `agentsfleet api-keys …` |
+  | `agentsfleet billing show` | `agentsfleet usage show` |
+
+  The fleet lifecycle changes too.
+
+  - **Stop, resume and kill** — These commands are removed with no alias. `agentsfleet fleet archive <FLEET_ID>` cancels live work and keeps history; it cannot be undone.
+  - **Delete** — `agentsfleet fleet delete` works in any status and cancels live work first. `DELETE` returns `204` and no longer returns `409`.
+  - **Setup checks** — Approving a fleet's last missing grant finishes setup with no further command. After fixing any other check, run `agentsfleet fleet activate <FLEET_ID>`, or send `{"status":"active"}` from the API.
+  - **Tripped gates** — A runaway anomaly rule now archives the fleet instead of pausing it. Set the fleet up again in a new chat. A gate rule now always asks a person; its `behavior` field and `auto_kill` are removed.
+  - **Statuses** — A fleet reads `installing`, `active` or `archived`. `stopped`, `paused`, `killed` and `UZ-AGT-010` are gone.
+
+  ## What's new
+
+  - **Scoped operator help** — `agentsfleet platform` and its families appear in help, suggestions and completions only for an account holding a scope that can use them. Hidden commands still run, and the server still decides.
+  - **Shell completions** — `agentsfleet --completions bash|zsh|fish|powershell` prints a script scoped to the signed-in account. Write it to a file and regenerate it after you sign in, change server, or gain or lose a scope.
+  - **Readable errors** — Every failure prints one block: the message, then `code`, `usage`, `did you mean`, `suggestion` and `request`, with values in one column. A usage error no longer prints the full help above it. `--json` error output is unchanged.
+
+  See the [command reference](/cli/agentsfleet).
+</Update>
+
 <Update label="Nov 13, 2026" tags={["Docs"]}>
   ## Shared Manrope typography
 

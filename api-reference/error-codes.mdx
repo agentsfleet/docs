@@ -153,18 +153,19 @@ Use the current response or event details when diagnosing a new failure.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
-| <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secret create <NAME>` |
+| <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secrets create <NAME>` |
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | **Retired.** Check the fleet state and the event details for the current failure. |
 | <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Review the draft under a different `--name` to keep it. Deleting the existing fleet permanently removes its events, sessions, schedules, grants, and memory; only do that if you intend to remove it. |
 | <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. |
-| <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace, or a lifecycle update targets a killed fleet after its version checks pass. |
-| <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | That action isn't available for this Fleet right now — check its current status and try again. |
-| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is paused | This Fleet is paused. Resume it before sending new work. |
+| <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace. |
+| <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | **Retired.** Delete now works in any status, and archive works on any fleet that is not archived. |
+| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is not active | This Fleet is still installing or was archived, so it refuses new work. Check it with `agentsfleet fleet show <FLEET_ID>`. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. |
 | <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. |
 | <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This `operation_id` was used with a different message or sender; workspace API keys count as one sender. Retry the original request unchanged, or use a new `operation_id` for a new message. The response carries `current_state: "admitted"`. |
 | <span id="UZ-AGT-017"></span>`UZ-AGT-017` | 404 | Tool call not found | No full output was kept for this call on this event, or the call is outside this workspace. Use the call identifier shown in the thread. Its saved preview may still contain the first and last lines. |
+| <span id="UZ-AGT-020"></span>`UZ-AGT-020` | 409 | Fleet is archived | This Fleet is archived and can't change. Delete it, or set up a new Fleet. |
 
 ### Schedules
 
@@ -173,13 +174,13 @@ Use the current response or event details when diagnosing a new failure.
 | <span id="UZ-SCHED-001"></span>`UZ-SCHED-001` | 422 | Invalid schedule | **Retired.** Invalid schedule fields now return [`UZ-REQ-001`](#UZ-REQ-001). Use a five-field cron expression and a supported timezone. |
 | <span id="UZ-SCHED-002"></span>`UZ-SCHED-002` | 404 | Schedule not found | No schedule matches this identifier for the selected Fleet. |
 | <span id="UZ-SCHED-003"></span>`UZ-SCHED-003` | 409 | Schedule limit reached | A Fleet can hold at most 32 schedules. Remove one before creating another. |
-| <span id="UZ-SCHED-004"></span>`UZ-SCHED-004` | 502 | Schedule provider unavailable | **Retired.** A saved schedule carries its synchronization state even when registration fails. Check the diagnostic, then run `agentsfleet schedule sync <FLEET_ID> <SCHEDULE_ID>`. |
+| <span id="UZ-SCHED-004"></span>`UZ-SCHED-004` | 502 | Schedule provider unavailable | **Retired.** A saved schedule carries its synchronization state even when registration fails. Check the diagnostic, then run `agentsfleet fleet schedule sync <FLEET_ID> <SCHEDULE_ID>`. |
 | <span id="UZ-SCHED-005"></span>`UZ-SCHED-005` | 401 | Invalid schedule signature | **Retired.** Use the authentication error in the current schedule-delivery response. |
 | <span id="UZ-SCHED-006"></span>`UZ-SCHED-006` | 409 | Schedule update busy | Another schedule mutation holds the synchronization lease. Retry after the reported delay. |
 | <span id="UZ-SCHED-007"></span>`UZ-SCHED-007` | 503 | Schedule service unavailable | **Retired.** Ask the operator to enable scheduling when the saved schedule reports missing service configuration. |
 | <span id="UZ-SCHED-008"></span>`UZ-SCHED-008` | 409 | Schedule source already exists | A schedule already uses this source key for the selected Fleet. Pick a different source or update the existing schedule. |
 | <span id="UZ-SCHED-009"></span>`UZ-SCHED-009` | 409 | Fleet schedule cap reached | A fleet can create at most 16 schedules itself. Remove one of its own schedules before creating another. |
-| <span id="UZ-SCHED-010"></span>`UZ-SCHED-010` | 403 | Schedule not created by the fleet | A fleet can change or delete only the schedules it created. A person created this one. Change it from the schedules page or `agentsfleet schedule`. |
+| <span id="UZ-SCHED-010"></span>`UZ-SCHED-010` | 403 | Schedule not created by the fleet | A fleet can change or delete only the schedules it created. A person created this one. Change it from the schedules page or `agentsfleet fleet schedule`. |
 | <span id="UZ-SCHED-011"></span>`UZ-SCHED-011` | 409 | Schedule cannot run now | The schedule is paused or being removed, or the current run was started by a schedule. The response names the state in `current_state`. |
 
 ### Drafts and setup

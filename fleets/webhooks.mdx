@@ -122,9 +122,8 @@ grant can be approved.
 3. Approve the fleet's integration grant.
 
    Saving raises the grant, and the fleet reads `installing` until a person
-   approves it with [`agentsfleet approvals`](/fleets/approvals). After the
-   approval, run `agentsfleet resume <FLEET_ID>` to finish setup. The fleet
-   then reads `active`.
+   approves it with [`agentsfleet fleet approvals`](/fleets/approvals). Approving
+   its last missing grant finishes setup, and the fleet reads `active`.
 
 Register nothing on the repository. The App already delivers, and its events
 reach the fleets whose `repositories` name that repository.
@@ -135,7 +134,7 @@ Use this for any provider without a connected App.
 
 1. Save the fleet, then read its webhook URLs.
 
-   `<FLEET_ID>` comes from `agentsfleet list`.
+   `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
    agentsfleet --json fleet show <FLEET_ID>
@@ -164,10 +163,10 @@ Use this for any provider without a connected App.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from `agentsfleet list`.
+`<FLEET_ID>` comes from `agentsfleet fleet list`.
 
 ```bash
-agentsfleet events <FLEET_ID> --actor 'webhook:*' --since 1h
+agentsfleet fleet events <FLEET_ID> --actor 'webhook:*' --since 1h
 ```
 
 ```text

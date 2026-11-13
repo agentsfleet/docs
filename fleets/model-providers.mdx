@@ -25,7 +25,7 @@ Select the workspace that will own the credential. Have your provider's API
 key ready, then list available models:
 
 ```bash
-agentsfleet models
+agentsfleet models list
 ```
 
 ```text
@@ -61,7 +61,7 @@ For the command-line interface (CLI), use these steps:
 1. Store the provider credential. The provider id, API key, and model are all required.
 
    ```bash
-   agentsfleet secret create my-model --provider <PROVIDER_ID> --api-key af_test_00000000 --model <MODEL_ID>
+   agentsfleet secrets create my-model --provider <PROVIDER_ID> --api-key af_test_00000000 --model <MODEL_ID>
    ```
 
    ```text
@@ -74,20 +74,17 @@ For the command-line interface (CLI), use these steps:
 2. Select the stored credential for your account.
 
    ```bash
-   agentsfleet tenant provider create --workspace <WORKSPACE_ID> --secret my-model
+   agentsfleet models use --secret my-model
    ```
 
    ```text
    Tenant provider added: mode=self_managed secret=my-model
    ```
 
-   Use the identifier of the workspace where you stored `my-model`.
-   Omitting `--workspace` uses your selected workspace.
-
 3. Confirm the active provider.
 
    ```bash
-   agentsfleet tenant provider show
+   agentsfleet models current
    ```
 
    ```text
@@ -114,7 +111,7 @@ Copy `<MODEL_ID>` from that configuration. Replace the example URL with the
 configured HTTPS base URL. Private or unsafe destinations are refused.
 
 ```bash
-agentsfleet secret create my-gateway --provider openai-compatible \
+agentsfleet secrets create my-gateway --provider openai-compatible \
   --base-url https://models.example.com/v1 --model <MODEL_ID> --api-key af_test_00000000
 ```
 
@@ -124,11 +121,11 @@ agentsfleet secret create my-gateway --provider openai-compatible \
 
 ## Verify it works
 
-Check that `agentsfleet tenant provider show` names your secret.
+Check that `agentsfleet models current` names your secret.
 Before testing a fleet, review its setup and confirm **Runtime model** uses your selected model reference.
 Save the updated setup if it still names the previous model.
 
-Send that fleet a message with `agentsfleet steer <FLEET_ID>`, using an identifier from `agentsfleet list`.
+Send that fleet a message with `agentsfleet fleet steer <FLEET_ID>`, using an identifier from `agentsfleet fleet list`.
 Check the response and usage in your provider account.
 
 ## Common problems
@@ -138,7 +135,7 @@ A saved key can expire or be revoked. If setup chat reports `UZ-AUTHOR-008` afte
 The rejected reply fails without requiring **Stop**. If the provider outcome is uncertain, follow [setup-chat recovery](/fleets/authoring#recover-a-stopped-or-failed-reply).
 
 An unknown provider or model returns the accepted values. Run
-`agentsfleet models --provider <PROVIDER_ID>` to check your choice.
+`agentsfleet models list --provider <PROVIDER_ID>` to check your choice.
 Ask an administrator to add a missing model and its inference settings.
 
 Local coding tools such as `claude-cli`, `codex-cli`, `gemini-cli`,
@@ -156,7 +153,7 @@ must also be configured in the catalogue before it can be activated.
 Return to the platform default:
 
 ```bash
-agentsfleet tenant provider delete
+agentsfleet models reset
 ```
 
 ```text
@@ -164,7 +161,7 @@ Custom LLM provider removed — events will now run on agentsfleet's platform de
 ```
 
 The stored credential stays in the vault. Delete it with
-`agentsfleet secret delete my-model` after removing its model registry entries.
+`agentsfleet secrets delete my-model` after removing its model registry entries.
 Deletion fails with `UZ-VAULT-004` while an entry still references the secret.
 
 ## Related pages

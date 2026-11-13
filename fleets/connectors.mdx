@@ -38,12 +38,15 @@ If a provider needs platform setup, choose **Request access** to register your i
 
 3. Approve the requested access on the provider's website.
 
-4. Save a fleet that uses the provider. In its conversation, choose **Approve** under **Needs your approval**, then choose **Finish setup**.
+4. Save a fleet that uses the provider. In its conversation, choose **Approve** under **Needs your approval**.
 
 The workspace owns the connector. Each fleet needs a separate approved grant before it can use the connection.
 
-If setup remains `installing` after approval, run `agentsfleet resume <FLEET_ID>`.
-Copy `<FLEET_ID>` from `agentsfleet list`.
+Approving the fleet's last missing grant finishes its setup, and the fleet reads `active`.
+If it stays `installing`, run `agentsfleet fleet show <FLEET_ID>` to see what setup still needs.
+After you fix it, choose **Finish setup** in its conversation or run `agentsfleet fleet activate <FLEET_ID>`.
+
+Copy `<FLEET_ID>` from `agentsfleet fleet list`.
 
 A connected Slack workspace also lets a fleet answer mentions in a channel. Posting that answer needs no grant, because `agentsfleet` posts it itself. See [Answer mentions in Slack](/fleets/slack).
 
@@ -52,7 +55,7 @@ A fleet that answers in Slack and also calls another provider still needs that p
 ## Verify it works
 
 ```bash
-agentsfleet connector list
+agentsfleet connections list
 ```
 
 ```text

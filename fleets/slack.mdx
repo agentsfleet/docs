@@ -79,7 +79,7 @@ A mention that names no fleet goes only to a fleet that is running and has no `r
 | One running fleet without write access | No | That fleet |
 | Several running fleets without write access | No | Nobody. A notice lists the fleets' names. |
 | Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
-| Any attached fleet | Yes | The named fleet. A paused fleet sends the paused notice. |
+| Any attached fleet | Yes | The named fleet. For an archived fleet, an active fleet in the channel posts the archived notice; with none, no notice is sent. |
 
 A fleet whose Definition declares `repository_access: write` answers only when a mention names it.
 From one mention it can open at most one draft pull request (PR).
@@ -101,10 +101,10 @@ Its memory belongs to the channel, and no other fleet reads it. It also posts th
 
 3. Open the fleet in the dashboard. Its trigger card reads **Chat mention** with the channel ID.
 
-4. List the fleet's events. `<FLEET_ID>` comes from `agentsfleet list`.
+4. List the fleet's events. `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
-   agentsfleet events <FLEET_ID>
+   agentsfleet fleet events <FLEET_ID>
    ```
 
    ```text
@@ -118,8 +118,8 @@ A notice replaces an answer when `agentsfleet` cannot pick one fleet. Each notic
 | Notice starts with | Why | What to do |
 |---|---|---|
 | `Several fleets answer in this channel` | The mention named no fleet, and more than one could answer. | Start the message with one of the listed names. |
-| `The fleets attached here answer only when named` | Every attached fleet has repository write access or is paused. | Start the message with one of the listed names. |
-| `<NAME> is paused and cannot answer` | The named fleet is paused. | Run the `agentsfleet resume` command the notice prints. |
+| `The fleets attached here answer only when named` | Every attached fleet has repository write access or is archived. | Start the message with one of the listed names. |
+| `<NAME> is archived and cannot answer` | The named fleet is archived. | Mention another fleet attached to the channel. |
 
 A notice appears 30 to 60 seconds after the mention.
 
@@ -152,9 +152,7 @@ Deleting the channel's own fleet permanently removes its memory, events, and oth
 The next mention that needs it creates a new fleet with empty memory.
 </Warning>
 
-To remove it, run `agentsfleet kill <FLEET_ID>` and then `agentsfleet delete <FLEET_ID>`.
-
-Between the two commands, the channel fleet is killed, and a mention that needs it gets no answer. A channel fleet you stop instead of killing answers with the paused notice until you resume it.
+To remove it, run `agentsfleet fleet delete <FLEET_ID>`.
 
 ## Related pages
 

@@ -1,6 +1,6 @@
 ---
 title: Run and control a fleet
-description: Inspect, message, stop, resume, kill, and delete a fleet.
+description: Inspect, message, activate, archive, and delete a fleet.
 type: how-to
 audience: user
 verified: 2026-11-04
@@ -16,14 +16,14 @@ The dashboard uses your chosen fleet name in **Your fleets** and the conversatio
 
 ## Before you begin
 
-Install a fleet. Copy its identifier from `agentsfleet list`.
+Install a fleet. Copy its identifier from `agentsfleet fleet list`.
 
 ## Steps
 
 1. List fleet identifiers.
 
    ```bash
-   agentsfleet list
+   agentsfleet fleet list
    ```
 
    ```text
@@ -35,7 +35,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    `<FLEET_ID>` comes from the list output.
 
    ```bash
-   agentsfleet logs <FLEET_ID>
+   agentsfleet fleet logs <FLEET_ID>
    ```
 
    ```text
@@ -45,7 +45,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 3. Send a manual message.
 
    ```bash
-   agentsfleet steer <FLEET_ID> "check current health"
+   agentsfleet fleet steer <FLEET_ID> "check current health"
    ```
 
    ```text
@@ -54,7 +54,7 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
 
    Approve the fleet's integration grant during setup to allow repository access.
    That approval lasts until you revoke it. Custom approval rules can pause
-   individual runs; review those requests with [`agentsfleet approvals`](/fleets/approvals).
+   individual runs; review those requests with [`agentsfleet fleet approvals`](/fleets/approvals).
 
    In the dashboard chat, a reply appears as it arrives. You can send another
    message while a run is active; the new event waits its turn and keeps its
@@ -72,26 +72,6 @@ Install a fleet. Copy its identifier from `agentsfleet list`.
    Saving keeps your unsent message and private setup edits. **Model changed** appears in **Chat** and **Activity** after the save.
 
    Choose **Run details** to open usage and duration details. Press **Escape** or click outside the details to close them.
-
-4. Stop new work while keeping the fleet resumable. In the dashboard, open the fleet header’s **… → Stop** and confirm.
-
-   ```bash
-   agentsfleet stop <FLEET_ID>
-   ```
-
-   ```text
-   ✓ <varies> stopped.
-   ```
-
-5. Resume the fleet.
-
-   ```bash
-   agentsfleet resume <FLEET_ID>
-   ```
-
-   ```text
-   ✓ <varies> resumed.
-   ```
 
 ### Inspect current work in chat
 
@@ -126,7 +106,7 @@ History keeps the message from that occurrence; current controls show the latest
 ## Verify it works
 
 ```bash
-agentsfleet status
+agentsfleet fleet status
 ```
 
 ```text
@@ -142,22 +122,22 @@ Waiting: <varies>
 the client adds this line:
 
 ```text
-Some fleets are waiting on approval. Review with: agentsfleet approvals list
+Some fleets are waiting on approval. Review with: agentsfleet fleet approvals list
 ```
 
 ## Common problems
 
 `UZ-AGT-009` means the fleet does not exist in the active workspace. Check the workspace and fleet identifier.
 
-A killed fleet also returns `UZ-AGT-009` when you try to rename it or change its status with a current version. Create another fleet to resume work.
+An archived fleet returns `UZ-AGT-020` when you try to rename it or change its status. It still appears in `agentsfleet fleet show`. Create another fleet to continue the work.
 
-For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for a killed fleet.
+For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for an archived fleet.
 
-`UZ-AGT-012` means the fleet cannot accept a message in its current state. Resolve the cause or resume a stopped fleet.
+`UZ-AGT-012` means the fleet is still installing or was archived, so it refuses new work. Check its status with `agentsfleet fleet show <FLEET_ID>`. After you fix setup, run `agentsfleet fleet activate <FLEET_ID>` to activate an installing fleet.
 
 If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 
-A run with no reply may be waiting for approval. Run `agentsfleet approvals list` to review the request.
+A run with no reply may be waiting for approval. Run `agentsfleet fleet approvals list` to review the request.
 
 A message with no answer after 30 seconds reads **Couldn't confirm this message was sent.** Click **Resend**. It carries the same `operation_id`, so the fleet runs the message once.
 
@@ -191,22 +171,24 @@ and tool updates may remain missing.
 
 ## Remove or undo
 
-Stopping is reversible with `resume`. Killing is permanent but keeps the fleet records until deletion.
+<Warning>
+  Archiving and deleting cannot be undone. The client has no dry-run option for either command.
+</Warning>
 
-In the dashboard, choose **… → Kill** from the fleet header. Confirm the permanent action in the dialog.
-
-Deleting removes all fleet records and cannot be undone. The client has no dry-run option for either command.
+Archiving cancels the fleet's live work and setup. The fleet never runs again, and its history stays readable.
 
 ```bash
-agentsfleet kill <FLEET_ID>
+agentsfleet fleet archive <FLEET_ID>
 ```
 
 ```text
-✓ <varies> killed.
+✓ <varies> archived.
 ```
 
+Deleting removes the fleet and all its records, in any status. It cancels live work first.
+
 ```bash
-agentsfleet delete <FLEET_ID>
+agentsfleet fleet delete <FLEET_ID>
 ```
 
 ```text

@@ -35,10 +35,10 @@ The dashboard's fleet detail page lists each entry's content, category, and upda
 
 The API route is `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}`. It returns `204` after deletion and `UZ-MEM-004` when the key is absent.
 
-`<FLEET_ID>` comes from `agentsfleet list`.
+`<FLEET_ID>` comes from `agentsfleet fleet list`.
 
 ```bash
-agentsfleet memory list --fleet <FLEET_ID>
+agentsfleet fleet memory list --fleet <FLEET_ID>
 ```
 
 ```text

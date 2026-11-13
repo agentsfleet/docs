@@ -10,7 +10,7 @@ executable: false
 
 ## What it is
 
-The dashboard calls reusable fleet setups **Plugins**. The API and command-line interface (CLI) retain the Fleet library names.
+The dashboard and command-line interface (CLI) call reusable fleet setups **Plugins**. The API keeps the Fleet library names.
 
 A library entry is reusable fleet setup. It holds one or more immutable revisions, and each revision is a reviewed Definition with its required secrets, tools, and network hosts.
 
@@ -44,21 +44,21 @@ Each person starts a private setup chat. Describe your changes, review the propo
 
 ### Start from the terminal
 
-`agentsfleet library` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one your account owns.
+The terminal calls a library entry a plugin. `agentsfleet plugins` lists the gallery this workspace can use, which holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one your account owns.
 
 ```bash
-agentsfleet library
+agentsfleet plugins
 ```
 
 ```text
-NAME        LIBRARY     TIER        REVISION    AGO
+NAME        PLUGIN      TIER        REVISION    AGO
 <varies>
-Start from a revision: agentsfleet chat --library <library_id> --revision <revision_id>
+Start from a revision: agentsfleet chat --plugin <plugin_id> --revision <revision_id>
 ```
 
 `REVISION` is the entry's latest revision. [Install a fleet](/fleets/install) shows how to save a fleet from it.
 
-A page with no entries reads `No published Fleet libraries in this page.` and shows how to publish one.
+A page with no entries reads `No published plugins on this page.` and shows how to publish one.
 
 ## Publish an entry for your account
 
@@ -76,47 +76,47 @@ agentsfleet chat <DRAFT_ID> --no-input --publish <LABEL> --review-digest <DIGEST
 
 ```text
 <varies>
-✓ Published Library revision <REVISION_ID>
+✓ Published plugin revision <REVISION_ID>
 ```
 
 Inside an interactive chat, `/publish <LABEL>` does the same after a `/review`.
 
-To add a revision to an entry your account owns, add `--publish-to <LIBRARY_ID> --library-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json library list`. A stale tag is refused, so the revision always follows the version you inspected.
+To add a revision to an entry your account owns, add `--publish-to <PLUGIN_ID> --plugin-etag <ETAG>`. `<ETAG>` is the entry's `etag` field from `agentsfleet --json plugins list`. A stale tag is refused, so the revision always follows the version you inspected.
 
 Publishing needs the `library:write` scope.
 
 | Option | Effect | Default | Unit or range |
 |---|---|---|---|
 | `--publish <LABEL>` | Publishes the reviewed draft as a new entry. | None | Text, 1 to 100 characters |
-| `--publish-to <LIBRARY_ID>` | Appends a revision to this owned entry instead. Needs `--publish` and `--library-etag`. | None | Library identifier |
-| `--library-etag <ETAG>` | The entry tag you inspected. | None | Entity tag |
+| `--publish-to <PLUGIN_ID>` | Appends a revision to this owned entry instead. Needs `--publish` and `--plugin-etag`. | None | Plugin identifier |
+| `--plugin-etag <ETAG>` | The entry tag you inspected. | None | Entity tag |
 | `--review-digest <DIGEST>` | The digest of the review you inspected. | None; required | Digest text |
 
 ## List and remove your account's entries
 
-`agentsfleet library list` lists only the entries your account owns. It never shows a platform entry.
+`agentsfleet plugins list` lists only the entries your account owns. It never shows a platform entry.
 
 ```bash
-agentsfleet library list
+agentsfleet plugins list
 ```
 
 ```text
-NAME        LIBRARY     TIER        REVISION    AGO
+NAME        PLUGIN      TIER        REVISION    AGO
 <varies>
 ```
 
-`agentsfleet library delete` takes one identifier from the `LIBRARY` column.
+`agentsfleet plugins delete` takes one identifier from the `PLUGIN` column.
 
 <Warning>
   Removal is permanent. The entry and its revision history leave the gallery, and nothing restores them.
 </Warning>
 
 ```bash
-agentsfleet library delete <LIBRARY_ID>
+agentsfleet plugins delete <PLUGIN_ID>
 ```
 
 ```text
-✓ <varies> is no longer in this workspace's Fleet library. Fleets already installed from it keep running.
+✓ <varies> is no longer one of this workspace's plugins. Fleets already installed from it keep running.
 Publish reviewed chat setup with: agentsfleet chat --help
 ```
 
@@ -146,7 +146,7 @@ A Definition declares at most 128 tools, 64 secrets, and 64 network hosts. A too
 
 Library lists return 100 entries per page at most. Use `--starting-after <CURSOR>` with the cursor the previous page prints.
 
-Removing a fleet does not remove its library entry. Remove the entry itself with `agentsfleet library delete <LIBRARY_ID>`.
+Removing a fleet does not remove its library entry. Remove the entry itself with `agentsfleet plugins delete <PLUGIN_ID>`.
 
 ## Related pages
 
