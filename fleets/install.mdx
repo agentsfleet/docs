@@ -25,23 +25,23 @@ Sign in and select a workspace. Save every secret the entry needs; the review li
 1. Browse the workspace gallery.
 
    ```bash
-   agentsfleet library
+   agentsfleet plugins
    ```
 
    ```text
-   NAME        LIBRARY     TIER        REVISION    AGO
+   NAME        PLUGIN      TIER        REVISION    AGO
    <varies>
-   Start from a revision: agentsfleet chat --library <library_id> --revision <revision_id>
+   Start from a revision: agentsfleet chat --plugin <plugin_id> --revision <revision_id>
    ```
 
    The gallery holds both tiers. `TIER` reads `platform` for an entry every workspace sees and `tenant` for one your account owns. `REVISION` is the entry's latest revision.
 
 2. Open a private draft from that revision and review it under your fleet name.
 
-   `<LIBRARY_ID>` and `<REVISION_ID>` come from the gallery. `<NAME>` is the fleet name you choose.
+   `<PLUGIN_ID>` and `<REVISION_ID>` come from the gallery. `<NAME>` is the fleet name you choose.
 
    ```bash
-   agentsfleet chat --library <LIBRARY_ID> --revision <REVISION_ID> --model <MODEL_REF> --no-input --review --name <NAME>
+   agentsfleet chat --plugin <PLUGIN_ID> --revision <REVISION_ID> --model <MODEL_REF> --no-input --review --name <NAME>
    ```
 
    ```text

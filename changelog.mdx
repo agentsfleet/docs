@@ -24,7 +24,12 @@ description: "Product changes and upgrade notes."
   | `agentsfleet grant list`, `grant delete` | `agentsfleet fleet grants list`, `fleet grants revoke` |
   | `agentsfleet models [--provider]` | `agentsfleet models list [--provider]` |
   | `agentsfleet tenant provider show`, `create`, `delete` | `agentsfleet models current`, `models use`, `models reset` |
-  | `agentsfleet secret …`, `workspace secrets` | `agentsfleet secrets …`, `secrets open` |
+  | `agentsfleet secret …` | `agentsfleet secrets …` |
+  | `agentsfleet workspace secrets`, `secrets open` | Removed; open **Secrets** in the dashboard |
+  | `agentsfleet library`, `library list`, `library delete` | `agentsfleet plugins`, `plugins list`, `plugins delete` |
+  | `agentsfleet chat --library`, `--library-etag` | `agentsfleet chat --plugin`, `--plugin-etag` |
+  | `agentsfleet chat delete <DRAFT_ID> --yes` | `agentsfleet chat delete <DRAFT_ID>`, with no prompt |
+  | `agentsfleet platform keys set` | `agentsfleet platform keys use` |
   | `agentsfleet connector …` | `agentsfleet connections …` |
   | `agentsfleet api-key …` | `agentsfleet api-keys …` |
   | `agentsfleet billing show` | `agentsfleet usage show` |
