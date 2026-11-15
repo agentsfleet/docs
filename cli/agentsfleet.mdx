@@ -3,7 +3,7 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-11-13
+verified: 2026-11-15
 product_version: 0.77.0
 executable: false
 ---
@@ -32,7 +32,6 @@ The server checks the signed-in credential’s scopes on every request. A comman
 |---|---|---|
 | `agentsfleet platform keys` | Inspect or set the platform default provider and model. Stored keys stay hidden. | `platform-key:read` for list; `platform-key:admin` for set/delete |
 | `agentsfleet platform models` | List, inspect and maintain the priced model catalogue. | `model:read` for reads; `model:admin` for writes |
-| `agentsfleet platform fleet-library` | Maintain staged and published platform setups. | `platform-library:write` |
 | `agentsfleet platform runners` | Inspect hosts, enroll them, update policy and manage their lifecycle. | `runner:read`, `runner:enroll` or `runner:write`, according to the operation |
 
 Choose a catalogued model backed by an existing provider credential in the named workspace:
@@ -340,7 +339,7 @@ Both commands accept `--workspace <WORKSPACE_ID>`.
 
 | Command | Effect |
 |---|---|
-| `agentsfleet plugins` | Lists every platform or account-owned plugin this workspace can use. |
+| `agentsfleet plugins` | Lists the Plugins your account owns. |
 | `agentsfleet plugins list` | Lists only the plugins your account owns. |
 | `agentsfleet plugins delete <PLUGIN_ID>` | Removes one plugin your account owns, with its revision history. Fleets saved from it keep running. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
@@ -362,9 +361,10 @@ Event polling reports permanent access or request errors immediately; its timeou
 
 `agentsfleet fleet archive` and `agentsfleet fleet delete` have no dry-run option. Check the fleet identifier with `agentsfleet fleet show <FLEET_ID>` first.
 
-`agentsfleet plugins` and `agentsfleet plugins list` answer different questions. The first lists everything this workspace can use, platform plugins included. The second lists only what your account owns, which is the set `agentsfleet plugins delete` can act on.
+`agentsfleet plugins` and `agentsfleet plugins list` read the same account-owned collection.
+Platform Plugin publication is removed, along with its commands and scopes.
 
-`agentsfleet plugins delete` removes a plugin permanently. Removing a platform plugin, another account's plugin, or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
+`agentsfleet plugins delete` removes a plugin permanently. Removing another account's Plugin or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
 
 Fleets and plugins come only from reviewed chat drafts. The file, GitHub, and template import commands, `agentsfleet install`, and `agentsfleet fleet update` were removed; `agentsfleet chat` replaces them.
 
@@ -535,6 +535,6 @@ The [error registry](/api-reference/error-codes) lists the message each code car
 - [Global options](/cli/flags)
 - [Client configuration](/cli/configuration)
 - [Author a fleet](/fleets/authoring)
-- [Fleet library](/fleets/library)
+- [Plugins](/fleets/library)
 - [Approve a waiting run](/fleets/approvals)
 - [Quickstart](/quickstart)

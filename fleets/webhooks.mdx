@@ -3,8 +3,8 @@ title: Configure a webhook
 description: Send signed provider events to a fleet.
 type: how-to
 audience: user
-verified: 2026-10-28
-product_version: 0.71.0
+verified: 2026-11-15
+product_version: 0.77.0
 executable: false
 ---
 
@@ -105,7 +105,7 @@ grant can be approved.
 
 2. Save a fleet whose webhook trigger names your repositories.
 
-   A library entry cannot know your repository. Before you save, ask the chat
+   A Plugin cannot know your repository. Before you save, ask the chat
    to set `repositories` on the webhook trigger, or edit the Definition file,
    then review the change. `<DRAFT_ID>`, `<NAME>`, and `<DIGEST>` come from the review.
 
@@ -191,8 +191,8 @@ Rate-limited requests include `Retry-After`. The provider should wait for that d
 
 ## Remove or undo
 
-Delete the webhook from the provider first. Choose **Edit setup** in the fleet header, then ask the chat to remove the trigger.
-Review the updated setup and choose **Save changes** beside the chat.
+Delete the webhook from the provider first. Open **Fleet actions → Edit setup**, then ask the chat to remove the trigger.
+Review the updated setup and choose **Save and publish** above the message field.
 
 Deleting the fleet removes its webhook URL. Requests to the old URL then return `UZ-WH-001`.
 
