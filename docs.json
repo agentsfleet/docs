@@ -190,8 +190,7 @@
             "pages": [
               "GET /v1/tenants/me/billing",
               "GET /v1/tenants/me/billing/charges",
-              "GET /v1/tenants/me/billing/reports/current",
-              "GET /v1/tenants/me/billing/activities/{activity_id}/charges"
+              "GET /v1/tenants/me/billing/reports/current"
             ]
           },
           {
