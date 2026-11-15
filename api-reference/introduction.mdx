@@ -22,7 +22,9 @@ Use the API when a script or service needs direct access. Use the command-line c
 
 Most paths accept a bearer token in the `Authorization` header. Tenant API keys start with `agt_t` and are shown once when created.
 
-The dashboard's **API Keys** page combines your signed-in identity, account API keys and active sessions.
+The dashboard's **Security** page combines account API keys and active sessions.
+Your account avatar shows the current image when available, with your email on hover.
+
 Key lists show a recorded four-character suffix for recognition; older keys can have no recorded suffix.
 The suffix cannot authenticate a request, and the original key cannot be recovered from it.
 
@@ -41,7 +43,7 @@ Webhook and connector paths use provider signatures instead of bearer tokens. Th
 
 To list fleets, copy `<WORKSPACE_ID>` from `agentsfleet workspace list`.
 Replace `<API_KEY>` with a key that has `fleet:read` access to that workspace.
-Create keys under **Settings → API keys** in the dashboard.
+Create keys under **Settings → Security → Create API key** in the dashboard.
 
 ```bash
 curl "https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets" -H "Authorization: Bearer <API_KEY>"
@@ -62,7 +64,8 @@ Timestamps are Request for Comments (RFC) 3339 strings in Coordinated Universal 
 
 A timestamp you send may use any RFC 3339 offset. It may carry at most millisecond precision; a finer value is refused.
 
-The dashboard displays timestamps in your browser's timezone. Schedule expressions retain their declared timezone, and accounting periods retain their UTC boundaries.
+The dashboard displays timestamps in your browser's timezone.
+Schedule expressions retain their declared timezone.
 
 Money amounts are whole nanodollars, written as decimal strings. One United States (US) dollar is `"1000000000"`. Every field whose name contains `_nanos` uses this form, including balances, charges, event costs, and model rates.
 
