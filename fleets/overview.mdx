@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-11-08
-product_version: 0.75.0
+verified: 2026-11-15
+product_version: 0.77.0
 executable: false
 ---
 
@@ -33,11 +33,11 @@ Saving a draft creates the fleet. The active workspace owns it, and authorized w
 The fleet page opens directly in its conversation. Use the left navigation to switch fleets or return to **Your fleets**.
 Choose the model beside the Send arrow; changing it preserves your unsent message.
 
-Select the pencil, labelled **Edit setup**, to open the saved setup conversation.
+Open **Fleet actions → Edit setup** to open the saved setup conversation.
 Its back arrow returns to the fleet conversation.
 Both chats share the composer and text loading highlight.
 
-Select the summary icon beside the pencil to open **Fleet summary**.
+Select the summary icon to open **Fleet summary**.
 **Durable tasks** shows unfinished work, with its objective, saved success criteria and progress.
 Outputs and Changes appear when recorded data exists; Sources lists saved repository context.
 
@@ -84,7 +84,8 @@ Each unsent message keeps its own **Resend** and **Dismiss** until you choose on
 
 An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 8,192 bytes.
 
-The fleet API's `webhook_urls` lists each provider webhook address. Select the **Edit setup** pencil, then the **Edit instructions** pencil beside the setup chat title to review declared triggers and their filters.
+The fleet API's `webhook_urls` lists each provider webhook address.
+Open **Fleet actions → Edit setup**, then **Edit instructions** beside the setup chat title to review triggers and their filters.
 
 Each schedule's `description` states its timing and time zone, such as `At 9:00 AM (Asia/Kolkata)`. Its `run_state` and nullable `next_run_at` describe whether it will run:
 
@@ -97,11 +98,13 @@ Each schedule's `description` states its timing and time zone, such as `At 9:00 
 
 The server works out the state and next run when you request the fleet. Run history stays in **Chat** and **Activity**.
 
-An improvement runs in a private chat pinned to the fleet's current setup revision. Choose **Save changes** to make it the fleet's next revision. Running work keeps the revision it started with.
+An improvement runs in a private chat pinned to the fleet's current setup revision.
+Choose **Save and publish** to save its next revision. Running work keeps the revision it started with.
 
-The fleet keeps its identifier and memory across revisions. Saving changes never publishes them to the Fleet library.
+The fleet keeps its identifier and memory across revisions. Saving changes never publishes them as a Plugin.
 
-If the fleet's setup changed after the chat loaded it, **Save changes** is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006). Reload the chat, check the setup, then save again.
+If the fleet's setup changed after loading, saving is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006).
+Reload the chat, check the setup, then save again.
 
 Archiving a fleet cancels its live work and setup. It keeps the fleet's records and blocks all later work.
 

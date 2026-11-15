@@ -3,8 +3,8 @@ title: API scopes
 description: Permissions that an agentsfleet access token can carry.
 type: reference
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-11-15
+product_version: 0.77.0
 executable: false
 ---
 
@@ -50,14 +50,15 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 | `connector:write` | Starts a connector setup flow and disconnects a connector, including by deleting its secret. | None |
 | `billing:read` | Reads the tenant balance and charges. | None |
 | `workspace:admin` | Creates and lists workspaces. | None |
-| `library:write` | Publishes a reviewed draft as an account-owned library entry or revision, and removes an entry your account owns. | None |
-| `platform-library:write` | Stages a reviewed draft as a platform library entry, and edits, publishes, withdraws, or deletes platform entries. | None |
+| `plugin:write` | Publishes a reviewed draft as an account-owned Plugin or revision, and removes a Plugin your account owns. | None |
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 
 `agentsfleet fleet approvals` uses these scopes. Listing needs `approval:read`; approving or denying needs `approval:resolve`.
 
-Operator tokens may carry `runner:*`, `platform-key:*`, `platform-library:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
+Operator tokens may carry `runner:*`, `platform-key:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
+
+`plugin:write` replaces `library:write`. Platform library publication and its scopes are removed, with no compatibility aliases.
 
 ## Errors
 

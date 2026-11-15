@@ -7,6 +7,32 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 15, 2026" tags={["Breaking", "UI", "API", "CLI"]}>
+  ## Fleet saving and account-owned Plugins
+
+  <Note>These changes describe version 0.77.0. Upgrade the client and server together before using the renamed endpoints.</Note>
+
+  ## Upgrading
+
+  - **Routes and grants** — Replace `fleet-libraries`, `library_id` and `library:write` with `plugins`, `plugin_id` and `plugin:write`. Removed names have no aliases.
+
+  ## What's new
+
+  - **Fleet setup** — **Save and publish** confirms the fleet's setup version. Plugin navigation and dashboard publication are paused; wake-up times follow your browser's timezone.
+
+  ## API reference
+
+  - **Plugins** — [Account-owned revisions](/fleets/library) remain available through the API and terminal. Platform publication and the separate `/owned` collection are removed.
+
+  ## Bug fixes
+
+  - **Account and Usage** — API Keys combines identity, keys and sessions. Usage shows daily totals and each fleet's recorded models.
+
+  ## CLI
+
+  - **Plugin lists** — `agentsfleet plugins` and `agentsfleet plugins list` read the same account-owned collection.
+</Update>
+
 <Update label="Nov 13, 2026" tags={["Breaking", "CLI", "API"]}>
   ## Commands grouped by resource, scoped operator help and aligned errors
 

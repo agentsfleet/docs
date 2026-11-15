@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-11-09
-product_version: 0.75.0
+verified: 2026-11-15
+product_version: 0.77.0
 executable: false
 ---
 
@@ -185,11 +185,11 @@ Use the current response or event details when diagnosing a new failure.
 
 ### Drafts and setup
 
-These codes answer private drafts, Save, Apply, and Library publication.
+These codes answer private drafts, Save, Apply, and account-owned Plugin publication.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
-| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | The draft or fleet is missing or outside your access. A Library entry may be missing, belong to another account, or be a platform entry you cannot change. Use a resource available to you. |
+| <span id="UZ-AUTHOR-001"></span>`UZ-AUTHOR-001` | 404 | Setup resource not found | The draft, fleet or Plugin is missing or outside your access. A Plugin may belong to another account. Use a resource available to you. |
 | <span id="UZ-AUTHOR-002"></span>`UZ-AUTHOR-002` | 409 | Setup state conflict | Finish or stop the current work before changing setup. The response names the state in `current_state`. |
 | <span id="UZ-AUTHOR-003"></span>`UZ-AUTHOR-003` | 412 | Setup version changed | This setup changed. Fetch the current resource and retry with its `ETag` in `If-Match`. |
 | <span id="UZ-AUTHOR-004"></span>`UZ-AUTHOR-004` | 428 | Setup version required | Send the resource `ETag` in `If-Match`. |
@@ -253,10 +253,10 @@ These codes answer private drafts, Save, Apply, and Library publication.
 Model catalogue reads use the codes below. Keep `limit` within 1 to 100 and use the previous page's `next_cursor`.
 Start again from the first page after changing a filter.
 
-The Fleet library uses `UZ-AUTHOR-011` for malformed or mismatched cursors.
-Its list routes are `/v1/workspaces/{workspace_id}/fleet-libraries` and `/v1/workspaces/{workspace_id}/fleet-libraries/owned`.
+Plugins use `UZ-AUTHOR-011` for malformed or mismatched cursors.
+Their list route is `/v1/workspaces/{workspace_id}/plugins`; it returns only your account's entries.
 
-Removing a Library entry answers `UZ-AUTHOR-001` when the entry is not one your account owns.
+Removing a Plugin answers `UZ-AUTHOR-001` when the entry is not one your account owns.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
