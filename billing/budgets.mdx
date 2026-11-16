@@ -60,20 +60,19 @@ These are called **settled charges**.
 Choose a named month, such as **November 2026**, or **Last 7 days**, then filter by fleet.
 **All Fleets** includes setup usage and saved-fleet usage; individual fleets follow it in the dropdown.
 
-The dashboard displays activity timestamps and report ranges in your browser's timezone.
+The dashboard displays report ranges in your browser's timezone.
 
-The totals cover all matching activity in the selected period, including activity on later pages.
+The totals cover all matching usage in the selected period.
 **By fleet** groups settled charges by fleet and shows its recorded models.
-Charge-detail controls are paused while their design is being prepared.
 
 **Daily spend** shows complete daily totals from the report, including days with no settled charges.
-The server supplies each complete bucket; the browser formats displayed dates and times.
+The server supplies complete UTC calendar buckets; the browser formats the displayed range bounds.
 
-**Setup chat** hides private draft titles and messages.
+Setup usage never exposes private draft titles or messages.
 
 Input tokens are pieces of text the model reads; output tokens are pieces it writes.
 The report retains recorded model identities and exact charges.
-When a model name is unavailable, Billing shows its recorded identifier.
+When a model name is unavailable, Usage shows its recorded identifier.
 
 Each report includes charges confirmed by the time it was opened.
 Pending usage stays outside its totals; newer reports can include charges confirmed later.
@@ -88,22 +87,39 @@ Usage has no Add credit action while its design is being prepared.
 
 ### Read charges through the API
 
+<Note>
+The reporting API changes below are coming soon.
+Upgrade the dashboard and server together before using the updated response.
+The API reference still describes the current server.
+</Note>
+
 `GET /v1/tenants/me/billing/reports/current` returns the report.
-`GET /v1/tenants/me/billing/activities/{activity_id}/charges` returns one activity's individual charges.
-Both require `billing:read` and use your signed-in account.
+The report accepts `period`, `fleet_id`, `activity_type` and `through_at`.
 
-Each API activity groups charges from one fleet run or private setup attempt.
-Activity and charge pagination retain the captured report time, so totals stay consistent.
+`period` defaults to `month`; `today` and `week` select today or seven calendar days.
+Reporting periods use UTC, and `through_at` is an inclusive cutoff that defaults to now.
+The report covers every whole UTC day through that cutoff.
 
-Some older charges combine model use and run time in one amount.
-The API keeps that recorded amount because separate historical prices are unavailable.
+A current-month request omits `through_at`.
+To read a past month, set `through_at` to that month's last UTC millisecond.
 
-For activity charges, include `activity_type=runtime` for a fleet run or `activity_type=setup` for a setup attempt.
-To match an existing report, keep its period, fleet and model filters, and `through_at` cutoff.
-Use `starting_after` to read later pages without changing those values.
+Omit fleet and activity filters to include fleet work and setup usage.
+`fleet_id` selects one fleet's runtime usage; `activity_type=setup` selects setup usage.
+Use `activity_type=runtime` for fleet work only.
+
+Read settled daily amounts from `daily` and fleet/model groups from `spending`.
+Period and fleet totals include `activity_count`; daily and model totals omit it.
+Each activity counts one settled fleet run or setup attempt.
 
 `agentsfleet` records each provider request and each billed stretch of runtime separately.
 `GET /v1/tenants/me/billing/charges` returns those individual records.
+Both billing reads require `billing:read` and use your signed-in account.
+
+Use the response's `next_cursor` as `cursor` for later charge pages.
+`limit` defaults to 50 records and accepts 1 through 200.
+
+Some older charges combine model use and run time in one amount.
+The API keeps that recorded amount because separate historical prices are unavailable.
 
 Each request is priced at the rate in effect when it was made, and at the tier its whole prompt falls in. Cached reads, cache writes, and output each use their own rate.
 
