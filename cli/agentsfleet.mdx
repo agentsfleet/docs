@@ -125,6 +125,9 @@ Write these after `login`. Only `agentsfleet login` reads them.
 3. Choose **Authorize** only if you started the sign-in and both codes match.
 
 After approval, the client saves this computer's credential and checks your identity. The terminal then shows your name and account.
+
+The browser shows **Unleash your agents.** after sign-in succeeds. You can close that tab and return to your terminal.
+
 Choose **Deny** if you did not start the sign-in or the codes differ.
 
 Press **Esc** or **Ctrl+C** while waiting to cancel. The waiting request expires after five minutes.
@@ -158,6 +161,7 @@ Use manual code entry for a remote terminal, such as a Secure Shell (SSH) sessio
 4. Enter the browser's six-digit verification code in the terminal that started sign-in.
 
 The terminal reports **signed in as** with your name and account after sign-in succeeds.
+After the terminal verifies your code, the browser replaces the code with **Unleash your agents.**
 Manual sign-in requires terminal input, so omit `--no-input`.
 
 ### Account and diagnosis
@@ -168,6 +172,39 @@ Manual sign-in requires terminal input, so omit `--no-input`.
 | `agentsfleet logout` | Revokes this computer's credential and any unfinished sign-in, then clears local credentials. Browser sessions stay signed in. |
 | `agentsfleet whoami` | Shows who this terminal is signed in as, the credential's source (`environment` or `file`), and the server it talks to. |
 | `agentsfleet doctor` | Checks client settings, authentication, and API access. |
+
+### Terminal pet
+
+Watch Orbit, your terminal jellyfish, float, work and celebrate for five seconds.
+
+```bash
+agentsfleet pet
+```
+
+```text
+Orbit appears while a Platform request is running.
+```
+
+The animation plays above that final message. Press **Ctrl+C** to stop the preview.
+
+The full preview needs at least 61 columns and 20 rows. Small terminals and terminals without color use a compact jellyfish.
+
+Resizing the terminal stops the full preview's redraws; the final message still appears.
+Set `AGENTSFLEET_REDUCED_MOTION=1` for a static display.
+
+The preview needs no sign-in and makes no API request. Orbit also appears during Platform administration requests.
+
+```bash
+agentsfleet pet --json
+```
+
+```text
+{
+  "name": "Orbit"
+}
+```
+
+Piped output returns that same JSON object without animation.
 
 ### Workspaces and access
 

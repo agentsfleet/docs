@@ -7,6 +7,26 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 16, 2026" tags={["Bug fixes", "CLI", "UI"]}>
+  ## Terminal confirmation and Orbit
+
+  The command-line interface (CLI) now previews Orbit, a terminal jellyfish.
+
+  ## Upgrading
+
+  - **Pet name** — Scripts reading `agentsfleet pet --json` now receive `"Orbit"` in the `name` field. No server update is required.
+
+  ## Bug fixes
+
+  - **Terminal sign-in** — Both login modes show **Unleash your agents.** after verification. Manual sign-in replaces the used code with that confirmation.
+
+  ## CLI
+
+  - **Pet preview** — `agentsfleet pet` shows five seconds of floating, working and celebration animations. Small terminals use a compact jellyfish; `AGENTSFLEET_REDUCED_MOTION=1` disables motion.
+
+  See [terminal pet](/cli/agentsfleet#terminal-pet) for preview requirements and machine output.
+</Update>
+
 <Update label="Nov 15, 2026" tags={["Breaking", "API", "UI"]}>
   ## Daily spending without activity paging
 
