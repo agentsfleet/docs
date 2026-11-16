@@ -7,6 +7,25 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 15, 2026" tags={["Breaking", "API", "UI"]}>
+  ## Daily spending without activity paging
+
+  <Note>These changes are coming soon.</Note>
+
+  Usage reports return full-period totals, daily spending and recorded fleet/model groups.
+
+  ## Upgrading
+
+  Upgrade the dashboard with the server.
+  This report change does not require a command-line interface (CLI) upgrade.
+
+  - **Report clients** — Remove `model`, `limit` and `starting_after` from report requests. Read `totals`, `daily` and `spending` instead of `activities`.
+  - **Charge clients** — Remove activity-detail reads from `GET /v1/tenants/me/billing/activities/{activity_id}/charges`. The retained `GET /v1/tenants/me/billing/charges` pages the account ledger with `cursor` and `limit`; it does not filter an activity.
+  - **Counts** — Read `activity_count` from period and fleet totals; daily and model rows omit it.
+
+  See [Usage reporting](/billing/budgets#read-charges-through-the-api) for supported filters, cutoffs and charge paging.
+</Update>
+
 <Update label="Nov 15, 2026" tags={["Breaking", "UI", "API", "CLI"]}>
   ## Fleet saving and account-owned Plugins
 
