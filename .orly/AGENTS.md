@@ -27,7 +27,10 @@ Never weaken a rule, add a suppression, or baseline findings to get green. Never
 
 ## Memory
 
-Auto-memory is **disabled**; never write `**/memory/*.md` or any `MEMORY.md`. gstack `/learn` is not used either. Durable knowledge goes where it fires: a rule → a standard; working style → this file; architecture → `docs/architecture/`; in-flight state → the spec.
+Auto-memory is **disabled**; never write `**/memory/*.md` or any `MEMORY.md`. gstack `/learn` is not used either.
+
+Durable knowledge: rules → standards; style → `SOUL.md` or `core/operating-model.md`; architecture → its page; in-flight state → the spec.
+Never store lessons in generated instructions or managed consumer copies.
 
 ---
 
@@ -57,7 +60,7 @@ Auto-memory is **disabled**; never write `**/memory/*.md` or any `MEMORY.md`. gs
 ### Operational defaults
 
 - Workspace `~/Projects`. `gh` for `github.com`, `glab` for `gitlab.com`, never browsers. `trash` not `rm`.
-- Conventional Commits. "Make a note" → update `AGENTS.md` or repository docs.
+- Conventional Commits. "Make a note" → update the owning source or repository docs; regenerate managed instructions when their source changes.
 - **Symlinked edits land in the repository that owns the file.** Check `readlink` before editing; commit and push in the repository it resolves to.
 - **Docs-repo edits on own branch.** `~/Projects/docs/` is shared: check `git status`, then commit on `chore/m{N}-{slug}-changelog`.
 - Other dotfiles (`.zshrc`, `.gitconfig`): timestamped backup; minimal edits.
@@ -79,6 +82,10 @@ Commit, push and PR wait for an explicit ask. **Auto mode with a start instructi
 
 **Skills hold the steps:** `orly-spec` (idea → reviewed spec), `orly-build` (open the stream, build Section by Section), `orly-ship` (review, close, `orly gate pr`, PR, babysit, land). Outside Claude Code, gstack skills carry a `gstack-` prefix (`/review` is `gstack-review` in Codex).
 
+**Show skill progress.** At each stage's start, name the skill, stage, state and current action in a few lines. At its end, report the evidenced outcome or blocker and the next action.
+
+Stage states are `not started`, `in progress`, `blocked` and `done`; specs use `DONE`. Checks retain their exact passed, failed, skipped or not-run outcomes. Never call unrun work done.
+
 **`orly doctor` proves the setup:** the installed rules match `.orly/orly.json`, and every agent runtime on the machine has gstack and the Elephant-Goldfish Model (EGM). A skill stops while it is red.
 
 **🚦 Gate-flag triage.** A gate fires → never silence it. **Mechanical** fix (format, lint autofix, split, dead code): apply it, say so in one line. **Judgment** (design call, weakened guarantee, security, possible false positive): stop and ask — 📟 flagged (symbol·file·line) · 🔦 fix scope · 📈 gain · 💥 if not fixed · ☠️ my call.
@@ -91,7 +98,9 @@ Commit, push and PR wait for an explicit ask. **Auto mode with a start instructi
 
 **Anchor invariant — `orly gate` proves the boundary.** No PR opens unless every `orly gate pr` criterion is green or carries a user-recorded `Orly-Override` trailer. `orly gate pr` is the command CHORE(close) runs; a push is never proof that tests ran.
 
-`work` runs the declared `conform` at commit. `verify` runs documentation checks and non-test `verify.*` commands at push. `pr` checks branch shape, the upstream revision, documentation and every declared `verify.*` command itself.
+`work` runs the declared `conform` at commit. `verify` runs documentation checks and non-test `verify.*` commands at push. `pr` checks branch shape, the upstream revision, documentation and every declared `verify.*` command.
+
+Inspect prerequisites first and report unrun commands. Reuse requires explicit opt-in and current hermetic evidence.
 
 **VERIFY:** Section checks prove the changed Dimensions; the final gate runs the full declared verification set. Integration tests are due when the diff crosses a module boundary with real input/output.
 
