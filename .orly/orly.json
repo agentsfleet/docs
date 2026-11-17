@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "orly_version": "0.28.0",
+  "orly_version": "0.50.0",
   "packs": [],
   "commands": {
     "conform": [
@@ -41,19 +41,19 @@
   },
   "managed": [
     ".agents/skills/orly-build/SKILL.md",
+    ".agents/skills/orly-burst/SKILL.md",
     ".agents/skills/orly-ship/SKILL.md",
     ".agents/skills/orly-spec/SKILL.md",
     ".claude/agents/orly-standards-reviewer.md",
     ".claude/skills/orly-build/SKILL.md",
+    ".claude/skills/orly-burst/SKILL.md",
     ".claude/skills/orly-ship/SKILL.md",
     ".claude/skills/orly-spec/SKILL.md",
     ".opencode/skills/orly-build/SKILL.md",
+    ".opencode/skills/orly-burst/SKILL.md",
     ".opencode/skills/orly-ship/SKILL.md",
     ".opencode/skills/orly-spec/SKILL.md",
     ".orly/AGENTS.md",
-    ".orly/skills/orly-build/SKILL.md",
-    ".orly/skills/orly-ship/SKILL.md",
-    ".orly/skills/orly-spec/SKILL.md",
     ".orly/standards/changelog.md",
     ".orly/standards/code.md",
     ".orly/standards/docs-pages.md",

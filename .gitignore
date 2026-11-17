@@ -7,10 +7,12 @@ node_modules/
 !.claude/skills/orly-build/
 !.claude/skills/orly-ship/
 !.claude/skills/orly-spec/
+!.claude/skills/orly-burst/
 .claude/skills/orly-*/*
 !.claude/skills/orly-build/SKILL.md
 !.claude/skills/orly-ship/SKILL.md
 !.claude/skills/orly-spec/SKILL.md
+!.claude/skills/orly-burst/SKILL.md
 !.claude/agents/
 .claude/agents/*
 !.claude/agents/orly-standards-reviewer.md
