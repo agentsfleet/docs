@@ -1,18 +1,14 @@
 .DS_Store
 node_modules/
 .gstack/
+
+# .claude/ is local to each machine, except what orly manages: its
+# orly-* skills and orly-* agents. Wildcards, so a skill a new orly
+# release adds is tracked without editing this file.
 .claude/*
 !.claude/skills/
 .claude/skills/*
-!.claude/skills/orly-build/
-!.claude/skills/orly-ship/
-!.claude/skills/orly-spec/
-!.claude/skills/orly-burst/
-.claude/skills/orly-*/*
-!.claude/skills/orly-build/SKILL.md
-!.claude/skills/orly-ship/SKILL.md
-!.claude/skills/orly-spec/SKILL.md
-!.claude/skills/orly-burst/SKILL.md
+!.claude/skills/orly-*/
 !.claude/agents/
 .claude/agents/*
-!.claude/agents/orly-standards-reviewer.md
+!.claude/agents/orly-*.md
