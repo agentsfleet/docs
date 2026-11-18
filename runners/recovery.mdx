@@ -40,6 +40,10 @@ The failed runner's lease must expire before another runner takes the work.
 The normal deadline is 35 seconds after the last confirmed renewal.
 Capacity, permissions, funds, approval checks, and restore time can delay continuation.
 
+With several interrupted runs, eligible runners can take work in parallel as workers become available.
+A replacement runner keeps its lease active while waiting for file transfer capacity.
+It restores the saved files before its next model or tool action.
+
 An ordinary event can receive at most three leases.
 If all three lapse without a final report, its next claim ends it with an error.
 
