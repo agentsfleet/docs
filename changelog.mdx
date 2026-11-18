@@ -7,6 +7,30 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 18, 2026" tags={["What's new", "Breaking", "CLI", "UI"]}>
+  ## Recovery after a runner fails
+
+  <Note>This feature is coming soon.</Note>
+
+  Unfinished runs on platform runners can resume from their last complete checkpoint when an eligible runner is available.
+
+  ## Upgrading
+
+  Upgrade the server, runners, dashboard, and command-line interface (CLI) together.
+  Finish running tasks first; older task checkpoint formats cannot resume.
+
+  ## What's new
+
+  - **Recovery** — Safe boundaries save progress without a manual checkpoint command. Work after the last saved boundary can repeat.
+  - **Chat** — Detected replacement attempts show **Run restarted** and replace the provisional reply.
+
+  ## CLI
+
+  - **Runner status** — `agentsfleet platform runners show <RUNNER_ID>` shows automatic quarantine separately from operator status.
+
+  See [runner recovery](/runners/recovery) for timing and limits.
+</Update>
+
 <Update label="Nov 16, 2026" tags={["Bug fixes", "CLI", "UI"]}>
   ## Terminal confirmation and Orbit
 

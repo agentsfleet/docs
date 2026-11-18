@@ -204,6 +204,16 @@
             ]
           },
           {
+            "group": "Account runners",
+            "pages": [
+              "POST /v1/tenants/me/runners",
+              "GET /v1/tenants/me/runners",
+              "GET /v1/tenants/me/runners/{runner_id}",
+              "PATCH /v1/tenants/me/runners/{runner_id}",
+              "DELETE /v1/tenants/me/runners/{runner_id}"
+            ]
+          },
+          {
             "group": "Runner administration",
             "pages": [
               "POST /v1/admin/runners",
