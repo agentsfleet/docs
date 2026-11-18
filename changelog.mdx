@@ -7,6 +7,23 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 18, 2026" tags={["Upgrading", "Bug fixes"]}>
+  ## Enable checkpoint resumption after testing
+
+  Checkpoint resumption now starts disabled until the deployment enables it.
+
+  ## Upgrading
+
+  Set `runner.recovery.resume_from_checkpoint = true` in the daemon configuration after testing, then restart every daemon replica.
+  This setting needs the matching server version; it requires no separate command-line interface (CLI) change.
+
+  ## Bug fixes
+
+  - **Recovery default** — Environment-only startup now uses the same disabled default as the deployment files.
+
+  See [runner recovery](/runners/recovery#controlling-checkpoint-resumption) for rollout behavior.
+</Update>
+
 <Update label="Nov 18, 2026" tags={["What's new", "Breaking", "CLI", "UI"]}>
   ## Recovery after a runner fails
 
