@@ -30,6 +30,8 @@ Checkpoints keep completed progress outside that host so another eligible runner
 
 The runner saves at a safe boundary before a continuing model call.
 Running children, open sessions, active file work, or tenant processes prevent that boundary from being saved.
+
+When the runner is busy transferring checkpoints, it can skip a file checkpoint and keep the last complete one.
 An incomplete upload never replaces the last complete checkpoint.
 
 ### Replacing a failed runner
