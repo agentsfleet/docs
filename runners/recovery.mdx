@@ -38,11 +38,37 @@ An incomplete upload never replaces the last complete checkpoint.
 
 The failed runner's lease must expire before another runner takes the work.
 The normal deadline is 35 seconds after the last confirmed renewal.
+The deployment can configure the lease lifetime.
+
 Capacity, permissions, funds, approval checks, and restore time can delay continuation.
 
 With several interrupted runs, eligible runners can take work in parallel as workers become available.
 A replacement runner keeps its lease active while waiting for file transfer capacity.
 It restores the saved files before its next model or tool action.
+
+### Controlling checkpoint resumption
+
+The daemon deployment selects a Tom's Obvious Minimal Language (TOML) configuration file with
+`AGENTSFLEET_CONFIG_FILE` or `agentsfleetd --config <FILE> serve`.
+
+```toml
+[runner.recovery]
+resume_from_checkpoint = false
+```
+
+With this setting disabled, an interrupted ordinary run with a complete checkpoint
+waits after its lease expires.
+Saving new checkpoints continues.
+
+Set the value to `true` and roll out the configuration to allow an eligible runner
+to reclaim that admission and restore its saved progress.
+Confirm the value on every daemon replica after the rollout completes.
+
+Runs already holding a valid lease can continue.
+Ordinary runs without a complete checkpoint and durable task recovery keep their
+existing retry behavior.
+
+### Retry limits
 
 An ordinary event can receive at most three leases.
 If all three lapse without a final report, its next claim ends it with an error.
