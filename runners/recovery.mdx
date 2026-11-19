@@ -56,8 +56,11 @@ The daemon deployment selects a Tom's Obvious Minimal Language (TOML) configurat
 resume_from_checkpoint = false
 ```
 
-Environment-only startup defaults to resumption enabled.
-Set this value explicitly when testing a staged rollout.
+Resumption defaults to disabled, including environment-only startup.
+Enable it after testing recovery with an eligible replacement runner.
+
+For environment-only startup, set `AGENTSFLEET_RESUME_FROM_CHECKPOINT=true` on each daemon replica and restart it.
+When a selected TOML file supplies this setting, its value takes precedence over the environment.
 
 With this setting disabled, an interrupted ordinary run with a complete checkpoint
 waits after its lease expires.
