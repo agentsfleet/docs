@@ -325,19 +325,24 @@ max_concurrent_file_operations = 2
 | `provider_retries` | `max_retry_after_seconds` | 1–300 | Ends an attempt when the provider requests a longer wait. |
 | `supervisor` | `daemon_max_attempts` | 1–10 | Caps sends for a bounded daemon operation. |
 | `supervisor` | `daemon_initial_backoff_ms` | 1–`daemon_max_backoff_ms` | Sets the first jittered daemon retry pause. |
-| `supervisor` | `daemon_max_backoff_ms` | 1–30,000 | Caps daemon retry pauses. |
+| `supervisor` | `daemon_max_backoff_ms` | 1–30,000 | Caps the exponential component before jitter. |
 | `supervisor` | `renewal_interval_ms` | 100–5000 | Sets the batched host renewal interval. |
 | `supervisor` | `authoring_renewal_interval_ms` | 100–10,000 | Sets the private authoring renewal interval. |
 | `supervisor` | `authoring_renewal_retry_ms` | 1–250 | Sets the pause after a retryable authoring renewal failure. |
 | `supervisor` | `max_concurrent_file_operations` | 1–16 | Caps admitted file captures and restores across this runner. |
 
 Attempt counts include the first send.
-Provider HTTP retries and eligible stream reopenings have separate limits, allowing at most nine physical sends with these defaults.
+Provider HTTP retries and eligible stream reopenings have separate limits, allowing at most nine generation-request sends per turn with these defaults.
+Native token-count requests are separate and send once per opening when needed.
+
 Known spend, visible output, and single-attempt requests prevent automatic stream reopening.
 
 Daemon connection recovery and owed-report delivery retry until cancellation or their deadline.
 They use the configured backoff without a retry-count limit.
 Earlier lease and turn deadlines still stop work.
+
+Jitter can extend a pause beyond `daemon_max_backoff_ms`.
+Connection recovery also applies a compiled 30-second final pause limit.
 
 Required file restores wait for a runner-wide admission slot while lease renewal continues.
 Optional captures skip a busy boundary and preserve the previous committed checkpoint.
