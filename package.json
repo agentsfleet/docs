@@ -3,8 +3,7 @@
   "private": true,
   "packageManager": "bun@1.4.4",
   "engines": {
-    "bun": "1.4.4",
-    "node": "24.x"
+    "bun": "1.4.4"
   },
   "scripts": {
     "orly": "orly",
