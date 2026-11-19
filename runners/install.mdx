@@ -275,8 +275,22 @@ Runner profiles are coming with the next checkpoint recovery release.
 </Note>
 
 The managed host deploy installs `/etc/agentsfleet/agentsfleet-runner.toml` and selects it through `AGENTSFLEET_RUNNER_CONFIG_FILE`.
-For a manually installed service, create the file and add that variable to `/etc/default/agentsfleet-runner`.
-Restart the runner after changing the file.
+
+For a manually installed service:
+
+1. Create `/etc/agentsfleet/agentsfleet-runner.toml` using the settings below.
+2. Add `AGENTSFLEET_RUNNER_CONFIG_FILE=/etc/agentsfleet/agentsfleet-runner.toml` to `/etc/default/agentsfleet-runner`.
+3. Restart the runner to load the profile:
+
+   ```bash
+   systemctl restart agentsfleet-runner
+   ```
+
+   ```text
+   (no output)
+   ```
+
+Repeat the restart after later file changes.
 
 Without a selected file, the runner uses these defaults:
 
@@ -300,6 +314,22 @@ authoring_renewal_interval_ms = 10_000
 authoring_renewal_retry_ms = 250
 max_concurrent_file_operations = 2
 ```
+
+| Table | Setting | Accepted values | Effect |
+| --- | --- | --- | --- |
+| `inference` | `connect_timeout_seconds` | 1–120 | Limits establishing a provider connection. |
+| `inference` | `stream_idle_timeout_seconds` | 1–3600 | Limits silence between transport reads or parsed provider events. |
+| `provider_retries` | `max_attempts` | 1–10 | Caps HTTP sends within each stream opening. |
+| `provider_retries` | `max_stream_open_attempts` | 1–10 | Caps eligible openings before visible output or known spend. |
+| `provider_retries` | `initial_backoff_ms` | 1–60,000 | Sets the first jittered exponential retry pause. |
+| `provider_retries` | `max_retry_after_seconds` | 1–300 | Ends an attempt when the provider requests a longer wait. |
+| `supervisor` | `daemon_max_attempts` | 1–10 | Caps sends for a bounded daemon operation. |
+| `supervisor` | `daemon_initial_backoff_ms` | 1–`daemon_max_backoff_ms` | Sets the first jittered daemon retry pause. |
+| `supervisor` | `daemon_max_backoff_ms` | 1–30,000 | Caps daemon retry pauses. |
+| `supervisor` | `renewal_interval_ms` | 100–5000 | Sets the batched host renewal interval. |
+| `supervisor` | `authoring_renewal_interval_ms` | 100–10,000 | Sets the private authoring renewal interval. |
+| `supervisor` | `authoring_renewal_retry_ms` | 1–250 | Sets the pause after a retryable authoring renewal failure. |
+| `supervisor` | `max_concurrent_file_operations` | 1–16 | Caps admitted file captures and restores across this runner. |
 
 Attempt counts include the first send.
 Provider HTTP retries and eligible stream reopenings have separate limits, allowing at most nine physical sends with these defaults.
