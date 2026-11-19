@@ -3,7 +3,7 @@ title: Install a runner
 description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
 type: how-to
 audience: operator
-verified: 2026-11-09
+verified: 2026-11-19
 product_version: 0.75.0
 executable: false
 ---
@@ -267,6 +267,55 @@ Then unpack the previous release's bundle as in steps 2 to 4. Install its binary
 To remove the runner for good, revoke it under **Admin → Runners**.
 Deleting `/var/lib/agentsfleet-runner` removes its toolbox, repository mirrors and sandbox files.
 Unacknowledged results exist only in the running process and can be lost when that process stops.
+
+## Runner-local settings
+
+<Note>
+Runner profiles are coming with the next checkpoint recovery release.
+</Note>
+
+The managed host deploy installs `/etc/agentsfleet/agentsfleet-runner.toml` and selects it through `AGENTSFLEET_RUNNER_CONFIG_FILE`.
+For a manually installed service, create the file and add that variable to `/etc/default/agentsfleet-runner`.
+Restart the runner after changing the file.
+
+Without a selected file, the runner uses these defaults:
+
+```toml
+[inference]
+connect_timeout_seconds = 10
+stream_idle_timeout_seconds = 300
+
+[provider_retries]
+max_attempts = 3
+max_stream_open_attempts = 3
+initial_backoff_ms = 1000
+max_retry_after_seconds = 60
+
+[supervisor]
+daemon_max_attempts = 5
+daemon_initial_backoff_ms = 250
+daemon_max_backoff_ms = 30_000
+renewal_interval_ms = 5000
+authoring_renewal_interval_ms = 10_000
+authoring_renewal_retry_ms = 250
+max_concurrent_file_operations = 2
+```
+
+Attempt counts include the first send.
+Provider HTTP retries and eligible stream reopenings have separate limits, allowing at most nine physical sends with these defaults.
+Known spend, visible output, and single-attempt requests prevent automatic stream reopening.
+
+Daemon connection recovery and owed-report delivery retry until cancellation or their deadline.
+They use the configured backoff without a retry-count limit.
+Earlier lease and turn deadlines still stop work.
+
+Required file restores wait for a runner-wide admission slot while lease renewal continues.
+Optional captures skip a busy boundary and preserve the previous committed checkpoint.
+Each admitted operation retains the compiled four-transfer window.
+
+The runner refuses unreadable files, unknown settings, invalid bounds, and renewal intervals longer than the supported safety windows.
+Keep tokens in the environment file.
+Worker count remains assigned per runner by the daemon.
 
 ## Related pages
 
