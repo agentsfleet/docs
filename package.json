@@ -1,16 +1,16 @@
 {
   "name": "@agentsfleet/docs",
   "private": true,
-  "packageManager": "bun@1.4.4",
+  "packageManager": "bun@1.4.5",
   "engines": {
-    "bun": "1.4.4"
+    "bun": "1.4.5"
   },
   "scripts": {
     "orly": "orly",
-    "dev": "mint dev",
-    "validate": "mint validate",
-    "broken-links": "mint broken-links",
-    "check-links": "markdown-link-check"
+    "dev": "bun run --bun mint dev",
+    "validate": "bun run --bun mint validate",
+    "broken-links": "bun run --bun mint broken-links",
+    "check-links": "bun run --bun markdown-link-check"
   },
   "devDependencies": {
     "@agentsfleet/orly": "0.60.1",
