@@ -7,6 +7,31 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 24, 2026" tags={["Upgrading", "Breaking"]}>
+  ## One clock for runners
+
+  Each runner now renews its runs on its heartbeat, every 10 seconds by default, and sends no separate ping.
+  The server announces the interval when a runner connects.
+
+  ## Upgrading
+
+  Upgrade every server replica before any runner.
+  Remove `renewal_interval_ms` from each runner's `[supervisor]` table first: a runner refuses to start with it.
+
+  ## Breaking
+
+  - **Run lifetime** — The default `[runner.run] ttl_seconds` is now 38. The server refuses a value under `heartbeat_interval_seconds` plus 28.
+  - **Heartbeat interval** — The server refuses `[runner.health] heartbeat_interval_seconds` above 24, above `ttl_seconds` minus 28, or above a third of `ttl_seconds` minus one.
+
+  ## What's new
+
+  - **Held sandboxes** — `[runner.sandboxes] max_idle_hold_seconds` now sets how long a finished run's sandbox stays held, including values over 10 minutes.
+  - **Setup page** — The page updates when its fleet changes instead of checking every second.
+  - **Removed teammates** — A removed member's open pages close as soon as the removal saves.
+
+  See [runner installation](/runners/install) for the runner settings.
+</Update>
+
 <Update label="Nov 18, 2026" tags={["Upgrading", "Bug fixes"]}>
   ## Enable checkpoint resumption after testing
 
