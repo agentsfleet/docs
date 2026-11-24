@@ -29,7 +29,8 @@ description: "Product changes and upgrade notes."
   - **Setup page** — The page updates when its fleet changes instead of checking every second.
   - **Removed teammates** — A removed member's open pages close as soon as the removal saves.
 
-  See [runner installation](/runners/install) for the runner settings.
+  Set the `[runner.*]` server settings in the daemon's configuration file, which `AGENTSFLEET_CONFIG_FILE` or `agentsfleetd --config <FILE> serve` selects; a runner refuses them.
+  See [runner installation](/runners/install) for the runner's own `[supervisor]` settings.
 </Update>
 
 <Update label="Nov 18, 2026" tags={["Upgrading", "Bug fixes"]}>
