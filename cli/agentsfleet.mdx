@@ -3,8 +3,8 @@ title: Command reference
 description: Commands available in the agentsfleet command-line client.
 type: reference
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -283,7 +283,7 @@ Event polling reports permanent access or request errors immediately; its timeou
 If the list reaches its page limit with more results available, the command reports an incomplete list.
 Narrow the request with `agentsfleet fleet approvals list --fleet <FLEET_ID>`.
 
-Saving a fleet that declares a mintable credential opens an integration grant for approval. An approved grant covers repository writes until it is revoked. Rules declared under `gates` can also ask for approval during a run; a waiting gate parks that run until someone decides it.
+A running fleet uses `request_access` when it needs a credential. A signed-in person can review the scope and approve or deny the request. Work resumes with the access the person granted.
 
 See [Approvals](/fleets/approvals) for the scope of each decision and how to revoke a grant.
 
