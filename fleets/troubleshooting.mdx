@@ -3,8 +3,8 @@ title: Troubleshoot a fleet
 description: Find and fix common fleet failures.
 type: troubleshooting
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -14,15 +14,15 @@ executable: false
 |---|---|
 | Every command fails | Run `agentsfleet doctor`. |
 | A webhook does not create a run | Read recent webhook events. |
-| A connected GitHub App sends nothing | Check `repositories` in the fleet's Definition. |
+| A connected GitHub App sends nothing | Check the GitHub event subscription under **Wakes on**. |
 | A run starts and fails | Read the activity stream error. |
 | A fleet returns the wrong result | Compare tool calls with the fleet's instructions. |
-| New runs are blocked | Check fleet state and budgets. |
+| New runs are blocked | Check the fleet state and account balance. |
 | Files from the last message are gone | Read [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps). |
 
 ## Why it happened
 
-Most failures come from authentication, workspace selection, webhook signatures, missing secrets, tool access, or budget limits.
+Most failures come from authentication, workspace selection, webhook signatures, missing secrets, tool access, or a low account balance.
 
 Every API error carries a stable error identifier and request identifier. Use both values when comparing a response with the error registry.
 
@@ -43,7 +43,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
    `<FLEET_ID>` comes from `agentsfleet fleet list`.
 
    ```bash
-   agentsfleet fleet events <FLEET_ID> --since 1h --json
+   agentsfleet fleet turns <FLEET_ID> --since 1h --json
    ```
 
    ```text
@@ -60,7 +60,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 3. Apply the fix named by the stable error identifier.
 
-   `UZ-REQ-001` from a chat or Save points to an invalid Definition field. A Save that stays `installing` names each missing secret or grant.
+   `UZ-SETUP-008` means no eligible model is available for creation. Ask the workspace owner to check the default model.
 
    `UZ-WH-010` points to a signature mismatch. `UZ-AGT-012` points to a fleet that cannot accept work.
 
@@ -74,8 +74,7 @@ Every API error carries a stable error identifier and request identifier. Use bo
    event arrived and matched no fleet. The status is green either way, so read
    the body.
 
-   Set `repositories` beside `"source": "github"` in the webhook trigger.
-   Use `owner/repository`; case does not matter.
+   Ask the fleet to add a GitHub event trigger with the right repository. Use `owner/repository`.
 
    Then check the fleet's integration grant:
 
@@ -93,8 +92,8 @@ Every API error carries a stable error identifier and request identifier. Use bo
 
 ## How to prevent it
 
-Run `agentsfleet doctor` before installation. Test one manual message before registering a webhook.
+Run `agentsfleet doctor` before creating a fleet. Test one manual message before registering a webhook.
 
-Keep the fleet's instruction steps numbered, and name only tools its Definition declares. Store stable provider event identifiers for duplicate protection.
+Give the fleet a specific goal and check the approved scope before enabling a provider trigger.
 
-Use fleet budgets to bound cost. Check the activity stream after every applied setup change.
+Review spending in **Usage**. Check the fleet's chat after changing its triggers or grants.

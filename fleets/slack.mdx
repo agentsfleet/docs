@@ -1,163 +1,67 @@
 ---
 title: Answer mentions in Slack
-description: Attach a fleet to a Slack channel so it answers when someone mentions agentsfleet there.
+description: Attach a fleet to a Slack channel so it answers mentions there.
 type: how-to
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What this does
 
-A fleet attached to a Slack channel answers when someone mentions the `agentsfleet` app in that channel. The fleet reads the thread, runs once, and posts its answer as a reply in the same thread.
-
-Slack sometimes delivers one mention twice. The second delivery starts no second run.
+A fleet can answer when someone mentions the agentsfleet app in a subscribed Slack channel. The answer appears in the same thread. Retried Slack deliveries do not start another turn.
 
 ## Before you begin
 
-Open the account menu and choose **Connect apps**. Connect Slack to the active workspace. See [Connect a provider](/fleets/connectors) for the full procedure.
+Open **Connected apps** in the dashboard and connect Slack to the active workspace. Invite the agentsfleet Slack app to the channel. See [Connect a provider](/fleets/connectors).
 
-Invite the `agentsfleet` Slack app to the channel. The app receives mentions only in channels it belongs to.
-
-Find the channel identifier (ID) in Slack. Open the channel's details and copy **Channel ID** from the bottom of the **About** tab. It starts with `C` for a public channel or `G` for a private one.
+Open the channel's details. Copy its identifier (ID) from **Channel ID** in the **About** tab.
 
 ## Steps
 
-1. Add a `mention` trigger for the channel to the fleet's Definition.
-
-   `<CHANNEL_ID>` is the channel ID you copied. The entry goes in the `triggers` list under `config["x-agentsfleet"]`, beside the fleet's other triggers:
-
-   ```json
-   {
-     "type": "mention",
-     "source": "slack",
-     "channels": ["<CHANNEL_ID>"]
-   }
-   ```
-
-   In a chat, you can ask for the same trigger in words, such as "answer mentions in Slack channel `<CHANNEL_ID>`". [Author a fleet](/fleets/authoring) covers the chat and the Definition file.
-
-   `channels` holds exactly one channel ID. One fleet answers in one channel. To answer in a second channel, save a second fleet.
-
-2. Review the setup and check that it carries the one `mention` trigger, then save it.
-
-   `<DRAFT_ID>`, `<NAME>`, and `<DIGEST>` come from the review output.
-
-   ```bash
-   agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
-   ```
-
-   ```text
-   <varies>
-   ✓ Fleet <NAME>: active
-   ```
-
-   In the dashboard, review **Edit instructions** beside the chat title. Choose **Save and publish** above the message field.
-
-3. Mention the app in the channel and ask your question.
-
-   ```text
-   @agentsfleet why did the last deploy fail?
-   ```
-
-   The fleet reads the thread you asked from and replies in that thread.
-
-4. Start with the fleet's name when the channel has more than one fleet.
+1. Start a fleet or open an existing one in the workspace that owns the Slack connection.
+2. Send “Add a Slack mention trigger for channel `<CHANNEL_ID>`” in its chat. The fleet calls `trigger_add` with kind `mention` and that channel ID.
+3. Confirm the channel under **Wakes on**. A fleet subscribes to one Slack channel.
+4. Mention the app in that channel. Include the fleet's name when more than one fleet can answer.
 
    ```text
    @agentsfleet ci-responder why did the build fail?
    ```
 
-   Case does not matter. A `:` or `,` right after the name is ignored.
-
-A mention that names no fleet goes only to a fleet that is running and has no `repository_access: write` in its Definition. The table shows which fleet answers a mention.
-
-| The channel has | The mention names a fleet | Who answers |
-|---|---|---|
-| No attached fleet | No | The channel's own fleet, described below |
-| One running fleet without write access | No | That fleet |
-| Several running fleets without write access | No | Nobody. A notice lists the fleets' names. |
-| Attached fleets, none running without write access | No | Nobody. A notice asks you to name one. |
-| Any attached fleet | Yes | The named fleet. For an archived fleet, an active fleet in the channel posts the archived notice; with none, no notice is sent. |
-
-A fleet whose Definition declares `repository_access: write` answers only when a mention names it.
-From one mention it can open at most one draft pull request (PR).
-It cannot merge the PR, mark it ready for review, or change a workflow.
-
-### The channel's own fleet
-
-`agentsfleet` creates one fleet per channel the first time a mention reaches no attached fleet or needs a notice. Its name is `slack-channel-<TEAM_ID>-<CHANNEL_ID>`, in lower case.
-
-This fleet answers from a model with no tools and no network access. Its budget is `daily_nanos: "1000000000"`, so it spends at most 1 dollar a day. When you ask for something it cannot reach, it tells you to set up a fleet in `agentsfleet chat` with a `mention` trigger for this channel.
-
-Its memory belongs to the channel, and no other fleet reads it. It also posts the channel's notices.
+A named mention matches the fleet name without regard to case. A colon or comma can follow the name. A fleet with approved GitHub write access answers only when you name it.
 
 ## Verify it works
 
-1. Mention the app in the channel.
+Check for the reply in the Slack thread. Open the fleet's chat to see the turn, or list the turns from the terminal.
 
-2. Check that a reply from the fleet appears in the same thread.
+```bash
+agentsfleet fleet turns <FLEET_ID> --actor 'slack:*'
+```
 
-3. Open the fleet in the dashboard. Its trigger card reads **Chat mention** with the channel ID.
+```text
+<varies>
+```
 
-4. List the fleet's events. `<FLEET_ID>` comes from `agentsfleet fleet list`.
-
-   ```bash
-   agentsfleet fleet events <FLEET_ID>
-   ```
-
-   ```text
-   <varies>
-   ```
+Get `<FLEET_ID>` from `agentsfleet fleet list`. The actor identifies the Slack team and sender.
 
 ## Common problems
 
-A notice replaces an answer when `agentsfleet` cannot pick one fleet. Each notice names the next step.
+| Symptom | What to do |
+|---|---|
+| No fleet subscribes to the channel. | Connect Slack, then ask a fleet to add the channel's mention trigger. |
+| Slack asks which fleet should answer. | Start your message with one of the fleet names listed in the notice. |
+| The named fleet is archived. | Name an active fleet subscribed to the channel. |
+| The fleet sees only your mention. | Paste relevant context into the message if Slack could not return the thread or the app cannot read private channel history. |
 
-| Notice starts with | Why | What to do |
-|---|---|---|
-| `Several fleets answer in this channel` | The mention named no fleet, and more than one could answer. | Start the message with one of the listed names. |
-| `The fleets attached here answer only when named` | Every attached fleet has repository write access or is archived. | Start the message with one of the listed names. |
-| `<NAME> is archived and cannot answer` | The named fleet is archived. | Mention another fleet attached to the channel. |
-
-A notice appears 30 to 60 seconds after the mention.
-
-The fleet reads the first message of the thread and the latest 19 replies. It cuts each message at 2,000 characters and the whole thread at 16,000.
-
-In a private channel, the fleet sees only your mention. The Slack app cannot read private channel history. The fleet also answers from the mention alone when Slack does not return the thread within 1.5 seconds.
-
-If Slack loses its reply to a posted answer, `agentsfleet` checks the thread before it posts again. The answer appears once. In a private channel `agentsfleet` cannot check, so the answer can appear twice.
-
-A fleet you save under the name `slack-channel-<TEAM_ID>-<CHANNEL_ID>` with settings of its own is never used as the channel's own fleet. While it holds that name, a mention that needs the channel's own fleet starts no run. Rename or delete that fleet.
-
-A fleet you save under that name with the channel fleet's exact runtime settings counts as the channel's own fleet. It answers in that fleet's place.
-
-A mention from a bot, an edited message, or the app's own reply starts no run.
-
-A mention from a Slack workspace that is not connected to an `agentsfleet` workspace starts no run. Connect Slack again from **Connect apps** in the account menu.
+The app reads the first thread message and up to 19 later replies. It bounds thread retrieval to 1.5 seconds. An edited message or an app reply to itself does not start another turn.
 
 ## Remove or undo
 
-To detach a fleet from the channel, remove its `mention` trigger and apply the change.
-
-1. Open the fleet in the dashboard and choose **Fleet actions → Edit setup**.
-2. Ask the chat to remove the Slack mention trigger.
-3. Open **Edit instructions** beside the setup chat title and check that the trigger is gone.
-4. Close the editor, then choose **Save and publish** above the message field.
-
-In the terminal, start the same chat with `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>`. `<SETUP_REVISION>` is the `setup_revision` field that `agentsfleet --json fleet show <FLEET_ID>` prints. Ask for the change, then run `/review` and `/apply`.
-
-<Warning>
-Deleting the channel's own fleet permanently removes its memory, events, and other fleet records.
-The next mention that needs it creates a new fleet with empty memory.
-</Warning>
-
-To remove it, run `agentsfleet fleet delete <FLEET_ID>`.
+Remove the Slack trigger under **Wakes on** in the fleet's sidebar. From the terminal, run `agentsfleet fleet triggers list <FLEET_ID>` to find the trigger identifier. Then use `agentsfleet fleet triggers delete <FLEET_ID> <TRIGGER_ID>`.
 
 ## Related pages
 
 - [Connect a provider](/fleets/connectors)
-- [Author a fleet](/fleets/authoring)
-- [Install a fleet](/fleets/install)
+- [Start and guide a fleet](/fleets/authoring)
 - [Run and control a fleet](/fleets/running)

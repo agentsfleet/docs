@@ -34,6 +34,10 @@
     {
       "source": "/billing/plans",
       "destination": "/billing/budgets"
+    },
+    {
+      "source": "/cli/platform",
+      "destination": "/cli/agentsfleet"
     }
   ],
   "navigation": {
@@ -53,11 +57,10 @@
             "group": "Work with fleets",
             "pages": [
               "fleets/authoring",
-              "fleets/running",
-              "fleets/overview",
-              "fleets/library",
               "fleets/install",
-              "fleets/approvals"
+              "fleets/running",
+              "fleets/approvals",
+              "fleets/overview"
             ]
           },
           {
@@ -91,7 +94,8 @@
             "group": "Help and updates",
             "pages": [
               "fleets/troubleshooting",
-              "changelog"
+              "changelog",
+              "fleets/library"
             ]
           }
         ]
@@ -124,8 +128,8 @@
             "group": "Overview",
             "pages": [
               "api-reference/introduction",
-              "api-reference/error-codes",
-              "api-reference/scopes"
+              "api-reference/scopes",
+              "api-reference/error-codes"
             ]
           },
           {
@@ -235,6 +239,10 @@
               "GET /v1/runners/me/runs/{run_id}/fleets",
               "GET /v1/runners/me/runs/{run_id}/fleets/{fleet_id}/turns",
               "POST /v1/runners/me/runs/{run_id}/steers",
+              "POST /v1/runners/me/runs/{run_id}/access",
+              "GET /v1/runners/me/runs/{run_id}/triggers",
+              "POST /v1/runners/me/runs/{run_id}/triggers",
+              "DELETE /v1/runners/me/runs/{run_id}/triggers/{trigger_id}",
               "GET /v1/runners/me/runs/{run_id}/schedules",
               "POST /v1/runners/me/runs/{run_id}/schedules",
               "PATCH /v1/runners/me/runs/{run_id}/schedules/{schedule_id}",
@@ -282,20 +290,6 @@
             ]
           },
           {
-            "group": "Private setup chats",
-            "pages": [
-              "GET /v1/workspaces/{workspace_id}/drafts",
-              "POST /v1/workspaces/{workspace_id}/drafts",
-              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}",
-              "PATCH /v1/workspaces/{workspace_id}/drafts/{draft_id}",
-              "DELETE /v1/workspaces/{workspace_id}/drafts/{draft_id}",
-              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}/messages",
-              "POST /v1/workspaces/{workspace_id}/drafts/{draft_id}/messages",
-              "PATCH /v1/workspaces/{workspace_id}/drafts/{draft_id}/turns/{turn_id}",
-              "GET /v1/workspaces/{workspace_id}/drafts/{draft_id}/turns/stream"
-            ]
-          },
-          {
             "group": "Secrets",
             "pages": [
               "GET /v1/workspaces/{workspace_id}/secrets",
@@ -329,12 +323,9 @@
               "GET /v1/workspaces/{workspace_id}/fleets",
               "POST /v1/workspaces/{workspace_id}/fleets",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
-              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/setup-context",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}",
-              "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/revisions",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memory-access",
-              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/setup-context",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/durable_tasks",
               "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/durable_tasks/{durable_task_id}",
               "PATCH /v1/workspaces/{workspace_id}/fleets/{fleet_id}/durable_tasks/{durable_task_id}"
@@ -364,6 +355,13 @@
               "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}",
               "POST /v1/workspaces/{workspace_id}/fleets/{fleet_id}/schedules/{schedule_id}/sync",
               "POST /v1/ingress/qstash/schedules"
+            ]
+          },
+          {
+            "group": "Fleet triggers",
+            "pages": [
+              "GET /v1/workspaces/{workspace_id}/fleets/{fleet_id}/triggers",
+              "DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/triggers/{trigger_id}"
             ]
           },
           {
@@ -412,8 +410,9 @@
           {
             "group": "Runners",
             "pages": [
+              "runners/install",
               "runners",
-              "runners/install"
+              "runners/recovery"
             ]
           }
         ]

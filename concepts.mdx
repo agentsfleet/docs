@@ -3,18 +3,18 @@ title: How agentsfleet works
 description: Learn how a fleet turns a message or event into a result.
 type: explanation
 audience: user
-verified: 2026-10-24
-product_version: 0.65.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What it is
 
-A fleet follows saved instructions to handle repeated work.
+A fleet follows your messages to handle repeated work.
 
 | Term | Meaning |
 |---|---|
-| Fleet | A workspace-owned setup with instructions, triggers, tools, and spending limits. |
+| Fleet | A worker in your workspace with a conversation, triggers, access grants, and memory. |
 | Trigger | What starts work, such as a message, webhook, or schedule. |
 | Event | One incoming delivery to the fleet. |
 | Run | The fleet's work on one event. |
@@ -30,7 +30,7 @@ Workspace permissions control who can access the fleet.
 
 ## How it behaves
 
-Describe a task in a private setup chat. Review the proposed instructions, access, and budget, then save the fleet.
+Describe a task in **New fleet** and send the message. It creates the fleet and starts its first turn.
 
 A message or another declared trigger starts a run. The fleet uses its allowed tools and returns a result.
 Memory can keep useful information for later runs.
@@ -39,8 +39,8 @@ Authorized workspace members can archive or delete a fleet. Archiving keeps its 
 
 ## Limits
 
-A fleet receives only its declared tools and secrets. [Network restrictions](/fleets/tools#how-it-behaves) depend on the tool and runner settings.
-Budgets, account balance, and model limits can block new work.
+A fleet receives only approved credentials. [Network restrictions](/fleets/tools#how-it-behaves) depend on the tool and runner settings.
+A low account balance or an unavailable model can block new work.
 
 ## Related pages
 

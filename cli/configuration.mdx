@@ -3,8 +3,8 @@ title: Client configuration
 description: Environment variables and value order for the agentsfleet client.
 type: reference
 audience: user
-verified: 2026-10-24
-product_version: 0.65.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -42,7 +42,7 @@ AGENTSFLEET_API_URL=https://api.agentsfleet.net agentsfleet --version
 | `AGENTSFLEET_API_KEY` | Authenticates every request and overrides saved login data. Nothing is written to disk. | None | Valid tenant API key starting with `agt_t` |
 | `AGENTSFLEET_STATE_DIR` | Stores local credentials, settings, and telemetry consent. | `~/.config/agentsfleet` | Writable directory path |
 | `NO_COLOR` | Disables color when set to a nonempty value. | Unset | Any nonempty text |
-| `AGENTSFLEET_REDUCED_MOTION` | Uses a static pet and request status when set to a nonempty value. | Unset | Any nonempty text |
+| `AGENTSFLEET_REDUCED_MOTION` | Uses a static request status when set to a nonempty value. | Unset | Any nonempty text |
 | `AGENTSFLEET_TELEMETRY_DISABLED` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
 | `DO_NOT_TRACK` | Disables usage telemetry when set to `1`. | Unset | `1` or unset |
 | `AGENTSFLEET_TELEMETRY_DEBUG` | Prints telemetry details to standard error when set to `1`. | Unset | `1` or unset |

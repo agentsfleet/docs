@@ -7,6 +7,24 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 25, 2026" tags={["Bug fixes", "CLI"]}>
+  ## New fleet model and Orbit controls
+
+  When a default model is available, New fleet names it before you send the first message.
+
+  ## API reference
+
+  - **Fleet creation** — Send the first message in `POST /v1/workspaces/{workspace_id}/fleets` to start a fleet.
+
+  ## Bug fixes
+
+  - **Model selection** — The composer uses the workspace owner's selection. If the owner has no selected model, it uses the shared platform default.
+
+  ## CLI
+
+  - **Orbit** — Collect stars, build a rally, and toggle arcade sounds with **S**. See the [game controls](/cli/agentsfleet#terminal-pet).
+</Update>
+
 <Update label="Nov 24, 2026" tags={["Upgrading", "Breaking"]}>
   ## One clock for runners
 

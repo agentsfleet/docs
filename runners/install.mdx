@@ -3,8 +3,8 @@ title: Install a runner
 description: Put the runner binary and its signed toolbox on a Linux host, check the host, and start the runner as a service.
 type: how-to
 audience: operator
-verified: 2026-11-19
-product_version: 0.75.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -39,11 +39,11 @@ The certificate must match the listener's hostname or address.
 
 ## Steps
 
-1. Download `agentsfleet-runner-bundle-linux-amd64.tar.gz` from the [release](https://github.com/agentsfleet/agentsfleet/releases) you want to run.
+1. Download `agentsfleet-runner-linux-amd64.tar.gz` from the [release](https://github.com/agentsfleet/agentsfleet/releases) you want to run.
 
-   The bundle holds the binary and the toolbox image with its manifest and signature. It also holds the image's software bill of materials, its vulnerability scan, and `release.pub`, the public signing key.
+   Download the matching toolbox image, manifest, and manifest signature from that same release. They are separate release assets.
 
-2. Make a private scratch directory for the bundle, and keep its path in `BUNDLE_DIR`. Run the remaining steps in this same shell.
+2. Make a private scratch directory for the release files, and keep its path in `BUNDLE_DIR`. Run the remaining steps in this same shell.
 
    ```bash
    BUNDLE_DIR=$(mktemp -d)
@@ -55,10 +55,10 @@ The certificate must match the listener's hostname or address.
 
    `mktemp -d` makes a new directory that only root can open. Do not reuse a fixed path under `/tmp`. Another user who creates it first could swap the binary before you install it.
 
-3. Unpack the bundle into it.
+3. Unpack the runner archive into it and copy the three toolbox files there.
 
    ```bash
-   tar -xzf agentsfleet-runner-bundle-linux-amd64.tar.gz -C "$BUNDLE_DIR"
+   tar -xzf agentsfleet-runner-linux-amd64.tar.gz -C "$BUNDLE_DIR"
    ```
 
    ```text
@@ -73,12 +73,9 @@ The certificate must match the listener's hostname or address.
 
    ```text
    agentsfleet-runner-linux-amd64
-   release.pub
    toolbox-<varies>.erofs
    toolbox-<varies>.json
    toolbox-<varies>.json.sig
-   toolbox-<varies>.sbom.spdx.json
-   toolbox-<varies>.scan.json
    ```
 
    The part between `toolbox-` and the extension is the image's SHA-256 digest. The steps below call it `<SHA256>`.
@@ -119,7 +116,7 @@ The certificate must match the listener's hostname or address.
 
 8. Write the three required variables to `/etc/default/agentsfleet-runner` with root-only read permissions.
 
-   Replace `<API_URL>` with your control-plane address and `<RUNNER_TOKEN>` with the dashboard token.
+   Replace `<API_URL>` with your control-plane address and `<RUNNER_TOKEN>` with the token issued by the registration command.
    Your operator supplies `<STREAM_ORIGIN>`, such as `https://runner.example.net:4443`, without a path, query, fragment or embedded credentials.
 
    ```ini
@@ -134,36 +131,28 @@ The certificate must match the listener's hostname or address.
    AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE=<CA_CERT_FILE>
    ```
 
-   [Runners](/runners#enrolling-a-host) lists the remaining optional variables.
+   Keep the token file and the environment file readable only by the service operator.
 
-9. Write the service to `/etc/systemd/system/agentsfleet-runner.service`.
+9. Install `deploy/baremetal/agentsfleet-runner.service` from the matching release's source tree. Replace `<UNIT_FILE>` with the downloaded file's local path.
 
-   ```ini
-   [Unit]
-   Description=agentsfleet Runner
-   After=network.target
-
-   [Service]
-   ExecStartPre=-+/usr/sbin/modprobe erofs
-   ExecStart=/usr/local/bin/agentsfleet-runner run
-   EnvironmentFile=/etc/default/agentsfleet-runner
-   Environment=OTEL_SERVICE_INSTANCE_ID=%H
-   RuntimeDirectory=agentsfleet
-   Environment=HOME=/run/agentsfleet
-   Restart=always
-   RestartSec=5
-   KillMode=mixed
-   TimeoutStopSec=300
-   Delegate=cpu io memory pids
-   DelegateSubgroup=runner
-
-   [Install]
-   WantedBy=multi-user.target
+   ```bash
+   install -m 644 <UNIT_FILE> /etc/systemd/system/agentsfleet-runner.service
    ```
 
-   `ExecStartPre=` loads the EROFS module before every start, because the runner refuses a kernel that has not loaded it yet. The leading `-` lets the service start on a host without `modprobe`, or one whose kernel has EROFS built in.
+   ```text
+   (no output)
+   ```
 
-   `Delegate=` and `DelegateSubgroup=` give the runner its own cgroup subtree. Each sandbox's memory, processor, process, and disk limits are written there. `%H` names each host's telemetry after the host.
+   The shipped unit sets resource limits, filesystem protections, and its restart policy. It selects `/etc/agentsfleet/agentsfleet-runner.toml`.
+
+   Create that profile before starting the unit. An empty file uses the defaults below.
+
+   If you set a custom `RUNNER_STORAGE_HOME`, add its absolute path to a service drop-in. This gives the runner write access under the shipped filesystem protections.
+
+   ```ini
+   [Service]
+   ReadWritePaths=<RUNNER_STORAGE_HOME>
+   ```
 
 10. Load the service and start it.
 
@@ -223,7 +212,7 @@ agentsfleet-runner probe
 
 The `kvm` check reports whether `/dev/kvm`, the Kernel-based Virtual Machine (KVM) device, opens. A failed `kvm` check does not stop the runner, because the bubblewrap sandbox needs no KVM device.
 
-Open **Admin → Runners** in the dashboard. The new runner reads `online` within one heartbeat.
+Use `agentsfleet platform runners show <RUNNER_ID>` to check the host. A healthy, idle host reports `online` after its first heartbeat.
 
 ## Common problems
 
@@ -262,17 +251,13 @@ rm -f /var/lib/agentsfleet-runner/toolbox/incoming/toolbox-*
 (no output)
 ```
 
-Then unpack the previous release's bundle as in steps 2 to 4. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
+Then unpack the previous release's runner archive and stage its matching toolbox. Install its binary as in step 5, stage its toolbox as in step 7, and start the service.
 
-To remove the runner for good, revoke it under **Admin → Runners**.
+To remove the runner for good, run `agentsfleet platform runners revoke <RUNNER_ID>`.
 Deleting `/var/lib/agentsfleet-runner` removes its toolbox, repository mirrors and sandbox files.
 Unacknowledged results exist only in the running process and can be lost when that process stops.
 
 ## Runner-local settings
-
-<Note>
-Runner profiles are coming with the next checkpoint recovery release.
-</Note>
 
 The managed host deploy installs `/etc/agentsfleet/agentsfleet-runner.toml` and selects it through `AGENTSFLEET_RUNNER_CONFIG_FILE`.
 
@@ -342,11 +327,11 @@ Required file restores wait for a runner-wide admission slot while lease renewal
 Optional captures skip a busy boundary and preserve the previous committed checkpoint.
 Each admitted operation retains the compiled four-transfer window.
 
-The runner refuses unreadable files, unknown settings, invalid bounds, and renewal intervals longer than the supported safety windows.
+The runner refuses unreadable files, unknown settings, and invalid bounds.
 Keep tokens in the environment file.
 Worker count remains assigned per runner by the daemon.
 
 ## Related pages
 
 - [Runners](/runners)
-- [Install a fleet](/fleets/install)
+- [Start a fleet from the terminal](/fleets/install)

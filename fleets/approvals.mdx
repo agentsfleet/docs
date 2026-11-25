@@ -3,8 +3,8 @@ title: Approve a waiting run
 description: Review requested access, approve or deny it, and revoke standing grants.
 type: how-to
 audience: user
-verified: 2026-11-12
-product_version: 0.76.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -15,7 +15,7 @@ approval waits until someone approves or denies its request.
 
 Open the fleet conversation to decide a request. Summary shows the proposed action and affected resources; choose **Approve** or **Deny** there.
 
-Expand **Action details** for evidence or an optional reason. Saved fleets waiting for connector access use the same controls. Approving the last missing grant finishes setup.
+Read the scope on the access card before deciding.
 
 A confirmed decision appears beside the action. If the response is uncertain, choose **Check status** before deciding again.
 
@@ -23,22 +23,9 @@ Use `agentsfleet fleet approvals` to inspect requests and decide them from your 
 
 ## Before you begin
 
-Two kinds of request can appear:
+A running fleet asks for a workspace secret or connected provider with `request_access`. Its request names the service and, for GitHub, the repositories and access level.
 
-| Kind | Raised by | Scope of a decision |
-|------|-----------|---------------------|
-| `integration_grant` | Saving a fleet that needs credentials from a connected service | Covers that fleet and service until revoked. |
-| A kind you name | A rule under `gates` in the fleet's Definition | Covers the actions described by the rule's `blast_radius`. |
-
-An action with no matching rule runs without asking. Add a rule only for the actions you want to approve first.
-
-Saving a fleet that needs service credentials creates its grant request.
-The fleet reads `installing` until someone approves it. Approving the last
-missing grant finishes setup in the same request, and the fleet reads `active`.
-
-A repository write uses that standing grant. You do not approve every run separately.
-
-Sign in and select the workspace that owns the fleet. A tenant API key needs `approval:read` to list gates and `approval:resolve` to decide them.
+Sign in to the workspace that owns the fleet. Deciding a request needs `approval:resolve` and a signed-in person's session. A tenant API key with `approval:read` can list the requests.
 
 ## Steps
 
@@ -122,24 +109,14 @@ No credential is issued, and the run makes no provider call. Check with
 
 ## Remove or undo
 
-A request can be decided once. Denying it ends the waiting run without granting
-access. An approved integration grant can later be revoked.
+A request can be decided once. Denying resumes the work without the requested access. You can revoke an approved integration grant.
 
 To revoke a grant, copy `<GRANT_ID>` from `agentsfleet fleet grants list --fleet <FLEET_ID>`.
 Then run `agentsfleet fleet grants revoke <GRANT_ID> --fleet <FLEET_ID>`.
 
-To change which repositories a fleet may reach, or to drop it to read-only,
-change `repositories` or `repository_access` in a private improvement chat.
-Choose **Edit setup** in the fleet header, then ask for the change.
+To change the approved repository scope, revoke the existing grant. Ask the fleet to request the new scope, and decide its next access card.
 
-Open **… → Instructions** beside the setup chat title to review the change. Close the editor, then choose **Save changes** in the fleet header.
-
-The next service credential uses the updated repository access. The grant stays
-approved, and the fleet keeps running.
-
-Deleting the grant removes all access to that service for this fleet,
-including every repository it reached through the service.
-The next event is refused before the fleet contacts the provider.
+The next run and token mint use the updated approval. A credential already issued to a live run remains with that run.
 
 ## Related pages
 

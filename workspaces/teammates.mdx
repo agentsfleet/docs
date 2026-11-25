@@ -3,14 +3,14 @@ title: Invite teammates
 description: Invite people into your account so they can open and steer its fleets.
 type: how-to
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What this does
 
-An invite lets another person work in every workspace of your account. They open its fleets, watch them live, and steer them.
+Invite a teammate to open fleets, see their replies, and send messages in any workspace of your account.
 
 Everyone who joins is a **member**. You stay the account's one **owner**.
 
@@ -24,7 +24,7 @@ Everyone who joins is a **member**. You stay the account's one **owner**.
 
 A member who tries an owner action sees "Only the account owner can do this."
 
-A message anyone sends to a fleet shows at once on every screen open on that fleet. It is marked queued until the fleet starts on it. A teammate's message shows their name above it.
+A teammate's message appears in the fleet chat with their name. You can see whether the fleet has started work on it.
 
 ## Before you begin
 
@@ -68,7 +68,7 @@ Your teammate opens the workspace switcher. Their own workspaces sit under **You
 
 **The invite was sent to a different email address ([`UZ-INV-002`](/api-reference/error-codes#UZ-INV-002)).** Your teammate is signed in with another address. They sign in with the invited address and open the link again.
 
-**The invite is no longer valid ([`UZ-INV-001`](/api-reference/error-codes#UZ-INV-001)).** The invite expired or was revoked, so create a new invite. An already-accepted invite means your teammate is a member; remove them before inviting again.
+**The invite is no longer valid ([`UZ-INV-001`](/api-reference/error-codes#UZ-INV-001)).** Create a new invite if the link expired or was revoked. Check the **People** table first in case your teammate already joined.
 
 **We could not send the email ([`UZ-INV-005`](/api-reference/error-codes#UZ-INV-005)).** Sending again found no mail service, or the mail service refused. The invite still works, so copy its link and send it yourself.
 

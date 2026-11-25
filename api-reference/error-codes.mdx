@@ -3,8 +3,8 @@ title: Error codes
 description: API error response fields and stable error codes.
 type: reference
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -70,6 +70,8 @@ Use the current response or event details when diagnosing a new failure.
 |---|---|---|---|
 | <span id="UZ-REQ-001"></span>`UZ-REQ-001` | 400 | Invalid request | That request wasn't valid. Double-check the values you entered and try again. |
 | <span id="UZ-REQ-002"></span>`UZ-REQ-002` | 413 | Payload too large | Request body exceeds the maximum allowed size. |
+| <span id="UZ-REQ-003"></span>`UZ-REQ-003` | 410 | Endpoint removed | Use the current route listed in the API reference. |
+| <span id="UZ-REQ-004"></span>`UZ-REQ-004` | 400 | Input too long | Shorten the input to at most 1,048,576 characters. |
 
 ### Workspaces
 
@@ -155,17 +157,46 @@ Use the current response or event details when diagnosing a new failure.
 |---|---|---|---|
 | <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secrets create <NAME>` |
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | **Retired.** Check the fleet state and the event details for the current failure. |
-| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Review the draft under a different `--name` to keep it. Deleting the existing fleet permanently removes its events, sessions, schedules, grants, and memory; only do that if you intend to remove it. |
-| <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. |
+| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Choose a different `name` and send the request again. |
+| <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | Check the runtime model and provider settings before trying again. |
 | <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace. |
 | <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | **Retired.** Delete now works in any status, and archive works on any fleet that is not archived. |
-| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is not active | This Fleet is still installing or was archived, so it refuses new work. Check it with `agentsfleet fleet show <FLEET_ID>`. |
+| <span id="UZ-AGT-012"></span>`UZ-AGT-012` | 409 | Fleet is not active | This fleet is inactive. Check its state with `agentsfleet fleet show <FLEET_ID>`. |
 | <span id="UZ-AGT-013"></span>`UZ-AGT-013` | 500 | Fleet install rolled back | We couldn't finish setting up your fleet. Nothing was created — try again. |
 | <span id="UZ-AGT-014"></span>`UZ-AGT-014` | 412 | Fleet source is stale | Someone else edited this Fleet's source since you opened it. Reload to see their change, then re-apply your edit. |
 | <span id="UZ-AGT-015"></span>`UZ-AGT-015` | 404 | Event not found | We couldn't find that event. It may have aged out, or the identifier doesn't match one on this Fleet. |
 | <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This `operation_id` was used with a different message or sender; workspace API keys count as one sender. Retry the original request unchanged, or use a new `operation_id` for a new message. The response carries `current_state: "admitted"`. |
 | <span id="UZ-AGT-017"></span>`UZ-AGT-017` | 404 | Tool call not found | No full output was kept for this call on this event, or the call is outside this workspace. Use the call identifier shown in the thread. Its saved preview may still contain the first and last lines. |
 | <span id="UZ-AGT-020"></span>`UZ-AGT-020` | 409 | Fleet is archived | This Fleet is archived and can't change. Delete it, or set up a new Fleet. |
+| <span id="UZ-AGT-022"></span>`UZ-AGT-022` | 404 | Requested access not in workspace | Add the secret or connect the integration, then request access using its exact name. |
+| <span id="UZ-AGT-023"></span>`UZ-AGT-023` | 409 | Provider not connected | Connect the provider in the workspace, then retry the request. |
+| <span id="UZ-AGT-024"></span>`UZ-AGT-024` | 409 | Trigger already exists | The fleet already has a trigger of this kind on this source. Keep it or remove it before adding another. |
+| <span id="UZ-AGT-025"></span>`UZ-AGT-025` | 404 | Trigger signing secret not in workspace | Store the webhook's signing secret under the named key, then add the trigger again. |
+| <span id="UZ-SETUP-002"></span>`UZ-SETUP-002` | 409 | Fleet state conflict | Wait for the current work to finish or stop it before changing the fleet. |
+| <span id="UZ-SETUP-003"></span>`UZ-SETUP-003` | 412 | Fleet version changed | Fetch the fleet again and retry with its current `ETag`. |
+| <span id="UZ-SETUP-004"></span>`UZ-SETUP-004` | 428 | Fleet version required | Send the fleet's `ETag` in `If-Match`. |
+| <span id="UZ-SETUP-005"></span>`UZ-SETUP-005` | 409 | Operation key conflict | Reuse an operation key only for the same normalized request from the same caller. |
+| <span id="UZ-SETUP-008"></span>`UZ-SETUP-008` | 409 | Fleet model unavailable | Choose an eligible model configured by the workspace owner. |
+| <span id="UZ-SETUP-011"></span>`UZ-SETUP-011` | 400 | Invalid list cursor | Start the list again with the same caller, filters, and page size. |
+| <span id="UZ-SETUP-013"></span>`UZ-SETUP-013` | 410 | Fleet purged | The fleet created by this operation was deleted. Start a new operation. |
+| <span id="UZ-AGT-018"></span>`UZ-AGT-018` | 409 | Fleet cannot steer itself | Reply to the current turn or choose another fleet from `fleet_activity`. |
+| <span id="UZ-AGT-021"></span>`UZ-AGT-021` | 409 | Turn already finished | The turn finished before Stop took effect. Read its saved reply or failure. |
+
+### Durable tasks
+
+| Code | HTTP | Meaning | What to do |
+|---|---|---|---|
+| <span id="UZ-DT-001"></span>`UZ-DT-001` | 404 | Durable task not found | Refresh the durable task list for this fleet. |
+| <span id="UZ-DT-002"></span>`UZ-DT-002` | 409 | Durable task state changed | Read the current task state. A finished task cannot restart. |
+| <span id="UZ-DT-003"></span>`UZ-DT-003` | 409 | Durable task replay conflicts | Retry with the same request content and operation identity. |
+| <span id="UZ-DT-004"></span>`UZ-DT-004` | 409 | Durable task target is unavailable | Choose a target covered by the task goal and approved repository access. |
+| <span id="UZ-DT-005"></span>`UZ-DT-005` | 429 | Durable task limit reached | The task or fleet reached a work limit. Its saved progress remains available. |
+| <span id="UZ-DT-006"></span>`UZ-DT-006` | 503 | Decision unavailable | Check the decision model, account balance, and provider key. The request is saved. |
+| <span id="UZ-DT-007"></span>`UZ-DT-007` | 409 | Input needs clarification | Ask the person to explain what they want before changing the task. |
+| <span id="UZ-DT-008"></span>`UZ-DT-008` | 409 | Checkpoint is incompatible | Keep the earlier checkpoint. Restore a complete checkpoint that matches the setup. |
+| <span id="UZ-DT-009"></span>`UZ-DT-009` | 503 | Checkpoint storage unavailable | Retry the authorized transfer before its original deadline. Keep the last complete save. |
+| <span id="UZ-DT-010"></span>`UZ-DT-010` | 409 | Publication needs reconciliation | Check the saved publication record before trying the same change again. |
+| <span id="UZ-DT-013"></span>`UZ-DT-013` | 412 | Durable task version changed | Read the task again and retry with its current `ETag` and generation. |
 
 ### Schedules
 
@@ -185,7 +216,7 @@ Use the current response or event details when diagnosing a new failure.
 
 ### Drafts and setup
 
-These codes answer private drafts, Save, Apply, and account-owned Plugin publication.
+These codes describe responses from the retired draft, setup, and Plugin APIs.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
@@ -250,13 +281,10 @@ These codes answer private drafts, Save, Apply, and account-owned Plugin publica
 
 ### Library listings
 
+The model catalogue uses the active listing codes below. Older logs can also contain the retired codes.
+
 Model catalogue reads use the codes below. Keep `limit` within 1 to 100 and use the previous page's `next_cursor`.
 Start again from the first page after changing a filter.
-
-Plugins use `UZ-AUTHOR-011` for malformed or mismatched cursors.
-Their list route is `/v1/workspaces/{workspace_id}/plugins`; it returns only your account's entries.
-
-Removing a Plugin answers `UZ-AUTHOR-001` when the entry is not one your account owns.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
@@ -292,7 +320,7 @@ Removing a Plugin answers `UZ-AUTHOR-001` when the entry is not one your account
 | <span id="UZ-RUN-012"></span>`UZ-RUN-012` | 402 | Lease renewal blocked: no credits | The tenant balance cannot cover another run slice. The lease does not renew, and the run stops cleanly. |
 | <span id="UZ-RUN-013"></span>`UZ-RUN-013` | 400 | Renew body malformed | The runner reports retired usage fields, so its lease cannot renew. Upgrade `agentsfleet-runner` together with `agentsfleetd`. |
 | <span id="UZ-RUN-014"></span>`UZ-RUN-014` | 404 | Runner not found | We couldn't find that runner. It may have been removed — refresh the list. |
-| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | The fleet reached its `daily_nanos` or `monthly_nanos` limit from its reviewed setup, so the run stops. The tenant balance is fine; this is the fleet's own budget. |
+| <span id="UZ-RUN-015"></span>`UZ-RUN-015` | 402 | Lease renewal blocked: fleet budget exhausted | **Retired.** The fleet exceeded a limit in its saved setup. Current runs use the account balance. |
 | <span id="UZ-RUN-016"></span>`UZ-RUN-016` | 409 | Active runner must be revoked before deletion | This runner is still live. Revoke it first, then delete it. |
 | <span id="UZ-RUN-018"></span>`UZ-RUN-018` | 409 | Self-test refused: runner is revoked | A revoked runner cannot receive a self-test. Enroll a replacement runner. |
 | <span id="UZ-RUN-019"></span>`UZ-RUN-019` | 409 | Event has no thread to message | The run came from an API steer, a webhook, or a schedule, so no thread is waiting. Say it in the run's answer instead. |
@@ -300,6 +328,10 @@ Removing a Plugin answers `UZ-AUTHOR-001` when the entry is not one your account
 | <span id="UZ-RUN-021"></span>`UZ-RUN-021` | 409 | Runner stream superseded | A newer connection owns this runner. Stop the duplicate process and keep one intended process per runner token. |
 | <span id="UZ-RUN-022"></span>`UZ-RUN-022` | 409 | Lease cancelled | The fleet was killed. Stop that lease and report its final result. |
 | <span id="UZ-RUN-023"></span>`UZ-RUN-023` | 400 | Runner protocol unsupported | Upgrade `agentsfleet-runner` and `agentsfleetd` together so they use the same runner protocol. |
+| <span id="UZ-RUN-024"></span>`UZ-RUN-024` | 503 | Runner stream disconnected | The runner reconnects automatically. Check the private listener and its network route if this repeats. |
+| <span id="UZ-RUN-026"></span>`UZ-RUN-026` | 409 | Tenant-managed runner | The owning account must rotate this runner's token through its runner endpoint. |
+| <span id="UZ-RUN-027"></span>`UZ-RUN-027` | 500 | Runner placement refused | Report the placement failure with the request identifier. |
+| <span id="UZ-RUN-033"></span>`UZ-RUN-033` | 409 | Host already registered | Read the existing runner from the `Location` header. Rotate its token if needed. |
 
 ### Runs
 
@@ -324,15 +356,25 @@ See [Troubleshoot a fleet](/fleets/troubleshooting) for recovery.
 | <span id="UZ-EXEC-016"></span>`UZ-EXEC-016` | 401 | Runner token rejected | **Retired.** The runner token was rejected. Re-enroll the host instead of retrying its old token. |
 | <span id="UZ-EXEC-017"></span>`UZ-EXEC-017` | 409 | Assignment exceeds host capability | **Retired.** The host could not enforce the assigned policy; fix the host or choose a suitable runner. Check the current event's `failure_class`, such as `startup_posture`. |
 
+### Run checkpoints
+
+| Code | HTTP | Meaning | What to do |
+|---|---|---|---|
+| <span id="UZ-RUN-028"></span>`UZ-RUN-028` | 409 | Run checkpoint incompatible | Use a runner with matching settings or start a new run. |
+| <span id="UZ-RUN-029"></span>`UZ-RUN-029` | 409 | Run checkpoint conflict | Read the latest checkpoint descriptor before trying to save again. |
+| <span id="UZ-RUN-030"></span>`UZ-RUN-030` | 503 | Run checkpoint unavailable | Keep the last complete checkpoint and retry when storage returns. |
+| <span id="UZ-RUN-031"></span>`UZ-RUN-031` | 413 | Run checkpoint limit exceeded | Reduce the state or workspace files the checkpoint needs to store. |
+| <span id="UZ-RUN-032"></span>`UZ-RUN-032` | 413 | Run too large to send | Shorten the message or start a new conversation. The runner frame limit is 32 MiB. |
+
 ### Approvals
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
-| <span id="UZ-APPROVAL-001"></span>`UZ-APPROVAL-001` | 400 | Approval parse failed | **Retired.** Invalid Definition fields now return [`UZ-REQ-001`](#UZ-REQ-001). Check the field named in the detail. |
+| <span id="UZ-APPROVAL-001"></span>`UZ-APPROVAL-001` | 400 | Approval parse failed | **Retired.** The old approval rule could not be read. |
 | <span id="UZ-APPROVAL-002"></span>`UZ-APPROVAL-002` | 404 | Approval not found | That approval action wasn't found. It may have already timed out or been resolved elsewhere. |
 | <span id="UZ-APPROVAL-003"></span>`UZ-APPROVAL-003` | 401 | Approval invalid signature | **Retired.** Invalid callback signatures now use [`UZ-WH-010`](#UZ-WH-010). Check the signing secret. |
 | <span id="UZ-APPROVAL-004"></span>`UZ-APPROVAL-004` | 503 | Approval service unavailable | **Retired.** Report the current service error and request identifier when approvals are unavailable. |
-| <span id="UZ-APPROVAL-005"></span>`UZ-APPROVAL-005` | 400 | Approval condition invalid | **Retired.** Invalid approval conditions now fail Definition validation with [`UZ-REQ-001`](#UZ-REQ-001). |
+| <span id="UZ-APPROVAL-005"></span>`UZ-APPROVAL-005` | 400 | Approval condition invalid | **Retired.** The old approval rule had an invalid condition. |
 | <span id="UZ-APPROVAL-006"></span>`UZ-APPROVAL-006` | 409 | Approval already resolved | Someone already resolved this. Refresh to see the outcome and who resolved it. |
 
 ### Memory
@@ -360,9 +402,9 @@ See [Troubleshoot a fleet](/fleets/troubleshooting) for recovery.
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
 | <span id="UZ-REPAIR-010"></span>`UZ-REPAIR-010` | 403 | Write mint requires an approved gate | **Retired.** Repository writes use the fleet's integration grant. A missing approved grant returns [`UZ-GRANT-001`](#UZ-GRANT-001). |
-| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | **Retired.** Repository access follows the fleet's current Definition. Keep `repositories` limited to the repositories it needs. |
+| <span id="UZ-REPAIR-011"></span>`UZ-REPAIR-011` | 403 | Fleet binding changed since approval | **Retired.** Check the fleet's current repository grant before requesting write access. |
 | <span id="UZ-REPAIR-012"></span>`UZ-REPAIR-012` | 200 | Duplicate repair link refused | **Retired.** The webhook path no longer records repair links through this check. Repository access uses fleet integration grants. |
-| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | **Retired.** The per-approval request allowance was removed. Set `budget.daily_nanos` to limit the fleet's daily spending. |
+| <span id="UZ-REPAIR-013"></span>`UZ-REPAIR-013` | 403 | Write request allowance exhausted | **Retired.** The former per-approval write limit was reached. |
 | <span id="UZ-REPAIR-014"></span>`UZ-REPAIR-014` | 200 | Repair provenance refused | **Retired.** The webhook path no longer checks repair provenance against a per-run write approval. Review the fleet's integration grant instead. |
 
 ### Integration grants

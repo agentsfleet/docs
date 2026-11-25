@@ -3,8 +3,8 @@ title: API introduction
 description: Base URL, authentication, errors, and common response formats.
 type: explanation
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -12,7 +12,7 @@ executable: false
 
 The `agentsfleet` API lets your software create, inspect, and control fleets. Send requests to `https://api.agentsfleet.net`.
 
-The linked OpenAPI file describes every path, request body, response, and status code.
+The OpenAPI file lists the available routes, inputs, responses, and status codes.
 
 ## Why it exists
 
@@ -20,10 +20,11 @@ Use the API when a script or service needs direct access. Use the command-line c
 
 ## How it behaves
 
+### Authenticate
+
 Most paths accept a bearer token in the `Authorization` header. Tenant API keys start with `agt_t` and are shown once when created.
 
-The dashboard's **Security** page combines account API keys and active sessions.
-Your account avatar shows the current image when available, with your email on hover.
+Manage keys and active sessions on the dashboard's **Security** page.
 
 Key lists show a recorded four-character suffix for recognition; older keys can have no recorded suffix.
 The suffix cannot authenticate a request, and the original key cannot be recovered from it.
@@ -41,6 +42,8 @@ After that ceiling, session verification returns HTTP `503` with `UZ-AUTH-004` u
 
 Webhook and connector paths use provider signatures instead of bearer tokens. The OpenAPI security section on each operation states the required method.
 
+### List fleets
+
 To list fleets, copy `<WORKSPACE_ID>` from `agentsfleet workspace list`.
 Replace `<API_KEY>` with a key that has `fleet:read` access to that workspace.
 Create keys under **Settings → Security → Create API key** in the dashboard.
@@ -53,10 +56,13 @@ curl "https://api.agentsfleet.net/v1/workspaces/<WORKSPACE_ID>/fleets" -H "Autho
 <varies>
 ```
 
-A successful response contains `items`, `total`, and `next_cursor`.
-These values depend on your workspace. A fake or expired key returns an authentication error.
+Read fleets from `items`. When `next_cursor` has a value, use it to fetch the next page.
+
+### Read an error
 
 Errors use the HTTP problem details format. Each product error includes an `error_code`, a `request_id`, and a documentation URL.
+
+### Identifiers and timestamps
 
 Identifiers use version 7 Universally Unique Identifiers (UUIDs).
 
@@ -66,6 +72,8 @@ A timestamp you send may use any RFC 3339 offset. It may carry at most milliseco
 
 The dashboard displays timestamps in your browser's timezone.
 Schedule expressions retain their declared timezone.
+
+### Money amounts
 
 Money amounts are whole nanodollars, written as decimal strings. One United States (US) dollar is `"1000000000"`. Every field whose name contains `_nanos` uses this form, including balances, charges, event costs, and model rates.
 

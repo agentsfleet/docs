@@ -3,8 +3,8 @@ title: Memory
 description: Learn what a fleet can remember between events.
 type: explanation
 audience: user
-verified: 2026-10-19
-product_version: 0.62.1
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -16,7 +16,7 @@ The fleet creates, owns, updates, and removes its memory entries. Workspace memb
 
 ## Why it exists
 
-Memory lets a fleet keep useful conclusions between events. Store conclusions instead of full transcripts.
+Memory keeps useful conclusions between turns. Ask the fleet to save the important facts and standing guidance.
 
 ## How it behaves
 
@@ -31,7 +31,7 @@ Memory lets a fleet keep useful conclusions between events. Store conclusions in
 
 `memory_list` filters entries. `memory_forget` deletes one key.
 
-The dashboard's fleet detail page lists each entry's content, category, and update time. Forgetting an entry requires fleet write access.
+Open **Fleet actions → Saved memories** to see the content, category, and update time. Removing an entry needs fleet write access.
 
 The API route is `DELETE /v1/workspaces/{workspace_id}/fleets/{fleet_id}/memories/{key}`. It returns `204` after deletion and `UZ-MEM-004` when the key is absent.
 
@@ -49,7 +49,7 @@ KEY          CATEGORY    UPDATED     PREVIEW
 `PREVIEW` shows the opening of the entry's content, so a key's meaning is
 readable without a second command.
 
-The list is newest first and pages by cursor. `--starting-after <KEY>` resumes after a key an earlier page returned. When more entries remain, the table prints the command that fetches the next page, and `--json` carries `next_cursor` for scripts.
+The list starts with the newest entry. If more entries remain, the client prints the command for the next page. Scripts can read `next_cursor` from `--json`.
 
 The dashboard's memory panel follows the cursor to the end on its own, so it shows every entry.
 

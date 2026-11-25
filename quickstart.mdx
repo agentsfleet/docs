@@ -3,71 +3,49 @@ title: Your first fleet
 description: Create a fleet in the dashboard and give it a task.
 type: tutorial
 audience: user
-verified: 2026-10-31
-product_version: 0.71.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What you will build
 
-Create a fleet that turns team updates into three short bullets.
-Use text you paste into chat; this task needs no external app connection.
+Create a fleet that turns team updates into three short bullets. It works with text you paste into chat and needs no external app connection.
 
 ## Before you begin
 
-You need hosted access and a workspace with an available model and balance.
-If you need access, [join the waitlist](https://accounts.agentsfleet.net/waitlist).
-
-Setup chat and fleet replies are charged to the workspace owner's balance.
-Review the proposed spending limit before saving.
+You need hosted access and a workspace with an available model and balance. If you need access, [join the waitlist](https://accounts.agentsfleet.net/waitlist).
 
 ## Steps
 
-1. [Open the dashboard](https://app.agentsfleet.net) and sign in. Select the workspace where the fleet belongs.
-2. Choose **New fleet**. Check the selected model, then send this request:
+1. [Open the dashboard](https://app.agentsfleet.net), sign in, and select a workspace.
+2. Choose **New fleet**. Check the model beside the message field and switch it if you prefer another available model.
+3. Send your first message.
 
    ```text
-   Create a fleet called team-updates.
-   Summarize each message into three bullets: progress, blockers, and next actions.
-   Use only the text I send. Do not add tools, connections, schedules, or webhooks.
-   Flag missing information rather than guessing.
-   ```
+   Summarize this update in three bullets: progress, blockers, and next actions.
+   Use only the text I send. Flag missing information rather than guessing.
 
-   The reply proposes a setup in a private chat. Saving creates the fleet; send it a message to start its first run.
-
-3. Choose **… → Instructions** beside the chat title. Read the instructions and review the proposed access and spending limits.
-
-   If the proposal needs changes, return to setup chat and describe them. Check the updated proposal before continuing.
-
-4. Close the editor and choose **Save fleet**. Wait for the confirmed saved version above the message field, then choose **Open fleet** to enter its **Chat**.
-5. Send your first task:
-
-   ```text
    The signup page is ready for review.
    The welcome email still needs copy from Maya.
    Tomorrow, review signup and finish the email.
    ```
 
-   The fleet replies in the conversation. Its wording varies by model.
+   Sending creates the fleet and starts its first turn. Its chat opens as soon as the fleet exists.
 
 ## Verify it works
 
-Check that the reply separates progress, blockers, and next actions without inventing facts.
-Send a follow-up asking for a shorter version.
+Check that the reply separates progress, blockers, and next actions. Send a follow-up asking for a shorter version. You can return to the same fleet from the sidebar.
 
-You can return to the saved fleet from the sidebar. **Activity** shows its runs and costs.
-
-If no model is available, ask the workspace owner to check [model settings](/fleets/model-providers).
-If saving or a run fails, follow the displayed next step or open [Troubleshooting](/fleets/troubleshooting).
-Check a failed run before retrying; another run can incur another charge.
+If no model is available, ask the workspace owner to check [model settings](/fleets/model-providers). If a message fails, follow the next action shown in [the fleet's chat](/fleets/running).
 
 ## What you learned
 
-You described a task, checked its setup, saved a fleet, and reviewed its reply.
+You created a fleet by sending a message and refined its answer in the same chat.
 
 ## Related pages
 
-- [Change a fleet's setup](/fleets/authoring)
+- [Start and guide a fleet](/fleets/authoring)
 - [Connect an app](/fleets/connectors)
 - [Run and control a fleet](/fleets/running)
-- [Build a GitHub pull request (PR) reviewer from the terminal](/tutorials/github-pr-reviewer)
+- [Build a GitHub pull request reviewer](/tutorials/github-pr-reviewer)

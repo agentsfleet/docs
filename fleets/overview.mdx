@@ -3,8 +3,8 @@ title: Fleet overview
 description: Understand what a fleet owns and how its lifecycle works.
 type: explanation
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -12,7 +12,7 @@ executable: false
 
 A fleet handles one recurring outcome. It belongs to one workspace and responds to declared triggers.
 
-A fleet's Definition holds its setup. The instructions describe the task. The runtime settings declare triggers, tools, secrets, network hosts, budgets, and context settings.
+A fleet's chat records its work. Its settings and saved rows hold the model, triggers, approved grants, memory, and network access.
 
 ## Why it exists
 
@@ -22,20 +22,15 @@ A fleet keeps repeated event work in one place. The workspace controls access wh
 
 | State | Meaning | Next actions |
 |---|---|---|
-| `installing` | Setup needs a secret, grant, or another readiness check. | Fix the named check and activate, or archive to cancel setup |
 | `active` | The fleet accepts new events. | Archive or delete |
 | `archived` | The fleet never accepts work again. Its history stays readable. | Delete, or set up a new fleet |
 
 You can delete a fleet in any status. A service guard archives a fleet when an anomaly rule trips. Archiving cannot be undone, so set the fleet up again in a new chat.
 
-Saving a draft creates the fleet. The active workspace owns it, and authorized workspace members control it.
+Sending the first message creates a fleet in the active workspace. Authorized members can manage it.
 
 The fleet page opens directly in its conversation. Use the left navigation to switch fleets or return to **Your fleets**.
 Choose the model beside the Send arrow; changing it preserves your unsent message.
-
-Open **Fleet actions → Edit setup** to open the saved setup conversation.
-Its back arrow returns to the fleet conversation.
-Both chats share the composer and text loading highlight.
 
 Select the summary icon to open **Fleet summary**.
 **Durable tasks** shows unfinished work, with its objective, saved success criteria and progress.
@@ -82,10 +77,9 @@ Choose **Resend** to send the message again. The fleet runs it at most once, eve
 
 Each unsent message keeps its own **Resend** and **Dismiss** until you choose one. The list survives a page reload and shows in other tabs. It stays with you: someone who signs in next on the same browser never sees it.
 
-An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 8,192 bytes.
+An expired session shows **Sign in** beside **Resend**, so you can sign in and then resend. Resending the same message is safe; changing the text makes it a new message. A message can be at most 1,048,576 characters and cannot contain a null character.
 
-The fleet API's `webhook_urls` lists each provider webhook address.
-Open **Fleet actions → Edit setup**, then **Edit instructions** beside the setup chat title to review triggers and their filters.
+The **Wakes on** list shows triggers and schedules. Read webhook URLs and filters with `agentsfleet fleet triggers list <FLEET_ID>`.
 
 Each schedule's `description` states its timing and time zone, such as `At 9:00 AM (Asia/Kolkata)`. Its `run_state` and nullable `next_run_at` describe whether it will run:
 
@@ -98,15 +92,9 @@ Each schedule's `description` states its timing and time zone, such as `At 9:00 
 
 The server works out the state and next run when you request the fleet. Run history stays in **Chat** and **Activity**.
 
-An improvement runs in a private chat pinned to the fleet's current setup revision.
-Choose **Save and publish** to save its next revision. Running work keeps the revision it started with.
+Send new instructions in the same chat. Ask the fleet to pin standing guidance to memory when it should carry over to later work.
 
-The fleet keeps its identifier and memory across revisions. Saving changes never publishes them as a Plugin.
-
-If the fleet's setup changed after loading, saving is refused with [`UZ-AUTHOR-003`](/api-reference/error-codes#UZ-AUTHOR-003) or [`UZ-AUTHOR-006`](/api-reference/error-codes#UZ-AUTHOR-006).
-Reload the chat, check the setup, then save again.
-
-Archiving a fleet cancels its live work and setup. It keeps the fleet's records and blocks all later work.
+Archiving a fleet cancels its live work. It keeps the fleet's records and blocks all later work.
 
 Deleting a fleet cancels its live work and removes all fleet records. A replacement fleet receives a new identifier and new webhook URLs.
 
@@ -135,17 +123,15 @@ A fresh sandbox checks out the fleet's repositories again and holds none of the 
 
 ## Limits
 
-The fleet receives only declared tools and secrets.
+The fleet receives only approved credentials.
 [Network restrictions](/fleets/tools#how-it-behaves) depend on the tool and the runner's network policy.
-Daily or monthly budgets can block new work.
+An exhausted account balance can block new work.
 
 The summary uses the latest saved event. A fleet with no history shows an empty outcome.
 
-`agentsfleet` validates the Definition in every draft, Save, and Apply. An invalid Definition never replaces the active fleet settings.
-
 ## Related pages
 
-- [Install a fleet](/fleets/install)
+- [Start a fleet from the terminal](/fleets/install)
 - [Run and control a fleet](/fleets/running)
 - [Author a fleet](/fleets/authoring)
 - [Webhooks](/fleets/webhooks)

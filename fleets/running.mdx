@@ -3,8 +3,8 @@ title: Run and control a fleet
 description: Inspect, message, activate, archive, and delete a fleet.
 type: how-to
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
@@ -52,14 +52,9 @@ Install a fleet. Copy its identifier from `agentsfleet fleet list`.
    <varies>
    ```
 
-   Approve the fleet's integration grant during setup to allow repository access.
-   That approval lasts until you revoke it. Custom approval rules can pause
-   individual runs; review those requests with [`agentsfleet fleet approvals`](/fleets/approvals).
+   If the fleet needs repository access, review its request in chat. An approved grant lasts until you revoke it. You can also use [`agentsfleet fleet approvals`](/fleets/approvals).
 
-   In the dashboard chat, a reply appears as it arrives. You can send another
-   message while a run is active; the new event waits its turn and keeps its
-   own place in the conversation. Reasoning and tool activity are shown
-   separately from the final reply.
+   Replies appear as they arrive. A follow-up can wait or join the active run at its next safe boundary. The chat shows reasoning and tool activity separately from the final reply.
 
    While a reply runs, the chat keeps your place. Your new message moves to
    the top of the panel, and the reply grows below it.
@@ -69,7 +64,7 @@ Install a fleet. Copy its identifier from `agentsfleet fleet list`.
 
    To change the fleet's model, choose a model in the chat composer. The saved choice applies to future chat, webhook and scheduled runs.
 
-   Saving keeps your unsent message and private setup edits. **Model changed** appears in **Chat** and **Activity** after the save.
+   Changing the model keeps your unsent message. The change appears in the fleet's chat.
 
    Choose **Run details** to open usage and duration details. Press **Escape** or click outside the details to close them.
 
@@ -131,7 +126,7 @@ An archived fleet returns `UZ-AGT-020` when you try to rename it or change its s
 
 For API lifecycle updates, send the strong entity tag (ETag) from the fleet body's `etag` field in `If-Match`. Compression may weaken the response header. A missing `If-Match` returns `428`; an outdated value returns `412`, including for an archived fleet.
 
-`UZ-AGT-012` means the fleet is still installing or was archived, so it refuses new work. Check its status with `agentsfleet fleet show <FLEET_ID>`. After you fix setup, run `agentsfleet fleet activate <FLEET_ID>` to activate an installing fleet.
+If a fleet refuses new work, check its state with `agentsfleet fleet show <FLEET_ID>`. An archived fleet cannot accept more messages.
 
 If a model save fails, the composer keeps the last saved choice. Choose **Retry** for an unconfirmed save, **Reload choices** to refresh available models, or **Reload fleet** when another save changed the setup.
 
