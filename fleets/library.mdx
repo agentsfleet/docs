@@ -1,127 +1,32 @@
 ---
-title: Plugins
-description: Reuse account-owned setup revisions through the API and terminal.
+title: Retired Plugins
+description: Start new fleets with a message after the retirement of fleet Plugins.
 type: explanation
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What it is
 
-A Plugin is a reusable fleet setup owned by your account.
-Each immutable revision holds a reviewed Definition and its required secrets, tools and network hosts.
-Your account can reuse it across its workspaces; other accounts cannot read it.
-
-The dashboard's Plugin navigation, source links, starters and publication controls are paused.
-**Save and publish** saves a fleet setup version without publishing a Plugin.
-The Plugin API and command-line interface (CLI) remain available.
+Plugins were account-owned revisions of fleet setup.
 
 ## Why it exists
 
-A Plugin lets you reuse a reviewed setup without sharing its private authoring conversation.
-It starts an independent fleet from one pinned revision; it does not add capabilities to an existing fleet.
+A published Plugin let you reuse a reviewed setup across fleets. The current workflow keeps a fleet's instructions and follow-up requests in its own chat.
 
 ## How it behaves
 
-A later Plugin revision does not change fleets saved from an earlier revision.
-Publishing creates no fleet, and saving a fleet creates no Plugin.
+To start a fleet in the dashboard, open **New fleet**, select a model, and send your first message. The message creates the fleet and starts its first turn.
 
-### Start from the terminal
-
-List the Plugins your account owns:
-
-```bash
-agentsfleet plugins
-```
-
-```text
-NAME        PLUGIN      REVISION    AGO
-<varies>
-Start from a revision: agentsfleet chat --plugin <plugin_id> --revision <revision_id>
-```
-
-`agentsfleet plugins list` reads the same account-owned collection.
-`REVISION` is the latest revision identifier. [Install a fleet](/fleets/install) shows how to review and save one.
-
-An empty page reads `No published plugins on this page.`
-
-### Start from a revision link
-
-Dashboard Plugin source links are paused. Use `agentsfleet chat --plugin <PLUGIN_ID> --revision <REVISION_ID>` in the terminal instead.
-The identifiers come from `agentsfleet plugins`; they grant no additional access and include no private setup conversation.
-
-### Publish a reviewed setup
-
-Publish from a reviewed private draft. Publishing leaves the draft open for further editing.
-`<DRAFT_ID>` and `<DIGEST>` come from its review; `<LABEL>` is your chosen display name, from 1 to 100 characters.
-
-```bash
-agentsfleet chat <DRAFT_ID> --no-input --publish <LABEL> --review-digest <DIGEST>
-```
-
-```text
-<varies>
-✓ Published plugin revision <REVISION_ID>
-```
-
-Inside interactive chat, `/publish <LABEL>` publishes after `/review`.
-Publication needs `plugin:write`.
-
-To append a revision, add `--publish-to <PLUGIN_ID> --plugin-etag <ETAG>`.
-Copy the identifier and `etag` from `agentsfleet --json plugins list`.
-A stale tag is refused; reread the Plugin before retrying.
-
-| Option | Effect | Default | Unit or range |
-|---|---|---|---|
-| `--publish <LABEL>` | Publishes a new Plugin. | None | Text, 1 to 100 characters |
-| `--publish-to <PLUGIN_ID>` | Appends a revision; needs `--publish` and `--plugin-etag`. | None | Plugin identifier |
-| `--plugin-etag <ETAG>` | Supplies the Plugin tag you inspected. | None | Entity tag |
-| `--review-digest <DIGEST>` | Supplies the review you inspected. | None; required | Digest text |
-
-### Remove a Plugin
-
-`<PLUGIN_ID>` comes from `agentsfleet plugins list`. Removal needs `plugin:write`.
-
-<Warning>
-  Removal permanently deletes the Plugin and its revision history. Fleets already saved from it keep running.
-</Warning>
-
-```bash
-agentsfleet plugins delete <PLUGIN_ID>
-```
-
-```text
-✓ <varies> is no longer one of this workspace's plugins. Fleets already installed from it keep running.
-Publish reviewed chat setup with: agentsfleet chat --help
-```
-
-Existing drafts keep their content and lose their link to the removed Plugin.
-A missing Plugin or one owned by another account returns `404` with `UZ-AUTHOR-001`.
-The response does not reveal whether another account owns that identifier.
-
-### Use the API
-
-Use `/v1/workspaces/{workspace_id}/plugins` to list or publish your account's Plugins.
-Its item route accepts `plugin_id`; `/revisions` lists or appends immutable revisions.
-The old Fleet library routes, `/owned` collection, platform publication and `library:write` scope are removed without aliases.
+Use [`agentsfleet fleet create`](/cli/agentsfleet#chat) in the terminal to do the same. Send later instructions in the fleet's chat.
 
 ## Limits
 
-A Definition allows 32,768 characters each for description and instructions, and 448 KiB of JSON overall.
-The first instructions a chat model writes allow 12,288 characters.
-
-A Definition declares at most 128 tools, 64 secrets and 64 network hosts.
-Tool and secret names allow 128 characters; network hosts allow 255.
-
-Plugin lists return at most 100 entries per page.
-Use `--starting-after <CURSOR>` with the cursor the previous page prints.
-Removing a fleet does not remove its Plugin; delete the Plugin separately.
+The draft and Plugin APIs, the `agentsfleet plugins` and `agentsfleet chat` commands, and the `plugin:write` scope are retired. The error registry keeps their codes for earlier logs.
 
 ## Related pages
 
-- [Install a fleet](/fleets/install)
-- [Author a fleet](/fleets/authoring)
 - [Command reference](/cli/agentsfleet)
-- [Secrets](/fleets/secrets)
+- [Retired draft and Plugin error codes](/api-reference/error-codes#drafts-and-setup)

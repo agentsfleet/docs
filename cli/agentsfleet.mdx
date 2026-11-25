@@ -71,7 +71,6 @@ FLAGS
 SUBCOMMANDS
   login        Authenticate via browser
 <varies>
-  chat         Create, resume, and review a private workspace chat
   fleet        Fleet management subcommands
 <varies>
 ```
@@ -227,186 +226,49 @@ Piped output returns the same JSON object.
 
 ### Chat
 
-`agentsfleet chat` creates, resumes, and reviews a private draft. It is the only way to create a fleet or a plugin from the terminal. Only the person who starts a draft can read it.
-
-| Command | Effect |
-|---|---|
-| `agentsfleet chat --model <MODEL_REF>` | Starts a blank draft and opens an interactive chat. |
-| `agentsfleet chat <DRAFT_ID>` | Resumes a draft and prints its earlier messages. |
-| `agentsfleet chat --definition <PATH> --model <MODEL_REF>` | Starts a draft from a Definition JSON file, with no chat message. |
-| `agentsfleet chat --plugin <PLUGIN_ID> --revision <REVISION_ID> --model <MODEL_REF>` | Starts a draft from one plugin revision, with no chat message. |
-| `agentsfleet chat --fleet <FLEET_ID> --setup-revision <SETUP_REVISION> --model <MODEL_REF>` | Starts a draft that improves an existing fleet, with no chat message. |
-| `agentsfleet chat list` | Lists one page of your setup chats, most recently updated first. |
-| `agentsfleet chat rename <DRAFT_ID> <TITLE>` | Renames an open, idle setup chat. The saved fleet keeps its name. |
-| `agentsfleet chat delete <DRAFT_ID>` | Deletes a setup chat and its private messages after you confirm. Saved fleets keep running. |
-
-`<MODEL_REF>` is the `ref` of an authoring model from `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. `<SETUP_REVISION>` is the fleet's `setup_revision` field from `agentsfleet --json fleet show <FLEET_ID>`.
-
-In an interactive chat, ordinary text is a message. These actions start with `/`:
-
-| Slash command | Effect |
-|---|---|
-| `/review [INSTANCE_NAME]` | Prints the full setup, its required access, its readiness checks, and its review digest. The name selects the fleet name. |
-| `/save` | Saves the reviewed setup as a new fleet. |
-| `/run <MESSAGE>` | Saves the reviewed setup and sends the fleet `<MESSAGE>` once. |
-| `/publish <LABEL>` | Publishes the reviewed setup as a plugin. |
-| `/apply` | Applies the reviewed improvement to its source fleet. |
-| `/model <MODEL_REF>` | Changes the authoring model for later messages. |
-| `/stop` | Cancels every accepted message in the draft that has not finished. Ctrl+C stops the reply you are following. |
-| `/retry` | Repeats the last action whose outcome was unknown. |
-| `/delete` | Deletes the draft and its private messages. |
-| `/quit` | Leaves the chat. The draft stays for `agentsfleet chat <DRAFT_ID>`. |
-
-Save, publish, and apply each use only the setup you last reviewed. A message after a review needs a new review first.
-
-Text reviews group **Configuration** and **Required access** into readable, indented sections.
-Empty sections say **None**.
-Use `--json` for the complete structured review.
-
-<Note>Completion questions and saved success criteria are coming soon.</Note>
-
-When the proposal includes success criteria, `/review` prints **What counts as done?** with each question and its **Yes** and **No** meanings.
-
-Ask setup chat to revise them, review again, then save or apply a new version.
-Work already started keeps its saved success criteria.
-
-Outside a terminal, add `--no-input` and name every action as a flag. This pair reviews a Definition, then saves it with the digest the review printed:
+Start a fleet by sending its first message.
 
 ```bash
-agentsfleet chat --definition <PATH> --model <MODEL_REF> --no-input --review --name <NAME>
+agentsfleet fleet create "Check the nightly health report" --name nightly-health
 ```
 
 ```text
-✓ Draft <DRAFT_ID> created
-Instance: <NAME>
-<varies>
-Review digest: <DIGEST>
+✓ Started fleet nightly-health (<FLEET_ID>). First turn <TURN_ID>: <varies>.
+Talk to it with: agentsfleet fleet steer <FLEET_ID>
 ```
 
-```bash
-agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
-```
+| Option | Effect | Default |
+|---|---|---|
+| `--name <NAME>` | Names the fleet. | A name based on the fleet identifier |
+| `--model <REF>` | Selects a model reference from `agentsfleet models list`. | The workspace default model |
 
-```text
-<varies>
-✓ Fleet <NAME>: active
-```
+With `--json`, creation prints `fleet_id` and `turn_id`.
+Run `agentsfleet fleet steer @nightly-health` without a message to open an interactive chat with the fleet.
 
-| Option | Effect | Default | Unit or range |
-|---|---|---|---|
-| `--model <MODEL_REF>` | Selects the authoring model for a new draft. Required unless you resume a draft. | None | Model reference |
-| `--message <TEXT>` | Sends one chat message and follows its reply. | None | 1 to 32,768 bytes |
-| `--definition <PATH>` | Starts from a Definition JSON file. | None | Readable file, at most 128 KiB |
-| `--plugin <PLUGIN_ID>` | Starts from a plugin. Needs `--revision`. | None | Plugin identifier |
-| `--revision <REVISION_ID>` | Selects the exact plugin revision. | None | Revision identifier |
-| `--fleet <FLEET_ID>` | Starts an improvement of an existing fleet. Needs `--setup-revision`. | None | Fleet identifier |
-| `--setup-revision <SETUP_REVISION>` | Selects the fleet setup revision to improve. | None | Positive whole number |
-| `--no-input` | Runs only the actions you name, with no prompt. | `false` | Boolean |
-| `--review` | Prints the full setup, access, readiness, and review digest. | `false` | Boolean |
-| `--name <NAME>` | Selects the fleet name before the review. | The draft's current fleet name | Lowercase letters, digits, and hyphens |
-| `--review-digest <DIGEST>` | The digest of the review you inspected. Required with `--save`, `--apply`, and `--publish`. | None | Digest text |
-| `--save` | Saves the reviewed setup as a new fleet. | `false` | Boolean |
-| `--run-now <TEXT>` | With `--save`, sends the new fleet this message once. | None | 1 to 32,768 bytes |
-| `--apply` | Applies the reviewed improvement to its source fleet. | `false` | Boolean |
-| `--publish <LABEL>` | Publishes the reviewed setup as a plugin with this label. | None | 1 to 100 characters |
-| `--publish-to <PLUGIN_ID>` | With `--publish`, adds a revision to this owned plugin instead. | None | Plugin identifier |
-| `--plugin-etag <ETAG>` | The plugin tag you inspected. Required with `--publish-to`. | None | Entity tag |
-| `--stop` | Cancels every accepted message in the draft that has not finished. | `false` | Boolean |
-| `--operation-id <ID>` | Retries an action whose outcome was unknown, under its first identity. | None | Identifier the client printed, usable for 24 hours |
-| `--candidate-id <ID>` | With `--operation-id`, names the setup the retried Save, Apply, or publish used. | None | Identifier the client printed |
-| `--setup-etag <ETAG>` | With `--operation-id` and `--apply`, names the fleet setup tag you inspected. | None | Identifier the client printed |
-
-One invocation takes one source and at most one of `--save`, `--apply`, and `--publish`. A digest that does not match the current review is refused with exit code `4`.
-
-A Save that leaves the fleet `installing` prints each waiting check and exits with code `1`. A Save, Apply, or publish whose reply was lost prints the `--operation-id` and `--candidate-id` values to retry with.
-
-#### List, rename, and delete setup chats
-
-`agentsfleet chat list` reads one page per run, most recently updated first. It prints `TITLE`, `CHAT`, `STATUS`, `VERSIONS`, and `UPDATED`.
-
-```bash
-agentsfleet chat list --search "health check"
-```
-
-```text
-TITLE           CHAT        STATUS      VERSIONS                UPDATED
-<varies>
-More chats available. Repeat this list with --cursor <TOKEN> and the same filters.
-```
-
-`STATUS` reads `In progress`, `Setup ready`, `Saving fleet`, `Fleet saved`, or `Chat closed`. `VERSIONS` lists the recorded `Proposed`, `Saved`, and `Published` versions, such as `Proposed v3 · Saved v2`.
-
-To read the next page, run the same command with `--cursor <TOKEN>`. `<TOKEN>` is the value the previous page printed. A page with no rows reads `No setup chats match this list.`
-
-| Option | Effect | Default | Unit or range |
-|---|---|---|---|
-| `--search <TEXT>` | Matches your chat titles and message text, ignoring case. Leading and trailing spaces are trimmed. | None | 1 to 200 characters, no null (NUL) character |
-| `--limit <COUNT>` | Sets the page size. | `50` | Integer, 1 to 100 |
-| `--cursor <TOKEN>` | Reads the page after the one that printed this token. The token works only with the same filters. | None | Token the previous page printed |
-| `--state <STATE>` | Lists only chats in this state. | All states | `editing`, `saving`, or `closed` |
-| `--fleet <FLEET_ID>` | Lists only chats linked to this fleet. | None | Fleet identifier |
-| `--workspace <WORKSPACE_ID>` | Targets a workspace other than the active one. | Active workspace | Workspace identifier |
-
-With `--json`, the command prints the server's page as returned, with `items` and `next_cursor`.
-
-`agentsfleet chat rename <DRAFT_ID> <TITLE>` sets a new title. `<TITLE>` is trimmed and must hold 1 to 100 characters, with no NUL character. A busy or closed chat fails with `UZ-AUTHOR-002`, and nothing changes.
-
-```bash
-agentsfleet chat rename <DRAFT_ID> "Nightly health check"
-```
-
-```text
-✓ Renamed setup chat to Nightly health check
-```
-
-<Warning>
-  `agentsfleet chat delete` removes the chat's private messages for good. It has no dry-run option.
-</Warning>
-
-`agentsfleet chat delete <DRAFT_ID>` deletes the chat at once. It asks no question and takes no `--yes` flag.
-
-```bash
-agentsfleet chat delete <DRAFT_ID>
-```
-
-```text
-✓ Deleted setup chat <DRAFT_ID>. Saved fleets keep running.
-```
-
-Both commands accept `--workspace <WORKSPACE_ID>`.
+The private draft and Plugin commands are retired. [Retired Plugins](/fleets/library) describes the change.
 
 ### Fleets
 
 | Command | Effect |
 |---|---|
-| `agentsfleet plugins` | Lists the Plugins your account owns. |
-| `agentsfleet plugins list` | Lists only the plugins your account owns. |
-| `agentsfleet plugins delete <PLUGIN_ID>` | Removes one plugin your account owns, with its revision history. Fleets saved from it keep running. |
+| `agentsfleet fleet create <MESSAGE>` | Creates the fleet and sends its first message. |
 | `agentsfleet fleet show <FLEET_ID>` | Shows one fleet. |
 | `agentsfleet fleet list` | Lists fleets in the active workspace. `--starting-after <CURSOR>` fetches the next page. With `--json`, it prints the server's page as returned. |
 | `agentsfleet fleet status` | Shows every fleet in the active workspace, including how many approvals each one is waiting on. It takes no identifier — use `agentsfleet fleet show <FLEET_ID>` for one fleet. |
-| `agentsfleet fleet activate <FLEET_ID>` | Checks an `installing` fleet's setup again and activates it when every check passes. While a check still fails, it prints `installing` and the `agentsfleet fleet show` command to run. An archived fleet returns `UZ-AGT-020`. |
-| `agentsfleet fleet archive <FLEET_ID>` | Cancels live work and setup, and keeps the fleet's history readable. This cannot be undone. On an `installing` fleet, it also returns the draft to editing. |
+| `agentsfleet fleet archive <FLEET_ID>` | Cancels live work and keeps the fleet's history readable. Archiving is permanent. |
 | `agentsfleet fleet delete <FLEET_ID>` | Deletes a fleet in any status, with its history and stored data. It cancels live work first. This cannot be undone. |
 | `agentsfleet fleet logs [FLEET_ID]` | Shows recent activity. |
-| `agentsfleet fleet events <FLEET_ID>` | Lists historical events with filters. |
-| `agentsfleet fleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the response. If the stream drops, it reads that exact event for up to 60 seconds, until the event finishes. |
+| `agentsfleet fleet turns <FLEET_ID>` | Lists the fleet's past messages and replies. |
+| `agentsfleet fleet steer <FLEET_ID> [MESSAGE]` | Sends a message and streams the reply. Omit the message in a terminal to open chat. Use the fleet identifier or `@NAME`. |
 | `agentsfleet fleet grants list --fleet <FLEET_ID>` | Lists integration grants for one fleet. |
 | `agentsfleet fleet grants revoke --fleet <FLEET_ID> <GRANT_ID>` | Revokes one grant. Later access through that grant fails. |
 
 Press **Ctrl+C** to stop local waiting and HTTP retries. An accepted message can keep running on the fleet.
-Inspect `agentsfleet fleet events <FLEET_ID>` before sending the message again.
+Inspect `agentsfleet fleet turns <FLEET_ID>` before sending the message again.
 
 Event polling reports permanent access or request errors immediately; its timeout also bounds an active read.
 
 `agentsfleet fleet archive` and `agentsfleet fleet delete` have no dry-run option. Check the fleet identifier with `agentsfleet fleet show <FLEET_ID>` first.
-
-`agentsfleet plugins` and `agentsfleet plugins list` read the same account-owned collection.
-Platform Plugin publication is removed, along with its commands and scopes.
-
-`agentsfleet plugins delete` removes a plugin permanently. Removing another account's Plugin or one already gone answers `UZ-AUTHOR-001` and exits with code `3`.
-
-Fleets and plugins come only from reviewed chat drafts. The file, GitHub, and template import commands, `agentsfleet install`, and `agentsfleet fleet update` were removed; `agentsfleet chat` replaces them.
 
 ### Approvals
 
@@ -545,9 +407,11 @@ Login reports network and API sign-in failures with exit code `1`.
 A rejected invocation is answered before any request is sent. The form is always the same: what is wrong, then the command that puts it right. What is wrong may be an absent argument, a value that failed validation, or an unrecognized command.
 
 ```
-$ agentsfleet fleet events
-✕ error: missing required argument 'fleet_id'
-  Suggestion: usage: agentsfleet fleet events [options] <fleet_id>
+$ agentsfleet fleet turns
+✕ error: Missing required argument: fleet_id
+  code          MISSING_ARGUMENT
+  usage         agentsfleet fleet turns [options] <fleet_id>
+  suggestion    run `agentsfleet fleet turns --help` for its arguments and flags
 ```
 
 Under `--json` the same rejection is a parseable envelope on standard error, carrying a stable `code` you can switch on:
@@ -565,7 +429,7 @@ The codes are `MISSING_ARGUMENT`, `MISSING_OPTION_VALUE`, `MISSING_REQUIRED_OPTI
 
 API failures include a stable error code and request identifier when the server supplies them. Use both values when reporting a problem.
 
-A server failure is reported with the message the server wrote for a reader, not with its internal detail text. A Save refused after a setup change reads `This setup changed. Review it before saving.` in place of the server's detail text.
+A server failure displays the API's reader-facing message.
 
 The [error registry](/api-reference/error-codes) lists the message each code carries.
 
@@ -574,7 +438,6 @@ The [error registry](/api-reference/error-codes) lists the message each code car
 - [Install the client](/cli/install)
 - [Global options](/cli/flags)
 - [Client configuration](/cli/configuration)
-- [Author a fleet](/fleets/authoring)
-- [Plugins](/fleets/library)
+- [Retired Plugins](/fleets/library)
 - [Approve a waiting run](/fleets/approvals)
 - [Quickstart](/quickstart)
