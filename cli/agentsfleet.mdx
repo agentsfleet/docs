@@ -175,24 +175,23 @@ Manual sign-in requires terminal input, so omit `--no-input`.
 
 ### Terminal pet
 
-Watch Orbit, your terminal jellyfish, float, work and celebrate for five seconds.
+Run Orbit, a local paddle game, in an interactive terminal.
 
 ```bash
 agentsfleet pet
 ```
 
 ```text
-Orbit appears while a Platform request is running.
+Press Space to serve.
 ```
 
-The animation plays above that final message. Press **Ctrl+C** to stop the preview.
+Press **Space** to serve. Move the paddle with the arrow keys or **A** and **D**. Press **R** to restart or **Q** to quit.
 
-The full preview needs at least 61 columns and 20 rows. Small terminals and terminals without color use a compact jellyfish.
+The court needs at least 35 columns and 14 rows. Resizing the terminal ends the game. Run `agentsfleet pet` again to start over.
 
-Resizing the terminal stops the full preview's redraws; the final message still appears.
-Set `AGENTSFLEET_REDUCED_MOTION=1` for a static display.
+The game makes no API requests and requires no sign-in.
 
-The preview needs no sign-in and makes no API request. Orbit also appears during Platform administration requests.
+The request loader shows a bouncing ball. Set `AGENTSFLEET_REDUCED_MOTION=1` for a static request status.
 
 ```bash
 agentsfleet pet --json
@@ -204,7 +203,7 @@ agentsfleet pet --json
 }
 ```
 
-Piped output returns that same JSON object without animation.
+Piped output returns the same JSON object.
 
 ### Workspaces and access
 
