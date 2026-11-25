@@ -185,7 +185,7 @@ Use the current response or event details when diagnosing a new failure.
 
 ### Drafts and setup
 
-These codes answer private drafts, Save, Apply, and account-owned Plugin publication.
+These codes describe responses from the retired draft, setup, and Plugin APIs.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
@@ -256,7 +256,7 @@ Start again from the first page after changing a filter.
 Plugins use `UZ-AUTHOR-011` for malformed or mismatched cursors.
 Their list route is `/v1/workspaces/{workspace_id}/plugins`; it returns only your account's entries.
 
-Removing a Plugin answers `UZ-AUTHOR-001` when the entry is not one your account owns.
+The retired Plugin deletion endpoint returned `UZ-AUTHOR-001` for entries outside the calling account.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|

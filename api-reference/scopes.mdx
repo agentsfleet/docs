@@ -37,7 +37,7 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 | Scope | Effect | Included by |
 |---|---|---|
 | `fleet:read` | Reads fleets, events, and memory. | `fleet:write`, `fleet:admin` |
-| `fleet:write` | Creates, updates, and messages fleets. Also reads and writes your own private drafts. | `fleet:admin` |
+| `fleet:write` | Creates and updates fleets and sends messages to them. | `fleet:admin` |
 | `fleet:admin` | Deletes fleets. | None |
 | `secret:read` | Lists secret names and metadata. | `secret:write` |
 | `secret:write` | Creates, rotates, and deletes secrets. Deleting a secret named for a connector also needs `connector:write`. | None |
