@@ -155,7 +155,7 @@ Use the current response or event details when diagnosing a new failure.
 |---|---|---|---|
 | <span id="UZ-AGT-003"></span>`UZ-AGT-003` | 424 | Fleet credential missing | A required credential is not in the vault. Add it with: `agentsfleet secrets create <NAME>` |
 | <span id="UZ-AGT-004"></span>`UZ-AGT-004` | 500 | Fleet unavailable | **Retired.** Check the fleet state and the event details for the current failure. |
-| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Send the creation request with a different `name`. |
+| <span id="UZ-AGT-006"></span>`UZ-AGT-006` | 409 | Fleet name already exists | A fleet already uses this name. Choose a different `name` and send the request again. |
 | <span id="UZ-AGT-008"></span>`UZ-AGT-008` | 400 | Invalid fleet config | That fleet's config isn't valid. Check the trigger, tools, credentials, and budget fields, then try again. |
 | <span id="UZ-AGT-009"></span>`UZ-AGT-009` | 404 | Fleet not found | The fleet is missing from this workspace. |
 | <span id="UZ-AGT-010"></span>`UZ-AGT-010` | 409 | Fleet state transition not allowed | **Retired.** Delete now works in any status, and archive works on any fleet that is not archived. |

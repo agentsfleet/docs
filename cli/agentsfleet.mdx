@@ -240,7 +240,7 @@ Talk to it with: agentsfleet fleet steer <FLEET_ID>
 | Option | Effect | Default |
 |---|---|---|
 | `--name <NAME>` | Names the fleet. | A name based on the fleet identifier |
-| `--model <REF>` | Selects a model reference from `agentsfleet models list`. | The workspace default model |
+| `--model <REF>` | Selects an eligible `items[].ref` from `GET /v1/workspaces/{workspace_id}/models?purpose=runtime`. | The workspace default model |
 
 With `--json`, creation prints `fleet_id` and `turn_id`.
 Run `agentsfleet fleet steer @nightly-health` without a message to open an interactive chat with the fleet.
@@ -420,7 +420,7 @@ Under `--json` the same rejection is a parseable envelope on standard error, car
 {
   "error": {
     "code": "MISSING_ARGUMENT",
-    "message": "missing required argument 'fleet_id'"
+    "message": "Missing required argument: fleet_id"
   }
 }
 ```
