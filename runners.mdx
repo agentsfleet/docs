@@ -1,314 +1,119 @@
 ---
-title: Runners
-description: What a runner does, the policy you assign it, and when it stops taking work.
+title: Manage runners
+description: Register Linux runner hosts, set their policies, and read their state.
 type: explanation
 audience: operator
-verified: 2026-11-09
-product_version: 0.75.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What it is
 
-A runner is a host that runs your fleets. It takes work from `agentsfleetd`, runs it inside a sandbox, and reports the result back.
-
-You enrol every runner from the dashboard. Startup requires a runner token.
-The runner receives provider credentials only for authorized calls, without database credentials, cache credentials, or direct vault access.
+A runner is a Linux host that takes work from agentsfleet. It starts the model and runs local tools in a sandbox. The daemon assigns work and keeps the final result.
 
 ## Why it exists
 
-Runners run fleet code separately from the control plane.
-Their tokens reach assigned work without direct access to the control plane's data stores.
-
-Runners are replaceable. When one stops answering, unfinished work can be assigned again after its lease expires.
-External actions must be safe to repeat if the first runner acted before losing contact.
+Runners keep fleet tools separate from the service that stores accounts, permissions, and messages. You can add hosts for capacity and limit what each host can do.
 
 ## How it behaves
 
 ### Enrolling a host
 
-Open **Admin → Runners → Add runner** and fill in the policy. `agentsfleetd` mints a runner token and shows it once. Copy it before you close the dialog, because it is never shown again.
+Use an operator credential with `runner:register`. Choose the host identifier and prepare its assigned policy JSON file. The command writes the token to a new private file.
 
-Put that token on the host, then start `agentsfleet-runner`. [Install a runner](/runners/install) covers the binary and its toolbox. The host reads three required variables and seven optional ones:
+```bash
+agentsfleet platform runners register --host-id <HOST_ID> --policy <POLICY_FILE> --token-out <TOKEN_FILE>
+```
 
-| Variable | What it sets | Default | Valid values |
-|---|---|---|---|
-| `AGENTSFLEET_API_URL` | The control plane for retained HTTP operations, such as credentials and memory access. | none, required | URL beginning with `http://` or `https://` |
-| `AGENTSFLEET_RUNNER_STREAM_URL` | The private runner listener for work and results. | none, required | An `https://` origin, such as `https://runner.example.net:4443`, with no credentials, path, query or fragment |
-| `AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE` | Extra trusted certificate-authority roots, in Privacy-Enhanced Mail (PEM) format. | operating-system trust store | A readable public certificate bundle |
-| `AGENTSFLEET_RUNNER_TOKEN` | The runner's identity, such as `agt_rtest00000000`. | none, required | The token the dashboard showed once |
-| `RUNNER_STORAGE_HOME` | Where the host keeps sandboxes, repository mirrors, and the toolbox. | `/var/lib/agentsfleet-runner` | An absolute directory path |
-| `AGENTSFLEET_LOG_LEVEL` | The lowest level the runner writes to standard error. | `info` | `off`, `error`, `warn`, `info`, `debug`, `trace` |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the runner sends its traces and metrics, over OpenTelemetry Protocol (OTLP). Unset sends nothing. | none | An `http` or `https` URL with a host and no query, such as `http://127.0.0.1:4318` |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | How the runner encodes what it sends. | `http/protobuf` | `http/protobuf`, `http/json` |
-| `OTEL_EXPORTER_OTLP_TIMEOUT` | How long one send may take. | 10,000 milliseconds | A whole number of milliseconds above 0 |
-| `OTEL_SERVICE_INSTANCE_ID` | The name each trace and metric from this host carries, so two hosts' counts stay apart. | none | Any text, such as the host's name |
+```text
+<varies>
+```
 
-An unreadable log level falls back to `info`. A missing or malformed address or token stops the runner at start and names the variable.
+`<HOST_ID>` names the machine. `<POLICY_FILE>` is the local policy file, and `<TOKEN_FILE>` is the new path for the runner token. The server shows the token only at creation or rotation.
 
-No policy value is read from the host. A runner that carried its own isolation setting could disagree with the dashboard, and nothing would compare the two.
+[Install the runner](/runners/install) on that host. An account with `runner:tenant` can use `agentsfleet runners register` for its own work. A tenant-controlled runner handles work from its account using that account's model key.
 
 ### The runner connection
 
-Each host opens one authenticated connection to the private runner listener.
-Work, progress, results and fleet setup calls share that connection.
+The runner opens one authenticated connection to its private listener. It prefers HTTP/3 and can use HTTP/2 if the first connection fails in an eligible way.
 
-The runner prefers HTTP/3 and uses HTTP/2 after eligible connection failures.
-A healthy connection keeps its chosen transport until it closes.
+| Required setting | What it supplies |
+|---|---|
+| `AGENTSFLEET_API_URL` | The control-plane address for remaining HTTP requests |
+| `AGENTSFLEET_RUNNER_STREAM_URL` | The private secure HTTP (HTTPS) listener origin, without a path or credentials |
+| `AGENTSFLEET_RUNNER_TOKEN` | The token issued for this host |
 
-Allow User Datagram Protocol (UDP) and Transmission Control Protocol (TCP) to the listener's port, normally 4443.
-Both transports require Transport Layer Security (TLS) 1.3 with `X25519MLKEM768` key exchange.
-The listener's certificate must match the hostname or address in `AGENTSFLEET_RUNNER_STREAM_URL`.
+Your operator supplies the route to the listener. Allow its port over User Datagram Protocol (UDP) and Transmission Control Protocol (TCP). The default port is 4443.
 
-Your operator supplies a private network route to that listener.
-Set `AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE` when its certificate uses a private issuer.
-The runner needs the public issuer certificate, never the issuer's signing key or the server's private key.
-
-An explicit `HTTPS_PROXY` selects HTTP/2 through an HTTP CONNECT proxy.
-`NO_PROXY` selects hosts that bypass that proxy.
-Certificate failures stop connection setup; fallback keeps the same verification requirements.
+Both transports use Transport Layer Security (TLS) 1.3 with `X25519MLKEM768` key exchange. The certificate must match the listener's hostname. For a private issuer, set `AGENTSFLEET_RUNNER_STREAM_TLS_CA_CERT_FILE` to its public certificate bundle.
 
 ### Results during an outage
 
-The runner retries unacknowledged results from memory with jittered delays of 250 milliseconds to sixty seconds.
-The daemon saves accepted results and billing records.
-The runner writes no report files and replays no results from a previous process.
-
-A connection loss keeps pending results in memory while the runner reconnects.
-Process loss can discard results or usage that the daemon has not accepted.
-
-On service shutdown, the runner allows thirty-five seconds for accepted work and result delivery.
-It then stops remaining work and allows five seconds for worker cleanup.
-Process exit can discard results still awaiting acknowledgement.
+The runner retries a result it still holds while it reconnects. Stopping the process can lose results the daemon has yet to accept. The daemon keeps results it already accepted.
 
 ### What the runner sends to a collector
 
-The runner holds no telemetry credential. Setting `OTEL_EXPORTER_OTLP_HEADERS`, or a signal's own header variable such as `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, stops the runner at start and names the variable. A user name or password in the endpoint stops it too, so give the credential to the collector on the host.
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to send traces and metrics to an OpenTelemetry collector. The runner sends timings and identifiers for runs and tool calls. Prompts, replies, tool outputs, and credentials stay out of these records.
 
-The runner sends uncompressed. Any `OTEL_EXPORTER_OTLP_COMPRESSION` variable, a signal's own included, stops it at start.
-
-With an endpoint set, the runner sends one trace for each run. The trace holds the run, each model turn, and each tool call, with the lease and event identifiers.
-
-It also sends counts and timings with no tenant or fleet name on them:
-
-- model turn time and retries, by provider
-- sandbox start time
-- live updates it could not deliver
-- memory saves that failed
-- tool call time, by tool
-- processes the kernel killed inside a sandbox for lack of memory
-- sandboxes kept between runs, by what became of them
-
-It counts what it could not deliver to the collector in `agentsfleet_runner_otlp_entries_discarded_total`. It never sends its log lines, a prompt, a reply, a tool's output, or a credential. Log lines stay on standard error, for the host's log store.
+The runner rejects credential headers and authentication in the collector URL. Configure authentication on the collector if it forwards data.
 
 ### The policy you assign
 
-Change the policy under **Admin → Runners → Edit**.
-`agentsfleetd` sends the update over the existing connection.
-The next heartbeat checks the policy again if that update is lost.
+Set the sandbox tier, network policy, worker count, and durable task setting in the assigned policy. Use `agentsfleet platform runners update <RUNNER_ID> --policy <POLICY_FILE>` to replace it.
 
-<Note>The grouped editor and TypeSafe Jev default are coming soon.</Note>
+Each heartbeat reports what the host can enforce. If the host cannot meet its assigned policy, the daemon marks it degraded and withholds new work. The next heartbeat checks the new policy.
 
-The editor groups isolation, network access, durable work, and advanced settings.
-The fields scroll while **Save** stays visible.
-
-| Field | What it sets | Default | Valid values |
-|---|---|---|---|
-| Sandbox engine | The host runtime. The dashboard shows the supported engine without changing the host's startup settings. | Bubblewrap | Bubblewrap |
-| Isolation | How strongly the host separates a running fleet from itself. | Landlock | Landlock, Nested container, None |
-| Enable all public internet access | Allow outbound connections, subject to each fleet’s own rules. | enabled | enabled, disabled |
-| Enable package manager domains | Allow the standard package registry hosts while public access is off. | native package preset | enabled, disabled |
-| Additional allowed domains | Open the pencil popup to add exact hosts, optionally with ports. | none | Up to 32 total hosts, including the enabled package preset |
-| Workers | How much work the host runs at once. Increasing beyond its startup worker count requires a runner restart. Lowering below current usage can block renewals; wait for completion reports first. | 1 | 1 to 64 |
-| Durable tasks | Let the runner continue tasks across sessions. Changes apply to new work. | enabled | enabled, disabled |
-| Decision model | The reviewed model used for request and goal checks. The dashboard retains existing model selections. | TypeSafe Jev, when enabled in the catalogue | Enabled reviewed decision models, or an explicit None choice |
-| Mounts | Extra host directories the sandbox can read or write. | the daemon's own baseline paths | Up to 16 absolute paths, each read-only or read-write |
-
-Turn off **Enable all public internet access** to limit outbound connections. Enable package manager domains or add hosts through the pencil beside **Additional allowed domains**.
-
-Turning off both switches with no additional domains blocks outbound connections. **Save** in the popup updates the form; **Save** in the runner editor applies the assignment. Unchanged popup saves preserve inactive hosts in an existing blocked assignment.
-
-### TypeSafe Jev credentials
-
-A platform admin enables the reviewed `jev-latest` model and stores its API key in the platform-admin workspace's encrypted Secrets.
-Use the secret name `typesafe` and field `api_key`.
-The deployment must identify that workspace through `PLATFORM_ADMIN_WORKSPACE_ID`.
-
-The dashboard preselects the enabled Jev catalogue entry; it does not create a model or save a provider key.
-If Jev is unavailable, configure it or select another enabled decision model before saving.
-
-Choosing **None** deliberately continues without a decision model, including when the operator lacks model catalogue access.
-API clients still supply their decision model identifier explicitly.
-
-The daemon reads the provider key for each authorized decision call.
-A missing or revoked key blocks that call without using an environment-key fallback.
-
-The three isolation settings differ in what enforces the boundary:
-
-| Isolation | What it means |
-|---|---|
-| Landlock | The Linux kernel restricts which files the fleet can touch. |
-| Nested container | The fleet runs inside a container on a Linux host or virtual machine. |
-| None | No sandbox. Development builds only. |
-
-### Labels
-
-Labels are short names you give a runner when you enrol it. Change them under **Admin → Runners → Edit**, or send `PATCH /v1/fleets/runners/{runner_id}` with a `labels` list.
-
-The new list replaces the old one, and an empty list clears every label. A runner holds at most 32 labels of at most 64 bytes each. `agentsfleetd` reads the labels before offering work, so the host needs no restart.
-
-### The sandbox each run gets
-
-A run whose fleet declares a sandbox tool gets its own sandbox. No fleet setting picks its size yet, so every sandbox gets these defaults.
-
-| Limit | Default | Valid range |
-|---|---|---|
-| Memory | 2 GiB | 256 MiB to 64 GiB |
-| Processor | 2 cores | 0.25 to 32 cores |
-| Processes and threads | 512 at once | none, always 512 |
-| Workspace disk, holding `/workspace` and `/tmp` | 4 GiB | 1 GiB to 256 GiB |
-| Disk throughput | 200 MiB per second each way | none |
-
-A runner refuses a run that asks for a size outside these ranges, before it builds a sandbox.
-
-Commands share the memory limit minus 64 MiB, which the sandbox keeps for itself, and there is no swap. When commands need more, the kernel kills one of their processes. The command it belonged to reads `Process killed: out of memory` with the code `out_of_memory`, and the sandbox and its files stay for the next command.
-
-`/tmp` lives on the workspace disk, so the two share one size limit. A write past it fails with `No space left on device`, and the sandbox keeps running. The kernel refuses a new process or thread past 512.
-
-Shared memory, `/dev/shm`, holds at most a quarter of the memory limit, 512 MiB by default. A write past it fails with `No space left on device`, and later commands keep the rest of the memory.
-
-After a run finishes without failing, the runner keeps its sandbox for 10 minutes for the fleet's next run. A kept sandbox is frozen, and it still holds its memory and disk. The runner keeps at most one per worker, drops the oldest first, and drops other fleets' sandboxes when every worker is busy.
-
-While a runner keeps a fleet's sandbox, only that runner takes the fleet's next run, unless it goes offline. [What a follow-up message keeps](/fleets/overview#what-a-follow-up-message-keeps) lists what ends the wait early.
+Change labels with `agentsfleet platform runners update <RUNNER_ID> --labels <LABELS>`. Labels help choose a runner for a fleet. They grant no permissions.
 
 ### Tools inside a sandbox
 
-The read-only toolbox includes Git, Python, Node.js, uv, ripgrep, jq and curl.
-It contains neither apt, dpkg nor Perl. Install project dependencies in the writable workspace.
+A Linux sandbox uses bubblewrap and Landlock. Local tools work inside the fleet's workspace. The host's network policy controls where sandbox processes can connect.
 
-Common Git operations, including clone, commit, merge, rebase, fetch, pull and push, remain available.
-Perl-based helpers such as `git request-pull` and `git filter-branch` are unsupported.
-
-### What a sandbox can reach
-
-The network policy decides what each sandbox reaches.
-
-| Controls | What the sandbox reaches |
-|---|---|
-| Public internet access enabled | The host’s network, subject to each fleet’s rules. |
-| Public access off, package domains or additional hosts enabled | Allowed addresses only. |
-| Both switches off, no additional domains | Nothing beyond its loopback interface. |
-
-For limited network access, the runner combines enabled package hosts and additional allowed domains with the fleet’s `network.allow` hosts.
-A fleet that sets `read_only` reaches its hosts only through `http_request`.
-
-The package preset includes `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `crates.io`, `index.crates.io`, `static.crates.io`, `proxy.golang.org`, and `sum.golang.org`.
-Custom domains supplement this preset when package manager domains are enabled.
-Wildcard domains are unsupported; add each exact host.
-
-The runner looks up each host's Internet Protocol version 4 (IPv4) addresses on the host itself. The sandbox finds those names in its own `/etc/hosts` and has no Domain Name System (DNS) resolver. Traffic to port 53 is dropped, so a name outside the list never resolves.
-
-Each sandbox joins the host through its own virtual Ethernet pair. `nf_tables` rules on the host side of that pair admit only the allowlist's addresses. The rules live in the host's network namespace, so code inside the sandbox cannot see or change them.
-
-The runner refuses a run before its sandbox starts when a listed host has no IPv4 address. It also refuses a run whose allowlist holds more than 256 addresses. The run then fails with "the egress allowlist could not be resolved into addresses this runner can admit".
-
-Hosts under `network.allow` must resolve to public addresses. Private or reserved addresses include `10.0.0.0/8`, `100.64.0.0/10` and the cloud metadata address `169.254.169.254`. A host resolving to one fails the run with "the fleet allows an egress host at a private or reserved address".
-
-Runner-approved package hosts and additional domains are exempt, so you can use a package mirror on your own network.
-
-In both cases the runner's log names the host and never an address.
-
-Limited network access needs three things from the host:
-
-- a kernel with `nf_tables`
-- IPv4 forwarding on, `net.ipv4.ip_forward=1`
-- no host firewall whose forward policy drops traffic
-
-At start, the runner tests an isolated network pair and removes it. A failed test reports `egress_enforcement: false` in the heartbeat.
-
-A runner assigned limited network access then reads degraded with the reason `egress enforcement unavailable`.
+The `git` tool can read and change its local checkout. Remote commands such as `git push`, `git fetch`, and `git clone` are refused.
 
 ### The states a runner shows
 
-The runner page shows two facts side by side: what you have told the runner to do, and whether the host is answering.
+Get `<RUNNER_ID>` from `agentsfleet platform runners list`. Inspect its state before changing or stopping it.
 
-The first is the admin state, which the API returns as `status`. You set it with the actions below.
+```bash
+agentsfleet platform runners show <RUNNER_ID>
+```
 
-Only `active` runners can send authenticated requests.
+```text
+<varies>
+```
 
-| Admin state | Meaning |
+| Administrative state | Meaning |
 |---|---|
-| `active` | Takes work. The normal state. |
-| `cordoned` | Stops new work and blocks runner requests. |
-| `draining` | Drain requested; runner requests are blocked. |
-| `drained` | No remaining work; runner requests stay blocked. |
-| `revoked` | Its token is blocked. This is terminal for the enrolled host. |
+| `active` | The runner can take work. |
+| `cordoned` | Operator action stopped work and runner requests. |
+| `draining` | The operator requested a drain. |
+| `drained` | The runner has finished draining. |
+| `revoked` | The runner token is blocked. |
 
-The second is liveness. The host reports it through its heartbeat; you cannot set it.
-
-| Liveness | Meaning |
-|---|---|
-| `registered` | Enrolled, but no heartbeat has arrived yet. |
-| `online` | Heartbeating and idle. |
-| `busy` | Heartbeating and running work. |
-| `offline` | Heartbeats stopped. Its work expires and another runner takes it. |
+Liveness shows what the host is doing. `registered` has yet to send a heartbeat. `online`, `busy`, and `offline` mean connected and idle, running work, or missing heartbeats.
 
 ### When a runner stops taking work
 
-A runner reports what its kernel can actually enforce on every heartbeat. `agentsfleetd` compares that report against the policy you assigned.
+Use `agentsfleet platform runners cordon`, `drain`, or `revoke` with the runner identifier. Let the runner report active work before imposing a cordon or drain. Those actions can block renewals and completion reports.
 
-When the host cannot meet the assignment, the runner is marked **degraded** and is sent no work. The reason names the one missing piece, such as cgroup controllers not delegated. Fix that piece, or lower the assignment, and the next heartbeat clears the mark.
-
-The runner page carries the verdict of those checks beside the runner's state and labels. It reads **checks passed**, **N checks failed**, **checks stale**, **checks pending**, or **checks never run**. Select it to read the full report, check by check.
-
-You can also stop a runner deliberately:
-
-- **Cordon** stops new work reaching it.
-- **Drain** requests a drain and stops new work reaching it.
-- **Revoke** blocks its token and tells the runner to stop.
-
-<Warning>
-Cordon and Drain also block renewals and completion reports for work already running.
-Wait for the runner to finish and report its work before using either action.
-Unreported work can expire and run again elsewhere.
-</Warning>
-
-A runner that disappears needs no manual reassignment.
-Unfinished work becomes available again after its lease expires.
-Work whose completion was accepted stays complete.
+If the host disappears, its unfinished work becomes eligible after the lease expires. See [Recovery after a runner fails](/runners/recovery).
 
 ### Lease history
 
-Each runner page lists the leases the runner held, newest first. A lease is one piece of fleet work the runner took. `GET /v1/fleets/runners/{runner_id}/leases` returns the same list.
+A lease records which runner took a run. Use `agentsfleet platform runners runs <RUNNER_ID>` to read its runs. Use `agentsfleet platform runners history <RUNNER_ID>` to inspect events such as registration, cordon, and return.
 
-A finished lease stays in the history for 30 days, counted from when it finished. Deleting its fleet does not remove it. A lease still running is never removed.
-
-The API returns `fleet_name: null` once the fleet is gone; the dashboard still shows its callsign from the saved identifier.
-The event type and actor are blank once the event is gone.
-
-Each lease carries `destination`, which says whether you can open its fleet:
-
-| `destination` | Meaning |
-|---|---|
-| `available` | The fleet exists in your account. **Open fleet** links to it. |
-| `fleet_deleted` | The fleet was deleted. The lease keeps its fleet identifier, and no link is shown. |
-| `not_permitted` | The fleet belongs to another account. No link is shown. |
-
-The runner's lifetime totals count every lease it took, so they can exceed the history the page lists.
+The API exposes the same lists at `GET /v1/admin/runners/{runner_id}/runs` and `GET /v1/admin/runners/{runner_id}/history`.
 
 ## Limits
 
-- **Limited network access supports IPv4.** The runner refuses a run whose listed host has only Internet Protocol version 6 (IPv6) addresses.
-- **A run keeps the addresses it started with.** A host whose address changes during a run stays unreachable until the next run looks it up again.
-- **None is refused outside development.** A release build of `agentsfleetd` rejects it at startup.
-- **A run sends at most 256 spans, and the runner at most 128 a second.** The rest are counted in `agentsfleet_runner_spans_suppressed_total`, not sent. Every run keeps its top-level span, so each run stays one trace.
-- **A host can lie about what it enforces.** The capability report is self-declared, so treat placement as something you decide, not something the host proves.
-- **Upgrade the runner and server together.** Both must support the same runner protocol; the previous HTTP work operations are removed.
+A host must support the isolation its policy requires. Use `agentsfleet-runner probe` before starting the service.
+
+Upgrade the runner and daemon together so they use the same protocol. A tenant runner handles only its account's work and cannot use the platform model credential.
 
 ## Related pages
 
-- [Recovery after a runner fails](/runners/recovery)
 - [Install a runner](/runners/install)
-- [Install a fleet](/fleets/install)
-- [Run and control a fleet](/fleets/running)
-- [Manage secrets](/fleets/secrets)
+- [Recovery after a runner fails](/runners/recovery)
+- [Command reference](/cli/agentsfleet)

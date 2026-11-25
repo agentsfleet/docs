@@ -36,7 +36,7 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 
 | Scope | Effect | Included by |
 |---|---|---|
-| `fleet:read` | Reads fleets, events, memory, and triggers. | `fleet:write`, `fleet:admin` |
+| `fleet:read` | Reads fleets, turns, memory, and triggers. | `fleet:write`, `fleet:admin` |
 | `fleet:write` | Creates and updates fleets, sends messages, and removes fleet triggers. | `fleet:admin` |
 | `fleet:admin` | Deletes fleets. | None |
 | `secret:read` | Lists secret names and metadata. | `secret:write` |
@@ -53,7 +53,7 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 
-`agentsfleet fleet approvals` uses these scopes. Listing needs `approval:read`; approving or denying needs `approval:resolve`.
+List pending requests with `approval:read`. Approving or denying also needs a person's signed-in session and `approval:resolve`.
 
 Operator tokens may carry `runner:*`, `platform-key:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
 
@@ -61,9 +61,7 @@ Operator tokens may carry `runner:*`, `platform-key:*`, `model:*`, or `workspace
 
 ### UZ-AUTH-022: Insufficient scope
 
-The token lacks the scope named in `detail`. Create a new key with that scope, then retry the request.
-
-Do not add unrelated scopes. A narrower key limits the effect of a leaked key.
+Read the missing scope in `detail`. Use a credential that has that scope and only the other permissions your task needs.
 
 ## Related pages
 

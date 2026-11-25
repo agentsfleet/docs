@@ -12,7 +12,7 @@ executable: false
 
 A workspace groups fleets, secrets, connectors, and access. Each workspace belongs to one tenant.
 
-A workspace is not tied to one source repository. Each fleet declares its own trigger source.
+A workspace can have fleets for many repositories. Each fleet has its own triggers.
 
 ## Why it exists
 
@@ -20,14 +20,14 @@ Use separate workspaces when teams or environments need different fleets and sec
 
 ## How it behaves
 
-You create a workspace through the client or API. The tenant owns the workspace. The dashboard calls a tenant an account.
+Create a workspace through the client or API. The dashboard calls its owning tenant an account.
 
 An account has one owner, the person who signed up. The owner can invite members, who open and steer every workspace in the account. Only the owner stores secrets, connects integrations, and manages people.
 
 A fleet belongs to exactly one workspace. Secrets and connectors do not cross workspace boundaries.
 
 Account setup creates a default workspace.
-After login, the client keeps your previous workspace if it is still available; otherwise it selects the first available workspace.
+After login, the client keeps your previous workspace if you can still reach it. Otherwise it selects the first available workspace.
 
 ## Limits
 

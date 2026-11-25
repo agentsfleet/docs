@@ -16,7 +16,7 @@ Place a global option before or after an `agentsfleet` command.
 agentsfleet [GLOBAL_OPTIONS] <COMMAND>
 ```
 
-`<COMMAND>` comes from `agentsfleet --help`. `GLOBAL_OPTIONS` contains any option from the table below.
+Run `agentsfleet --help` to find the command. The table lists the global options you can use with it.
 
 ## Example with output
 
@@ -36,6 +36,8 @@ agentsfleet --version
 | `--api <URL>` | Sends API requests to this base URL. | `https://api.agentsfleet.net` | URL beginning with `http://` or `https://` |
 | `--json` | Prints machine-readable JSON when the command supports it. | `false` | Boolean |
 | `-h`, `--help` | Prints help and exits. | `false` | Boolean |
+| `--log-level <LEVEL>` | Sets which log messages the client prints. | Service default | Level such as `info`, `warn`, or `error` |
+| `--completions <SHELL>` | Prints the completion script for your shell. | Unset | `bash`, `zsh`, `fish`, `powershell`, `sh`, or `pwsh` |
 
 `--no-open`, `--no-input`, `--force`, and `--token-name` belong to
 `agentsfleet login`. Write them after the command name. See

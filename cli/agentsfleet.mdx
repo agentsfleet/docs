@@ -30,14 +30,14 @@ The server checks the signed-in credential’s scopes on every request. A comman
 
 | Command group | Purpose | Required scopes |
 |---|---|---|
-| `agentsfleet platform keys` | Inspect or set the platform default provider and model. Stored keys stay hidden. | `platform-key:read` for list; `platform-key:admin` for set/delete |
+| `agentsfleet platform models default` | Inspect or set the platform default provider and model. Stored keys stay hidden. | `platform-key:read` for list; `platform-key:admin` for set/delete |
 | `agentsfleet platform models` | List, inspect and maintain the priced model catalogue. | `model:read` for reads; `model:admin` for writes |
-| `agentsfleet platform runners` | Inspect hosts, enroll them, update policy and manage their lifecycle. | `runner:read`, `runner:enroll` or `runner:write`, according to the operation |
+| `agentsfleet platform runners` | Inspect hosts, enroll them, update policy and manage their lifecycle. | `runner:read`, `runner:register` or `runner:write`, according to the operation |
 
 Choose a catalogued model backed by an existing provider credential in the named workspace:
 
 ```bash
-agentsfleet platform keys use --provider <PROVIDER_ID> --workspace <WORKSPACE_ID> --model <MODEL_ID>
+agentsfleet platform models default use --provider <PROVIDER_ID> --workspace <WORKSPACE_ID> --model <MODEL_ID>
 ```
 
 ```text
@@ -49,7 +49,7 @@ Active    Yes
 
 The command confirms the stored default metadata without revealing the key.
 
-`--api-key-stdin` accepts a piped key and also requires workspace ownership and `secret:write`. `--replace` replaces an existing named credential and requires `--api-key-stdin`. Use `agentsfleet platform keys list` to inspect the result.
+Use `agentsfleet platform models default list` to check the result. Save the provider's key in the workspace before selecting it.
 
 ## Example with output
 
@@ -278,7 +278,7 @@ Event polling reports permanent access or request errors immediately; its timeou
 | `agentsfleet fleet approvals list --fleet <FLEET_ID>` | Lists the waiting gates for one fleet. |
 | `agentsfleet fleet approvals show <GATE_ID>` | Shows one gate, including the reach an approval grants. |
 | `agentsfleet fleet approvals approve <GATE_ID>` | Approves the gate. The parked run continues. |
-| `agentsfleet fleet approvals deny <GATE_ID>` | Denies the gate. The parked run ends without the access it asked for. |
+| `agentsfleet fleet approvals deny <GATE_ID>` | Denies the request. Work resumes without the requested access. |
 
 If the list reaches its page limit with more results available, the command reports an incomplete list.
 Narrow the request with `agentsfleet fleet approvals list --fleet <FLEET_ID>`.
@@ -382,9 +382,7 @@ The server still validates the credential.
 | `agentsfleet models current` | Shows the active model provider. |
 | `agentsfleet models use --secret <NAME>` | Selects a self-managed provider secret. |
 | `agentsfleet models reset` | Returns the tenant to the platform provider. |
-| `agentsfleet usage show` | Shows the tenant balance, fleet-run costs, and settled setup-chat costs. |
-
-Billing includes paid failed setup attempts. The setup column shows these costs, with a work identifier for each setup attempt.
+| `agentsfleet usage show` | Shows the account balance and recorded fleet-run charges. |
 
 `--limit <COUNT>` reads 1 to 100 charge records per page, with a default of 10. Any value that is not a whole number in that range is refused with exit code `4`. Use the returned `next_cursor` as `<TOKEN>` in `--cursor <TOKEN>` to read the next page.
 

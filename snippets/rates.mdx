@@ -1,20 +1,4 @@
-{/*
-  Single source of truth for agentsfleet pricing strings on the docs site.
-
-  Each string mirrors a rate the daemon declares once, in Rust:
-    - STARTER_CREDIT — STARTER_CREDIT_NANOS in rustd/crates/afd_tenant/src/signup/mod.rs
-    - EVENT_RATE     — no receive charge exists: afd_billing charges usage only
-                       (billing_and_provider_keys.md §3)
-  Nanos convert to dollars through NANOS_PER_USD in afd_core::money. No client
-  recomputes a charge; each renders the amount the daemon served.
-
-  Bumping a rate needs a paired PR across the lead repo's constant AND this
-  snippet; no automated cross-repo guard exists yet. The per-second run rate
-  (RUN_NANOS_PER_SEC in nanos.rs) has no docs-side display string: it is
-  announced inline in changelog.mdx as point-in-time history, not surfaced as a
-  live constant. Historical per-stage rates from before the run-fee rebill are
-  likewise frozen inline in changelog.mdx (STAGE_*_M66), not here.
-*/}
+{/* Match the daemon's STARTER_CREDIT_NANOS and usage-only billing. */}
 
 export const STARTER_CREDIT = "$5";
 export const EVENT_RATE = "free";

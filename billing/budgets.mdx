@@ -1,151 +1,65 @@
 ---
-title: Fleet budgets
-description: Daily and monthly spending limits for one fleet.
+title: Credits and usage
+description: Understand how fleet runs spend your account balance and read usage.
 type: explanation
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What it is
 
-A fleet budget limits how much one fleet can spend. The fleet author sets the budget in `budget` under `config["x-agentsfleet"]` in the fleet's Definition.
-
-```json
-{
-  "budget": {
-    "daily_nanos": "5000000000",
-    "monthly_nanos": "29000000000"
-  }
-}
-```
-
-Each limit is a decimal string of whole nanodollars. One dollar is `"1000000000"`, so the example allows 5 dollars a day and 29 dollars a month.
-
-`daily_nanos` is required. `monthly_nanos` is optional; leave it out for no monthly limit.
+An account has one credit balance shared by its workspaces. Each fleet run records model usage and time. The account that owns the fleet's workspace pays these charges.
 
 ## Why it exists
 
-Every workspace in one account shares the same credit balance. A fleet budget stops one fleet from draining that shared balance.
-
-Open the account menu to see your available balance and choose **Usage** for recorded charges.
-The expanded desktop sidebar also shows a **Credits** link to Usage.
-
-The fleet owns its budget. Applying a reviewed setup change replaces the limits, and deleting the fleet removes them.
+The balance lets you track and limit total account spending. Open **Usage** from the account menu or use the **Credits** link in the desktop sidebar.
 
 ## How it behaves
 
-The daily limit covers a rolling 24-hour window. The monthly limit covers one Coordinated Universal Time (UTC) calendar month.
+### How a run is charged
 
-`agentsfleet` checks the limits before a run and while the run continues. A reached limit blocks new work and stops an active run at its next billing check.
+The server checks the account balance before assigning a run and checks it again during the run. It records model requests and runtime as separate charge lines.
 
-A blocked event does not retry. Raise the limit in an improvement chat, apply the change, and send a new event.
+When you use the platform model, agentsfleet charges for model usage and runtime. When you use your own provider key, the provider bills its tokens and agentsfleet charges for runtime.
 
-The fleet, memory, and activity stream survive a budget stop. A stopped run has no final result.
-
-### What a budget counts
-
-A budget counts only the fleet's own runs. The setup chat that wrote or changed the fleet is charged to the workspace owner's balance, not to the fleet's budget.
-
-While billing is available, a limit is checked before each run and at each renewal while it runs. A run already in progress can pass its limit by up to one renewal of usage before it stops.
-
-If billing cannot answer, work continues and can exceed that bound. The full charge is settled later.
+Stopping a run ends its remaining work. Usage it already recorded is still charged.
 
 ### Review your spending
 
-Open **Usage** in the account menu to see confirmed charges across your account's workspaces.
-These are called **settled charges**.
+Choose a period and fleet in **Usage**. **By fleet** groups costs across your workspaces, and **Daily spend** shows daily totals. Charges retain the fleet name recorded at the time.
 
-Choose a named month, such as **November 2026**, or **Last 7 days**, then filter by fleet.
-**All Fleets** includes setup usage and saved-fleet usage; individual fleets follow it in the dropdown.
+Read the current balance and usage from the terminal.
 
-The dashboard displays report ranges in your browser's timezone.
+```bash
+agentsfleet usage show
+```
 
-The totals cover all matching usage in the selected period.
-**By fleet** groups settled charges by fleet and shows its recorded models.
-
-**Daily spend** shows complete daily totals from the report, including days with no settled charges.
-The server supplies complete UTC calendar buckets; the browser formats the displayed range bounds.
-
-Setup usage never exposes private draft titles or messages.
-
-Input tokens are pieces of text the model reads; output tokens are pieces it writes.
-The report retains recorded model identities and exact charges.
-When a model name is unavailable, Usage shows its recorded identifier.
-
-Each report includes charges confirmed by the time it was opened.
-Pending usage stays outside its totals; newer reports can include charges confirmed later.
-Missing usage information does not mean that usage was free.
-
-Changing a filter starts a new report.
-
-If loading fails, use **Retry report**.
-A loading error is shown as an error, rather than as zero spending.
-
-Usage has no Add credit action while its design is being prepared.
+```text
+<varies>
+```
 
 ### Read charges through the API
 
-<Note>
-The reporting API changes below are coming soon.
-Upgrade the dashboard and server together before using the updated response.
-The API reference still describes the current server.
-</Note>
+| Request | Result |
+|---|---|
+| `GET /v1/tenants/me/billing` | The account balance |
+| `GET /v1/tenants/me/billing/reports/current` | Totals, groups by fleet, and daily amounts |
+| `GET /v1/tenants/me/billing/charges` | Individual recorded charges, newest first |
 
-`GET /v1/tenants/me/billing/reports/current` returns the report.
-The report accepts `period`, `fleet_id`, `activity_type` and `through_at`.
+These requests need `billing:read`. The report accepts `period`, `fleet_id`, `activity_type`, and `through_at`. Use `runtime` if you set `activity_type`.
 
-`period` defaults to `month`; `today` and `week` select today or seven calendar days.
-Reporting periods use UTC, and `through_at` is an inclusive cutoff that defaults to now.
-The report covers every whole UTC day through that cutoff.
-
-A current-month request omits `through_at`.
-To read a past month, set `through_at` to that month's last UTC millisecond.
-
-Omit fleet and activity filters to include fleet work and setup usage.
-`fleet_id` selects one fleet's runtime usage; `activity_type=setup` selects setup usage.
-Use `activity_type=runtime` for fleet work only.
-
-Read settled daily amounts from `daily` and fleet/model groups from `spending`.
-Period and fleet totals include `activity_count`; daily and model totals omit it.
-Each activity counts one settled fleet run or setup attempt.
-
-`agentsfleet` records each provider request and each billed stretch of runtime separately.
-`GET /v1/tenants/me/billing/charges` returns those individual records.
-Both billing reads require `billing:read` and use your signed-in account.
-
-Use the response's `next_cursor` as `cursor` for later charge pages.
-`limit` defaults to 50 records and accepts 1 through 200.
-
-Some older charges combine model use and run time in one amount.
-The API keeps that recorded amount because separate historical prices are unavailable.
-
-Each request is priced at the rate in effect when it was made, and at the tier its whole prompt falls in. Cached reads, cache writes, and output each use their own rate.
-
-Each token category on a line is rounded up to a whole nanodollar on its own. A line can cost at most one nanodollar more per category than the exact amount, and never less.
-
-Under a self-managed provider key, your provider bills the tokens and `agentsfleet` charges run time only.
-
-Charges recorded during a billing outage settle once billing answers again.
-
-Settlement charges the full amount and can take your balance below zero. New credit repays that debt before any remainder becomes spendable.
+Periods use Coordinated Universal Time (UTC). `through_at` is an inclusive cutoff. Amounts are integer nanodollar strings, with 1,000,000,000 nanodollars per dollar.
 
 ## Limits
 
-| Field | Default | Unit | Valid range |
-|---|---|---|---|
-| `daily_nanos` | None; required | Nanodollars per rolling 24 hours | `"1"` through `"1000000000000"`, which is `$1,000` |
-| `monthly_nanos` | None | Nanodollars per UTC month | `"1"` through `"10000000000000"`, which is `$10,000` |
+One balance covers all fleets in the account. Parallel runs can spend more before the next balance check, and a charge can take the account below zero.
 
-Zero, signs, decimal points, exponents, and numbers outside the range are refused. A JSON number in place of the string is refused too.
-
-An invalid budget blocks review and Save with `UZ-REQ-001`. A stored budget that cannot be read blocks the next run.
-
-`UZ-RUN-015` marks a budget stop during a run.
-The event's recorded failure class is `budget_breach`.
+New work is refused when the balance falls below the required floor. Credit added later first repays outstanding charges.
 
 ## Related pages
 
-- [Author a fleet](/fleets/authoring)
+- [Model providers](/fleets/model-providers)
+- [Fleet overview](/fleets/overview)
 - [Error codes](/api-reference/error-codes)

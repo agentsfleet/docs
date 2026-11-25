@@ -1,303 +1,62 @@
 ---
-title: Author a fleet
-description: Describe a fleet in a private chat, check its setup, and save it.
+title: Start and guide a fleet
+description: Start a fleet with its first message and guide it in chat.
 type: how-to
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What this does
 
-Describe the task in a private chat in the dashboard or terminal.
-`agentsfleet` drafts the setup for you to review and save.
-
-A draft is private to the person who started it. Saving creates one fleet in the workspace or updates its existing setup version.
-The dashboard does not publish a reusable Plugin.
-
-A fleet's setup is one Definition: a JSON document holding its description, instructions, and runtime settings, including its name. The dashboard and the terminal edit the same Definition.
+The first message creates your fleet, opens its chat, and starts the work you describe. Follow-up messages reach the same fleet.
 
 ## Before you begin
 
-Sign in and select a workspace. Setup chat uses eligible models configured by the workspace owner or enabled as the platform default.
+Sign in and select a workspace with a usable model and enough balance for a reply. The workspace owner's [model settings](/fleets/model-providers) determine which models you can choose.
 
-Each model needs credentials and saved inference settings: API format, secure HTTP (HTTPS) base URL, context window, and maximum output tokens. A model listed without these settings cannot author setup. See [Model providers](/fleets/model-providers).
-
-`<MODEL_REF>` is the `ref` of an entry returned by `GET /v1/workspaces/{workspace_id}/models?purpose=authoring`. Choose one whose `eligibility.authoring` is `true`.
-
-Each chat message is charged to the workspace owner's balance. A message the balance cannot cover fails with `UZ-AUTHOR-007`.
-
-**Usage** in the account menu shows settled setup-chat costs beside fleet-run costs, including paid failed attempts. Costs remain visible after you delete a private setup chat. Messages still awaiting accounting appear after their costs settle.
+The New fleet picker shows the usable default by name. If your picker reads **Workspace model**, sending uses the workspace owner's default. The platform default applies when the owner uses the platform's model.
 
 ## Steps
 
-### In the dashboard
-
 1. Open **New fleet** in the workspace sidebar.
-2. Check the selected model, then describe the task. New chats select an available authoring model by default. Each reply can change the draft setup.
-3. Select the **Edit instructions** pencil beside the chat title to review the proposal. Keep chatting until it matches your task.
-4. Choose **Save and publish** above the message field. Its spinner and elapsed seconds stay visible until the save is confirmed.
-5. Wait for the saved fleet's conversation to open. Its summary icon shows durable tasks and saved context. Your private setup conversation remains available.
+2. Check the model, or open the picker to choose another available model.
+3. Send the first task. Include the goal, inputs, and constraints the fleet should follow.
 
-The proposed setup creates no fleet and requests no run. **Save and publish** checks and saves the current setup, without creating a Plugin.
-It requests no first run, but configured automatic triggers can start work once setup is ready.
+Open a suggestion to fill the composer with editable text. You can also write your own request.
 
-<Note>This feature is coming soon.</Note>
+### Give standing guidance
 
-Choose **Watch a pull request** on the empty setup screen to load a starting request with proposed completion questions and yes/no criteria.
-Edit the request before choosing **New fleet**; selecting the suggestion saves nothing and requests no access.
-You can also start with your own message.
+Ask the fleet to remember a rule it should follow in later work. For example, send “Remember to link the evidence when you summarize a deployment.” The fleet can pin that guidance to its memory.
 
-Select the **Edit instructions** pencil to open the instruction editor. Closing it keeps your unsaved text.
+Ask in chat when you want the fleet to add a schedule, register a trigger, or start a durable task. The fleet asks for access when a tool needs a secret or integration. Review the card in chat and choose **Approve** or **Deny**.
 
-Choose **Save changes** in the editor. For an existing fleet, this saves a new setup version. For a new proposal, choose **Save and publish** afterward.
+### Start from the terminal
 
-An untouched editor follows changes from setup chat. If chat changes the setup during manual editing, your text remains available and a conflict blocks updates.
-Choose **Discard manual changes and load latest** to replace that local text with the current proposal.
-
-The status above the message field shows **Reading setup**, **Refining setup**, or **Saving and publishing** during the corresponding work.
-Only a confirmed saved version receives a success tick. An uncertain response shows **Update not confirmed** and retains the retry operation.
-
-Choose **Retry** to check the same save. Repeated clicks during saving do not start another save.
-Saving an existing fleet preserves its resolved runtime model; changing the authoring model does not select a different runtime model.
-
-Sending another authoring request replaces the previous confirmation and its fleet action with the new request's progress.
-
-Plugin navigation, source links, starters and dashboard publication are paused.
-The retained [Plugin API and terminal commands](/fleets/library) manage account-owned setup revisions separately from dashboard saving.
-
-Open **Show more** to expand a long message and **Show less** to fold it. A reply you watched stream stays open when it finishes.
-
-Keep unfinished setup steps in view.
-
-Saved schedules show their registration state and a retry action when needed.
-Schedule changes and registration results appear as [activity in fleet chat](/fleets/running#read-schedule-activity).
-
-**Next wake-up** appears above the fleet's message field, in your browser's timezone.
-Its controls edit, pause, resume or remove the schedule. The schedule expression keeps its declared timezone, including daylight-saving changes.
-
-To change a saved fleet, open **Fleet actions → Edit setup**. The setup conversation opens on its own page, based on the saved revision.
-Its back arrow returns to the fleet conversation.
-
-Describe the change and review instructions through **Edit instructions** beside the summary icon.
-Close the editor and choose **Save and publish** above the message field to save the next setup version.
-Your unsent message in the fleet conversation stays in place.
-
-New work uses the updated instructions; work already running keeps its current version.
-
-### Define success through setup chat
-
-<Note>Completion questions and saved success criteria are coming soon.</Note>
-
-Describe how you will know the work is finished.
-When your proposal includes success criteria, **What counts as done?** shows each question and its **Yes** and **No** meanings separately from instructions.
-
-Ask setup chat to add a question or change wording and criteria, then review the proposal before saving.
-Each save creates a new setup version; work already started keeps its saved success criteria.
-
-### Recover a stopped or failed reply
-
-**Queued…** means your message is waiting to start. **Refining setup…** means an authoring reply has started.
-
-A failed reply keeps any partial text and shows its failure message. Choose **Try again** when available to retry the original request.
-
-Open **View details** for diagnostics. A retry can incur another model charge.
-
-If the provider outcome is uncertain, choose **Stop authoring**, then send a new message.
-Earlier usage stays under review, and its reserved balance can limit new work until accounting finishes.
-
-A definite credential rejection fails the reply without requiring **Stop**.
-Ask the credential owner to replace the key, or choose another available authoring model before sending a new message.
-A key that worked earlier can expire or be revoked.
-
-**Stop** keeps setup changes already accepted into the proposal. Review the current proposal before saving.
-Stopping setup chat leaves saved fleets running.
-
-### Find, rename, and delete setup chats
-
-The sidebar lists saved fleets under **Fleets**. Select a fleet to return to its conversation.
-
-Open **New fleet → Unfinished setups** to resume a private unsaved chat. Only the person who started the chat can see it.
-
-A new chat is titled with the first line of your first message, cut to 100 characters. A chat started from a Definition or a Plugin revision takes the first line of its description. A chat with neither reads **New fleet**.
-
-Choose **… → Rename chat** above the conversation to change its title. A renamed chat keeps your title, and the saved fleet keeps its own name.
-
-You cannot rename a chat while a reply or Save is running, while earlier usage is being checked, or after the chat closes.
-
-To delete a chat, choose its delete action and confirm **Delete chat**. The private conversation is removed. Saved fleets keep running, and published Plugin revisions stay available.
-
-Hover or focus an unfinished setup row to read its full title and status. The editor identifies the saved revision beneath your changes.
-
-### In the terminal
-
-Saves from the command-line interface (CLI) show **Setup saved via CLI** beside their version in the dashboard.
-Older receipts without origin metadata keep the general saved-version label.
-
-1. Start a private chat with an authoring model.
-
-   ```bash
-   agentsfleet chat --model <MODEL_REF>
-   ```
-
-   ```text
-   /review [instance-name] · /save · /run <message> · /publish <label> · /apply · /model <ref> · /stop · /retry · /delete · /quit. Ctrl+C stops the reply being followed.
-   you ›
-   ```
-
-2. Describe the task at the `you ›` prompt.
-
-   For example: "Keep team notes in memory. Save notes when asked, and recall them before answering questions."
-
-   Ordinary text is a chat message. A line starting with `/` is an action.
-
-3. Review the setup under the fleet name you want.
-
-   ```text
-   /review team-notes
-   ```
-
-   The review prints the full Definition, the access it needs, and its readiness checks. Its last line reads `Review digest: <DIGEST>`.
-
-4. Save the reviewed setup.
-
-   ```text
-   /save
-   ```
-
-   ```text
-   ✓ Fleet team-notes: active
-   ```
-
-   `/run <MESSAGE>` saves and sends the fleet `<MESSAGE>` once. Changing the draft after a review needs a new `/review` before saving.
-
-### From a Definition file
-
-Use this path for scripts and repeatable setups. A Definition draft starts without a chat message, so no authoring model call runs.
-
-1. Write the Definition to a file, such as `team-notes.json`.
-
-   ```json
-   {
-     "schema_version": 1,
-     "description": "Saves and recalls team notes between runs.",
-     "instructions_md": "Use memory_store when asked to remember a note.\nUse memory_recall before answering questions about saved notes.\nIf no matching note exists, say so instead of guessing.",
-     "config": {
-       "name": "team-notes",
-       "x-agentsfleet": {
-         "triggers": [],
-         "tools": ["memory_recall", "memory_store"],
-         "budget": {"daily_nanos": "1000000000"}
-       }
-     }
-   }
-   ```
-
-   `config.name` is the fleet's name: lowercase letters, digits, and hyphens, at most 64 characters. `description` is required, and every fleet list shows it. `daily_nanos` is a decimal string of nanodollars, so `"1000000000"` is one dollar a day.
-
-   An empty `triggers` list, or none at all, means the fleet runs only when you send it a message.
-
-2. Open a draft from the file and review it.
-
-   ```bash
-   agentsfleet chat --definition team-notes.json --model <MODEL_REF> --no-input --review --name team-notes
-   ```
-
-   ```text
-   ✓ Draft <DRAFT_ID> created
-   Instance: team-notes
-   Runtime model: <varies>
-   <varies>
-   Review digest: <DIGEST>
-   ```
-
-3. Save the draft with the digest you reviewed.
-
-   `<DRAFT_ID>` and `<DIGEST>` come from the previous output.
-
-   ```bash
-   agentsfleet chat <DRAFT_ID> --no-input --save --name team-notes --review-digest <DIGEST>
-   ```
-
-   ```text
-   <varies>
-   ✓ Fleet team-notes: active
-   ```
-
-To answer mentions in a Slack channel, add a `mention` trigger to `triggers`. [Answer mentions in Slack](/fleets/slack) shows its fields.
+Send the first message with [`agentsfleet fleet create`](/cli/agentsfleet#chat), then use `agentsfleet fleet steer` for follow-ups. [Start a fleet from the terminal](/fleets/install) walks through both commands.
 
 ## Verify it works
 
-`<FLEET_ID>` comes from `agentsfleet fleet list`.
-
-```bash
-agentsfleet fleet steer <FLEET_ID> "Remember that our release channel is #releases."
-```
-
-```text
-<varies>
-```
-
-After that run finishes, ask for the saved note:
-
-```bash
-agentsfleet fleet steer <FLEET_ID> "Which channel do we use for releases?"
-```
-
-```text
-<varies>
-```
-
-Check **Memory** for the note and the reply for `#releases`.
-Replies and tool calls vary by model; a successful Save alone does not prove that memory was used.
+Find the fleet in **Your Fleets** and check the reply to your first message. **Wakes on**, **Can access**, and **Remembers** show what the fleet has set up as it works.
 
 ## Common problems
 
-A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check and its next step, such as a missing secret or a pending integration grant.
+### Recover a stopped or failed reply
 
-Fix the check. Approving the last missing grant finishes setup, and the fleet reads `active`. For any other check, run `agentsfleet fleet activate <FLEET_ID>` after the fix.
+If a send could not be confirmed, use **Resend** on that message. The browser retries the same operation so a lost response does not create another fleet.
 
-`UZ-AUTHOR-006` means the setup or its access changed after your review. Review the draft again and save with the new digest.
+If you see **Choose model**, select an available model. Ask the owner to check [model settings](/fleets/model-providers) if the list has no usable choice.
 
-`UZ-AUTHOR-008` means the authoring model is unavailable, including a rejected credential. Repair its configuration or select another eligible model.
-In the terminal, run `/model <MODEL_REF>` to change models.
-
-If the dashboard has no eligible model, open model settings. Check the saved endpoint, API format, token limits, and credentials. Loading failures show a retry action separately from missing configuration.
-
-`UZ-REQ-001` means the Definition is invalid. The detail names the field. Every runtime setting sits under `config["x-agentsfleet"]`, and unknown keys are refused.
-
-`UZ-AGT-006` means a fleet already uses the name. Review again under a different `--name`.
-
-`UZ-AUTHOR-002` on a rename means the chat is busy or closed. Wait for the reply or the Save to finish, then rename an open chat.
-
-A retried draft creation, chat message, Save, Apply, or publish reuses its operation key. For 24 hours after the first attempt, the same key and request return the first result.
-
-The same key with a different request, or from another person, fails with `409` and `UZ-AUTHOR-005`. If the first attempt's draft, message, fleet, or Plugin revision was deleted since, the retry fails with `410 Gone` and `UZ-AUTHOR-013`. Start a new operation with a new key.
-
-After 24 hours, the key counts as new.
-
-A Definition holds at most 8 triggers. One webhook allows 1 through 16 event names and 1 through 64 repositories.
+For a failed turn, open its details in chat. Check what stopped the run before sending another message, which can incur another model charge.
 
 ## Remove or undo
 
-<Warning>
-  Deleting a setup chat removes its private messages for good. Saved fleets keep running, and published Plugin revisions stay.
-</Warning>
-
-Delete a chat from **Unfinished setups**, with `/delete` in the terminal chat, or with `agentsfleet chat delete <DRAFT_ID>`.
-
-Saving a fleet, or saving changes to one, closes its chat. `agentsfleet` keeps a closed chat and its messages for 30 days, then deletes them. The chat's `expires_at` field shows when.
-
-Charges for the draft's chat messages stay in the workspace's billing records.
-
-You can delete a saved fleet in any status. Deletion cancels its live work and removes its events, grants, keys, and memory.
+Open **Fleet actions** and choose **Archive** to stop future work and keep its history. Choose **Delete** to remove the fleet and its history permanently.
 
 ## Related pages
 
-- [Plugins](/fleets/library)
-- [Command reference](/cli/agentsfleet)
-- [Tools](/fleets/tools)
-- [Webhooks](/fleets/webhooks)
-- [Secrets](/fleets/secrets)
-- [Answer mentions in Slack](/fleets/slack)
+- [Your first fleet](/quickstart)
+- [Run and control a fleet](/fleets/running)
+- [Approve a request](/fleets/approvals)
+- [Memory](/memory)

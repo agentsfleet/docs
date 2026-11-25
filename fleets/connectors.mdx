@@ -20,7 +20,7 @@ You must own the account that holds the workspace.
 You also need permission to connect the provider account.
 Supported providers are GitHub, Slack, Zoho Desk, Jira, and Linear.
 
-**Connect apps** lists the providers offered by the platform. Opening this page creates no connection.
+**Connected apps** lists the providers offered by the platform. Opening this page creates no connection.
 
 **Connected** means the workspace holds saved authorization. Each card shows its account label when available.
 
@@ -32,21 +32,17 @@ If a provider needs platform setup, choose **Request access** to register your i
 
 ## Steps
 
-1. Open the account menu and choose **Connect apps** in the dashboard.
+1. Open **Connected apps** in the dashboard sidebar.
 
 2. Choose a provider and click **Connect**.
 
 3. Approve the requested access on the provider's website.
 
-4. Save a fleet that uses the provider. In its conversation, choose **Approve** under **Needs your approval**.
+4. Ask a fleet to use the provider. When its access card appears, review the requested scope before approving it.
 
 The workspace owns the connector. Each fleet needs a separate approved grant before it can use the connection.
 
-Approving the fleet's last missing grant finishes its setup, and the fleet reads `active`.
-If it stays `installing`, run `agentsfleet fleet show <FLEET_ID>` to see what setup still needs.
-After you fix it, choose **Finish setup** in its conversation or run `agentsfleet fleet activate <FLEET_ID>`.
-
-Copy `<FLEET_ID>` from `agentsfleet fleet list`.
+The access answer resumes the waiting work. Under **Can access**, you can see the fleet's approved grants and remove them.
 
 A connected Slack workspace also lets a fleet answer mentions in a channel. Posting that answer needs no grant, because `agentsfleet` posts it itself. See [Answer mentions in Slack](/fleets/slack).
 
@@ -68,7 +64,7 @@ The provider state should be `connected`. A fleet without an approved grant cann
 
 `not_connected` means no saved connection is available. Start the connection again from the dashboard.
 
-If the browser return fails or exceeds 25 seconds, return to **Connect apps** from the recovery page. Check its status, then start a fresh attempt if needed.
+If the browser return fails or exceeds 25 seconds, return to **Connected apps** from the recovery page. Check its status, then start a fresh attempt if needed.
 
 Never reuse a previous callback URL.
 
@@ -80,7 +76,7 @@ One GitHub App installation can belong to only one workspace. Another workspace 
 
 ## Remove or undo
 
-Disconnect the connector from **Connect apps**. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
+Disconnect the connector from **Connected apps**. `agentsfleet` removes the saved connection and stops routing that provider's events to the workspace. Deleting the connector's secret, such as `github`, does the same.
 
 Revoke the application from the provider's account settings. The next connector call fails until you reconnect with valid access.
 

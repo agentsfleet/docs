@@ -1,157 +1,72 @@
 ---
-title: Install a fleet
-description: Create a fleet from a published Plugin revision.
+title: Start a fleet from the terminal
+description: Create a fleet with a first message and continue its chat from the CLI.
 type: how-to
 audience: user
-verified: 2026-11-15
-product_version: 0.77.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
 
 ## What this does
 
-This creates a fleet from one published Plugin revision. You review the revision's setup under your fleet name, then save it.
-
-Saving pins the fleet to that revision. A later revision of the same entry never changes the fleet until you apply it yourself.
+Send the fleet's first task from the terminal and use the returned identifier to follow up.
 
 ## Before you begin
 
-Sign in and select a workspace. Save every secret the entry needs; the review lists them.
-
-`<MODEL_REF>` names an authoring model the workspace owner enabled. [Author a fleet](/fleets/authoring) shows where it comes from. A Plugin draft starts without a chat message, so no authoring model call runs.
+[Install the command-line interface (CLI)](/cli/install), run `agentsfleet login`, and select a workspace with an available model and balance.
 
 ## Steps
 
-1. Browse the workspace gallery.
+1. Start the fleet by sending its first message.
 
    ```bash
-   agentsfleet plugins
+   agentsfleet fleet create "Summarize the nightly health report" --name nightly-health
    ```
 
    ```text
-   NAME        PLUGIN      REVISION    AGO
-   <varies>
-   Start from a revision: agentsfleet chat --plugin <plugin_id> --revision <revision_id>
+   ✓ Started fleet nightly-health (<FLEET_ID>). First turn <TURN_ID>: <varies>.
+   Talk to it with: agentsfleet fleet steer <FLEET_ID>
    ```
 
-   The collection contains only your account's Plugins. `REVISION` is the entry's latest revision identifier.
+   The command returns after the daemon accepts the message. The fleet's reply can still be running.
 
-2. Open a private draft from that revision and review it under your fleet name.
-
-   `<PLUGIN_ID>` and `<REVISION_ID>` come from the gallery. `<NAME>` is the fleet name you choose.
+2. Open its interactive chat or send a follow-up with the fleet name.
 
    ```bash
-   agentsfleet chat --plugin <PLUGIN_ID> --revision <REVISION_ID> --model <MODEL_REF> --no-input --review --name <NAME>
-   ```
-
-   ```text
-   ✓ Draft <DRAFT_ID> created
-   Instance: <NAME>
-   Runtime model: <varies>
-   <varies>
-   Review digest: <DIGEST>
-   ```
-
-   The review shows the full setup, the secrets, tools, and network hosts it needs, and a readiness line for each.
-
-3. Save the draft with the digest you reviewed.
-
-   ```bash
-   agentsfleet chat <DRAFT_ID> --no-input --save --name <NAME> --review-digest <DIGEST>
-   ```
-
-   ```text
-   <varies>
-   ✓ Fleet <NAME>: active
-   ```
-
-   Add `--run-now <MESSAGE>` to send the fleet one message once it is active.
-
-4. Read the fleet's webhook URLs, if its setup declares a webhook trigger.
-
-   `<FLEET_ID>` comes from `agentsfleet fleet list`.
-
-   ```bash
-   agentsfleet --json fleet show <FLEET_ID>
+   agentsfleet fleet steer @nightly-health "Keep the summary to three lines"
    ```
 
    ```text
    <varies>
    ```
 
-   Each `webhook_urls` entry pairs a `source` with its `url`. For GitHub, open **Repository settings → Webhooks → Add webhook**. Use the matching workspace webhook secret.
-
-Plugin navigation and source links are paused in the dashboard. Use the terminal procedure above to start from a Plugin revision.
+   Omit the message to open interactive chat in a terminal.
 
 ## Verify it works
 
+Read the fleet's recent turns using the identifier from the create response.
+
 ```bash
-agentsfleet fleet status
+agentsfleet fleet turns <FLEET_ID>
 ```
 
 ```text
-Fleets
-Name: <NAME>
-Status: active
-Events: <varies>
-Budget: <varies>
-Waiting: 0
+<varies>
 ```
 
-`Waiting` counts approvals that need your decision. A count above zero also
-prints the command that lists them.
+Each accepted message has its own turn. Check the turn's status and reply before repeating a request.
 
 ## Common problems
 
-A Save that prints `installing` and exits with code `1` is waiting on a setup check. The lines after it name each check, such as a missing secret or a pending integration grant, and its next step.
-
-Fix each check. Approving the last missing grant finishes setup, and the fleet reads `active`. The fleet keeps its identifier while it waits.
-
-After you fix a missing secret, connection, model, or wallet balance, check setup again:
-
-```bash
-agentsfleet fleet activate <FLEET_ID>
-```
-
-```text
-✓ <varies> active.
-```
-
-While a check still fails, the fleet stays `installing`. The command then prints `agentsfleet fleet show <FLEET_ID>` as the next step. An API client sends `PATCH` with `{"status":"active"}` instead.
-
-`UZ-AUTHOR-006` means the setup or its access changed after your review. Review again and save with the new digest.
-
-`UZ-AGT-006` means the fleet name already exists. Review again under a different `--name`.
-
-<Warning>
-  Deleting a fleet permanently removes its events, sessions, schedules,
-  integration grants, connector channels, and memory. Choose a different name
-  to keep the existing fleet and its data.
-</Warning>
-
-To reuse the taken name, run `agentsfleet fleet delete <FLEET_ID>`. Deletion
-releases the name. An archived fleet keeps its name until you delete it.
-
-A Save whose reply was lost, or that stays `installing`, prints a recovery line with `--operation-id` and `--candidate-id`. Repeat the same command with both flags to resume that Save without creating a second fleet.
+If the name already exists, choose an unused name. When the workspace default model is unavailable, choose a usable runtime reference with [`--model`](/cli/agentsfleet#chat).
 
 ## Remove or undo
 
-Deleting a fleet removes its events, telemetry, sessions, grants, keys, and memory. This loss cannot be undone.
-
-`<FLEET_ID>` comes from `agentsfleet fleet list`. You can delete a fleet in any status, and deletion cancels its live work first.
-
-```bash
-agentsfleet fleet delete <FLEET_ID>
-```
-
-```text
-✓ <varies> deleted.
-```
+Use `agentsfleet fleet archive <FLEET_ID>` to keep the history and stop future work. See [removing a fleet](/fleets/running#remove-or-undo) if you want to delete its history too.
 
 ## Related pages
 
-- [Plugins](/fleets/library)
-- [Author a fleet](/fleets/authoring)
-- [Secrets](/fleets/secrets)
-- [Run and control a fleet](/fleets/running)
-- [Answer mentions in Slack](/fleets/slack)
+- [Command reference](/cli/agentsfleet)
+- [Start and guide a fleet in the dashboard](/fleets/authoring)
+- [Retired Plugins](/fleets/library)

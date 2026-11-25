@@ -3,12 +3,10 @@ title: Recovery after a runner fails
 description: Checkpoints, automatic quarantine, and the runner status commands.
 type: explanation
 audience: operator
-verified: 2026-11-18
-product_version: 0.78.0
+verified: 2026-11-25
+product_version: 0.90.0
 executable: false
 ---
-
-<Note>This feature is coming soon.</Note>
 
 ## What it is
 
@@ -104,11 +102,11 @@ The new attempt replaces the provisional reply; the final saved reply remains au
 
 ### Reading quarantine status
 
-After 105 seconds without heartbeats, a background sweep marks the runner offline and adds automatic quarantine.
+By default, the daemon marks a disconnected runner offline and places it in quarantine 114 seconds after its last heartbeat.
 This quarantine stops new assignments while preserving the separate operator status.
 Thirty seconds of continuous valid, healthy heartbeats clears automatic quarantine.
 
-A heartbeat gap of 20 seconds or a degraded heartbeat resets the return check.
+A gap of two heartbeat intervals or a degraded heartbeat resets the return check.
 Clearing automatic quarantine preserves an operator's cordon, drain, or revocation.
 
 Use credentials with `runner:read` permission.
@@ -137,8 +135,8 @@ The runner response omits `cordon` when automatic quarantine is absent.
 The filter above then shows `"cordon": null`.
 
 - `agentsfleet platform runners list` shows connection state and automatic quarantine across hosts.
-- `agentsfleet platform runners events <RUNNER_ID>` shows cordon and return events.
-- `agentsfleet platform runners leases <RUNNER_ID>` shows the host's work history.
+- `agentsfleet platform runners history <RUNNER_ID>` shows cordon and return events.
+- `agentsfleet platform runners runs <RUNNER_ID>` shows the host's work history.
 
 ## Limits
 

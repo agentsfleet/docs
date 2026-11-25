@@ -34,6 +34,10 @@
     {
       "source": "/billing/plans",
       "destination": "/billing/budgets"
+    },
+    {
+      "source": "/cli/platform",
+      "destination": "/cli/agentsfleet"
     }
   ],
   "navigation": {
@@ -53,11 +57,10 @@
             "group": "Work with fleets",
             "pages": [
               "fleets/authoring",
-              "fleets/running",
-              "fleets/overview",
-              "fleets/library",
               "fleets/install",
-              "fleets/approvals"
+              "fleets/running",
+              "fleets/approvals",
+              "fleets/overview"
             ]
           },
           {
@@ -91,7 +94,8 @@
             "group": "Help and updates",
             "pages": [
               "fleets/troubleshooting",
-              "changelog"
+              "changelog",
+              "fleets/library"
             ]
           }
         ]
@@ -124,8 +128,8 @@
             "group": "Overview",
             "pages": [
               "api-reference/introduction",
-              "api-reference/error-codes",
-              "api-reference/scopes"
+              "api-reference/scopes",
+              "api-reference/error-codes"
             ]
           },
           {
@@ -406,8 +410,9 @@
           {
             "group": "Runners",
             "pages": [
+              "runners/install",
               "runners",
-              "runners/install"
+              "runners/recovery"
             ]
           }
         ]

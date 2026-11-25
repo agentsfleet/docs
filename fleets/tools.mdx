@@ -10,21 +10,19 @@ executable: false
 
 ## What it is
 
-A tool gives a fleet one named action. The fleet author declares allowed tools in the fleet's Definition.
+A tool gives a fleet one named action. The runtime determines which tools a run can call.
 
 | Group | Tools |
 |---|---|
-| Network | `http_request`, `web_search`, `web_fetch`, `pushover` |
+| Network and notifications | `http_request`, `web_fetch`, `web_search`, `notify` |
 | Memory | `memory_store`, `memory_recall`, `memory_list`, `memory_forget` |
-| Schedule | `cron_add`, `cron_list`, `cron_remove`, `cron_update`, `cron_run`, `cron_runs`, `schedule` |
+| Access and questions | `request_access`, `ask_user` |
+| Triggers and schedules | `trigger_add`, `trigger_list`, `trigger_remove`, `schedule`, `cron_add`, `cron_list`, `cron_remove`, `cron_update`, `cron_run`, `cron_runs` |
+| Work and messages | `task_start`, `task_input`, `propose_change`, `update_plan`, `message`, `fleet_activity`, `fleet_steer` |
 | Delegation | `delegate`, `spawn`, `wait_agent`, `send_input`, `list_agents`, `interrupt_agent` |
-| Files | `file_read`, `file_write`, `file_append`, `file_delete`, `file_edit`, `file_read_hashed`, `file_edit_hashed`, `apply_patch` |
-| Local work | `shell`, `exec_command`, `write_stdin`, `git`, `image` |
-| Browser | `browser`, `browser_open`, `screenshot` |
-| Messaging | `message` |
-| Planning | `update_plan` |
+| Files and local work | `file_read`, `file_write`, `file_edit`, `apply_patch`, `shell`, `exec_command`, `write_stdin`, `git`, `image` |
 
-`exec_command` starts a process the fleet drives across calls, and `write_stdin` sends that process input. `apply_patch` applies a patch to the workspace. `update_plan` records the fleet's plan steps, which the thread shows.
+`exec_command` starts a process the fleet can drive across calls. `write_stdin` sends input to that process. `apply_patch` changes files in the sandbox workspace.
 
 ## Why it exists
 
@@ -32,27 +30,11 @@ The allowlist limits what the fleet can do. The fleet's instructions do not gran
 
 ## How it behaves
 
-The runtime owns the built-in tools. A fleet receives only names listed in `tools` under `config["x-agentsfleet"]`.
+The runtime enforces the run's tool and network policy. A call outside that policy returns a tool error.
 
-```json
-{
-  "tools": ["http_request", "memory_recall"],
-  "network": {"allow": ["api.github.com"]}
-}
-```
+A tool such as `http_request`, `git`, or `notify` can need an approved credential. The fleet uses `request_access` to ask, and a person decides the access card in chat.
 
-`http_request`, `web_fetch`, and `pushover` follow the fleet's network host list.
-An entry may be a host name or a URL.
-Only its host counts, so `https://api.github.com:443/repos` allows these tools to reach `api.github.com` on any port.
-
-Sandbox traffic also follows the runner operator's network policy.
-The fleet's list alone does not describe every destination a sandbox can reach.
-
-Secret references are filled by the credential firewall during an approved outbound request.
-
-The runner refuses a run that names an unknown or unavailable tool.
-Check spelling against the list above and keep the runner updated.
-It does not silently remove that tool and continue.
+The runner operator's policy controls what sandbox processes can reach. The fleet's HTTP switches govern its HTTP tools.
 
 ### Command endings
 
@@ -69,34 +51,16 @@ The command's outcome remains unknown; inspect its effects before asking the fle
 
 ### HTTP egress settings
 
-<Note>This feature is coming soon.</Note>
+A fleet starts with **Allow all** and **Packages** off. Open its chat to change these switches.
 
-Ask for HTTP access in the fleet's setup chat, then review and save the proposed Definition.
-The native API also accepts these settings under `config["x-agentsfleet"].network`:
+| Control | Effect |
+|---|---|
+| **Allow all** | Allows HTTP tools to reach public destinations. Private addresses still fail the network check. |
+| **Packages** | Allows the standard npm, Python, Rust, and Go package registries. |
 
-```json
-{
-  "http_egress": "restricted",
-  "package_manager_domains": true,
-  "allow": ["api.github.com"],
-  "read_only": true
-}
-```
+The terminal command is `agentsfleet fleet network use <FLEET_ID> <allow-all|private>`. Add `--packages` or `--no-packages` to change the package setting. You can address a fleet as `@NAME`.
 
-`http_egress` defaults to `restricted`; `allow` names additional exact domains.
-`allow` accepts up to 64 entries, each 1 to 255 characters.
-`package_manager_domains` defaults to `false`.
-
-Enable the package preset to allow the standard npm, Python, Rust and Go registries through HTTP tools.
-It includes `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`, `static.crates.io`, `crates.io`, `index.crates.io`, `proxy.golang.org` and `sum.golang.org`.
-
-For public secure HTTP (HTTPS) access, set `http_egress` to `public`.
-You then need no individual domain list for HTTP tools.
-Private or reserved addresses, credential bindings, repository limits and read-only rules still apply.
-
-`http_egress` and `package_manager_domains` do not enlarge sandbox network access.
-Entries in `allow` can also admit sandbox destinations when `read_only` is `false`, subject to the runner operator's policy.
-Dedicated dashboard controls are coming later; the setup review describes the saved HTTP egress policy.
+The API accepts `http_egress` and `package_domains` on the fleet update route. Include the fleet's current `ETag` in `If-Match`.
 
 ### Schedule tools
 
@@ -106,7 +70,7 @@ A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and 
 |---|---|
 | `cron_add` | Creates a recurring schedule from a five-field cron expression, a message, and an optional zone. The zone defaults to Coordinated Universal Time (UTC). |
 | `schedule` | Creates one follow-up at a moment within the next year. The moment rounds up to the next whole minute, which must be at least a minute away. The schedule runs once and is then removed; running it with `cron_run` counts as that one run. |
-| `cron_list` | Lists every schedule of the fleet. Each one names its source: `fleet`, `api` for a person, or `trigger` for a `cron` trigger in its Definition. |
+| `cron_list` | Lists every schedule of the fleet. |
 | `cron_update` | Changes, pauses, or resumes a schedule the fleet created. |
 | `cron_remove` | Deletes a schedule the fleet created. |
 | `cron_run` | Runs a schedule now. The new run waits behind the current one. A run that a schedule started cannot run a schedule now. |
@@ -131,7 +95,7 @@ Apart from those replaced secrets, the line appears as plain text, as the fleet 
 
 ### Child agents
 
-A child agent is a second agent inside the same run, working on one task. It shares the run's sandbox, files, memory, and budget. It starts from its task alone and does not see the conversation.
+A child agent is a second agent inside the same run, working on one task. It shares the run's sandbox, files, and memory. It starts from its task alone and does not see the conversation.
 
 A child holds the tools named in the call's `tools` list, and its parent must hold each one. Without `tools`, the child holds every tool its parent holds. Naming a tool the parent lacks answers `child_tool_not_held`.
 
@@ -156,8 +120,7 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
   Every destination must pass the fleet's existing network and request rules. Other methods and requests with a body return the first response.
 </Note>
 
-In restricted mode, review and save each exact download host outside the enabled package preset before using redirected downloads.
-A redirect cannot add a host to the policy.
+A redirect must pass the same HTTP policy as the original request.
 
 All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
 
@@ -180,7 +143,7 @@ A run has at most 4 children working at once and starts at most 16 in all. Past 
 
 When the run ends, every child still working ends `interrupted`.
 
-Remove a tool name from the Definition in an improvement chat to revoke it. Applying the reviewed change gives later runs the new list.
+To revoke a credential, remove it from **Can access**. Later runs and token requests use the updated access.
 
 A fleet can hold 32 schedules in total, including up to 16 it creates itself.
 A 17th fleet-created schedule fails with [`UZ-SCHED-009`](/api-reference/error-codes#UZ-SCHED-009).
