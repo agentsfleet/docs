@@ -36,8 +36,8 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 
 | Scope | Effect | Included by |
 |---|---|---|
-| `fleet:read` | Reads fleets, events, and memory. | `fleet:write`, `fleet:admin` |
-| `fleet:write` | Creates and updates fleets and sends messages to them. | `fleet:admin` |
+| `fleet:read` | Reads fleets, events, memory, and triggers. | `fleet:write`, `fleet:admin` |
+| `fleet:write` | Creates and updates fleets, sends messages, and removes fleet triggers. | `fleet:admin` |
 | `fleet:admin` | Deletes fleets. | None |
 | `secret:read` | Lists secret names and metadata. | `secret:write` |
 | `secret:write` | Creates, rotates, and deletes secrets. Deleting a secret named for a connector also needs `connector:write`. | None |
@@ -50,15 +50,12 @@ A valid key without `fleet:read` returns this scope error. The fake token above 
 | `connector:write` | Starts a connector setup flow and disconnects a connector, including by deleting its secret. | None |
 | `billing:read` | Reads the tenant balance and charges. | None |
 | `workspace:admin` | Creates and lists workspaces. | None |
-| `plugin:write` | Publishes a reviewed draft as an account-owned Plugin or revision, and removes a Plugin your account owns. | None |
 | `approval:read` | Reads pending approvals. | `approval:resolve` |
 | `approval:resolve` | Approves or denies a request. | None |
 
 `agentsfleet fleet approvals` uses these scopes. Listing needs `approval:read`; approving or denying needs `approval:resolve`.
 
 Operator tokens may carry `runner:*`, `platform-key:*`, `model:*`, or `workspace:any`. Tenant integrations do not need these scopes.
-
-`plugin:write` replaces `library:write`. Platform library publication and its scopes are removed, with no compatibility aliases.
 
 ## Errors
 

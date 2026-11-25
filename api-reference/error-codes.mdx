@@ -166,6 +166,17 @@ Use the current response or event details when diagnosing a new failure.
 | <span id="UZ-AGT-016"></span>`UZ-AGT-016` | 409 | Operation already used | This `operation_id` was used with a different message or sender; workspace API keys count as one sender. Retry the original request unchanged, or use a new `operation_id` for a new message. The response carries `current_state: "admitted"`. |
 | <span id="UZ-AGT-017"></span>`UZ-AGT-017` | 404 | Tool call not found | No full output was kept for this call on this event, or the call is outside this workspace. Use the call identifier shown in the thread. Its saved preview may still contain the first and last lines. |
 | <span id="UZ-AGT-020"></span>`UZ-AGT-020` | 409 | Fleet is archived | This Fleet is archived and can't change. Delete it, or set up a new Fleet. |
+| <span id="UZ-AGT-022"></span>`UZ-AGT-022` | 404 | Requested access not in workspace | Add the secret or connect the integration, then request access using its exact name. |
+| <span id="UZ-AGT-023"></span>`UZ-AGT-023` | 409 | Provider not connected | Connect the provider in the workspace, then retry the request. |
+| <span id="UZ-AGT-024"></span>`UZ-AGT-024` | 409 | Trigger already exists | The fleet already has a trigger of this kind on this source. Keep it or remove it before adding another. |
+| <span id="UZ-AGT-025"></span>`UZ-AGT-025` | 404 | Trigger signing secret not in workspace | Store the webhook's signing secret under the named key, then add the trigger again. |
+| <span id="UZ-SETUP-002"></span>`UZ-SETUP-002` | 409 | Fleet state conflict | Wait for the current work to finish or stop it before changing the fleet. |
+| <span id="UZ-SETUP-003"></span>`UZ-SETUP-003` | 412 | Fleet version changed | Fetch the fleet again and retry with its current `ETag`. |
+| <span id="UZ-SETUP-004"></span>`UZ-SETUP-004` | 428 | Fleet version required | Send the fleet's `ETag` in `If-Match`. |
+| <span id="UZ-SETUP-005"></span>`UZ-SETUP-005` | 409 | Operation key conflict | Reuse an operation key only for the same normalized request from the same caller. |
+| <span id="UZ-SETUP-008"></span>`UZ-SETUP-008` | 409 | Fleet model unavailable | Choose an eligible model configured by the workspace owner. |
+| <span id="UZ-SETUP-011"></span>`UZ-SETUP-011` | 400 | Invalid list cursor | Start the list again with the same caller, filters, and page size. |
+| <span id="UZ-SETUP-013"></span>`UZ-SETUP-013` | 410 | Fleet purged | The fleet created by this operation was deleted. Start a new operation. |
 
 ### Schedules
 
@@ -252,11 +263,6 @@ These codes describe responses from the retired draft, setup, and Plugin APIs.
 
 Model catalogue reads use the codes below. Keep `limit` within 1 to 100 and use the previous page's `next_cursor`.
 Start again from the first page after changing a filter.
-
-Plugins use `UZ-AUTHOR-011` for malformed or mismatched cursors.
-Their list route is `/v1/workspaces/{workspace_id}/plugins`; it returns only your account's entries.
-
-The retired Plugin deletion endpoint returned `UZ-AUTHOR-001` for entries outside the calling account.
 
 | Code | HTTP | Title | Meaning and action |
 |---|---|---|---|
