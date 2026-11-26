@@ -145,8 +145,8 @@ A lifecycle command sends a write again only when the connection was refused, th
 When live updates stop, Chat reconnects. A stable connection has 25 seconds to
 recover before Chat shows its recovery status.
 
-A stalled connection attempt retries after 45 seconds. An open connection also
-retries after 45 seconds without activity or a server heartbeat.
+A stalled connection attempt times out after 45 seconds. An open connection
+times out after 45 seconds without activity or a server heartbeat.
 
 Chat makes five fast retries, with increasing delays capped at 15 seconds.
 Then it shows **Live updates paused** and **Reconnect** above the composer.
