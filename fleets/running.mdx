@@ -70,15 +70,12 @@ Install a fleet. Copy its identifier from `agentsfleet fleet list`.
 
 ### Inspect current work in chat
 
-<Note>This feature is coming soon.</Note>
+**Tasks** in **Summary** shows the fleet’s unfinished work and each task’s saved status.
+The first task opens by default. Select any task to read its goal, **What counts as done?**, and accepted setup version.
 
-**Current work** appears above the message field when the fleet has unfinished work.
-Rows show saved status, such as **Queued**, **In progress** or **Waiting**.
-Expand one to read its objective, **What counts as done?**, and accepted setup version.
-
-Choose **Refresh** to read the latest saved progress.
-If a refresh fails, the panel labels any retained data as last confirmed progress.
-Losing access or switching workspace clears that data; a failed refresh never confirms completion.
+Choose **Reload current work** or **Reload details** when the corresponding read fails.
+If a reload fails, the panel labels any retained progress as last confirmed.
+Losing access or switching workspace clears that data.
 
 ### Read schedule activity
 
@@ -146,17 +143,16 @@ A lifecycle command sends a write again only when the connection was refused, th
 ### Live chat connection
 
 When live updates stop, Chat reconnects. A stable connection has 25 seconds to
-recover before Chat shows a warning.
+recover before Chat shows its recovery status.
 
-A stalled connection attempt retries after 30 seconds. An open connection
+A stalled connection attempt retries after 45 seconds. An open connection also
 retries after 45 seconds without activity or a server heartbeat.
 
 Chat makes five fast retries, with increasing delays capped at 15 seconds.
-Then it shows **Live updates are temporarily unavailable. We’re reconnecting automatically.**
+Then it shows **Live updates paused** and **Reconnect** above the composer.
+Chat keeps trying every 30 seconds.
 
-It keeps retrying every 30 seconds.
-
-Click **Retry now** to reconnect immediately. Returning to the tab or restoring
+Click **Reconnect** to reconnect immediately. Returning to the tab or restoring
 the network also starts recovery when the connection is missing or stale.
 
 After reconnecting, Chat fetches recent saved activity. Missed reply fragments
