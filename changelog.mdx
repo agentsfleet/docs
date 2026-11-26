@@ -25,7 +25,11 @@ description: "Product changes and upgrade notes."
   ## Upgrading
 
   - **Runner protocol** — Runners speak `agentsfleet.runner.v6`. Upgrade each runner with the server; an older runner is refused when it connects.
-  - **Decision models** — A decision model's goal settings no longer accept `done`. Replace a stored decision model that still names it.
+  - **Decision models** — A decision model's goal settings no longer accept `done`. Replace a stored decision model that still names it:
+    1. Clear it from each runner that selects it: set `decision_model_id` to `null` in the runner's policy file, then run `agentsfleet platform runners update <RUNNER_ID> --policy <POLICY_FILE>`.
+    2. Delete it with `agentsfleet platform models delete <DECISION_MODEL_ID>`. Recorded goal-check charges stay.
+    3. Create it again without `done` with `agentsfleet platform models create --file <MODEL_FILE>`. The reply's `id` is the new model's ID.
+    4. Set that ID as the runner's `decision_model_id` and run `agentsfleet platform runners update <RUNNER_ID> --policy <POLICY_FILE>` again.
 </Update>
 
 <Update label="Nov 26, 2026" tags={["Bug fixes", "CLI"]}>
