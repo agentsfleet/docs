@@ -89,6 +89,8 @@ The `git` tool can read and change its local checkout. Remote commands such as `
 
 Get `<RUNNER_ID>` from `agentsfleet platform runners list`. Inspect its state before changing or stopping it.
 
+Both commands show the host's processors, memory and free disk, as its last heartbeat reported them. Use them to choose the worker count.
+
 ```bash
 agentsfleet platform runners show <RUNNER_ID>
 ```

@@ -7,6 +7,27 @@ description: "Product changes and upgrade notes."
   agentsfleet is in **stealth-mode testing** and pre-production. APIs and agent behavior may change between releases without long deprecation windows. Email [agentsfleet@agentmail.to](mailto:agentsfleet@agentmail.to) if you want a hand calibrating an agent or to join as a design partner.
 </Tip>
 
+<Update label="Nov 26, 2026" tags={["Bug fixes", "CLI", "Upgrading"]}>
+  ## Tasks finish, and Claude models answer
+
+  A durable task finishes once its saved success criteria hold.
+
+  ## Bug fixes
+
+  - **Durable tasks** — A task that did its work no longer ends blocked when the fleet's next step is unclear.
+  - **Claude models** — Fleets on Anthropic's Claude models answer again. Every request to them had been refused.
+  - **Waiting messages** — A message no longer waits behind a sandbox another fleet released. Waiting fleets start oldest first.
+
+  ## CLI
+
+  - **Runner hosts** — `agentsfleet platform runners list` and `show` print each runner's processors, memory and free disk.
+
+  ## Upgrading
+
+  - **Runner protocol** — Runners speak `agentsfleet.runner.v6`. Upgrade each runner with the server; an older runner is refused when it connects.
+  - **Decision models** — A decision model's goal settings no longer accept `done`. Replace a stored decision model that still names it.
+</Update>
+
 <Update label="Nov 26, 2026" tags={["Bug fixes", "CLI"]}>
   ## Fleet recovery and Orbit paddle hits
 
