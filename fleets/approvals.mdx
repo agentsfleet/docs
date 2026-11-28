@@ -3,7 +3,7 @@ title: Approve a waiting run
 description: Review requested access, approve or deny it, and revoke standing grants.
 type: how-to
 audience: user
-verified: 2026-11-25
+verified: 2026-11-28
 product_version: 0.90.0
 executable: false
 ---
@@ -23,7 +23,13 @@ Use `agentsfleet fleet approvals` to inspect requests and decide them from your 
 
 ## Before you begin
 
-A running fleet asks for a workspace secret or connected provider with `request_access`. Its request names the service and, for GitHub, the repositories and access level.
+A fleet uses `request_access` to ask for a host, workspace secret or connected provider. A GitHub request names the repositories and access level.
+
+For example, an allowed guide at `docs.example.com` might move to `support.example.com`. With **Allow all** off, the fleet stops before contacting the new host.
+If it requests access, the card shows both hostnames.
+
+**Approve** lets this fleet retry the read and reach the new host on future runs until you revoke access.
+**Deny** resumes the conversation with that host still blocked. Credentials need their own approval.
 
 Sign in to the workspace that owns the fleet. Deciding a request needs `approval:resolve` and a signed-in person's session. A tenant API key with `approval:read` can list the requests.
 
@@ -109,7 +115,7 @@ No credential is issued, and the run makes no provider call. Check with
 
 ## Remove or undo
 
-A request can be decided once. Denying resumes the work without the requested access. You can revoke an approved integration grant.
+A request can be decided once. You can revoke an approved host or integration grant.
 
 To revoke a grant, copy `<GRANT_ID>` from `agentsfleet fleet grants list --fleet <FLEET_ID>`.
 Then run `agentsfleet fleet grants revoke <GRANT_ID> --fleet <FLEET_ID>`.

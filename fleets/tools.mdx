@@ -3,7 +3,7 @@ title: Fleet tools
 description: Understand the tools that a fleet can call.
 type: explanation
 audience: user
-verified: 2026-11-25
+verified: 2026-11-28
 product_version: 0.90.0
 executable: false
 ---
@@ -62,6 +62,20 @@ The terminal command is `agentsfleet fleet network use <FLEET_ID> <allow-all|pri
 
 The API accepts `http_egress` and `package_domains` on the fleet update route. Include the fleet's current `ETag` in `If-Match`.
 
+### Search and read web pages
+
+Turn on **Allow all** to search the public web with any fleet model. For example, ask “Find the latest release notes for PostgreSQL and read the upgrade instructions.”
+
+`web_search` sends the query to a search provider and returns links and excerpts. The platform supplies the search credentials.
+
+`web_fetch` reads a page at a public secure HTTP (HTTPS) address. The runner reads explicitly allowed hosts directly. With **Allow all** on, it can send other public addresses to a page reader.
+
+To read one site while **Allow all** is off, ask the fleet to read the page. It can [request access to that host](/fleets/approvals#before-you-begin).
+Web search stays off when you approve a host.
+
+Open **Sources** in the fleet summary to revisit pages a successful call returned. Source links omit query strings and fragments.
+After a redirect, Sources can also show the destination host when the runner verified it.
+
 ### Schedule tools
 
 A fleet can plan its own follow-up runs. `agentsfleet` keeps every schedule and fires it; the runner keeps no timer.
@@ -114,13 +128,8 @@ A child's status is `running`, `done`, `failed`, or `interrupted`. A `child_id` 
 
 `http_request` accepts only hosts allowed by the fleet policy. Responses allow up to 1 MiB.
 
-<Note>
-  This feature is coming soon. A `GET` without a body follows up to three redirects.
-
-  Every destination must pass the fleet's existing network and request rules. Other methods and requests with a body return the first response.
-</Note>
-
-A redirect must pass the same HTTP policy as the original request.
+A direct `GET` without a body follows up to 20 redirects. Every destination must pass the fleet's network and request rules.
+Other methods and requests with a body return the first response.
 
 All supplied headers are removed permanently when the origin changes, including when a later redirect returns to the original origin.
 
@@ -134,8 +143,6 @@ Truncation and replaced non-UTF-8 bytes appear before the response body. If your
 
 `browser`, `browser_open` and `screenshot` are currently unavailable on every runner.
 Use `http_request` or `web_fetch` for HTTP reads.
-
-`web_fetch` requires an allowed public secure HTTP (HTTPS) destination. Private or unsafe destinations are refused.
 
 Child agents nest two levels deep. A child can start children of its own. Those grandchildren are offered none of the six child-agent tools.
 
